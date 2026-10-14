@@ -1,7 +1,32 @@
+using ConvenienceStore.Web.Modules.Products.Services;
+using ConvenienceStore.Web.Data;
+using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>(
+    options =>
+    {
+        options.AreaViewLocationFormats.Insert(
+            0,
+            "/Modules/{2}/Views/{1}/{0}.cshtml");
+
+        options.AreaViewLocationFormats.Insert(
+            1,
+            "/Modules/{2}/Views/Shared/{0}.cshtml");
+    });
+
+builder.Services.AddScoped<IProductService, ProductService>();
+
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException(
+        "Missing DefaultConnection configuration.");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
@@ -21,9 +46,13 @@ app.UseAuthorization();
 app.MapStaticAssets();
 
 app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
 
 
 app.Run();

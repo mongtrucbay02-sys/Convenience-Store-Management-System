@@ -1,0 +1,75 @@
+erDiagram
+    CATEGORIES ||--o{ PRODUCTS : "contains"
+    PRODUCTS ||--|{ PRODUCT_PRICE_HISTORY : "has price history"
+    SUPPLIERS ||--o{ PURCHASE_RECEIPTS : "supplies"
+    PURCHASE_RECEIPTS ||--o{ PURCHASE_RECEIPT_ITEMS : "contains draft items"
+    PRODUCTS ||--o{ PURCHASE_RECEIPT_ITEMS : "appears in"
+
+    CATEGORIES {
+        BIGINT_UNSIGNED id PK
+        VARCHAR_100 name UK
+        TEXT description "NULL"
+        BOOLEAN is_active "DEFAULT TRUE"
+        BOOLEAN non_returnable "DEFAULT FALSE"
+    }
+
+    PRODUCTS {
+        BIGINT_UNSIGNED id PK
+        BIGINT_UNSIGNED category_id FK
+        VARCHAR_50 sku UK
+        VARCHAR_200 name
+        VARCHAR_50 unit
+        VARCHAR_2048 image_url "NULL"
+        TEXT description "NULL"
+        INT_UNSIGNED minimum_stock "DEFAULT 5"
+        VARCHAR_20 status "DEFAULT ACTIVE"
+    }
+
+    PRODUCT_PRICE_HISTORY {
+        BIGINT_UNSIGNED id PK
+        BIGINT_UNSIGNED product_id FK
+        BIGINT_UNSIGNED sale_price "> 0, MULTIPLE OF 100"
+        DATETIME_6 effective_at
+        BIGINT_UNSIGNED created_by "PENDING FK"
+        DATETIME_6 created_at "DEFAULT CURRENT_TIMESTAMP(6)"
+        DATETIME_6 cancelled_at "NULL, BEFORE effective_at"
+    }
+
+    SUPPLIERS {
+        BIGINT_UNSIGNED id PK
+        VARCHAR_50 supplier_code UK
+        VARCHAR_200 name
+        VARCHAR_150 contact_person "NULL"
+        VARCHAR_30 phone UK
+        VARCHAR_254 email "NULL"
+        VARCHAR_500 address "NULL"
+        VARCHAR_50 tax_code "NULL"
+        TEXT notes "NULL"
+        VARCHAR_20 status "DEFAULT ACTIVE"
+    }
+
+    PURCHASE_RECEIPTS {
+        BIGINT_UNSIGNED id PK
+        VARCHAR_50 receipt_code UK
+        BIGINT_UNSIGNED supplier_id FK
+        BIGINT_UNSIGNED created_by "PENDING FK"
+        BIGINT_UNSIGNED confirmed_by "NULL, PENDING FK"
+        VARCHAR_100 supplier_document_no "NULL"
+        VARCHAR_20 status "DEFAULT DRAFT"
+        BIGINT_UNSIGNED total_amount "DEFAULT 0"
+        DATETIME_6 created_at "DEFAULT CURRENT_TIMESTAMP(6)"
+        DATETIME_6 confirmed_at "NULL"
+        TEXT cancel_reason "NULL"
+    }
+
+    PURCHASE_RECEIPT_ITEMS {
+        BIGINT_UNSIGNED id PK
+        BIGINT_UNSIGNED receipt_id FK
+        BIGINT_UNSIGNED product_id FK
+        VARCHAR_50 product_sku_snapshot
+        VARCHAR_200 product_name_snapshot
+        VARCHAR_50 unit_snapshot
+        INT_UNSIGNED quantity "> 0"
+        BIGINT_UNSIGNED unit_cost ">= 0"
+        BIGINT_UNSIGNED line_total "GENERATED STORED"
+    }

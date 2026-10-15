@@ -1,0 +1,70 @@
+<mxfile host="65bd71144e">
+    <diagram id="product-purchase-erd" name="Product Purchase ERD">
+        <mxGraphModel dx="2207" dy="1107" grid="1" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="categories" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=10;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" value="&lt;b&gt;CATEGORIES&lt;/b&gt;&lt;hr&gt;PK id : BIGINT UNSIGNED&lt;br&gt;UK name : VARCHAR(100)&lt;br&gt;description : TEXT NULL&lt;br&gt;is_active : BOOLEAN [DEFAULT TRUE]&lt;br&gt;non_returnable : BOOLEAN [DEFAULT FALSE, SP-08]" vertex="1">
+                    <mxGeometry height="150" width="340" x="130" y="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="products" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=10;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" value="&lt;b&gt;PRODUCTS&lt;/b&gt;&lt;hr&gt;PK id : BIGINT UNSIGNED&lt;br&gt;FK category_id : BIGINT UNSIGNED&lt;br&gt;UK sku : VARCHAR(50)&lt;br&gt;name : VARCHAR(200)&lt;br&gt;unit : VARCHAR(50)&lt;br&gt;image_url : VARCHAR(2048) NULL&lt;br&gt;description : TEXT NULL&lt;br&gt;minimum_stock : INT UNSIGNED [DEFAULT 5]&lt;br&gt;status : VARCHAR(20) [DEFAULT ACTIVE]" vertex="1">
+                    <mxGeometry height="210" width="290" x="660" y="35" as="geometry"/>
+                </mxCell>
+                <mxCell id="price_history" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=10;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" value="&lt;b&gt;PRODUCT_PRICE_HISTORY&lt;/b&gt;&lt;hr&gt;PK id : BIGINT UNSIGNED&lt;br&gt;FK product_id : BIGINT UNSIGNED&lt;br&gt;sale_price : BIGINT UNSIGNED [&amp;gt; 0, multiple of 100]&lt;br&gt;effective_at : DATETIME(6)&lt;br&gt;created_by : BIGINT UNSIGNED [pending FK]&lt;br&gt;created_at : DATETIME(6)&lt;br&gt;cancelled_at : DATETIME(6) NULL [&amp;lt; effective_at]" vertex="1">
+                    <mxGeometry height="180" width="320" x="1160" y="35" as="geometry"/>
+                </mxCell>
+                <mxCell id="suppliers" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=10;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" value="&lt;b&gt;SUPPLIERS&lt;/b&gt;&lt;hr&gt;PK id : BIGINT UNSIGNED&lt;br&gt;UK supplier_code : VARCHAR(50)&lt;br&gt;name : VARCHAR(200)&lt;br&gt;contact_person : VARCHAR(150) NULL&lt;br&gt;UK phone : VARCHAR(30)&lt;br&gt;email : VARCHAR(254) NULL&lt;br&gt;address : VARCHAR(500) NULL&lt;br&gt;tax_code : VARCHAR(50) NULL&lt;br&gt;notes : TEXT NULL&lt;br&gt;status : VARCHAR(20)" vertex="1">
+                    <mxGeometry height="235" width="260" x="150" y="320" as="geometry"/>
+                </mxCell>
+                <mxCell id="receipts" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=10;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" value="&lt;b&gt;PURCHASE_RECEIPTS&lt;/b&gt;&lt;hr&gt;PK id : BIGINT UNSIGNED&lt;br&gt;UK receipt_code : VARCHAR(50)&lt;br&gt;FK supplier_id : BIGINT UNSIGNED&lt;br&gt;created_by : BIGINT UNSIGNED [pending FK]&lt;br&gt;confirmed_by : BIGINT UNSIGNED NULL [pending FK]&lt;br&gt;supplier_document_no : VARCHAR(100) NULL&lt;br&gt;status : VARCHAR(20) [DRAFT / RECEIVED / CANCELLED]&lt;br&gt;total_amount : BIGINT UNSIGNED [DEFAULT 0]&lt;br&gt;created_at : DATETIME(6)&lt;br&gt;confirmed_at : DATETIME(6) NULL&lt;br&gt;cancel_reason : TEXT NULL" vertex="1">
+                    <mxGeometry height="250" width="370" x="520" y="370" as="geometry"/>
+                </mxCell>
+                <mxCell id="receipt_items" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=10;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" value="&lt;b&gt;PURCHASE_RECEIPT_ITEMS&lt;/b&gt;&lt;hr&gt;PK id : BIGINT UNSIGNED&lt;br&gt;FK receipt_id : BIGINT UNSIGNED&lt;br&gt;FK product_id : BIGINT UNSIGNED&lt;br&gt;product_sku_snapshot : VARCHAR(50)&lt;br&gt;product_name_snapshot : VARCHAR(200)&lt;br&gt;unit_snapshot : VARCHAR(50)&lt;br&gt;quantity : INT UNSIGNED [&amp;gt; 0]&lt;br&gt;unit_cost : BIGINT UNSIGNED [&amp;gt;= 0, NH-04]&lt;br&gt;line_total : BIGINT UNSIGNED [generated]&lt;br&gt;UK (receipt_id, product_id)" vertex="1">
+                    <mxGeometry height="255" width="290" x="1160" y="310" as="geometry"/>
+                </mxCell>
+                <mxCell id="rel_category_product" edge="1" parent="1" source="categories" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERzeroToMany;endFill=0;startArrow=ERone;startFill=0;" target="products" value="contains (1 : 0..N)">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="410" y="125"/>
+                            <mxPoint x="410" y="125"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel_product_price" edge="1" parent="1" source="products" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERoneToMany;endFill=0;startArrow=ERone;startFill=0;" target="price_history" value="has price history (1 : 1..N)">
+                    <mxGeometry relative="1" x="-0.15" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="770" y="150"/>
+                            <mxPoint x="770" y="150"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel_supplier_receipt" edge="1" parent="1" source="suppliers" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERzeroToMany;endFill=0;startArrow=ERone;startFill=0;" target="receipts" value="supplies (1 : 0..N)">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="rel_receipt_item" edge="1" parent="1" source="receipts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERzeroToMany;endFill=0;startArrow=ERone;startFill=0;" target="receipt_items" value="contains (1 : 0..N; 1..N when RECEIVED)">
+                    <mxGeometry relative="1" x="-0.1564" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="995" y="470"/>
+                            <mxPoint x="995" y="367.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel_product_item" edge="1" parent="1" source="products" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERzeroToMany;endFill=0;startArrow=ERone;startFill=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" value="appears in (1 : 0..N)">
+                    <mxGeometry relative="1" x="-0.2074" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="805" y="320"/>
+                            <mxPoint x="950" y="320"/>
+                            <mxPoint x="950" y="660"/>
+                            <mxPoint x="1300" y="660"/>
+                        </Array>
+                        <mxPoint x="820" y="260" as="sourcePoint"/>
+                        <mxPoint x="1300" y="490" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="pending_note" parent="1" style="shape=note;whiteSpace=wrap;html=1;size=15;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacing=8;" value="&lt;b&gt;Constraint responsibility&lt;/b&gt;&lt;br&gt;MySQL: PK/FK/UK/CHECK/generated column&lt;br&gt;Service: state transitions, authorization, cancel only future price, NH-06 atomicity&lt;br&gt;Lead review: receipt item ON DELETE RESTRICT&lt;br&gt;Pending ERDs: Accounts and Inventory" vertex="1">
+                    <mxGeometry height="150" width="600" x="190" y="710" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

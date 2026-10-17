@@ -1,0 +1,15 @@
+# Mặc định
+*                                     @mongtrucbay02-sys @zlatanofficial111-netizen
+
+# Tài liệu thiết kế
+/docs/                                @zlatanofficial111-netizen @mongtrucbay02-sys
+
+# GitHub, CI
+/.github/                             @mongtrucbay02-sys @zlatanofficial111-netizen
+
+# Migration CSDL: #1 duyệt
+/src/ConvenienceStore.Web/Migrations/ @zlatanofficial111-netizen @mongtrucbay02-sys
+
+# Giao diện: #6 duyệt
+/src/ConvenienceStore.Web/Views/      @caotrang250226-png @mongtrucbay02-sys
+/src/ConvenienceStore.Web/wwwroot/    @caotrang250226-png @mongtrucbay02-sys

@@ -1,0 +1,1144 @@
+openapi: 3.0.3
+info:
+  title: Convenience Store Management System – API Báo cáo, Khách hàng, Khuyến mãi
+  version: 0.1.0-draft
+  description: |
+    Hợp đồng API cho BC-01 → BC-03, KH-01 → KH-08, KM-01 → KM-06 và hai điểm giao với POS
+    (POS-03 tra cứu/gắn khách, POS-04 áp khuyến mãi). Issue #21, người soạn: #5.
+
+    **Trạng thái: bản nháp chờ review.** Quy ước chung chưa được chốt ở issue #4 (route prefix,
+    versioning, casing, envelope, phân trang, mã lỗi). Bản này dùng các giá trị tạm sau, đổi một chỗ
+    khi #4 chốt:
+    - Base path `/api`, tên tài nguyên số nhiều, chữ thường, nhiều từ nối bằng dấu gạch ngang.
+    - JSON property dùng camelCase. Tiền là số nguyên VND (int64). Thời điểm theo ISO 8601 (+07:00).
+    - Lỗi theo RFC 7807 (`application/problem+json`) kèm trường `code` và `errors`.
+    - Phân trang bằng `page` (từ 1) và `pageSize` (mặc định 20, tối đa 100).
+    - Xác thực và vai trò do #1 quyết định; ở đây chỉ ghi vai trò yêu cầu: AD (Admin/Quản lý), TN (Thu ngân).
+
+    **Không phải endpoint HTTP:** KH-06 (tích điểm tự động) và việc thu hồi điểm khi hủy hóa đơn/trả hàng
+    là hàm nội bộ do POS-07, POS-12, DT-02 gọi trong cùng một giao tác với việc ghi hóa đơn. Hàm đề xuất:
+    `EarnPointsAsync(customerId, invoiceId, amountPaid)` và `RevokePointsAsync(customerId, invoiceId, points)`;
+    mỗi hàm ghi một dòng vào lịch sử điểm. Cần thống nhất chữ ký với #3.
+  contact:
+    name: Nguyễn Tiến Trung (#5)
+servers:
+  - url: /api
+    description: Base path tạm, chờ issue #4
+tags:
+  - name: Reports
+    description: BC-01, BC-02, BC-03 (chỉ AD)
+  - name: Customers
+    description: KH-01 → KH-05, KH-08 và POS-03
+  - name: Loyalty settings
+    description: KH-07 (chỉ AD)
+  - name: Promotions
+    description: KM-01 → KM-06
+  - name: POS integration
+    description: Hợp đồng với #3 cho POS-03, POS-04. Chờ #3 xác nhận.
+security:
+  - cookieAuth: []
+
+paths:
+  /reports/dashboard:
+    get:
+      tags: [Reports]
+      operationId: getDashboard
+      summary: BC-01 Xem dashboard tổng quan
+      description: |
+        Chỉ AD. Số liệu tính theo giờ Việt Nam (UTC+7), chỉ hóa đơn "Đã thanh toán" (BR-BC-01, BR-BC-03).
+        Chưa có giao dịch trong ngày thì các số bằng 0 và các mảng rỗng (E1).
+      responses:
+        '200':
+          description: Các chỉ số tóm tắt
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dashboard' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/revenue-by-time:
+    get:
+      tags: [Reports]
+      operationId: getRevenueByTime
+      summary: BC-02 Báo cáo doanh thu theo thời gian
+      description: |
+        Chỉ AD. Khoảng thời gian mặc định là tháng hiện tại, tối đa 366 ngày (E1, E2).
+        Doanh thu thuần = doanh thu gộp − giảm trừ (BR-BC-02). Không có dữ liệu thì `rows` rỗng (E3).
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - name: groupBy
+          in: query
+          schema: { type: string, enum: [DAY, WEEK, MONTH], default: DAY }
+      responses:
+        '200':
+          description: Bảng tổng hợp theo kỳ
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RevenueByTimeReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/revenue-by-product:
+    get:
+      tags: [Reports]
+      operationId: getRevenueByProduct
+      summary: BC-03 Báo cáo doanh thu theo sản phẩm, sản phẩm bán chạy
+      description: |
+        Chỉ AD. Kèm danh sách sản phẩm không bán được trong kỳ. Số liệu lấy từ giá lưu trên dòng hóa đơn (BR-BC-04).
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - name: categoryId
+          in: query
+          schema: { type: integer, format: int64 }
+        - name: topN
+          in: query
+          schema: { type: integer, enum: [10, 20, 50], default: 10 }
+        - name: sortBy
+          in: query
+          schema: { type: string, enum: [QUANTITY, REVENUE], default: QUANTITY }
+      responses:
+        '200':
+          description: Top N sản phẩm và sản phẩm không bán được
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RevenueByProductReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /customers:
+    get:
+      tags: [Customers]
+      operationId: listCustomers
+      summary: KH-01 Xem/tìm kiếm khách hàng
+      description: |
+        TN, AD. `q` khớp theo số điện thoại hoặc họ tên. TN thấy số điện thoại đã che một phần (BR-KH-01).
+        Không tìm thấy thì `items` rỗng, giao diện gợi ý "Thêm khách mới" (E1). Khách đã ẩn (ANONYMIZED) không nằm trong danh sách.
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string, maxLength: 100 }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: sortBy
+          in: query
+          schema: { type: string, enum: [FULL_NAME, POINTS, TOTAL_SPENT, LAST_PURCHASE_AT], default: FULL_NAME }
+        - name: sortDir
+          in: query
+          schema: { type: string, enum: [ASC, DESC], default: ASC }
+      responses:
+        '200':
+          description: Danh sách khách hàng
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageMeta'
+                  - type: object
+                    required: [items]
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/CustomerSummary' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Customers]
+      operationId: createCustomer
+      summary: KH-02 Thêm khách hàng
+      description: |
+        TN, AD. Số điện thoại phải gồm 10 số, bắt đầu bằng 0 và chưa tồn tại. Điểm ban đầu bằng 0.
+        Khi gọi từ POS-03, client dùng `id` trả về để gắn khách vào đơn.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCustomerRequest' }
+            example:
+              phone: "0901234567"
+              fullName: "Nguyễn Văn A"
+      responses:
+        '201':
+          description: Đã tạo khách hàng
+          headers:
+            Location: { schema: { type: string }, description: URL của khách mới }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409':
+          description: Số điện thoại đã tồn tại (E1). `extensions.existingCustomer` chứa khách đã có để chọn.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              example:
+                type: about:blank
+                title: Số điện thoại đã tồn tại
+                status: 409
+                code: CUSTOMER_PHONE_EXISTS
+                existingCustomer: { id: 12, fullName: "Nguyễn Văn A", phone: "090****567", phoneIsMasked: true, points: 40 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /customers/lookup:
+    get:
+      tags: [Customers, POS integration]
+      operationId: lookupCustomerByPhone
+      summary: POS-03 Tra cứu khách theo số điện thoại chính xác
+      description: |
+        TN, AD. Dùng ở quầy: nhập số điện thoại, nhận tên và điểm hiện có. Không thấy khách (404) thì client mở form
+        rút gọn KH-02 (`POST /customers`) rồi gắn khách vừa tạo vào đơn. Việc gắn/gỡ khách khỏi đơn do #3 quản lý.
+      parameters:
+        - name: phone
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/Phone' }
+      responses:
+        '200':
+          description: Tìm thấy khách
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerLookup' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /customers/{customerId}:
+    parameters:
+      - $ref: '#/components/parameters/CustomerId'
+    get:
+      tags: [Customers]
+      operationId: getCustomer
+      summary: Xem chi tiết khách hàng (dùng cho KH-03, KH-05)
+      description: TN, AD. TN thấy số điện thoại đã che một phần.
+      responses:
+        '200':
+          description: Thông tin khách
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    patch:
+      tags: [Customers]
+      operationId: updateCustomer
+      summary: KH-03 Sửa thông tin khách hàng
+      description: |
+        TN, AD. Chỉ nhận các trường trong schema; trường `points` không được chấp nhận (BR-KH-02).
+        Điểm và lịch sử giữ nguyên.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateCustomerRequest' }
+      responses:
+        '200':
+          description: Đã cập nhật
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Số điện thoại mới trùng khách khác (E1)
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Customers]
+      operationId: deleteCustomer
+      summary: KH-04 Xóa/ẩn khách hàng
+      description: |
+        Chỉ AD; client phải hỏi xác nhận trước khi gọi. Khách chưa có hóa đơn thì xóa hẳn (`DELETED`).
+        Khách đã có hóa đơn thì xóa tên, số điện thoại, email, giữ mã để hóa đơn cũ tham chiếu (`ANONYMIZED`, BR-KH-03).
+        Khách đang gắn vào đơn đang bán/tạm giữ thì từ chối tạm thời (E1).
+      responses:
+        '200':
+          description: Kết quả xử lý
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [outcome]
+                properties:
+                  outcome: { type: string, enum: [DELETED, ANONYMIZED] }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Khách đang được gắn vào đơn đang bán hoặc tạm giữ (mã `CUSTOMER_IN_OPEN_ORDER`)
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /customers/{customerId}/invoices:
+    get:
+      tags: [Customers]
+      operationId: listCustomerInvoices
+      summary: KH-05 Xem lịch sử mua hàng của khách
+      description: |
+        TN, AD. Mở chi tiết hóa đơn bằng POS-11 (thuộc #3). Khách chưa mua lần nào thì `items` rỗng (E1).
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Danh sách hóa đơn của khách
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageMeta'
+                  - type: object
+                    required: [items]
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/CustomerInvoice' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /customers/{customerId}/point-transactions:
+    get:
+      tags: [Customers]
+      operationId: listPointTransactions
+      summary: KH-05 Xem lịch sử điểm tích lũy
+      description: TN, AD. Gồm cộng, thu hồi và điều chỉnh thủ công kèm lý do. Mới nhất trước.
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Lịch sử điểm
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageMeta'
+                  - type: object
+                    required: [items, currentPoints]
+                    properties:
+                      currentPoints: { type: integer, minimum: 0 }
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/PointTransaction' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /customers/{customerId}/point-adjustments:
+    post:
+      tags: [Customers]
+      operationId: adjustPoints
+      summary: KH-08 Điều chỉnh điểm thủ công
+      description: |
+        Chỉ AD. Số điểm là số nguyên khác 0 (dương là cộng, âm là trừ). Lý do bắt buộc (E2). Trừ làm điểm âm thì từ chối (E1).
+        Ghi một dòng `ADJUST` vào lịch sử điểm cùng người thực hiện.
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdjustPointsRequest' }
+            example: { pointsDelta: 20, reason: "Quên gắn khách vào đơn HD000123", invoiceId: 123 }
+      responses:
+        '201':
+          description: Đã điều chỉnh
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PointTransaction' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422':
+          description: Trừ làm điểm âm (mã `POINTS_WOULD_BE_NEGATIVE`)
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /loyalty-settings/current:
+    get:
+      tags: [Loyalty settings]
+      operationId: getCurrentLoyaltySetting
+      summary: KH-07 Xem quy tắc tích điểm đang hiệu lực
+      description: |
+        Chỉ AD. Khi chưa cấu hình, trả giá trị mặc định 10.000 đ = 1 điểm (PA-KH-02.B) với `isDefault = true`.
+      responses:
+        '200':
+          description: Quy tắc hiện hành
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoyaltySetting' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /loyalty-settings:
+    get:
+      tags: [Loyalty settings]
+      operationId: listLoyaltySettings
+      summary: KH-07 Xem lịch sử thay đổi quy tắc tích điểm
+      description: Chỉ AD. Mỗi lần lưu tạo một bản ghi mới, không sửa bản cũ.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Lịch sử quy tắc, mới nhất trước
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageMeta'
+                  - type: object
+                    required: [items]
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/LoyaltySetting' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Loyalty settings]
+      operationId: createLoyaltySetting
+      summary: KH-07 Lưu quy tắc tích điểm mới
+      description: |
+        Chỉ AD. `amountPerPoint` là số nguyên lớn hơn 0 (E1). Quy tắc mới áp dụng cho hóa đơn tạo sau thời điểm lưu,
+        không tính lại điểm đã cộng (BR-KH-06). Thời điểm hiệu lực là lúc lưu, do server đặt.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateLoyaltySettingRequest' }
+            example: { amountPerPoint: 10000, isEnabled: true }
+      responses:
+        '201':
+          description: Đã lưu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoyaltySetting' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /promotions:
+    get:
+      tags: [Promotions]
+      operationId: listPromotions
+      summary: KM-01 Xem danh sách chương trình khuyến mãi
+      description: |
+        AD xem tất cả. TN chỉ thấy chương trình đang hiệu lực (RUNNING), bất kể `status` gửi lên.
+        `displayStatus` được suy ra khi truy vấn từ `status`, `startAt`, `endAt` (BR-KM-07, PA-KM-05.A), không dùng tác vụ nền.
+      parameters:
+        - name: displayStatus
+          in: query
+          schema: { $ref: '#/components/schemas/PromotionDisplayStatus' }
+        - name: from
+          in: query
+          description: Chỉ lấy chương trình có thời gian hiệu lực giao với khoảng [from, to]
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Danh sách chương trình
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageMeta'
+                  - type: object
+                    required: [items]
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/Promotion' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Promotions]
+      operationId: createPromotion
+      summary: KM-02 Tạo chương trình khuyến mãi
+      description: |
+        Chỉ AD. Loại giảm theo % phải trong (0, 100]; theo số tiền phải lớn hơn 0 và là bội số của 100 đồng (E1).
+        `endAt` sau `startAt` (E2). Phải chọn ít nhất một sản phẩm (E3). Giảm số tiền cố định áp cho mỗi đơn vị
+        sản phẩm (BR-KM-01). `activate = true` là "Lưu và kích hoạt": trạng thái ACTIVE (hiển thị "Đã lên lịch"
+        cho đến giờ bắt đầu); ngược lại trạng thái DRAFT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePromotionRequest' }
+            example:
+              name: "Giảm 10% sữa tươi cuối tuần"
+              description: "Áp dụng thứ 7, chủ nhật"
+              discountType: PERCENT
+              discountValue: 10
+              maxDiscountAmount: 5000
+              productIds: [101, 102]
+              startAt: "2026-10-24T00:00:00+07:00"
+              endAt: "2026-10-25T23:59:59+07:00"
+              membersOnly: true
+              activate: true
+      responses:
+        '201':
+          description: Đã tạo
+          headers:
+            Location: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Promotion' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /promotions/{promotionId}:
+    parameters:
+      - $ref: '#/components/parameters/PromotionId'
+    get:
+      tags: [Promotions]
+      operationId: getPromotion
+      summary: Xem chi tiết chương trình (dùng cho KM-03, KM-04)
+      description: AD. TN chỉ xem được chương trình đang hiệu lực.
+      responses:
+        '200':
+          description: Chi tiết chương trình
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Promotion' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    patch:
+      tags: [Promotions]
+      operationId: updatePromotion
+      summary: KM-03 Sửa chương trình khuyến mãi
+      description: |
+        Chỉ AD. Chương trình đã kết thúc không sửa được. Kiểm tra như KM-02. Sau khi đã có lượt dùng, chỉ được sửa
+        `name`, `description`, `endAt`; đổi loại giảm, giá trị hoặc các trường khác thì từ chối với mã
+        `PROMOTION_HAS_USAGE` (BR-KM-03). Thông tin mới áp dụng cho các đơn tạo sau khi lưu.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePromotionRequest' }
+      responses:
+        '200':
+          description: Đã cập nhật
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Promotion' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Chương trình đã kết thúc (`PROMOTION_ENDED`) hoặc đã có lượt dùng (`PROMOTION_HAS_USAGE`)
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Promotions]
+      operationId: deletePromotion
+      summary: KM-05 Xóa chương trình khuyến mãi
+      description: |
+        Chỉ AD; client hỏi xác nhận trước. Chỉ xóa được khi chưa có lượt sử dụng; nếu đã có thì từ chối
+        với mã `PROMOTION_HAS_USAGE` và gợi ý dùng "Kết thúc" (E1).
+      responses:
+        '204':
+          description: Đã xóa
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Đã có lượt sử dụng
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /promotions/{promotionId}/status:
+    put:
+      tags: [Promotions]
+      operationId: changePromotionStatus
+      summary: KM-04 Kích hoạt / tạm dừng / kết thúc chương trình
+      description: |
+        Chỉ AD; client hỏi xác nhận trước. `targetStatus`: ACTIVE (kích hoạt hoặc tiếp tục từ PAUSED),
+        PAUSED, ENDED. Chương trình đã kết thúc không kích hoạt lại được (BR-KM-04, mã `PROMOTION_ENDED`).
+        Kích hoạt khi đã quá `endAt` thì từ chối (E1, mã `PROMOTION_PAST_END_TIME`), yêu cầu sửa thời gian.
+        POS áp hoặc ngừng áp chương trình ngay sau khi đổi.
+      parameters:
+        - $ref: '#/components/parameters/PromotionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetStatus]
+              additionalProperties: false
+              properties:
+                targetStatus: { type: string, enum: [ACTIVE, PAUSED, ENDED] }
+      responses:
+        '200':
+          description: Đã đổi trạng thái
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Promotion' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Chương trình đã kết thúc (`PROMOTION_ENDED`)
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '422':
+          description: Kích hoạt chương trình đã quá thời gian kết thúc (`PROMOTION_PAST_END_TIME`)
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /promotions/{promotionId}/usages:
+    get:
+      tags: [Promotions]
+      operationId: listPromotionUsages
+      summary: KM-06 Xem lịch sử sử dụng khuyến mãi
+      description: |
+        Chỉ AD. Hóa đơn bị hủy được loại khỏi lượt dùng (BR-KM-06). Chưa có lượt dùng thì `items` rỗng (E1).
+      parameters:
+        - $ref: '#/components/parameters/PromotionId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Danh sách lượt dùng và tổng
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageMeta'
+                  - type: object
+                    required: [items, totalUsages, totalDiscountAmount]
+                    properties:
+                      totalUsages: { type: integer, minimum: 0 }
+                      totalDiscountAmount: { $ref: '#/components/schemas/Money' }
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/PromotionUsage' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /promotions/evaluate:
+    post:
+      tags: [POS integration, Promotions]
+      operationId: evaluatePromotions
+      summary: POS-04 Tính khuyến mãi cho giỏ hàng (chờ #3 xác nhận)
+      description: |
+        TN, AD. Không ghi dữ liệu. POS gọi mỗi khi giỏ thay đổi hoặc khách được gắn/gỡ. Mỗi dòng chỉ nhận một
+        chương trình, là chương trình có mức giảm cao nhất (PA-KM-03.A). Chỉ xét chương trình ở trạng thái ACTIVE
+        và thời điểm hiện tại nằm trong [startAt, endAt] (BR-KM-05). Chương trình `membersOnly` chỉ được xét khi có
+        `customerId` (PA-KM-04.B). `unitPrice` do POS truyền vào (giá niêm yết tại thời điểm bán); loại % chịu giới
+        hạn `maxDiscountAmount`. Giảm không vượt `unitPrice`. Khi thanh toán (POS-07), #3 lưu `promotionId`,
+        `promotionCodeSnapshot`, `discountAmount` trên dòng hóa đơn; số lượt dùng khuyến mãi lấy từ đó.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EvaluatePromotionsRequest' }
+            example:
+              customerId: 12
+              lines:
+                - { lineId: "l1", productId: 101, quantity: 3, unitPrice: 25000 }
+                - { lineId: "l2", productId: 205, quantity: 1, unitPrice: 12000 }
+      responses:
+        '200':
+          description: Kết quả theo từng dòng
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EvaluatePromotionsResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: .AspNetCore.Cookies
+      description: Placeholder, cơ chế xác thực do #1 quyết định.
+
+  parameters:
+    From:
+      name: from
+      in: query
+      description: Ngày bắt đầu (giờ Việt Nam). Mặc định là ngày đầu tháng hiện tại.
+      schema: { type: string, format: date }
+    To:
+      name: to
+      in: query
+      description: Ngày kết thúc, tính cả ngày này. Mặc định là hôm nay. Khoảng [from, to] tối đa 366 ngày.
+      schema: { type: string, format: date }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: pageSize
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    CustomerId:
+      name: customerId
+      in: path
+      required: true
+      schema: { type: integer, format: int64 }
+    PromotionId:
+      name: promotionId
+      in: path
+      required: true
+      schema: { type: integer, format: int64 }
+
+  responses:
+    BadRequest:
+      description: Dữ liệu không hợp lệ (sai định dạng, thiếu trường, khoảng thời gian sai)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            title: Khoảng thời gian không hợp lệ
+            status: 400
+            code: INVALID_DATE_RANGE
+            errors: { to: ["Ngày kết thúc phải sau ngày bắt đầu"] }
+    Unauthorized:
+      description: Chưa đăng nhập
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: Không đủ quyền (ví dụ TN gọi API chỉ dành cho AD)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: Không tìm thấy
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+
+  schemas:
+    Money:
+      type: integer
+      format: int64
+      minimum: 0
+      description: Số tiền VND, số nguyên.
+    Phone:
+      type: string
+      pattern: '^0[0-9]{9}$'
+      description: 10 số, bắt đầu bằng 0.
+      example: "0901234567"
+    Problem:
+      type: object
+      description: RFC 7807 kèm mã lỗi nghiệp vụ.
+      required: [title, status]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        code:
+          type: string
+          description: |
+            Mã lỗi máy đọc được. Đang dùng: INVALID_DATE_RANGE, DATE_RANGE_TOO_LONG, VALIDATION_FAILED,
+            CUSTOMER_PHONE_EXISTS, CUSTOMER_IN_OPEN_ORDER, POINTS_WOULD_BE_NEGATIVE,
+            PROMOTION_HAS_USAGE, PROMOTION_ENDED, PROMOTION_PAST_END_TIME.
+        errors:
+          type: object
+          description: Lỗi theo từng trường.
+          additionalProperties:
+            type: array
+            items: { type: string }
+        existingCustomer: { $ref: '#/components/schemas/CustomerSummary' }
+    PageMeta:
+      type: object
+      required: [page, pageSize, totalItems, totalPages]
+      properties:
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1 }
+        totalItems: { type: integer, minimum: 0 }
+        totalPages: { type: integer, minimum: 0 }
+    ProductRef:
+      type: object
+      required: [id, sku, name]
+      properties:
+        id: { type: integer, format: int64 }
+        sku: { type: string }
+        name: { type: string }
+
+    # ---------- Báo cáo ----------
+    Dashboard:
+      type: object
+      required: [asOf, today, yesterday, last7Days, topProductsToday, lowStockCount, pendingApprovals]
+      properties:
+        asOf: { type: string, format: date-time }
+        today: { $ref: '#/components/schemas/DayStats' }
+        yesterday: { $ref: '#/components/schemas/DayStats' }
+        netRevenueChangePercent:
+          type: number
+          nullable: true
+          description: So với hôm qua. null khi hôm qua bằng 0.
+        last7Days:
+          type: array
+          description: 7 ngày gần nhất tính cả hôm nay, theo thứ tự tăng dần.
+          items:
+            type: object
+            required: [date, netRevenue]
+            properties:
+              date: { type: string, format: date }
+              netRevenue: { $ref: '#/components/schemas/Money' }
+        topProductsToday:
+          type: array
+          maxItems: 5
+          items: { $ref: '#/components/schemas/TopProduct' }
+        lowStockCount:
+          type: integer
+          minimum: 0
+          description: Số sản phẩm sắp hết (PA-KHO-05.B). Dữ liệu do module Kho cung cấp.
+        pendingApprovals:
+          type: object
+          required: [stocktake, writeOff, returns]
+          properties:
+            stocktake: { type: integer, minimum: 0 }
+            writeOff: { type: integer, minimum: 0 }
+            returns: { type: integer, minimum: 0 }
+    DayStats:
+      type: object
+      required: [netRevenue, invoiceCount, averageOrderValue]
+      properties:
+        netRevenue: { $ref: '#/components/schemas/Money' }
+        invoiceCount: { type: integer, minimum: 0 }
+        averageOrderValue: { $ref: '#/components/schemas/Money' }
+    TopProduct:
+      allOf:
+        - $ref: '#/components/schemas/ProductRef'
+        - type: object
+          required: [quantitySold, revenue]
+          properties:
+            quantitySold: { type: integer, minimum: 0 }
+            revenue: { $ref: '#/components/schemas/Money' }
+    ReportRange:
+      type: object
+      required: [from, to]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+    RevenueByTimeReport:
+      type: object
+      required: [range, groupBy, rows, totals]
+      properties:
+        range: { $ref: '#/components/schemas/ReportRange' }
+        groupBy: { type: string, enum: [DAY, WEEK, MONTH] }
+        rows:
+          type: array
+          items:
+            allOf:
+              - type: object
+                required: [periodStart, periodEnd]
+                properties:
+                  periodStart: { type: string, format: date }
+                  periodEnd: { type: string, format: date }
+              - $ref: '#/components/schemas/RevenueFigures'
+        totals: { $ref: '#/components/schemas/RevenueFigures' }
+    RevenueFigures:
+      type: object
+      description: |
+        netRevenue = grossRevenue − promotionDiscount − refundAmount (BR-BC-02).
+        grossRevenue = tổng (số lượng × giá niêm yết).
+      required: [invoiceCount, grossRevenue, promotionDiscount, refundAmount, netRevenue, averageOrderValue]
+      properties:
+        invoiceCount: { type: integer, minimum: 0 }
+        grossRevenue: { $ref: '#/components/schemas/Money' }
+        promotionDiscount: { $ref: '#/components/schemas/Money' }
+        refundAmount: { $ref: '#/components/schemas/Money' }
+        netRevenue: { type: integer, format: int64, description: "Có thể âm khi hoàn trả vượt doanh thu của kỳ." }
+        averageOrderValue: { $ref: '#/components/schemas/Money' }
+    RevenueByProductReport:
+      type: object
+      required: [range, topN, sortBy, rows, totals, unsoldProducts]
+      properties:
+        range: { $ref: '#/components/schemas/ReportRange' }
+        topN: { type: integer }
+        sortBy: { type: string, enum: [QUANTITY, REVENUE] }
+        rows:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/ProductRef'
+              - type: object
+                required: [rank, categoryName, quantitySold, revenue, revenueShare]
+                properties:
+                  rank: { type: integer, minimum: 1 }
+                  categoryName: { type: string }
+                  quantitySold: { type: integer, minimum: 0 }
+                  revenue: { $ref: '#/components/schemas/Money' }
+                  revenueShare:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+                    description: Tỷ trọng trên tổng doanh thu của kỳ (0 đến 1).
+        totals:
+          type: object
+          required: [quantitySold, revenue]
+          properties:
+            quantitySold: { type: integer, minimum: 0 }
+            revenue: { $ref: '#/components/schemas/Money' }
+        unsoldProducts:
+          type: array
+          description: Sản phẩm đang kinh doanh nhưng không bán được trong kỳ.
+          items: { $ref: '#/components/schemas/ProductRef' }
+
+    # ---------- Khách hàng ----------
+    CustomerStatus:
+      type: string
+      enum: [ACTIVE, ANONYMIZED]
+    Gender:
+      type: string
+      enum: [MALE, FEMALE, OTHER]
+    CustomerSummary:
+      type: object
+      required: [id, fullName, phone, phoneIsMasked, points, totalSpent, status]
+      properties:
+        id: { type: integer, format: int64 }
+        fullName: { type: string }
+        phone:
+          type: string
+          description: Đầy đủ với AD. Che một phần với TN (vd 090****567).
+        phoneIsMasked: { type: boolean }
+        points: { type: integer, minimum: 0 }
+        totalSpent: { $ref: '#/components/schemas/Money' }
+        lastPurchaseAt: { type: string, format: date-time, nullable: true }
+        status: { $ref: '#/components/schemas/CustomerStatus' }
+    Customer:
+      allOf:
+        - $ref: '#/components/schemas/CustomerSummary'
+        - type: object
+          properties:
+            dateOfBirth: { type: string, format: date, nullable: true }
+            gender: { allOf: [ { $ref: '#/components/schemas/Gender' } ], nullable: true }
+            email: { type: string, format: email, maxLength: 254, nullable: true }
+            createdAt: { type: string, format: date-time }
+    CustomerLookup:
+      type: object
+      required: [id, fullName, phone, phoneIsMasked, points]
+      properties:
+        id: { type: integer, format: int64 }
+        fullName: { type: string }
+        phone: { type: string }
+        phoneIsMasked: { type: boolean }
+        points: { type: integer, minimum: 0 }
+    CreateCustomerRequest:
+      type: object
+      required: [phone, fullName]
+      additionalProperties: false
+      properties:
+        phone: { $ref: '#/components/schemas/Phone' }
+        fullName: { type: string, minLength: 1, maxLength: 150 }
+        dateOfBirth: { type: string, format: date }
+        gender: { $ref: '#/components/schemas/Gender' }
+        email: { type: string, format: email, maxLength: 254 }
+    UpdateCustomerRequest:
+      type: object
+      additionalProperties: false
+      description: Chỉ gửi trường cần đổi. Không có trường điểm (BR-KH-02).
+      properties:
+        phone: { $ref: '#/components/schemas/Phone' }
+        fullName: { type: string, minLength: 1, maxLength: 150 }
+        dateOfBirth: { type: string, format: date, nullable: true }
+        gender: { allOf: [ { $ref: '#/components/schemas/Gender' } ], nullable: true }
+        email: { type: string, format: email, maxLength: 254, nullable: true }
+    CustomerInvoice:
+      type: object
+      required: [invoiceId, invoiceNumber, paidAt, totalAmount, pointsEarned]
+      properties:
+        invoiceId: { type: integer, format: int64 }
+        invoiceNumber: { type: string }
+        paidAt: { type: string, format: date-time }
+        totalAmount: { $ref: '#/components/schemas/Money' }
+        pointsEarned: { type: integer, minimum: 0 }
+    PointTransactionType:
+      type: string
+      enum: [EARN, REVOKE, ADJUST]
+    PointTransaction:
+      type: object
+      required: [id, customerId, type, pointsDelta, balanceAfter, createdAt]
+      properties:
+        id: { type: integer, format: int64 }
+        customerId: { type: integer, format: int64 }
+        type: { $ref: '#/components/schemas/PointTransactionType' }
+        pointsDelta: { type: integer, description: "Dương là cộng, âm là trừ. Khác 0." }
+        balanceAfter: { type: integer, minimum: 0 }
+        reason: { type: string, maxLength: 500, nullable: true }
+        invoiceId: { type: integer, format: int64, nullable: true }
+        createdBy: { type: string, description: "Tên người thực hiện; null với tích điểm tự động" }
+        createdAt: { type: string, format: date-time }
+    AdjustPointsRequest:
+      type: object
+      required: [pointsDelta, reason]
+      additionalProperties: false
+      properties:
+        pointsDelta: { type: integer, description: "Khác 0. Dương là cộng, âm là trừ." }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        invoiceId: { type: integer, format: int64, description: Hóa đơn liên quan (tùy chọn) }
+    LoyaltySetting:
+      type: object
+      required: [amountPerPoint, isEnabled, effectiveAt, isDefault]
+      properties:
+        id: { type: integer, format: int64, nullable: true }
+        amountPerPoint: { type: integer, format: int64, minimum: 1, description: Số tiền (VND) tương ứng 1 điểm. }
+        isEnabled: { type: boolean }
+        effectiveAt: { type: string, format: date-time }
+        isDefault: { type: boolean, description: "true khi chưa từng cấu hình (10.000 đ = 1 điểm)." }
+        createdBy: { type: string, nullable: true }
+    CreateLoyaltySettingRequest:
+      type: object
+      required: [amountPerPoint]
+      additionalProperties: false
+      properties:
+        amountPerPoint: { type: integer, format: int64, minimum: 1 }
+        isEnabled: { type: boolean, default: true }
+
+    # ---------- Khuyến mãi ----------
+    DiscountType:
+      type: string
+      enum: [PERCENT, FIXED_AMOUNT]
+    PromotionStatus:
+      type: string
+      description: Trạng thái lưu.
+      enum: [DRAFT, ACTIVE, PAUSED, ENDED]
+    PromotionDisplayStatus:
+      type: string
+      description: |
+        Trạng thái hiển thị, suy ra khi truy vấn. ACTIVE trước startAt là SCHEDULED, trong [startAt, endAt] là
+        RUNNING, sau endAt là ENDED. DRAFT, PAUSED, ENDED giữ nguyên.
+      enum: [DRAFT, SCHEDULED, RUNNING, PAUSED, ENDED]
+    Promotion:
+      type: object
+      required: [id, code, name, discountType, discountValue, products, startAt, endAt, membersOnly, status, displayStatus, usageCount]
+      properties:
+        id: { type: integer, format: int64 }
+        code: { type: string, description: Mã do hệ thống sinh. }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        discountType: { $ref: '#/components/schemas/DiscountType' }
+        discountValue:
+          type: integer
+          format: int64
+          description: PERCENT thì 1 đến 100; FIXED_AMOUNT thì số tiền VND là bội số của 100 (áp cho mỗi đơn vị).
+        maxDiscountAmount:
+          allOf: [ { $ref: '#/components/schemas/Money' } ]
+          nullable: true
+          description: Chỉ dùng cho PERCENT.
+        products:
+          type: array
+          items: { $ref: '#/components/schemas/ProductRef' }
+        startAt: { type: string, format: date-time }
+        endAt: { type: string, format: date-time }
+        membersOnly: { type: boolean }
+        status: { $ref: '#/components/schemas/PromotionStatus' }
+        displayStatus: { $ref: '#/components/schemas/PromotionDisplayStatus' }
+        usageCount: { type: integer, minimum: 0 }
+    CreatePromotionRequest:
+      type: object
+      required: [name, discountType, discountValue, productIds, startAt, endAt]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: string }
+        discountType: { $ref: '#/components/schemas/DiscountType' }
+        discountValue: { type: integer, format: int64, minimum: 1 }
+        maxDiscountAmount: { $ref: '#/components/schemas/Money' }
+        productIds:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: { type: integer, format: int64 }
+        startAt: { type: string, format: date-time }
+        endAt: { type: string, format: date-time }
+        membersOnly: { type: boolean, default: false }
+        activate: { type: boolean, default: false, description: "true là Lưu và kích hoạt." }
+    UpdatePromotionRequest:
+      type: object
+      additionalProperties: false
+      description: Chỉ gửi trường cần đổi. Sau khi có lượt dùng chỉ name, description, endAt được phép.
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: string, nullable: true }
+        discountType: { $ref: '#/components/schemas/DiscountType' }
+        discountValue: { type: integer, format: int64, minimum: 1 }
+        maxDiscountAmount: { allOf: [ { $ref: '#/components/schemas/Money' } ], nullable: true }
+        productIds:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: { type: integer, format: int64 }
+        startAt: { type: string, format: date-time }
+        endAt: { type: string, format: date-time }
+        membersOnly: { type: boolean }
+    PromotionUsage:
+      type: object
+      required: [invoiceId, invoiceNumber, usedAt, discountAmount]
+      properties:
+        invoiceId: { type: integer, format: int64 }
+        invoiceNumber: { type: string }
+        usedAt: { type: string, format: date-time }
+        cashierName: { type: string }
+        customerName: { type: string, nullable: true, description: null với khách vãng lai hoặc khách đã ẩn. }
+        discountAmount: { $ref: '#/components/schemas/Money' }
+
+    # ---------- Hợp đồng với POS ----------
+    EvaluatePromotionsRequest:
+      type: object
+      required: [lines]
+      additionalProperties: false
+      properties:
+        customerId: { type: integer, format: int64, nullable: true, description: Không gắn khách thì bỏ trống. }
+        lines:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [lineId, productId, quantity, unitPrice]
+            additionalProperties: false
+            properties:
+              lineId: { type: string, description: "Định danh dòng do POS đặt, được trả lại nguyên vẹn." }
+              productId: { type: integer, format: int64 }
+              quantity: { type: integer, minimum: 1 }
+              unitPrice: { $ref: '#/components/schemas/Money' }
+    EvaluatePromotionsResponse:
+      type: object
+      required: [lines, totalDiscount]
+      properties:
+        lines:
+          type: array
+          items:
+            type: object
+            required: [lineId, discountPerUnit, discountAmount]
+            properties:
+              lineId: { type: string }
+              promotionId: { type: integer, format: int64, nullable: true, description: null nếu dòng không có khuyến mãi. }
+              promotionCode: { type: string, nullable: true }
+              discountPerUnit: { $ref: '#/components/schemas/Money' }
+              discountAmount: { $ref: '#/components/schemas/Money' }
+        totalDiscount: { $ref: '#/components/schemas/Money' }

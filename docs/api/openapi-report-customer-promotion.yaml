@@ -1,4 +1,4 @@
-
+openapi: 3.0.3
 info:
   title: Convenience Store Management System – API Báo cáo, Khách hàng, Khuyến mãi
   version: 0.1.0-draft

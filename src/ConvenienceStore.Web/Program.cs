@@ -1,4 +1,6 @@
 using ConvenienceStore.Web.Modules.Products.Services;
+using ConvenienceStore.Web.Modules.Reports;
+using ConvenienceStore.Web.Modules.Reports.Services;
 using ConvenienceStore.Web.Data;
 using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +21,14 @@ builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions
     });
 
 builder.Services.AddScoped<IProductService, ProductService>();
+
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<IDashboardDataSource, SampleDashboardDataSource>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddAuthorization(options =>
+    options.AddPolicy(
+        AuthorizationPolicies.AdminOnly,
+        policy => policy.RequireRole(AuthorizationPolicies.AdminRole)));
 
 var connectionString =
     builder.Configuration.GetConnectionString("DefaultConnection")

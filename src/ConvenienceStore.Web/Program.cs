@@ -30,13 +30,17 @@ builder.Services.AddAuthorization(options =>
         AuthorizationPolicies.AdminOnly,
         policy => policy.RequireRole(AuthorizationPolicies.AdminRole)));
 
+// CSDL MySQL 9.7.2 (ADR-001). Chuỗi kết nối lấy từ biến môi trường
+// ConnectionStrings__CuaHang hoặc user-secrets "ConnectionStrings:CuaHang";
+// không ghi mật khẩu vào appsettings.
 var connectionString =
-    builder.Configuration.GetConnectionString("DefaultConnection")
+    builder.Configuration.GetConnectionString("CuaHang")
     ?? throw new InvalidOperationException(
-        "Missing DefaultConnection configuration.");
+        "Thiếu chuỗi kết nối ConnectionStrings:CuaHang (biến môi trường ConnectionStrings__CuaHang).");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<CuaHangDbContext>(options =>
+    options.UseMySQL(connectionString)
+        .AddInterceptors(new GioVietNamInterceptor()));
 
 var app = builder.Build();
 

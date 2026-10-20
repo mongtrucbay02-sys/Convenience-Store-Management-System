@@ -1,3 +1,4 @@
+using ConvenienceStore.Web.Modules.Auth.Services;
 using ConvenienceStore.Web.Modules.Products.Services;
 using ConvenienceStore.Web.Modules.Reports;
 using ConvenienceStore.Web.Modules.Reports.Services;
@@ -42,7 +43,15 @@ builder.Services.AddDbContext<CuaHangDbContext>(options =>
     options.UseMySQL(connectionString)
         .AddInterceptors(new GioVietNamInterceptor()));
 
+// T4-16: tài khoản Admin đầu tiên (biến môi trường AdminDauTien__TenDangNhap, AdminDauTien__MatKhauTam).
+builder.Services.Configure<AdminDauTienOptions>(
+    builder.Configuration.GetSection(AdminDauTienOptions.TenMuc));
+builder.Services.AddScoped<KhoiTaoAdminDauTien>();
+
 var app = builder.Build();
+
+// Chạy sau khi CSDL đã có migration; chỉ tạo khi chưa có tài khoản vai trò AD.
+await KhoiTaoAdminDauTien.ChayKhiKhoiDongAsync(app.Services);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

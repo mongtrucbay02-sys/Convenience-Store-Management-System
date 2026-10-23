@@ -90,7 +90,7 @@ else
             <thead>
                 <tr>
                     <th></th><th>Mã</th><th>Tên</th><th>Giảm</th><th>Sản phẩm áp dụng</th>
-                    <th>Thời gian</th><th>Đối tượng</th><th>Trạng thái</th><th class="text-end">Lượt dùng</th>
+                    <th>Thời gian</th><th>Đối tượng</th><th>Trạng thái</th><th class="text-end">Lượt dùng</th>@if (isAdmin) { <th></th> }
                 </tr>
             </thead>
             <tbody>
@@ -111,6 +111,15 @@ else
                         <td>@(p.MembersOnly ? "Chỉ thành viên" : "Mọi khách")</td>
                         <td><span class="badge @StatusClass(p.DisplayStatus)">@StatusText(p.DisplayStatus)</span></td>
                         <td class="text-end">@p.UsageCount</td>
+                        @if (isAdmin)
+                        {
+                            <td class="text-nowrap text-end">
+                                @if (p.DisplayStatus != PromotionDisplayStatus.Ended)
+                                {
+                                    <a class="btn btn-outline-secondary btn-sm" asp-action="Edit" asp-route-id="@p.Id">Sửa</a>
+                                }
+                            </td>
+                        }
                     </tr>
                 }
             </tbody>

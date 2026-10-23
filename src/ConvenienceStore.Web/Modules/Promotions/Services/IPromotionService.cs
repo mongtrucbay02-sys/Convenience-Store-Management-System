@@ -15,4 +15,8 @@ public interface IPromotionService
     /// <summary>KM-02. Chỉ Admin (kiểm tra quyền ở controller).</summary>
     Task<PromotionResult<PromotionDto>> CreateAsync(
         CreatePromotionRequest request, CancellationToken cancellationToken);
+
+    /// <summary>KM-03. Chỉ Admin.</summary>
+    Task<PromotionResult<PromotionDto>> UpdateAsync(
+        long id, UpdatePromotionRequest request, CancellationToken cancellationToken);
 }

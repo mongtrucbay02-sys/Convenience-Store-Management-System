@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ConvenienceStore.Web.Tests;
 
-/// <summary>KM-02.</summary>
+/// <summary>KM-02, KM-03.</summary>
 public class PromotionManagementTests
 {
     private static readonly TimeSpan Vn = TimeSpan.FromHours(7);
@@ -180,6 +180,110 @@ public class PromotionManagementTests
         Assert.Null(r.Value!.ImageUrl);
     }
 
+    // ---------------- KM-03 ----------------
+
+    private static UpdatePromotionRequest Update(
+        string? name = null, DiscountType? type = null, long? value = null,
+        DateTimeOffset? end = null, string? imageUrl = null, long? max = null) =>
+        new(name, null, type, value, max, null, null, end, null, imageUrl);
+
+    [Fact]
+    public async Task Update_ChangesOnlyProvidedFields()
+    {
+        var (svc, _) = Create(Record(1, PromotionStatus.Draft));
+
+        var r = await svc.UpdateAsync(1, Update(name: "Tên mới", value: 20), default);
+
+        Assert.Equal("Tên mới", r.Value!.Name);
+        Assert.Equal(20, r.Value.DiscountValue);
+        Assert.Equal(5_000, r.Value.MaxDiscountAmount);
+        Assert.Equal(DiscountType.Percent, r.Value.DiscountType);
+    }
+
+    [Fact]
+    public async Task Update_AppliesSameValidationAsCreate()
+    {
+        var (svc, _) = Create(Record(1, PromotionStatus.Draft));
+
+        var r = await svc.UpdateAsync(1, Update(value: 150), default);
+
+        Assert.NotEmpty(Fields(r, "discountValue"));
+    }
+
+    [Fact]
+    public async Task Update_SwitchToFixedAmount_DropsMaxDiscount()
+    {
+        var (svc, _) = Create(Record(1, PromotionStatus.Draft));
+
+        var r = await svc.UpdateAsync(1, Update(type: DiscountType.FixedAmount, value: 2_000), default);
+
+        Assert.True(r.IsSuccess);
+        Assert.Null(r.Value!.MaxDiscountAmount);
+    }
+
+    [Fact]
+    public async Task Update_AfterUsage_RejectsDiscountChange_BR_KM_03()
+    {
+        var (svc, source) = Create(Record(1, PromotionStatus.Active, usage: 3));
+
+        var r = await svc.UpdateAsync(1, Update(value: 20), default);
+
+        Assert.Equal("PROMOTION_HAS_USAGE", r.Error!.Code);
+        Assert.Equal(PromotionErrorKind.Conflict, r.Error.Kind);
+        Assert.Equal(10, (await source.GetByIdAsync(1, default))!.DiscountValue);
+    }
+
+    [Fact]
+    public async Task Update_AfterUsage_AllowsNameDescriptionEndAndSameValues()
+    {
+        var (svc, _) = Create(Record(1, PromotionStatus.Active, usage: 3));
+        var newEnd = Now.AddDays(9);
+
+        // gửi lại cùng giá trị giảm không bị coi là thay đổi
+        var r = await svc.UpdateAsync(
+            1, new UpdatePromotionRequest("Tên mới", "mô tả mới", DiscountType.Percent, 10, 5_000,
+                null, null, newEnd, null, null), default);
+
+        Assert.True(r.IsSuccess);
+        Assert.Equal("Tên mới", r.Value!.Name);
+        Assert.Equal(newEnd, r.Value.EndAt);
+    }
+
+    [Fact]
+    public async Task Update_EndedPromotion_IsRejected_IncludingAutoExpired()
+    {
+        var (svc, _) = Create(
+            Record(1, PromotionStatus.Ended),
+            Record(2, PromotionStatus.Active, start: Now.AddDays(-9), end: Now.AddDays(-1)));
+
+        Assert.Equal("PROMOTION_ENDED", (await svc.UpdateAsync(1, Update(name: "x"), default)).Error!.Code);
+        Assert.Equal("PROMOTION_ENDED", (await svc.UpdateAsync(2, Update(name: "x"), default)).Error!.Code);
+    }
+
+    [Fact]
+    public async Task Update_NotFound()
+    {
+        var (svc, _) = Create();
+
+        var r = await svc.UpdateAsync(99, Update(name: "x"), default);
+
+        Assert.Equal(PromotionErrorKind.NotFound, r.Error!.Kind);
+    }
+
+    [Fact]
+    public async Task Update_ImageUrl_CanBeSetAndCleared()
+    {
+        var (svc, _) = Create(Record(1, PromotionStatus.Draft));
+
+        var set = await svc.UpdateAsync(1, Update(imageUrl: "https://example.com/x.jpg"), default);
+        var cleared = await svc.UpdateAsync(1, Update(imageUrl: ""), default);
+        var bad = await svc.UpdateAsync(1, Update(imageUrl: "javascript:alert(1)"), default);
+
+        Assert.Equal("https://example.com/x.jpg", set.Value!.ImageUrl);
+        Assert.Null(cleared.Value!.ImageUrl);
+        Assert.NotEmpty(Fields(bad, "imageUrl"));
+    }
+
     // ---------------- Quyền và chi tiết ----------------
 
     [Fact]
@@ -196,6 +300,7 @@ public class PromotionManagementTests
 
     [Theory]
     [InlineData(nameof(PromotionsApiController.Create))]
+    [InlineData(nameof(PromotionsApiController.Update))]
     public void ApiWriteActions_AreAdminOnly(string action)
     {
         var method = typeof(PromotionsApiController).GetMethod(action)!;
@@ -205,6 +310,7 @@ public class PromotionManagementTests
 
     [Theory]
     [InlineData("Create")]
+    [InlineData("Edit")]
     public void MvcWriteActions_AreAdminOnly(string action)
     {
         var methods = typeof(PromotionsController).GetMethods().Where(m => m.Name == action);

@@ -103,7 +103,83 @@ public sealed class PromotionService : IPromotionService
         return PromotionResult<PromotionDto>.Ok(ToDto(created, now));
     }
 
-    // ---------------- Kiểm tra dữ liệu (KM-02) ----------------
+    // ---------------- KM-03 ----------------
+
+    public async Task<PromotionResult<PromotionDto>> UpdateAsync(
+        long id, UpdatePromotionRequest request, CancellationToken cancellationToken)
+    {
+        var record = await _dataSource.GetByIdAsync(id, cancellationToken);
+        if (record is null) return NotFound();
+
+        var now = _timeProvider.GetUtcNow();
+        if (GetDisplayStatus(record.Status, record.StartAt, record.EndAt, now) == PromotionDisplayStatus.Ended)
+            return Ended();
+
+        var newType = request.DiscountType ?? record.DiscountType;
+        var newValue = request.DiscountValue ?? record.DiscountValue;
+        var newStart = request.StartAt ?? record.StartAt;
+        var newEnd = request.EndAt ?? record.EndAt;
+        var newMembersOnly = request.MembersOnly ?? record.MembersOnly;
+        var newProductIds = request.ProductIds ?? record.Products.Select(p => p.Id).ToList();
+
+        // maxDiscountAmount: null = giữ nguyên, 0 = bỏ; đổi sang loại số tiền thì tự bỏ mức giảm tối đa.
+        long? newMax = request.MaxDiscountAmount switch
+        {
+            null => record.MaxDiscountAmount,
+            0 => null,
+            var v => v,
+        };
+        if (newType == DiscountType.FixedAmount && request.MaxDiscountAmount is null) newMax = null;
+
+        // BR-KM-03: sau khi có lượt dùng, chỉ được sửa tên, mô tả, thời gian kết thúc (và ảnh minh họa).
+        if (record.UsageCount > 0)
+        {
+            var restrictedChanged =
+                newType != record.DiscountType
+                || newValue != record.DiscountValue
+                || newMax != record.MaxDiscountAmount
+                || newStart != record.StartAt
+                || newMembersOnly != record.MembersOnly
+                || !newProductIds.OrderBy(x => x).SequenceEqual(record.Products.Select(p => p.Id).OrderBy(x => x));
+            if (restrictedChanged)
+            {
+                return PromotionResult<PromotionDto>.Fail(new PromotionError(
+                    PromotionErrorKind.Conflict,
+                    "PROMOTION_HAS_USAGE",
+                    "Chương trình đã có lượt sử dụng, chỉ được sửa tên, mô tả và thời gian kết thúc. " +
+                    "Hãy kết thúc chương trình này và tạo chương trình mới."));
+            }
+        }
+
+        var name = request.Name ?? record.Name;
+        var description = request.Description is null ? record.Description : Clean(request.Description);
+        var imageUrl = request.ImageUrl is null ? record.ImageUrl : Clean(request.ImageUrl);
+
+        var errors = new Errors();
+        var products = await ValidateAsync(
+            new Draft(name, description, newType, newValue, newMax, newProductIds, newStart, newEnd, imageUrl),
+            errors, cancellationToken);
+        if (errors.Any) return ValidationFail(errors);
+
+        var updated = record with
+        {
+            Name = name.Trim(),
+            Description = description,
+            DiscountType = newType,
+            DiscountValue = newValue,
+            MaxDiscountAmount = newMax,
+            Products = products!,
+            StartAt = newStart,
+            EndAt = newEnd,
+            MembersOnly = newMembersOnly,
+            ImageUrl = imageUrl,
+        };
+
+        if (!await _dataSource.UpdateAsync(updated, cancellationToken)) return NotFound();
+        return PromotionResult<PromotionDto>.Ok(ToDto(updated, now));
+    }
+
+    // ---------------- Kiểm tra dữ liệu (KM-02, dùng lại ở KM-03) ----------------
 
     private sealed record Draft(
         string? Name,
@@ -203,6 +279,10 @@ public sealed class PromotionService : IPromotionService
     private static PromotionResult<PromotionDto> NotFound() =>
         PromotionResult<PromotionDto>.Fail(new PromotionError(
             PromotionErrorKind.NotFound, "PROMOTION_NOT_FOUND", "Không tìm thấy chương trình khuyến mãi."));
+
+    private static PromotionResult<PromotionDto> Ended() =>
+        PromotionResult<PromotionDto>.Fail(new PromotionError(
+            PromotionErrorKind.Conflict, "PROMOTION_ENDED", "Chương trình đã kết thúc, không thể thay đổi."));
 
     private static PromotionResult<PromotionDto> PastEndTime() =>
         PromotionResult<PromotionDto>.Fail(new PromotionError(

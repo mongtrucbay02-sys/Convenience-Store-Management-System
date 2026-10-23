@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace ConvenienceStore.Web.Modules.Promotions.Controllers;
 
 /// <summary>
-/// KM-01, KM-02. Route tạm theo hợp đồng nháp (chờ #4).
-/// Xem: Admin và Thu ngân (TN chỉ thấy chương trình đang chạy). Tạo: chỉ Admin.
+/// KM-01 → KM-04. Route tạm theo hợp đồng nháp (chờ #4).
+/// Xem: Admin và Thu ngân (TN chỉ thấy chương trình đang chạy). Tạo, sửa, đổi trạng thái: chỉ Admin.
 /// </summary>
 [ApiController]
 [Route("api/promotions")]
@@ -63,6 +63,14 @@ public class PromotionsApiController : ControllerBase
             ? CreatedAtAction(nameof(Get), new { promotionId = result.Value!.Id }, result.Value)
             : ToProblem(result.Error!);
     }
+
+    /// <summary>KM-03.</summary>
+    [HttpPatch("{promotionId:long}")]
+    [Authorize(Roles = PromotionRoles.Admin)]
+    [ProducesResponseType(typeof(PromotionDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Update(
+        long promotionId, [FromBody] UpdatePromotionRequest request, CancellationToken cancellationToken) =>
+        ToActionResult(await _promotionService.UpdateAsync(promotionId, request, cancellationToken));
 
     private IActionResult ToActionResult(PromotionResult<PromotionDto> result) =>
         result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);

@@ -1108,6 +1108,12 @@ components:
         startAt: { type: string, format: date-time }
         endAt: { type: string, format: date-time }
         membersOnly: { type: boolean }
+        imageUrl:
+          type: string
+          format: uri
+          maxLength: 2048
+          nullable: true
+          description: Liên kết ảnh minh họa (không bắt buộc). Chỉ nhận http hoặc https; chuỗi rỗng là xóa ảnh. Được sửa cả khi đã có lượt dùng.
     PromotionUsage:
       type: object
       required: [invoiceId, invoiceNumber, usedAt, discountAmount]

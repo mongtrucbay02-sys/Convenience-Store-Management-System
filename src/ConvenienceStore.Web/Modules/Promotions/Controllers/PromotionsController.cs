@@ -67,6 +67,69 @@ public class PromotionsController : Controller
         return await FormView(form, isEdit: false, cancellationToken);
     }
 
+    // KM-03
+    [HttpGet]
+    [Authorize(Roles = PromotionRoles.Admin)]
+    public async Task<IActionResult> Edit(long id, CancellationToken cancellationToken)
+    {
+        var result = await _promotionService.GetAsync(id, isAdmin: true, cancellationToken);
+        if (!result.IsSuccess) return NotFound();
+
+        var p = result.Value!;
+        if (p.DisplayStatus == PromotionDisplayStatus.Ended)
+        {
+            TempData["Error"] = "Chương trình đã kết thúc, không thể sửa.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        return await FormView(new PromotionFormModel
+        {
+            Id = p.Id,
+            Code = p.Code,
+            Name = p.Name,
+            Description = p.Description,
+            DiscountType = p.DiscountType,
+            DiscountValue = p.DiscountValue,
+            MaxDiscountAmount = p.MaxDiscountAmount,
+            ProductIds = p.Products.Select(x => x.Id).ToList(),
+            StartAt = p.StartAt.ToOffset(VietnamOffset).DateTime,
+            EndAt = p.EndAt.ToOffset(VietnamOffset).DateTime,
+            MembersOnly = p.MembersOnly,
+            ImageUrl = p.ImageUrl,
+            UsageCount = p.UsageCount,
+        }, isEdit: true, cancellationToken);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    [Authorize(Roles = PromotionRoles.Admin)]
+    public async Task<IActionResult> Edit(
+        long id, PromotionFormModel form, CancellationToken cancellationToken)
+    {
+        // Form luôn gửi đủ các trường (trường bị khóa sau khi có lượt dùng gửi qua input ẩn).
+        // BR-KM-03 được kiểm tra ở máy chủ bằng cách so với giá trị đang lưu.
+        var result = await _promotionService.UpdateAsync(
+            id,
+            new UpdatePromotionRequest(
+                form.Name ?? string.Empty, form.Description ?? string.Empty, form.DiscountType,
+                form.DiscountValue, form.MaxDiscountAmount ?? 0,
+                form.ProductIds.Count > 0 ? form.ProductIds : null,
+                ToVietnamTime(form.StartAt), ToVietnamTime(form.EndAt),
+                form.MembersOnly, form.ImageUrl ?? string.Empty),
+            cancellationToken);
+
+        if (result.IsSuccess)
+        {
+            TempData["Message"] = $"Đã cập nhật chương trình {result.Value!.Code}.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (result.Error!.Kind == PromotionErrorKind.NotFound) return NotFound();
+
+        form.Id = id;
+        AddErrors(result.Error!);
+        return await FormView(form, isEdit: true, cancellationToken);
+    }
+
     // Chọn sản phẩm: tìm kiếm có phân trang (danh mục có thể có hàng nghìn sản phẩm).
     [HttpGet]
     [Authorize(Roles = PromotionRoles.Admin)]

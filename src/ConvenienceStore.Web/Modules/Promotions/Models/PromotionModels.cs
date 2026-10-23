@@ -64,3 +64,19 @@ public sealed record CreatePromotionRequest(
     bool MembersOnly = false,
     bool Activate = false,
     string? ImageUrl = null);
+
+/// <summary>
+/// KM-03. Chỉ gửi trường cần đổi (trường null là không đổi). Chuỗi rỗng ở description/imageUrl là xóa giá trị;
+/// maxDiscountAmount = 0 là bỏ mức giảm tối đa.
+/// </summary>
+public sealed record UpdatePromotionRequest(
+    string? Name,
+    string? Description,
+    DiscountType? DiscountType,
+    long? DiscountValue,
+    long? MaxDiscountAmount,
+    IReadOnlyList<long>? ProductIds,
+    DateTimeOffset? StartAt,
+    DateTimeOffset? EndAt,
+    bool? MembersOnly,
+    string? ImageUrl);

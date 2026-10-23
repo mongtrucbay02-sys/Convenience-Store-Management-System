@@ -16,13 +16,22 @@ public sealed record PromotionRecord(
     DateTimeOffset EndAt,
     bool MembersOnly,
     PromotionStatus Status,
-    int UsageCount);
+    int UsageCount,
+    string? ImageUrl = null);
 
 /// <summary>
-/// Nguồn dữ liệu khuyến mãi. Hiện là dữ liệu mẫu (chưa có bảng, chờ ERD/migration được duyệt ở #1);
-/// thay bằng bản dùng ApplicationDbContext mà không phải đổi PromotionService.
+/// Nơi lưu khuyến mãi. Hiện là bản lưu trong bộ nhớ (chưa có bảng, chờ ERD/migration được duyệt ở #1,
+/// dữ liệu mất khi khởi động lại); thay bằng bản dùng ApplicationDbContext mà không phải đổi PromotionService.
 /// </summary>
 public interface IPromotionDataSource
 {
     Task<IReadOnlyList<PromotionRecord>> GetAllAsync(CancellationToken cancellationToken);
+
+    Task<PromotionRecord?> GetByIdAsync(long id, CancellationToken cancellationToken);
+
+    /// <summary>Lưu chương trình mới; nguồn dữ liệu gán Id và Code (do hệ thống sinh).</summary>
+    Task<PromotionRecord> CreateAsync(PromotionRecord record, CancellationToken cancellationToken);
+
+    /// <summary>Ghi đè chương trình theo Id. Trả false nếu không tồn tại.</summary>
+    Task<bool> UpdateAsync(PromotionRecord record, CancellationToken cancellationToken);
 }

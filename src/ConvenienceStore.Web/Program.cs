@@ -26,7 +26,11 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IDashboardDataSource, SampleDashboardDataSource>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
-builder.Services.AddScoped<IPromotionDataSource, SamplePromotionDataSource>();
+// Lưu trong bộ nhớ cho đến khi bảng khuyến mãi được duyệt (#1); dữ liệu mất khi khởi động lại.
+builder.Services.AddSingleton<IPromotionDataSource>(sp =>
+    new InMemoryPromotionDataSource(
+        SamplePromotions.Create(sp.GetRequiredService<TimeProvider>().GetUtcNow())));
+builder.Services.AddSingleton<IProductLookup, SampleProductLookup>();
 builder.Services.AddScoped<IPromotionService, PromotionService>();
 builder.Services.AddAuthorization(options =>
     options.AddPolicy(

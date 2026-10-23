@@ -34,7 +34,22 @@
         : $"{p.DiscountValue.ToString("N0", vi)} ₫ / sản phẩm";
 }
 
-<h1 class="h3 mb-3">Khuyến mãi</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Khuyến mãi</h1>
+    @if (isAdmin)
+    {
+        <a class="btn btn-primary btn-sm" asp-action="Create">Tạo khuyến mãi</a>
+    }
+</div>
+
+@if (TempData["Message"] is string okMessage)
+{
+    <div class="alert alert-success py-2">@okMessage</div>
+}
+@if (TempData["Error"] is string errMessage)
+{
+    <div class="alert alert-danger py-2">@errMessage</div>
+}
 
 <form method="get" class="row g-2 align-items-end mb-3">
     @if (isAdmin)
@@ -74,7 +89,7 @@ else
         <table class="table table-sm align-middle" id="promotions">
             <thead>
                 <tr>
-                    <th>Mã</th><th>Tên</th><th>Giảm</th><th>Sản phẩm áp dụng</th>
+                    <th></th><th>Mã</th><th>Tên</th><th>Giảm</th><th>Sản phẩm áp dụng</th>
                     <th>Thời gian</th><th>Đối tượng</th><th>Trạng thái</th><th class="text-end">Lượt dùng</th>
                 </tr>
             </thead>
@@ -82,6 +97,12 @@ else
                 @foreach (var p in Model.Items)
                 {
                     <tr>
+                        <td style="width:56px">
+                            @if (!string.IsNullOrWhiteSpace(p.ImageUrl))
+                            {
+                                <img src="@p.ImageUrl" alt="@p.Name" class="rounded border" style="width:48px;height:48px;object-fit:cover" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'" />
+                            }
+                        </td>
                         <td>@p.Code</td>
                         <td>@p.Name</td>
                         <td>@Discount(p)</td>

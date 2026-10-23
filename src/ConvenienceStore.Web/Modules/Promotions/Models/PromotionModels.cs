@@ -34,7 +34,8 @@ public sealed record PromotionDto(
     bool MembersOnly,
     PromotionStatus Status,
     PromotionDisplayStatus DisplayStatus,
-    int UsageCount);
+    int UsageCount,
+    string? ImageUrl);
 
 public sealed record PromotionListResponse(
     int Page,
@@ -49,3 +50,17 @@ public sealed record PromotionQuery(
     DateOnly? To,
     int Page,
     int PageSize);
+
+/// <summary>KM-02. Các trường nullable để thiếu trường trả lỗi kiểm tra dữ liệu (400) thay vì lỗi bind.</summary>
+public sealed record CreatePromotionRequest(
+    string? Name,
+    string? Description,
+    DiscountType? DiscountType,
+    long? DiscountValue,
+    long? MaxDiscountAmount,
+    IReadOnlyList<long>? ProductIds,
+    DateTimeOffset? StartAt,
+    DateTimeOffset? EndAt,
+    bool MembersOnly = false,
+    bool Activate = false,
+    string? ImageUrl = null);

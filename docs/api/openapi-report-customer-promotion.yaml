@@ -1059,6 +1059,12 @@ components:
         status: { $ref: '#/components/schemas/PromotionStatus' }
         displayStatus: { $ref: '#/components/schemas/PromotionDisplayStatus' }
         usageCount: { type: integer, minimum: 0 }
+        imageUrl:
+          type: string
+          format: uri
+          maxLength: 2048
+          nullable: true
+          description: Liên kết ảnh minh họa (không bắt buộc). Chỉ nhận http hoặc https.
     CreatePromotionRequest:
       type: object
       required: [name, discountType, discountValue, productIds, startAt, endAt]
@@ -1078,6 +1084,12 @@ components:
         endAt: { type: string, format: date-time }
         membersOnly: { type: boolean, default: false }
         activate: { type: boolean, default: false, description: "true là Lưu và kích hoạt." }
+        imageUrl:
+          type: string
+          format: uri
+          maxLength: 2048
+          nullable: true
+          description: Liên kết ảnh minh họa (không bắt buộc). Chỉ nhận http hoặc https.
     UpdatePromotionRequest:
       type: object
       additionalProperties: false

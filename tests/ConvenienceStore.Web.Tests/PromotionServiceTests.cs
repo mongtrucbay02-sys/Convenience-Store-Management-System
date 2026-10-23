@@ -14,19 +14,13 @@ public class PromotionServiceTests
         public override DateTimeOffset GetUtcNow() => now.ToUniversalTime();
     }
 
-    private sealed class FakeSource(params PromotionRecord[] records) : IPromotionDataSource
-    {
-        public Task<IReadOnlyList<PromotionRecord>> GetAllAsync(CancellationToken ct) =>
-            Task.FromResult<IReadOnlyList<PromotionRecord>>(records);
-    }
-
     private static PromotionRecord Promo(
         long id, PromotionStatus status, DateTimeOffset start, DateTimeOffset end) =>
         new(id, $"KM-{id:0000}", $"CT {id}", null, DiscountType.Percent, 10, null,
             new[] { new ProductRefDto(1, "SKU", "SP") }, start, end, false, status, 0);
 
     private static PromotionService Create(params PromotionRecord[] records) =>
-        new(new FakeSource(records), new FixedTime(Now));
+        new(new InMemoryPromotionDataSource(records), new SampleProductLookup(), new FixedTime(Now));
 
     private static PromotionQuery Q(
         PromotionDisplayStatus? s = null, DateOnly? from = null, DateOnly? to = null,
@@ -127,7 +121,7 @@ public class PromotionServiceTests
     [Fact]
     public async Task SampleDataSource_ShowsZeroUsage_AndAutoEndedPromotion()
     {
-        var svc = new PromotionService(new SamplePromotionDataSource(new FixedTime(Now)), new FixedTime(Now));
+        var svc = Create(SamplePromotions.Create(Now).ToArray());
 
         var r = await svc.ListAsync(Q(), true, default);
 

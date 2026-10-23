@@ -6,7 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ConvenienceStore.Web.Modules.Promotions.Controllers;
 
-/// <summary>KM-01. Route tạm theo hợp đồng nháp (chờ #4). AD xem tất cả, TN chỉ xem đang chạy.</summary>
+/// <summary>
+/// KM-01, KM-02. Route tạm theo hợp đồng nháp (chờ #4).
+/// Xem: Admin và Thu ngân (TN chỉ thấy chương trình đang chạy). Tạo: chỉ Admin.
+/// </summary>
 [ApiController]
 [Route("api/promotions")]
 [Authorize(Roles = PromotionRoles.AdminOrCashier)]
@@ -40,5 +43,50 @@ public class PromotionsApiController : ControllerBase
             User.IsInRole(PromotionRoles.Admin),
             cancellationToken);
         return Ok(result);
+    }
+
+    [HttpGet("{promotionId:long}")]
+    [ProducesResponseType(typeof(PromotionDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Get(long promotionId, CancellationToken cancellationToken) =>
+        ToActionResult(await _promotionService.GetAsync(
+            promotionId, User.IsInRole(PromotionRoles.Admin), cancellationToken));
+
+    /// <summary>KM-02.</summary>
+    [HttpPost]
+    [Authorize(Roles = PromotionRoles.Admin)]
+    [ProducesResponseType(typeof(PromotionDto), StatusCodes.Status201Created)]
+    public async Task<IActionResult> Create(
+        [FromBody] CreatePromotionRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _promotionService.CreateAsync(request, cancellationToken);
+        return result.IsSuccess
+            ? CreatedAtAction(nameof(Get), new { promotionId = result.Value!.Id }, result.Value)
+            : ToProblem(result.Error!);
+    }
+
+    private IActionResult ToActionResult(PromotionResult<PromotionDto> result) =>
+        result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
+
+    // Lỗi theo RFC 7807 kèm trường `code` (và `errors` khi sai dữ liệu).
+    private IActionResult ToProblem(PromotionError error)
+    {
+        var status = error.Kind switch
+        {
+            PromotionErrorKind.Validation => StatusCodes.Status400BadRequest,
+            PromotionErrorKind.NotFound => StatusCodes.Status404NotFound,
+            PromotionErrorKind.Conflict => StatusCodes.Status409Conflict,
+            _ => StatusCodes.Status422UnprocessableEntity,
+        };
+
+        ProblemDetails problem = error.Fields is null
+            ? new ProblemDetails { Title = error.Title, Status = status }
+            : new ValidationProblemDetails(error.Fields.ToDictionary(k => k.Key, k => k.Value))
+            {
+                Title = error.Title,
+                Status = status,
+            };
+        problem.Extensions["code"] = error.Code;
+
+        return new ObjectResult(problem) { StatusCode = status };
     }
 }

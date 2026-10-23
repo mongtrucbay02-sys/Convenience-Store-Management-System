@@ -1,42 +1,13 @@
-using ConvenienceStore.Web.Modules.Products.Services;
-using ConvenienceStore.Web.Modules.Reports;
-using ConvenienceStore.Web.Modules.Reports.Services;
-using ConvenienceStore.Web.Data;
-using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
-builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>(
-    options =>
-    {
-        options.AreaViewLocationFormats.Insert(
-            0,
-            "/Modules/{2}/Views/{1}/{0}.cshtml");
-
-        options.AreaViewLocationFormats.Insert(
-            1,
-            "/Modules/{2}/Views/Shared/{0}.cshtml");
-    });
-
-builder.Services.AddScoped<IProductService, ProductService>();
-
-builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddScoped<IDashboardDataSource, SampleDashboardDataSource>();
-builder.Services.AddScoped<IDashboardService, DashboardService>();
-builder.Services.AddAuthorization(options =>
-    options.AddPolicy(
-        AuthorizationPolicies.AdminOnly,
-        policy => policy.RequireRole(AuthorizationPolicies.AdminRole)));
-
-var connectionString =
-    builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException(
-        "Missing DefaultConnection configuration.");
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+// POS-01: demo session-based cart; replace demo catalog with DB-backed implementation after team integration.
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(o => { o.IdleTimeout = TimeSpan.FromMinutes(60); o.Cookie.HttpOnly = true; o.Cookie.IsEssential = true; });
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ConvenienceStore.Web.Services.Pos.MySqlPosCatalog>();
+builder.Services.AddScoped<ConvenienceStore.Web.Services.Pos.PosCartService>();
 
 var app = builder.Build();
 
@@ -52,17 +23,14 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthorization();
+app.UseSession();
 
 app.MapStaticAssets();
 
 app.MapControllerRoute(
-    name: "areas",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
-app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 
 app.Run();

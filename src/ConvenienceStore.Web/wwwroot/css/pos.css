@@ -1,0 +1,174 @@
+﻿.pos-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem
+}
+
+    .pos-head h1 {
+        font-size: 1.7rem;
+        font-weight: 750;
+        color: #17335a
+    }
+
+    .pos-head p {
+        color: #64748b;
+        margin: 0
+    }
+
+.pos-grid {
+    display: grid;
+    grid-template-columns: minmax(0,1.2fr) minmax(0,1fr);
+    gap: 1.25rem
+}
+
+.pos-panel {
+    background: white;
+    border: 1px solid #dce4ee;
+    border-radius: 14px;
+    padding: 1.4rem;
+    box-shadow: 0 4px 14px #152a4710
+}
+
+    .pos-panel h2 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 1rem
+    }
+
+.pos-search {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: 1rem
+}
+
+.pos-products {
+    display: grid;
+    gap: .6rem
+}
+
+.pos-product, .pos-cart-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: .8rem;
+    border: 1px solid #e7edf5;
+    border-radius: 9px
+}
+
+.pos-price {
+    color: #2563eb;
+    font-weight: 750
+}
+
+.pos-cart-row {
+    margin-bottom: .6rem
+}
+
+.pos-actions {
+    display: flex;
+    gap: .35rem;
+    align-items: center
+}
+
+.pos-qty {
+    width: 68px
+}
+
+.pos-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.25rem;
+    padding: 1rem 0;
+    border-top: 2px solid #e2e8f0;
+    margin-top: 1rem
+}
+
+    .pos-total strong {
+        color: #2563eb
+    }
+
+.pos-pay {
+    display: grid;
+    gap: .6rem
+}
+
+@media(max-width:850px) {
+    .pos-grid {
+        grid-template-columns: 1fr
+    }
+
+    .pos-head {
+        align-items: flex-start;
+        flex-direction: column
+    }
+}
+
+@media(max-width:420px) {
+    .pos-cart-row {
+        align-items: flex-start;
+        flex-direction: column
+    }
+}
+
+/* Hiển thị bảng tổng kết tiền theo chiều dọc */
+.pos-total {
+    display: block;
+    padding: 16px;
+}
+
+    .pos-total > div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .pos-total hr {
+        margin: 12px 0;
+    }
+
+    .pos-total > div:last-child {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+/* ===================================== */
+/* BẢNG TỔNG TIỀN - GIAO DIỆN SMART MART */
+/* ===================================== */
+
+.pos-total {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 0;
+    width: 100%;
+}
+
+.pos-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+    .pos-total-row strong {
+        white-space: nowrap;
+    }
+
+.pos-total hr {
+    width: 100%;
+    margin: 8px 0;
+    border: 0;
+    border-top: 1px solid #cbd5e1;
+    opacity: 1;
+}
+
+.pos-grand-total {
+    color: #1459d9;
+    font-size: 18px;
+    font-weight: 700;
+}

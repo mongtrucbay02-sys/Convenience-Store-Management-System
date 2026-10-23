@@ -2,6 +2,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+// POS-01: demo session-based cart; replace demo catalog with DB-backed implementation after team integration.
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(o => { o.IdleTimeout = TimeSpan.FromMinutes(60); o.Cookie.HttpOnly = true; o.Cookie.IsEssential = true; });
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ConvenienceStore.Web.Services.Pos.MySqlPosCatalog>();
+builder.Services.AddScoped<ConvenienceStore.Web.Services.Pos.PosCartService>();
 
 var app = builder.Build();
 
@@ -17,6 +23,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthorization();
+app.UseSession();
 
 app.MapStaticAssets();
 

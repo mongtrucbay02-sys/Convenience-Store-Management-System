@@ -1,0 +1,75 @@
+﻿@model ConvenienceStore.Web.Models.DashboardViewModel
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Tổng quan";
+}
+
+<section class="hero">
+    <div>
+        <p class="eyebrow">TỔNG QUAN CỬA HÀNG</p>
+        <h1>Bảng điều khiển</h1>
+        <p>
+            Theo dõi hoạt động kinh doanh và tồn kho
+            ngày @Model.ReportDate.ToString("dd/MM/yyyy")
+        </p>
+    </div>
+
+    <a class="primary"
+       asp-controller="Pos"
+       asp-action="Index">
+        Mở quầy bán hàng →
+    </a>
+</section>
+
+<div class="cards">
+
+    <article class="stat">
+        <span>Doanh thu hôm nay</span>
+        <strong>
+            @Model.TodayRevenue.ToString("N0") đ
+        </strong>
+        <small>Hóa đơn đã thanh toán</small>
+    </article>
+
+    <article class="stat">
+        <span>Hóa đơn hôm nay</span>
+        <strong>
+            @Model.TodayInvoices
+        </strong>
+        <small>Số hóa đơn đã thanh toán</small>
+    </article>
+
+    <article class="stat">
+        <span>Sản phẩm</span>
+        <strong>
+            @Model.TotalProducts
+        </strong>
+        <small>Sản phẩm đang kinh doanh</small>
+    </article>
+
+    <article class="stat">
+        <span>Cảnh báo tồn kho</span>
+        <strong>
+            @Model.LowStockProducts
+        </strong>
+        <small>Sản phẩm cần kiểm tra tồn kho</small>
+    </article>
+
+</div>
+
+<section class="panel">
+    <h2>Truy cập nhanh</h2>
+
+    <div class="actions">
+        <a asp-controller="Pos"
+           asp-action="Index">
+            🛒 Bán hàng
+        </a>
+
+        <a asp-controller="Returns"
+           asp-action="Index">
+            ↺ Đổi trả
+        </a>
+    </div>
+</section>

@@ -19,4 +19,8 @@ public interface IPromotionService
     /// <summary>KM-03. Chỉ Admin.</summary>
     Task<PromotionResult<PromotionDto>> UpdateAsync(
         long id, UpdatePromotionRequest request, CancellationToken cancellationToken);
+
+    /// <summary>KM-04. Chỉ Admin.</summary>
+    Task<PromotionResult<PromotionDto>> ChangeStatusAsync(
+        long id, PromotionTargetStatus target, CancellationToken cancellationToken);
 }

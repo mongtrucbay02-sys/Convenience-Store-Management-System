@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ConvenienceStore.Web.Tests;
 
-/// <summary>KM-02, KM-03.</summary>
+/// <summary>KM-02, KM-03, KM-04.</summary>
 public class PromotionManagementTests
 {
     private static readonly TimeSpan Vn = TimeSpan.FromHours(7);
@@ -284,6 +284,76 @@ public class PromotionManagementTests
         Assert.NotEmpty(Fields(bad, "imageUrl"));
     }
 
+    // ---------------- KM-04 ----------------
+
+    [Fact]
+    public async Task Status_DraftToActive_ThenPause_ThenResume_ThenEnd()
+    {
+        var (svc, _) = Create(Record(1, PromotionStatus.Draft));
+
+        var active = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Active, default);
+        var paused = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Paused, default);
+        var resumed = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Active, default);
+        var ended = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Ended, default);
+
+        Assert.Equal(PromotionDisplayStatus.Running, active.Value!.DisplayStatus);
+        Assert.Equal(PromotionDisplayStatus.Paused, paused.Value!.DisplayStatus);
+        Assert.Equal(PromotionDisplayStatus.Running, resumed.Value!.DisplayStatus);
+        Assert.Equal(PromotionDisplayStatus.Ended, ended.Value!.DisplayStatus);
+    }
+
+    [Fact]
+    public async Task Status_EndedCannotBeReactivated_BR_KM_04()
+    {
+        var (svc, _) = Create(Record(1, PromotionStatus.Ended));
+
+        var r = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Active, default);
+
+        Assert.Equal("PROMOTION_ENDED", r.Error!.Code);
+        Assert.Equal(PromotionErrorKind.Conflict, r.Error.Kind);
+    }
+
+    [Fact]
+    public async Task Status_AutoExpiredPromotion_CannotBeChanged_A1()
+    {
+        var (svc, _) = Create(Record(1, PromotionStatus.Active, start: Now.AddDays(-9), end: Now.AddDays(-1)));
+
+        var r = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Paused, default);
+
+        Assert.Equal("PROMOTION_ENDED", r.Error!.Code);
+    }
+
+    [Fact]
+    public async Task Status_ActivatePastEndTime_Fails_E1()
+    {
+        var (svc, _) = Create(Record(1, PromotionStatus.Paused, start: Now.AddDays(-9), end: Now.AddDays(-1)));
+
+        var r = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Active, default);
+
+        Assert.Equal("PROMOTION_PAST_END_TIME", r.Error!.Code);
+        Assert.Equal(PromotionErrorKind.Unprocessable, r.Error.Kind);
+    }
+
+    [Fact]
+    public async Task Status_DraftCannotBePaused()
+    {
+        var (svc, _) = Create(Record(1, PromotionStatus.Draft));
+
+        var r = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Paused, default);
+
+        Assert.Equal("PROMOTION_INVALID_TRANSITION", r.Error!.Code);
+    }
+
+    [Fact]
+    public async Task Status_NotFound()
+    {
+        var (svc, _) = Create();
+
+        var r = await svc.ChangeStatusAsync(7, PromotionTargetStatus.Ended, default);
+
+        Assert.Equal(PromotionErrorKind.NotFound, r.Error!.Kind);
+    }
+
     // ---------------- Quyền và chi tiết ----------------
 
     [Fact]
@@ -301,6 +371,7 @@ public class PromotionManagementTests
     [Theory]
     [InlineData(nameof(PromotionsApiController.Create))]
     [InlineData(nameof(PromotionsApiController.Update))]
+    [InlineData(nameof(PromotionsApiController.ChangeStatus))]
     public void ApiWriteActions_AreAdminOnly(string action)
     {
         var method = typeof(PromotionsApiController).GetMethod(action)!;
@@ -311,6 +382,7 @@ public class PromotionManagementTests
     [Theory]
     [InlineData("Create")]
     [InlineData("Edit")]
+    [InlineData("ChangeStatus")]
     public void MvcWriteActions_AreAdminOnly(string action)
     {
         var methods = typeof(PromotionsController).GetMethods().Where(m => m.Name == action);

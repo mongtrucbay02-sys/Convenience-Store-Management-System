@@ -29,6 +29,13 @@
         PromotionDisplayStatus.Paused => "bg-warning text-dark",
         _ => "bg-dark",
     };
+    async Task StatusButton(PromotionDto p, PromotionTargetStatus target, string label, string css)
+    {
+        <form method="post" asp-action="ChangeStatus" asp-route-id="@p.Id" class="d-inline" onsubmit="return confirm('@label chương trình @p.Code?');">
+            <input type="hidden" name="target" value="@target" />
+            <button type="submit" class="btn btn-sm @css">@label</button>
+        </form>
+    }
     string Discount(PromotionDto p) => p.DiscountType == DiscountType.Percent
         ? $"{p.DiscountValue}%" + (p.MaxDiscountAmount is { } m ? $" (tối đa {m.ToString("N0", vi)} ₫)" : "")
         : $"{p.DiscountValue.ToString("N0", vi)} ₫ / sản phẩm";
@@ -117,6 +124,15 @@ else
                                 @if (p.DisplayStatus != PromotionDisplayStatus.Ended)
                                 {
                                     <a class="btn btn-outline-secondary btn-sm" asp-action="Edit" asp-route-id="@p.Id">Sửa</a>
+                                    @if (p.DisplayStatus is PromotionDisplayStatus.Draft or PromotionDisplayStatus.Paused)
+                                    {
+                                        await StatusButton(p, PromotionTargetStatus.Active, p.DisplayStatus == PromotionDisplayStatus.Paused ? "Tiếp tục" : "Kích hoạt", "btn-success");
+                                    }
+                                    @if (p.DisplayStatus is PromotionDisplayStatus.Scheduled or PromotionDisplayStatus.Running)
+                                    {
+                                        await StatusButton(p, PromotionTargetStatus.Paused, "Tạm dừng", "btn-warning");
+                                    }
+                                    await StatusButton(p, PromotionTargetStatus.Ended, "Kết thúc", "btn-outline-danger");
                                 }
                             </td>
                         }

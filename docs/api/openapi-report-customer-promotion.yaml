@@ -576,6 +576,7 @@ paths:
       description: |
         Chỉ AD; client hỏi xác nhận trước. `targetStatus`: ACTIVE (kích hoạt hoặc tiếp tục từ PAUSED),
         PAUSED, ENDED. Chương trình đã kết thúc không kích hoạt lại được (BR-KM-04, mã `PROMOTION_ENDED`).
+        Tạm dừng chương trình Nháp bị từ chối với mã `PROMOTION_INVALID_TRANSITION` (409).
         Kích hoạt khi đã quá `endAt` thì từ chối (E1, mã `PROMOTION_PAST_END_TIME`), yêu cầu sửa thời gian.
         POS áp hoặc ngừng áp chương trình ngay sau khi đổi.
       parameters:

@@ -72,6 +72,23 @@ public class PromotionsApiController : ControllerBase
         long promotionId, [FromBody] UpdatePromotionRequest request, CancellationToken cancellationToken) =>
         ToActionResult(await _promotionService.UpdateAsync(promotionId, request, cancellationToken));
 
+    /// <summary>KM-04: kích hoạt / tạm dừng / kết thúc.</summary>
+    [HttpPut("{promotionId:long}/status")]
+    [Authorize(Roles = PromotionRoles.Admin)]
+    [ProducesResponseType(typeof(PromotionDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ChangeStatus(
+        long promotionId, [FromBody] ChangePromotionStatusRequest request, CancellationToken cancellationToken)
+    {
+        if (request.TargetStatus is null)
+        {
+            ModelState.AddModelError("targetStatus", "Chọn trạng thái đích (ACTIVE, PAUSED, ENDED).");
+            return ValidationProblem(ModelState);
+        }
+
+        return ToActionResult(await _promotionService.ChangeStatusAsync(
+            promotionId, request.TargetStatus.Value, cancellationToken));
+    }
+
     private IActionResult ToActionResult(PromotionResult<PromotionDto> result) =>
         result.IsSuccess ? Ok(result.Value) : ToProblem(result.Error!);
 

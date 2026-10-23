@@ -130,6 +130,20 @@ public class PromotionsController : Controller
         return await FormView(form, isEdit: true, cancellationToken);
     }
 
+    // KM-04
+    [HttpPost, ValidateAntiForgeryToken]
+    [Authorize(Roles = PromotionRoles.Admin)]
+    public async Task<IActionResult> ChangeStatus(
+        long id, PromotionTargetStatus target, CancellationToken cancellationToken)
+    {
+        var result = await _promotionService.ChangeStatusAsync(id, target, cancellationToken);
+        if (result.IsSuccess)
+            TempData["Message"] = $"Đã cập nhật trạng thái chương trình {result.Value!.Code}.";
+        else
+            TempData["Error"] = result.Error!.Title;
+        return RedirectToAction(nameof(Index));
+    }
+
     // Chọn sản phẩm: tìm kiếm có phân trang (danh mục có thể có hàng nghìn sản phẩm).
     [HttpGet]
     [Authorize(Roles = PromotionRoles.Admin)]

@@ -18,6 +18,10 @@ public enum PromotionStatus { Draft, Active, Paused, Ended }
 [JsonConverter(typeof(UpperSnakeEnumConverter<PromotionDisplayStatus>))]
 public enum PromotionDisplayStatus { Draft, Scheduled, Running, Paused, Ended }
 
+/// <summary>Trạng thái đích khi đổi trạng thái (KM-04).</summary>
+[JsonConverter(typeof(UpperSnakeEnumConverter<PromotionTargetStatus>))]
+public enum PromotionTargetStatus { Active, Paused, Ended }
+
 public sealed record ProductRefDto(long Id, string Sku, string Name);
 
 public sealed record PromotionDto(
@@ -80,3 +84,5 @@ public sealed record UpdatePromotionRequest(
     DateTimeOffset? EndAt,
     bool? MembersOnly,
     string? ImageUrl);
+
+public sealed record ChangePromotionStatusRequest(PromotionTargetStatus? TargetStatus);

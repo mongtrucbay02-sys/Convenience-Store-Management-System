@@ -179,6 +179,45 @@ public sealed class PromotionService : IPromotionService
         return PromotionResult<PromotionDto>.Ok(ToDto(updated, now));
     }
 
+    // ---------------- KM-04 ----------------
+
+    public async Task<PromotionResult<PromotionDto>> ChangeStatusAsync(
+        long id, PromotionTargetStatus target, CancellationToken cancellationToken)
+    {
+        var record = await _dataSource.GetByIdAsync(id, cancellationToken);
+        if (record is null) return NotFound();
+
+        var now = _timeProvider.GetUtcNow();
+        // BR-KM-04: chương trình đã kết thúc (kể cả tự hết hạn) không đổi trạng thái được nữa.
+        if (GetDisplayStatus(record.Status, record.StartAt, record.EndAt, now) == PromotionDisplayStatus.Ended)
+            return Ended();
+
+        PromotionStatus next;
+        switch (target)
+        {
+            case PromotionTargetStatus.Active:
+                if (record.EndAt < now) return PastEndTime(); // E1
+                next = PromotionStatus.Active;
+                break;
+            case PromotionTargetStatus.Paused:
+                if (record.Status == PromotionStatus.Draft)
+                    return PromotionResult<PromotionDto>.Fail(new PromotionError(
+                        PromotionErrorKind.Conflict,
+                        "PROMOTION_INVALID_TRANSITION",
+                        "Chỉ tạm dừng được chương trình đã kích hoạt."));
+                next = PromotionStatus.Paused;
+                break;
+            default:
+                next = PromotionStatus.Ended;
+                break;
+        }
+
+        var updated = record with { Status = next };
+        if (next != record.Status && !await _dataSource.UpdateAsync(updated, cancellationToken))
+            return NotFound();
+        return PromotionResult<PromotionDto>.Ok(ToDto(updated, now));
+    }
+
     // ---------------- Kiểm tra dữ liệu (KM-02, dùng lại ở KM-03) ----------------
 
     private sealed record Draft(

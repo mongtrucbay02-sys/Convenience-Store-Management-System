@@ -5,401 +5,480 @@
     Layout = "_AdminLayout";
 }
 
-<link rel="stylesheet"
-      href="~/css/pos.css"
-      asp-append-version="true" />
+<link rel="stylesheet" href="~/css/pos.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/pos-flow.css" asp-append-version="true" />
 
-<!-- TIÊU ĐỀ TRANG POS -->
-<div class="pos-head">
-    <div>
-        <h1>Quầy bán hàng</h1>
-        <p>
-            Tìm kiếm sản phẩm, thêm vào giỏ hàng và thanh toán
-        </p>
+<div class="pos-flow pos-index-page">
+    <div class="pos-flow-header">
+        <div>
+            <div class="pos-flow-eyebrow">SMART MART / POS-01 / POS-02</div>
+            <h1 class="pos-flow-title">Quầy bán hàng</h1>
+            <p class="pos-flow-description">Tìm kiếm, chọn sản phẩm và chuẩn bị thanh toán.</p>
+        </div>
+        <span class="pos-cart-badge">Giỏ hàng: @Model.Cart.TotalQuantity sản phẩm</span>
     </div>
 
-    <span class="badge text-bg-primary">
-        Giỏ hàng: @Model.Cart.TotalQuantity sản phẩm
-    </span>
-</div>
+    <partial name="_PosSteps" model="1" />
 
-<!-- THÔNG BÁO LỖI -->
-@if (TempData["Error"] is string error)
-{
-    <div class="alert alert-danger" role="alert">
-        @error
-    </div>
-}
+    <!-- THÔNG BÁO LỖI -->
+    @if (TempData["Error"] is string error)
+    {
+        <div class="alert alert-danger" role="alert">
+            @error
+        </div>
+    }
 
-<!-- THÔNG BÁO THÀNH CÔNG -->
-@if (TempData["Success"] is string success)
-{
-    <div class="alert alert-success" role="status">
-        @success
-    </div>
-}
+    <!-- THÔNG BÁO THÀNH CÔNG -->
+    @if (TempData["Success"] is string success)
+    {
+        <div class="alert alert-success" role="status">
+            @success
+        </div>
+    }
 
-<div class="pos-grid">
+    <div class="pos-grid">
 
-    <!-- ================================= -->
-    <!-- KHU VỰC 1: CHỌN SẢN PHẨM -->
-    <!-- ================================= -->
+        <!-- ================================= -->
+        <!-- KHU VỰC 1: CHỌN SẢN PHẨM -->
+        <!-- ================================= -->
 
-    <section class="pos-panel">
+        <section class="pos-panel">
 
-        <h2>1. Chọn sản phẩm</h2>
+            <h2>1. Chọn sản phẩm</h2>
 
-        <!-- TÌM KIẾM VÀ LỌC DANH MỤC -->
-        <form method="get"
-              asp-controller="Pos"
-              asp-action="Index"
-              class="pos-search">
+            <!-- TÌM KIẾM VÀ LỌC DANH MỤC -->
+            <form method="get"
+                  asp-controller="Pos"
+                  asp-action="Index"
+                  class="pos-search">
 
-            <input name="search"
-                   value="@Model.Search"
-                   class="form-control"
-                   placeholder="Tìm tên hoặc mã sản phẩm"
-                   aria-label="Tìm sản phẩm" />
+                <input name="search"
+                       value="@Model.Search"
+                       class="form-control"
+                       placeholder="Tìm tên hoặc mã sản phẩm"
+                       aria-label="Tìm sản phẩm" />
 
-            <select name="categoryId"
-                    class="form-select"
-                    aria-label="Chọn danh mục">
+                <select name="categoryId"
+                        class="form-select"
+                        aria-label="Chọn danh mục">
 
-                <option value="">
-                    Tất cả danh mục
-                </option>
+                    <option value="">
+                        Tất cả danh mục
+                    </option>
 
-                @foreach (var category in Model.Categories)
+                    @foreach (var category in Model.Categories)
+                    {
+                        if (Model.CategoryId == category.Id)
+                        {
+                            <option value="@category.Id" selected>
+                                @category.Name
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@category.Id">
+                                @category.Name
+                            </option>
+                        }
+                    }
+                </select>
+
+                <button class="btn btn-primary"
+                        type="submit">
+                    Tìm kiếm
+                </button>
+
+            </form>
+
+            <!-- DANH SÁCH SẢN PHẨM -->
+            <div class="pos-products">
+
+                @foreach (var product in Model.Products)
                 {
-                    if (Model.CategoryId == category.Id)
-                    {
-                        <option value="@category.Id" selected>
-                            @category.Name
-                        </option>
-                    }
-                    else
-                    {
-                        <option value="@category.Id">
-                            @category.Name
-                        </option>
-                    }
+                    <article class="pos-product">
+
+                        <div>
+                            <strong>
+                                @product.Name
+                            </strong>
+
+                            <div class="text-muted small">
+                                Mã: @product.Code
+                                · Còn lại: @product.Stock
+                            </div>
+
+                            <div class="pos-price">
+                                @product.Price.ToString("N0") đ
+                            </div>
+                        </div>
+
+                        <!-- THÊM SẢN PHẨM VÀO GIỎ -->
+                        <form asp-controller="Pos"
+                              asp-action="Add"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="productId"
+                                   value="@product.Id" />
+
+                            <button class="btn btn-outline-primary btn-sm"
+                                    type="submit"
+                                    disabled="@(product.Stock <= 0)">
+                                + Thêm
+                            </button>
+
+                        </form>
+
+                    </article>
                 }
-            </select>
 
-            <button class="btn btn-primary"
-                    type="submit">
-                Tìm kiếm
-            </button>
+                <!-- NGOẠI LỆ E1 -->
+                @if (!Model.Products.Any())
+                {
+                    <p class="text-muted">
+                        Không có sản phẩm phù hợp.
+                    </p>
+                }
 
-        </form>
+            </div>
 
-        <!-- DANH SÁCH SẢN PHẨM -->
-        <div class="pos-products">
+        </section>
 
-            @foreach (var product in Model.Products)
-            {
-                <article class="pos-product">
+        <!-- ================================= -->
+        <!-- KHU VỰC 2: GIỎ HÀNG -->
+        <!-- ================================= -->
 
-                    <div>
-                        <strong>
-                            @product.Name
-                        </strong>
+        <section class="pos-panel">
 
-                        <div class="text-muted small">
-                            Mã: @product.Code
-                            · Còn lại: @product.Stock
-                        </div>
+            <h2>2. Giỏ hàng</h2>
 
-                        <div class="pos-price">
-                            @product.Price.ToString("N0") đ
-                        </div>
-                    </div>
-
-                    <!-- THÊM SẢN PHẨM VÀO GIỎ -->
-                    <form asp-controller="Pos"
-                          asp-action="Add"
-                          method="post">
-
-                        @Html.AntiForgeryToken()
-
-                        <input type="hidden"
-                               name="productId"
-                               value="@product.Id" />
-
-                        <button class="btn btn-outline-primary btn-sm"
-                                type="submit"
-                                disabled="@(product.Stock <= 0)">
-                            + Thêm
-                        </button>
-
-                    </form>
-
-                </article>
-            }
-
-            <!-- NGOẠI LỆ E1 -->
-            @if (!Model.Products.Any())
+            <!-- GIỎ HÀNG TRỐNG -->
+            @if (!Model.Cart.Items.Any())
             {
                 <p class="text-muted">
-                    Không có sản phẩm phù hợp.
+                    Chưa có sản phẩm trong giỏ.
                 </p>
             }
 
-        </div>
+            <!-- DANH SÁCH SẢN PHẨM TRONG GIỎ -->
+            @foreach (var item in Model.Cart.Items)
+            {
+                <div class="pos-cart-row">
 
-    </section>
+                    <!-- THÔNG TIN SẢN PHẨM -->
+                    <div>
+                        <strong>@item.Name</strong>
 
-    <!-- ================================= -->
-    <!-- KHU VỰC 2: GIỎ HÀNG -->
-    <!-- ================================= -->
+                        <div class="text-muted small">
+                            Đơn giá:
+                            @item.UnitPrice.ToString("N0") đ
+                            × @item.Quantity
+                        </div>
 
-    <section class="pos-panel">
-
-        <h2>2. Giỏ hàng</h2>
-
-        <!-- GIỎ HÀNG TRỐNG -->
-        @if (!Model.Cart.Items.Any())
-        {
-            <p class="text-muted">
-                Chưa có sản phẩm trong giỏ.
-            </p>
-        }
-
-        <!-- DANH SÁCH SẢN PHẨM TRONG GIỎ -->
-        @foreach (var item in Model.Cart.Items)
-        {
-            <div class="pos-cart-row">
-
-                <!-- THÔNG TIN SẢN PHẨM -->
-                <div>
-                    <strong>@item.Name</strong>
-
-                    <div class="text-muted small">
-                        Đơn giá:
-                        @item.UnitPrice.ToString("N0") đ
-                        × @item.Quantity
+                        <div class="fw-semibold">
+                            Thành tiền:
+                            @item.Total.ToString("N0") đ
+                        </div>
                     </div>
 
-                    <div class="fw-semibold">
-                        Thành tiền:
-                        @item.Total.ToString("N0") đ
+                    <!-- POS-02: CHỈNH SỬA GIỎ HÀNG -->
+                    <div class="pos-actions">
+
+                        <!-- NÚT GIẢM SỐ LƯỢNG -->
+                        <form asp-controller="Pos"
+                              asp-action="Update"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="productId"
+                                   value="@item.ProductId" />
+
+                            <input type="hidden"
+                                   name="quantity"
+                                   value="@(item.Quantity - 1)" />
+
+                            <button type="submit"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    aria-label="Giảm số lượng @item.Name">
+                                −
+                            </button>
+                        </form>
+
+                        <!-- NHẬP SỐ LƯỢNG -->
+                        <form asp-controller="Pos"
+                              asp-action="Update"
+                              method="post"
+                              class="d-flex gap-1 align-items-center">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="productId"
+                                   value="@item.ProductId" />
+
+                            <input class="form-control form-control-sm pos-qty"
+                                   type="number"
+                                   name="quantity"
+                                   min="0"
+                                   step="1"
+                                   required
+                                   value="@item.Quantity"
+                                   aria-label="Số lượng @item.Name" />
+
+                            <button type="submit"
+                                    class="btn btn-outline-primary btn-sm">
+                                Sửa
+                            </button>
+                        </form>
+
+                        <!-- NÚT TĂNG SỐ LƯỢNG -->
+                        <form asp-controller="Pos"
+                              asp-action="Update"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="productId"
+                                   value="@item.ProductId" />
+
+                            <input type="hidden"
+                                   name="quantity"
+                                   value="@(item.Quantity + 1)" />
+
+                            <button type="submit"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    aria-label="Tăng số lượng @item.Name">
+                                +
+                            </button>
+                        </form>
+
+                        <!-- XÓA SẢN PHẨM -->
+                        <form asp-controller="Pos"
+                              asp-action="Remove"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="productId"
+                                   value="@item.ProductId" />
+
+                            <button type="submit"
+                                    class="btn btn-outline-danger btn-sm">
+                                Xóa
+                            </button>
+                        </form>
+
                     </div>
-                </div>
-
-                <!-- POS-02: CHỈNH SỬA GIỎ HÀNG -->
-                <div class="pos-actions">
-
-                    <!-- NÚT GIẢM SỐ LƯỢNG -->
-                    <form asp-controller="Pos"
-                          asp-action="Update"
-                          method="post">
-
-                        @Html.AntiForgeryToken()
-
-                        <input type="hidden"
-                               name="productId"
-                               value="@item.ProductId" />
-
-                        <input type="hidden"
-                               name="quantity"
-                               value="@(item.Quantity - 1)" />
-
-                        <button type="submit"
-                                class="btn btn-outline-secondary btn-sm"
-                                aria-label="Giảm số lượng @item.Name">
-                            −
-                        </button>
-                    </form>
-
-                    <!-- NHẬP SỐ LƯỢNG -->
-                    <form asp-controller="Pos"
-                          asp-action="Update"
-                          method="post"
-                          class="d-flex gap-1 align-items-center">
-
-                        @Html.AntiForgeryToken()
-
-                        <input type="hidden"
-                               name="productId"
-                               value="@item.ProductId" />
-
-                        <input class="form-control form-control-sm pos-qty"
-                               type="number"
-                               name="quantity"
-                               min="0"
-                               step="1"
-                               required
-                               value="@item.Quantity"
-                               aria-label="Số lượng @item.Name" />
-
-                        <button type="submit"
-                                class="btn btn-outline-primary btn-sm">
-                            Sửa
-                        </button>
-                    </form>
-
-                    <!-- NÚT TĂNG SỐ LƯỢNG -->
-                    <form asp-controller="Pos"
-                          asp-action="Update"
-                          method="post">
-
-                        @Html.AntiForgeryToken()
-
-                        <input type="hidden"
-                               name="productId"
-                               value="@item.ProductId" />
-
-                        <input type="hidden"
-                               name="quantity"
-                               value="@(item.Quantity + 1)" />
-
-                        <button type="submit"
-                                class="btn btn-outline-secondary btn-sm"
-                                aria-label="Tăng số lượng @item.Name">
-                            +
-                        </button>
-                    </form>
-
-                    <!-- XÓA SẢN PHẨM -->
-                    <form asp-controller="Pos"
-                          asp-action="Remove"
-                          method="post">
-
-                        @Html.AntiForgeryToken()
-
-                        <input type="hidden"
-                               name="productId"
-                               value="@item.ProductId" />
-
-                        <button type="submit"
-                                class="btn btn-outline-danger btn-sm">
-                            Xóa
-                        </button>
-                    </form>
 
                 </div>
+            }
 
-            </div>
-        }
+            <!-- ================================= -->
+            <!-- BẢNG TỔNG TIỀN - CHỈ HIỂN THỊ 1 LẦN -->
+            <!-- ================================= -->
 
-        <!-- ================================= -->
-        <!-- BẢNG TỔNG TIỀN - CHỈ HIỂN THỊ 1 LẦN -->
-        <!-- ================================= -->
+            <div class="pos-total">
 
-        <div class="pos-total">
+                <!-- TẠM TÍNH -->
+                <div class="pos-total-row">
+                    <span>Tạm tính:</span>
 
-            <!-- TẠM TÍNH -->
-            <div class="pos-total-row">
-                <span>Tạm tính:</span>
-
-                <strong>
-                    @Model.Cart.Subtotal.ToString("N0") đ
-                </strong>
-            </div>
-
-            <!-- GIẢM GIÁ POS-04 -->
-            <div class="pos-total-row">
-                <span>Giảm giá:</span>
-
-                <strong>
-                    @Model.Cart.Discount.ToString("N0") đ
-                </strong>
-            </div>
-
-            <hr />
-
-            <!-- TỔNG PHẢI TRẢ -->
-            <div class="pos-total-row pos-grand-total">
-                <strong>Tổng phải trả:</strong>
-
-                <strong>
-                    @Model.Cart.Total.ToString("N0") đ
-                </strong>
-            </div>
-
-        </div>
-
-        <!-- ================================= -->
-        <!-- KHU VỰC 3: TÍNH TIỀN MẶT -->
-        <!-- ================================= -->
-
-        <h2 class="mt-4">
-            3. Thanh toán tiền mặt
-        </h2>
-
-        <form asp-controller="Pos"
-              asp-action="Calculate"
-              method="post"
-              class="pos-pay">
-
-            @Html.AntiForgeryToken()
-
-            <label for="cashReceived">
-                Tiền khách đưa (VND)
-            </label>
-
-            <input class="form-control"
-                   id="cashReceived"
-                   name="cashReceived"
-                   type="number"
-                   min="0"
-                   step="100"
-                   required
-                   value="@Model.CashReceived" />
-
-            <button class="btn btn-success"
-                    type="submit"
-                    disabled="@(!Model.Cart.Items.Any())">
-                Tính tiền thừa
-            </button>
-
-        </form>
-
-        <!-- HIỂN THỊ TIỀN THỪA -->
-        @if (Model.Change.HasValue)
-        {
-            <div class="alert alert-success mt-3">
-
-                <div>
-                    Khách đưa:
                     <strong>
-                        @Model.CashReceived!.Value.ToString("N0") đ
+                        @Model.Cart.Subtotal.ToString("N0") đ
                     </strong>
                 </div>
 
-                <div>
-                    Tiền thừa:
+                <!-- GIẢM GIÁ POS-04 -->
+                <div class="pos-total-row">
+                    <span>Giảm giá:</span>
+
                     <strong>
-                        @Model.Change.Value.ToString("N0") đ
+                        @Model.Cart.Discount.ToString("N0") đ
+                    </strong>
+                </div>
+
+                <hr />
+
+                <!-- TỔNG PHẢI TRẢ -->
+                <div class="pos-total-row pos-grand-total">
+                    <strong>Tổng phải trả:</strong>
+
+                    <strong>
+                        @Model.Cart.Total.ToString("N0") đ
                     </strong>
                 </div>
 
             </div>
+
+        
+            <!-- POS-05: CHỈ MỘT NÚT THANH TOÁN -->
+            <div class="pos-flow-actions">
+                <a asp-controller="Pos"
+                   asp-action="Checkout"
+                   class="pos-flow-primary @(Model.Cart.Items.Any() ? "" : "disabled")"
+                   aria-disabled="@(!Model.Cart.Items.Any())">
+                    Tiếp tục thanh toán <span aria-hidden="true">→</span>
+                </a>
+                <p class="text-muted small text-center mb-0">
+                    Kiểm tra giỏ hàng trước khi chuyển sang bước chọn phương thức thanh toán.
+                </p>
+            </div>
+
+            <!-- ================================= -->
+            <!-- HỦY ĐƠN HÀNG -->
+            <!-- ================================= -->
+
+            <form asp-controller="Pos"
+                  asp-action="Cancel"
+                  method="post"
+                  onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn đang bán?');">
+
+                @Html.AntiForgeryToken()
+
+                <button class="btn btn-outline-danger w-100"
+                        type="submit"
+                        disabled="@(!Model.Cart.Items.Any())">
+                    Hủy đơn hàng
+                </button>
+
+            </form>
+
+        </section>
+
+    </div> <!-- .pos-grid -->
+</div> <!-- .pos-flow -->
+
+<style>
+    /* Chỉ điều chỉnh giao diện Index; không ảnh hưởng Checkout/Cash */
+    .pos-index-page {
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px 12px 44px;
+    }
+
+        .pos-index-page .pos-flow-header {
+            margin-bottom: 22px;
         }
 
-        <div class="alert alert-info small mt-3">
-            Nhập số tiền khách đưa để tính tiền thừa.
-        </div>
+        .pos-index-page .pos-cart-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 999px;
+            color: #176db1;
+            background: #e8f3ff;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
 
-        <!-- ================================= -->
-        <!-- HỦY ĐƠN HÀNG -->
-        <!-- ================================= -->
+        .pos-index-page .pos-flow-steps {
+            margin-bottom: 24px;
+        }
 
-        <form asp-controller="Pos"
-              asp-action="Cancel"
-              method="post"
-              onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn đang bán?');">
+        .pos-index-page .pos-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+            gap: 22px;
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            align-items: start;
+        }
 
-            @Html.AntiForgeryToken()
+            .pos-index-page .pos-grid > .pos-panel {
+                min-width: 0;
+                width: 100%;
+                max-width: none;
+                background: #fff;
+                border: 1px solid #e1e8f0;
+                border-radius: 18px;
+                padding: 26px;
+                box-shadow: 0 8px 30px rgba(15,35,65,.05);
+            }
 
-            <button class="btn btn-outline-danger w-100"
-                    type="submit"
-                    disabled="@(!Model.Cart.Items.Any())">
-                Hủy đơn hàng
-            </button>
+        .pos-index-page .pos-panel h2 {
+            color: #142b45;
+            font-size: 19px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
 
-        </form>
+        .pos-index-page .pos-search {
+            display: grid;
+            grid-template-columns: minmax(0,1fr) minmax(140px, .42fr) auto;
+            gap: 10px;
+            align-items: stretch;
+            margin-bottom: 18px;
+        }
 
-    </section>
+            .pos-index-page .pos-search > * {
+                min-width: 0;
+            }
 
-</div>
+            .pos-index-page .pos-search .btn {
+                min-width: 96px;
+            }
+
+        .pos-index-page .pos-products,
+        .pos-index-page .pos-cart-row {
+            min-width: 0;
+        }
+
+        .pos-index-page .pos-product,
+        .pos-index-page .pos-cart-row {
+            border-radius: 12px;
+        }
+
+        .pos-index-page .pos-flow-actions {
+            margin-top: 20px;
+        }
+
+        .pos-index-page .pos-flow-primary {
+            text-decoration: none;
+        }
+
+        .pos-index-page .pos-flow-actions + form {
+            margin-top: 16px;
+        }
+
+    @@media (max-width: 1050px) {
+        .pos-index-page .pos-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 650px) {
+        .pos-index-page {
+            padding: 16px 4px 32px;
+        }
+
+            .pos-index-page .pos-flow-header {
+                align-items: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .pos-index-page .pos-grid > .pos-panel {
+                padding: 18px;
+            }
+
+            .pos-index-page .pos-search {
+                grid-template-columns: 1fr;
+            }
+
+                .pos-index-page .pos-search .btn {
+                    width: 100%;
+                }
+
+            .pos-index-page .pos-actions {
+                flex-wrap: wrap;
+            }
+    }
+</style>

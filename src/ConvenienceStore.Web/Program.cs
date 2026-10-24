@@ -1,4 +1,5 @@
 using ConvenienceStore.Web.Modules.Products.Services;
+using ConvenienceStore.Web.Modules.Promotions.Services;
 using ConvenienceStore.Web.Modules.Reports;
 using ConvenienceStore.Web.Modules.Reports.Services;
 using ConvenienceStore.Web.Data;
@@ -25,6 +26,8 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IDashboardDataSource, SampleDashboardDataSource>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IPromotionDataSource, SamplePromotionDataSource>();
+builder.Services.AddScoped<IPromotionService, PromotionService>();
 builder.Services.AddAuthorization(options =>
     options.AddPolicy(
         AuthorizationPolicies.AdminOnly,

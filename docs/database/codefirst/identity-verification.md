@@ -31,3 +31,29 @@
 ## Status
 Database structure and tested constraints: PASS.
 Full Identity module acceptance: PENDING.
+
+## Additional Verification
+
+### Timestamp
+- TS-01: PASS.
+- MySQL automatically updates `ngay_cap_nhat`.
+
+### SQL Optimistic Concurrency
+- CC-01: PASS.
+- Version guard rejects an update using an outdated `phien_ban`.
+- Verified version transition: 1 -> 2.
+
+### EF Core Optimistic Concurrency
+- EF-CC-01a: PASS.
+- Context A updates the account and increments version from 1 to 2.
+- EF-CC-01b: PASS.
+- Context B attempts to save an outdated version.
+- EF Core throws `DbUpdateConcurrencyException`.
+- Transaction rollback completed.
+
+### Limitations
+- EF Core concurrency was tested with two DbContexts sharing one transaction.
+- Independent concurrent transactions have not been tested.
+- Direct SQL and ExecuteUpdate must manage `phien_ban` separately.
+- Post-test record counts should be verified.
+- The migration is still an Identity-only probe, not the final baseline.

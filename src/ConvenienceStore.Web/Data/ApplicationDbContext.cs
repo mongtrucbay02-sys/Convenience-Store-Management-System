@@ -1,4 +1,5 @@
 ﻿using ConvenienceStore.Web.Modules.Identity.Entities;
+using ConvenienceStore.Web.Modules.Products.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
@@ -13,6 +14,8 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<VaiTro> VaiTros => Set<VaiTro>();
+
+    public DbSet<DanhMuc> DanhMucs => Set<DanhMuc>();
 
     public DbSet<TaiKhoan> TaiKhoans => Set<TaiKhoan>();
 

@@ -1,0 +1,142 @@
+@using System.Globalization
+@using ConvenienceStore.Web.Modules.Promotions.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model PromotionListResponse
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Khuyến mãi";
+    var vi = CultureInfo.GetCultureInfo("vi-VN");
+    var isAdmin = (bool)(ViewData["IsAdmin"] ?? false);
+    var status = (PromotionDisplayStatus?)ViewData["Status"];
+    var fromDate = (DateOnly?)ViewData["From"];
+    var toDate = (DateOnly?)ViewData["To"];
+    var fromText = fromDate?.ToString("yyyy-MM-dd");
+    var toText = toDate?.ToString("yyyy-MM-dd");
+
+    string StatusText(PromotionDisplayStatus s) => s switch
+    {
+        PromotionDisplayStatus.Draft => "Nháp",
+        PromotionDisplayStatus.Scheduled => "Đã lên lịch",
+        PromotionDisplayStatus.Running => "Đang chạy",
+        PromotionDisplayStatus.Paused => "Tạm dừng",
+        _ => "Đã kết thúc",
+    };
+    string StatusClass(PromotionDisplayStatus s) => s switch
+    {
+        PromotionDisplayStatus.Draft => "bg-secondary",
+        PromotionDisplayStatus.Scheduled => "bg-info text-dark",
+        PromotionDisplayStatus.Running => "bg-success",
+        PromotionDisplayStatus.Paused => "bg-warning text-dark",
+        _ => "bg-dark",
+    };
+    string Discount(PromotionDto p) => p.DiscountType == DiscountType.Percent
+        ? $"{p.DiscountValue}%" + (p.MaxDiscountAmount is { } m ? $" (tối đa {m.ToString("N0", vi)} ₫)" : "")
+        : $"{p.DiscountValue.ToString("N0", vi)} ₫ / sản phẩm";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Khuyến mãi</h1>
+    @if (isAdmin)
+    {
+        <a class="btn btn-primary btn-sm" asp-action="Create">Tạo khuyến mãi</a>
+    }
+</div>
+
+@if (TempData["Message"] is string okMessage)
+{
+    <div class="alert alert-success py-2">@okMessage</div>
+}
+@if (TempData["Error"] is string errMessage)
+{
+    <div class="alert alert-danger py-2">@errMessage</div>
+}
+
+<form method="get" class="row g-2 align-items-end mb-3">
+    @if (isAdmin)
+    {
+        <div class="col-auto">
+            <label class="form-label small mb-0" for="status">Trạng thái</label>
+            <select class="form-select form-select-sm" id="status" name="status">
+                <option value="">Tất cả</option>
+                @foreach (var s in Enum.GetValues<PromotionDisplayStatus>())
+                {
+                    <option value="@s" selected="@(status == s)">@StatusText(s)</option>
+                }
+            </select>
+        </div>
+    }
+    <div class="col-auto">
+        <label class="form-label small mb-0" for="from">Từ ngày</label>
+        <input class="form-control form-control-sm" type="date" id="from" name="from" value="@fromText" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label small mb-0" for="to">Đến ngày</label>
+        <input class="form-control form-control-sm" type="date" id="to" name="to" value="@toText" />
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary btn-sm" type="submit">Lọc</button>
+        <a class="btn btn-outline-secondary btn-sm" asp-action="Index">Xóa lọc</a>
+    </div>
+</form>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="alert alert-light border" id="empty">Chưa có chương trình khuyến mãi nào.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-sm align-middle" id="promotions">
+            <thead>
+                <tr>
+                    <th></th><th>Mã</th><th>Tên</th><th>Giảm</th><th>Sản phẩm áp dụng</th>
+                    <th>Thời gian</th><th>Đối tượng</th><th>Trạng thái</th><th class="text-end">Lượt dùng</th>@if (isAdmin) { <th></th> }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.Items)
+                {
+                    <tr>
+                        <td style="width:56px">
+                            @if (!string.IsNullOrWhiteSpace(p.ImageUrl))
+                            {
+                                <img src="@p.ImageUrl" alt="@p.Name" class="rounded border" style="width:48px;height:48px;object-fit:cover" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'" />
+                            }
+                        </td>
+                        <td>@p.Code</td>
+                        <td>@p.Name</td>
+                        <td>@Discount(p)</td>
+                        <td>@string.Join(", ", p.Products.Select(x => x.Name))</td>
+                        <td>@p.StartAt.ToString("dd/MM/yyyy", vi) – @p.EndAt.ToString("dd/MM/yyyy", vi)</td>
+                        <td>@(p.MembersOnly ? "Chỉ thành viên" : "Mọi khách")</td>
+                        <td><span class="badge @StatusClass(p.DisplayStatus)">@StatusText(p.DisplayStatus)</span></td>
+                        <td class="text-end">@p.UsageCount</td>
+                        @if (isAdmin)
+                        {
+                            <td class="text-nowrap text-end">
+                                @if (p.DisplayStatus != PromotionDisplayStatus.Ended)
+                                {
+                                    <a class="btn btn-outline-secondary btn-sm" asp-action="Edit" asp-route-id="@p.Id">Sửa</a>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination pagination-sm">
+                @for (var i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.Page ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-status="@status" asp-route-from="@fromText" asp-route-to="@toText">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}

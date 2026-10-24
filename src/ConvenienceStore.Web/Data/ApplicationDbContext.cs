@@ -36,7 +36,7 @@ public class ApplicationDbContext : DbContext
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
-        UpdateTaiKhoanVersions();
+        UpdateConcurrencyVersions();
 
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
@@ -45,34 +45,41 @@ public class ApplicationDbContext : DbContext
         bool acceptAllChangesOnSuccess,
         CancellationToken cancellationToken = default)
     {
-        UpdateTaiKhoanVersions();
+        UpdateConcurrencyVersions();
 
         return base.SaveChangesAsync(
             acceptAllChangesOnSuccess,
             cancellationToken);
     }
 
-    private void UpdateTaiKhoanVersions()
+    private void UpdateConcurrencyVersions()
     {
         ChangeTracker.DetectChanges();
 
-        foreach (EntityEntry<TaiKhoan> entry in
-                 ChangeTracker.Entries<TaiKhoan>())
+        foreach (var entry in ChangeTracker.Entries())
         {
             if (entry.State != EntityState.Modified)
                 continue;
 
-            var property = entry.Property(x => x.PhienBan);
-            var originalVersion = property.OriginalValue;
+            var versionProperty = entry.Metadata.FindProperty("PhienBan");
 
-            // Preserve the original value for the concurrency WHERE clause.
-            // Increment only if another field has actually changed.
+            if (versionProperty is null || !versionProperty.IsConcurrencyToken)
+                continue;
+
+            if (versionProperty.ClrType != typeof(uint))
+                throw new InvalidOperationException(
+                    "Unsupported concurrency version type.");
+
+            var property = entry.Property("PhienBan");
+
             bool hasBusinessChanges = entry.Properties.Any(p =>
                 p.IsModified &&
-                p.Metadata.Name != nameof(TaiKhoan.PhienBan));
+                p.Metadata.Name != "PhienBan");
 
             if (!hasBusinessChanges)
                 continue;
+
+            var originalVersion = (uint)property.OriginalValue!;
 
             property.CurrentValue = checked(originalVersion + 1);
             property.IsModified = true;

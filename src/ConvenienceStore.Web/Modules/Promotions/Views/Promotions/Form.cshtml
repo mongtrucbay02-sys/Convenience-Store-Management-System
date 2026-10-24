@@ -1,0 +1,239 @@
+@using ConvenienceStore.Web.Modules.Promotions.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model PromotionFormModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var isEdit = (bool)(ViewData["IsEdit"] ?? false);
+    var selected = (IReadOnlyList<ProductRefDto>)ViewData["Selected"]!;
+    // BR-KM-03: sau khi có lượt dùng chỉ sửa tên, mô tả, thời gian kết thúc (và ảnh).
+    var locked = isEdit && Model.UsageCount > 0;
+    ViewData["Title"] = isEdit ? "Sửa khuyến mãi" : "Tạo khuyến mãi";
+    string Dt(DateTime? d) => d?.ToString("yyyy-MM-dd'T'HH:mm") ?? "";
+}
+
+<h1 class="h3 mb-3">@ViewData["Title"]@(isEdit ? " " + Model.Code : "")</h1>
+
+@if (locked)
+{
+    <div class="alert alert-warning">Chương trình đã có @Model.UsageCount lượt sử dụng: chỉ được sửa tên, mô tả, ảnh và thời gian kết thúc. Muốn đổi mức giảm, hãy kết thúc chương trình này và tạo chương trình mới.</div>
+}
+
+<form method="post" asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@Model.Id" class="row g-3" style="max-width:760px">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="col-12">
+        <label class="form-label" asp-for="Name">Tên chương trình</label>
+        <input class="form-control" asp-for="Name" maxlength="200" />
+        <span class="text-danger small" asp-validation-for="Name"></span>
+    </div>
+    <div class="col-12">
+        <label class="form-label" asp-for="Description">Mô tả</label>
+        <textarea class="form-control" asp-for="Description" rows="2"></textarea>
+    </div>
+    <div class="col-12">
+        <label class="form-label" asp-for="ImageUrl">Liên kết ảnh (không bắt buộc)</label>
+        <input class="form-control" asp-for="ImageUrl" type="url" placeholder="https://..." maxlength="2048" />
+        <span class="text-danger small" asp-validation-for="ImageUrl"></span>
+        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+        {
+            <img src="@Model.ImageUrl" alt="Ảnh minh họa" class="mt-2 rounded border" style="height:72px" referrerpolicy="no-referrer" onerror="this.style.display='none'" />
+        }
+    </div>
+
+    @if (locked)
+    {
+        <input type="hidden" name="DiscountType" value="@Model.DiscountType" />
+        <input type="hidden" name="DiscountValue" value="@Model.DiscountValue" />
+        <input type="hidden" name="MaxDiscountAmount" value="@Model.MaxDiscountAmount" />
+        <input type="hidden" name="MembersOnly" value="@(Model.MembersOnly ? "true" : "false")" />
+        <input type="hidden" name="StartAt" value="@Dt(Model.StartAt)" />
+        @foreach (var id in Model.ProductIds)
+        {
+            <input type="hidden" name="ProductIds" value="@id" />
+        }
+        <div class="col-12 small text-muted">
+            Giảm: @(Model.DiscountType == DiscountType.Percent ? Model.DiscountValue + "%" : Model.DiscountValue + " ₫ / sản phẩm")
+            · Sản phẩm: @string.Join(", ", selected.Select(p => p.Name))
+            · Bắt đầu: @Model.StartAt?.ToString("dd/MM/yyyy HH:mm")
+            · @(Model.MembersOnly ? "Chỉ thành viên" : "Mọi khách")
+        </div>
+    }
+    else
+    {
+        <div class="col-md-4">
+            <label class="form-label" asp-for="DiscountType">Loại giảm</label>
+            <select class="form-select" asp-for="DiscountType">
+                <option value="Percent">Phần trăm (%)</option>
+                <option value="FixedAmount">Số tiền cố định (₫ / sản phẩm)</option>
+            </select>
+            <span class="text-danger small" asp-validation-for="DiscountType"></span>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" asp-for="DiscountValue">Giá trị</label>
+            <input class="form-control" asp-for="DiscountValue" type="number" min="1" />
+            <span class="text-danger small" asp-validation-for="DiscountValue"></span>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" asp-for="MaxDiscountAmount">Giảm tối đa (₫, loại %)</label>
+            <input class="form-control" asp-for="MaxDiscountAmount" type="number" min="1" />
+            <span class="text-danger small" asp-validation-for="MaxDiscountAmount"></span>
+        </div>
+        <div class="col-12" id="product-picker" data-url="@Url.Action("ProductSearch")">
+            <div class="form-label">Sản phẩm được giảm</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <input type="search" class="form-control form-control-sm" id="product-q" placeholder="Tìm theo tên hoặc mã SKU..." autocomplete="off" />
+                    <ul class="list-group list-group-flush mt-2" id="product-results"></ul>
+                    <div class="d-flex justify-content-between align-items-center mt-2 small text-muted">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="product-prev">‹ Trước</button>
+                        <span id="product-info"></span>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="product-next">Sau ›</button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="small text-muted mb-1">Đã chọn (<span id="selected-count">@selected.Count</span>)</div>
+                    <ul class="list-group" id="selected-products">
+                        @foreach (var p in selected)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-1" data-id="@p.Id">
+                                <span>@p.Name <span class="text-muted">(@p.Sku)</span></span>
+                                <input type="hidden" name="ProductIds" value="@p.Id" />
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Bỏ</button>
+                            </li>
+                        }
+                    </ul>
+                    <div class="small text-muted mt-1" id="selected-empty" style="display:@(selected.Count == 0 ? "block" : "none")">Chưa chọn sản phẩm nào.</div>
+                </div>
+            </div>
+            <span class="text-danger small" asp-validation-for="ProductIds"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" asp-for="StartAt">Bắt đầu (giờ Việt Nam)</label>
+            <input class="form-control" type="datetime-local" name="StartAt" id="StartAt" value="@Dt(Model.StartAt)" />
+            <span class="text-danger small" asp-validation-for="StartAt"></span>
+        </div>
+    }
+
+    <div class="col-md-6">
+        <label class="form-label" asp-for="EndAt">Kết thúc (giờ Việt Nam)</label>
+        <input class="form-control" type="datetime-local" name="EndAt" id="EndAt" value="@Dt(Model.EndAt)" />
+        <span class="text-danger small" asp-validation-for="EndAt"></span>
+    </div>
+
+    @if (!locked)
+    {
+        <div class="col-12">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="MembersOnly" value="true" id="MembersOnly" checked="@Model.MembersOnly" />
+                <label class="form-check-label" for="MembersOnly">Chỉ áp dụng cho thành viên</label>
+            </div>
+        </div>
+    }
+
+    <div class="col-12">
+        @if (isEdit)
+        {
+            <button class="btn btn-primary" type="submit">Lưu</button>
+        }
+        else
+        {
+            <button class="btn btn-outline-primary" type="submit" name="submitAction" value="draft">Lưu nháp</button>
+            <button class="btn btn-primary" type="submit" name="submitAction" value="activate">Lưu và kích hoạt</button>
+        }
+        <a class="btn btn-link" asp-action="Index">Quay lại</a>
+    </div>
+</form>
+
+@if (!locked)
+{
+    <script>
+        (function () {
+            var root = document.getElementById('product-picker');
+            var url = root.dataset.url;
+            var q = document.getElementById('product-q');
+            var results = document.getElementById('product-results');
+            var selected = document.getElementById('selected-products');
+            var info = document.getElementById('product-info');
+            var prev = document.getElementById('product-prev');
+            var next = document.getElementById('product-next');
+            var count = document.getElementById('selected-count');
+            var empty = document.getElementById('selected-empty');
+            var page = 1, totalPages = 0, timer = null;
+
+            function isSelected(id) {
+                return !!selected.querySelector('li[data-id="' + id + '"]');
+            }
+            function refreshSelected() {
+                var n = selected.querySelectorAll('li').length;
+                count.textContent = n;
+                empty.style.display = n === 0 ? 'block' : 'none';
+            }
+            function label(p) {
+                var span = document.createElement('span');
+                span.appendChild(document.createTextNode(p.name + ' '));
+                var sku = document.createElement('span');
+                sku.className = 'text-muted';
+                sku.textContent = '(' + p.sku + ')';
+                span.appendChild(sku);
+                return span;
+            }
+            function add(p) {
+                if (isSelected(p.id)) return;
+                var li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center py-1';
+                li.dataset.id = p.id;
+                li.appendChild(label(p));
+                var hidden = document.createElement('input');
+                hidden.type = 'hidden'; hidden.name = 'ProductIds'; hidden.value = p.id;
+                li.appendChild(hidden);
+                var btn = document.createElement('button');
+                btn.type = 'button'; btn.className = 'btn btn-sm btn-outline-danger'; btn.textContent = 'Bỏ';
+                btn.setAttribute('data-remove', '');
+                li.appendChild(btn);
+                selected.appendChild(li);
+                refreshSelected();
+            }
+            function render(data) {
+                results.innerHTML = '';
+                totalPages = data.totalPages;
+                data.items.forEach(function (p) {
+                    var li = document.createElement('li');
+                    li.className = 'list-group-item d-flex justify-content-between align-items-center py-1';
+                    li.appendChild(label(p));
+                    var btn = document.createElement('button');
+                    btn.type = 'button'; btn.className = 'btn btn-sm btn-outline-primary';
+                    btn.textContent = isSelected(p.id) ? 'Đã chọn' : 'Thêm';
+                    btn.disabled = isSelected(p.id);
+                    btn.addEventListener('click', function () { add(p); btn.textContent = 'Đã chọn'; btn.disabled = true; });
+                    li.appendChild(btn);
+                    results.appendChild(li);
+                });
+                info.textContent = data.totalItems === 0
+                    ? 'Không có sản phẩm phù hợp'
+                    : 'Trang ' + data.page + '/' + data.totalPages + ' · ' + data.totalItems + ' sản phẩm';
+                prev.disabled = data.page <= 1;
+                next.disabled = data.page >= data.totalPages;
+            }
+            function search() {
+                fetch(url + '?q=' + encodeURIComponent(q.value) + '&page=' + page, { credentials: 'same-origin' })
+                    .then(function (r) { return r.json(); })
+                    .then(render)
+                    .catch(function () { info.textContent = 'Không tải được danh sách sản phẩm.'; });
+            }
+            q.addEventListener('input', function () {
+                clearTimeout(timer);
+                timer = setTimeout(function () { page = 1; search(); }, 250);
+            });
+            prev.addEventListener('click', function () { if (page > 1) { page--; search(); } });
+            next.addEventListener('click', function () { if (page < totalPages) { page++; search(); } });
+            selected.addEventListener('click', function (e) {
+                if (e.target.hasAttribute('data-remove')) {
+                    e.target.closest('li').remove();
+                    refreshSelected();
+                    search();
+                }
+            });
+            search();
+        })();
+    </script>
+}

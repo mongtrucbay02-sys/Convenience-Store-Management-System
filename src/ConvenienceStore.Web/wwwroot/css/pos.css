@@ -172,3 +172,35 @@
     font-size: 18px;
     font-weight: 700;
 }
+
+/* POS-02: Nút chỉnh sửa giỏ hàng */
+
+.pos-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+    .pos-actions form {
+        margin: 0;
+    }
+
+.pos-qty {
+    width: 65px;
+    min-width: 65px;
+    text-align: center;
+}
+
+.pos-cart-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+@media (max-width: 768px) {
+    .pos-cart-row {
+        flex-direction: column;
+    }
+}

@@ -170,26 +170,48 @@
         {
             <div class="pos-cart-row">
 
+                <!-- THÔNG TIN SẢN PHẨM -->
                 <div>
-                    <strong>
-                        @item.Name
-                    </strong>
+                    <strong>@item.Name</strong>
 
                     <div class="text-muted small">
+                        Đơn giá:
                         @item.UnitPrice.ToString("N0") đ
                         × @item.Quantity
                     </div>
 
-                    <!-- THÀNH TIỀN TỪNG DÒNG -->
                     <div class="fw-semibold">
                         Thành tiền:
                         @item.Total.ToString("N0") đ
                     </div>
                 </div>
 
+                <!-- POS-02: CHỈNH SỬA GIỎ HÀNG -->
                 <div class="pos-actions">
 
-                    <!-- CẬP NHẬT SỐ LƯỢNG -->
+                    <!-- NÚT GIẢM SỐ LƯỢNG -->
+                    <form asp-controller="Pos"
+                          asp-action="Update"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="productId"
+                               value="@item.ProductId" />
+
+                        <input type="hidden"
+                               name="quantity"
+                               value="@(item.Quantity - 1)" />
+
+                        <button type="submit"
+                                class="btn btn-outline-secondary btn-sm"
+                                aria-label="Giảm số lượng @item.Name">
+                            −
+                        </button>
+                    </form>
+
+                    <!-- NHẬP SỐ LƯỢNG -->
                     <form asp-controller="Pos"
                           asp-action="Update"
                           method="post"
@@ -204,16 +226,38 @@
                         <input class="form-control form-control-sm pos-qty"
                                type="number"
                                name="quantity"
-                               min="1"
+                               min="0"
                                step="1"
+                               required
                                value="@item.Quantity"
                                aria-label="Số lượng @item.Name" />
 
-                        <button class="btn btn-outline-secondary btn-sm"
-                                type="submit">
+                        <button type="submit"
+                                class="btn btn-outline-primary btn-sm">
                             Sửa
                         </button>
+                    </form>
 
+                    <!-- NÚT TĂNG SỐ LƯỢNG -->
+                    <form asp-controller="Pos"
+                          asp-action="Update"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="productId"
+                               value="@item.ProductId" />
+
+                        <input type="hidden"
+                               name="quantity"
+                               value="@(item.Quantity + 1)" />
+
+                        <button type="submit"
+                                class="btn btn-outline-secondary btn-sm"
+                                aria-label="Tăng số lượng @item.Name">
+                            +
+                        </button>
                     </form>
 
                     <!-- XÓA SẢN PHẨM -->
@@ -227,11 +271,10 @@
                                name="productId"
                                value="@item.ProductId" />
 
-                        <button class="btn btn-outline-danger btn-sm"
-                                type="submit">
+                        <button type="submit"
+                                class="btn btn-outline-danger btn-sm">
                             Xóa
                         </button>
-
                     </form>
 
                 </div>

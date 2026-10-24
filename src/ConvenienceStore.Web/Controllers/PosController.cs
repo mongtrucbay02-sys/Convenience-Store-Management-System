@@ -10,13 +10,23 @@ public sealed class PosController : Controller
     private readonly MySqlPosCatalog _catalog;
     private readonly PosCartService _cart;
 
+    // POS-05: Service thanh toán tiền mặt,
+    // kết nối POS-07 tạm thời
+    private readonly PosPaymentService _posPayment;
+
     public PosController(
         MySqlPosCatalog catalog,
-        PosCartService cart)
+        PosCartService cart,
+        PosPaymentService posPayment)
     {
         _catalog = catalog;
         _cart = cart;
+        _posPayment = posPayment;
     }
+
+    // ==========================================
+    // POS-01: HIỂN THỊ SẢN PHẨM VÀ GIỎ HÀNG
+    // ==========================================
 
     [HttpGet]
     public async Task<IActionResult> Index(string? search, int? categoryId)
@@ -33,6 +43,10 @@ public sealed class PosController : Controller
         });
     }
 
+    // ==========================================
+    // POS-01: THÊM SẢN PHẨM VÀO GIỎ
+    // ==========================================
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Add(int productId)
@@ -44,6 +58,10 @@ public sealed class PosController : Controller
 
         return RedirectToAction(nameof(Index));
     }
+
+    // ==========================================
+    // POS-02: CHỈNH SỬA SỐ LƯỢNG SẢN PHẨM
+    // ==========================================
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -82,6 +100,9 @@ public sealed class PosController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    // ==========================================
+    // POS-02: XÓA SẢN PHẨM KHỎI GIỎ
+    // ==========================================
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -94,6 +115,10 @@ public sealed class PosController : Controller
 
         return RedirectToAction(nameof(Index));
     }
+
+    // ==========================================
+    // GIỮ NGUYÊN HÀM CALCULATE CỦA BẠN
+    // ==========================================
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -127,6 +152,149 @@ public sealed class PosController : Controller
             Change = cashReceived - cart.Total
         });
     }
+
+    // ==========================================
+    // POS-05: MỞ TRANG THANH TOÁN TIỀN MẶT
+    // ==========================================
+
+    // ==========================================
+    // POS-05: BƯỚC 1 - CHỌN PHƯƠNG THỨC THANH TOÁN
+    // ==========================================
+
+    [HttpGet]
+    public async Task<IActionResult> Checkout()
+    {
+        var cart = _cart.GetCart();
+
+        // Kiểm tra giỏ hàng trước khi thanh toán
+        var error = await _cart.ValidateCartAsync(cart);
+
+        if (error != null)
+        {
+            TempData["Error"] = error;
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Mở trang chọn phương thức thanh toán
+        return View("Checkout", new PosCheckoutViewModel
+        {
+            Subtotal = cart.Subtotal,
+            Discount = cart.Discount,
+            Total = cart.Total
+        });
+    }
+
+    // ==========================================
+    // POS-05: BƯỚC 2 - CHỌN THANH TOÁN TIỀN MẶT
+    // ==========================================
+
+    [HttpGet]
+    public async Task<IActionResult> Cash()
+    {
+        var cart = _cart.GetCart();
+
+        // Kiểm tra giỏ hàng và tồn kho
+        var error = await _cart.ValidateCartAsync(cart);
+
+        if (error != null)
+        {
+            TempData["Error"] = error;
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Mở trang nhập tiền khách đưa
+        return View("Cash", new PosCheckoutViewModel
+        {
+            Subtotal = cart.Subtotal,
+            Discount = cart.Discount,
+            Total = cart.Total
+        });
+    }
+
+    // ==========================================
+    // POS-05: BƯỚC 3, 4, 5
+    // NHẬP TIỀN - TÍNH TIỀN THỪA - XÁC NHẬN
+    // ==========================================
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfirmCash(
+        string? cashReceived)
+    {
+        var cart = _cart.GetCart();
+
+        // Kiểm tra giỏ hàng trước khi xác nhận
+        var error = await _cart.ValidateCartAsync(cart);
+
+        if (error != null)
+        {
+            TempData["Error"] = error;
+            return RedirectToAction(nameof(Index));
+        }
+
+        var model = new PosCheckoutViewModel
+        {
+            Subtotal = cart.Subtotal,
+            Discount = cart.Discount,
+            Total = cart.Total,
+            CashInput = cashReceived ?? ""
+        };
+
+        // Kiểm tra số tiền nhập vào:
+        // Không cho nhập chữ, số âm, số thập phân
+        if (!long.TryParse(
+                cashReceived,
+                System.Globalization.NumberStyles.None,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out long cash))
+        {
+            model.Error =
+                "Tiền khách đưa không hợp lệ. " +
+                "Vui lòng nhập số nguyên không âm.";
+
+            return View("Cash", model);
+        }
+
+        model.CashReceived = cash;
+
+        // ======================================
+        // NGOẠI LỆ E1: KHÁCH ĐƯA KHÔNG ĐỦ TIỀN
+        // ======================================
+
+        if (cash < cart.Total)
+        {
+            model.Error =
+                $"Khách đưa chưa đủ. Còn thiếu " +
+                $"{cart.Total - cash:N0} đ.";
+
+            // Không gọi POS-07 khi thiếu tiền
+            return View("Cash", model);
+        }
+
+        // ======================================
+        // TÍNH TIỀN THỪA
+        // ======================================
+
+        model.Change = cash - cart.Total;
+
+        // ======================================
+        // BƯỚC 5: GỌI POS-07 TẠM THỜI
+        // ======================================
+
+        // Chưa lưu hóa đơn, chưa trừ kho
+        // và chưa xóa giỏ hàng
+        model.Message = await _posPayment.PrepareAsync(
+            cart,
+            cash,
+            model.Change.Value);
+
+        return View("Cash", model);
+    }
+
+    // ==========================================
+    // POS-09: HỦY ĐƠN HÀNG ĐANG BÁN
+    // GIỮ NGUYÊN CODE CỦA BẠN
+    // ==========================================
 
     [HttpPost]
     [ValidateAntiForgeryToken]

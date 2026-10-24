@@ -80,7 +80,7 @@ public sealed class PosCartService
     }
 
     public async Task<string?> UpdateAsync(
-        int productId, int quantity)
+     int productId, int quantity)
     {
         var cart = GetCart();
 
@@ -90,7 +90,12 @@ public sealed class PosCartService
         if (item == null)
             return "Sản phẩm không có trong giỏ.";
 
-        if (quantity <= 0)
+        if (quantity < 0)
+        {
+            return "Số lượng không hợp lệ.";
+        }
+
+        if (quantity == 0)
         {
             cart.Items.Remove(item);
             Save(cart);

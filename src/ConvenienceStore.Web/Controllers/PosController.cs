@@ -2,6 +2,7 @@
 using ConvenienceStore.Web.Models.Pos;
 using ConvenienceStore.Web.Services.Pos;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ConvenienceStore.Web.Controllers;
 
@@ -9,19 +10,19 @@ public sealed class PosController : Controller
 {
     private readonly MySqlPosCatalog _catalog;
     private readonly PosCartService _cart;
-
-    // POS-05: Service thanh toán tiền mặt,
-    // kết nối POS-07 tạm thời
     private readonly PosPaymentService _posPayment;
+    private readonly PosCancellationService _cancellation;
 
     public PosController(
         MySqlPosCatalog catalog,
         PosCartService cart,
-        PosPaymentService posPayment)
+        PosPaymentService posPayment,
+        PosCancellationService cancellation)
     {
         _catalog = catalog;
         _cart = cart;
         _posPayment = posPayment;
+        _cancellation = cancellation;
     }
 
     // ==========================================
@@ -29,9 +30,12 @@ public sealed class PosController : Controller
     // ==========================================
 
     [HttpGet]
-    public async Task<IActionResult> Index(string? search, int? categoryId)
+    public async Task<IActionResult> Index(
+        string? search,
+        int? categoryId)
     {
-        var products = await _catalog.SearchAsync(search, categoryId);
+        var products = await _catalog.SearchAsync(
+            search, categoryId);
 
         return View(new PosPageViewModel
         {
@@ -60,7 +64,7 @@ public sealed class PosController : Controller
     }
 
     // ==========================================
-    // POS-02: CHỈNH SỬA SỐ LƯỢNG SẢN PHẨM
+    // POS-02: CHỈNH SỬA SỐ LƯỢNG
     // ==========================================
 
     [HttpPost]
@@ -69,21 +73,18 @@ public sealed class PosController : Controller
         int productId,
         string? quantity)
     {
-        // E1: Chặn chữ, số thập phân, giá trị rỗng
-        // và số âm ở phía máy chủ
         if (!int.TryParse(quantity, out int newQuantity)
             || newQuantity < 0)
         {
             TempData["Error"] =
-                "Số lượng không hợp lệ. Vui lòng nhập số nguyên không âm.";
+                "Số lượng không hợp lệ. " +
+                "Vui lòng nhập số nguyên không âm.";
 
             return RedirectToAction(nameof(Index));
         }
 
-        // Gọi service cập nhật giỏ hàng
         var error = await _cart.UpdateAsync(
-            productId,
-            newQuantity);
+            productId, newQuantity);
 
         if (error != null)
         {
@@ -117,12 +118,13 @@ public sealed class PosController : Controller
     }
 
     // ==========================================
-    // GIỮ NGUYÊN HÀM CALCULATE CỦA BẠN
+    // TÍNH TIỀN VÀ TIỀN THỪA
     // ==========================================
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Calculate(long cashReceived)
+    public async Task<IActionResult> Calculate(
+        long cashReceived)
     {
         var cart = _cart.GetCart();
 
@@ -154,11 +156,7 @@ public sealed class PosController : Controller
     }
 
     // ==========================================
-    // POS-05: MỞ TRANG THANH TOÁN TIỀN MẶT
-    // ==========================================
-
-    // ==========================================
-    // POS-05: BƯỚC 1 - CHỌN PHƯƠNG THỨC THANH TOÁN
+    // POS-05: CHỌN PHƯƠNG THỨC THANH TOÁN
     // ==========================================
 
     [HttpGet]
@@ -166,7 +164,6 @@ public sealed class PosController : Controller
     {
         var cart = _cart.GetCart();
 
-        // Kiểm tra giỏ hàng trước khi thanh toán
         var error = await _cart.ValidateCartAsync(cart);
 
         if (error != null)
@@ -175,7 +172,6 @@ public sealed class PosController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        // Mở trang chọn phương thức thanh toán
         return View("Checkout", new PosCheckoutViewModel
         {
             Subtotal = cart.Subtotal,
@@ -185,7 +181,7 @@ public sealed class PosController : Controller
     }
 
     // ==========================================
-    // POS-05: BƯỚC 2 - CHỌN THANH TOÁN TIỀN MẶT
+    // POS-05: MỞ TRANG THANH TOÁN TIỀN MẶT
     // ==========================================
 
     [HttpGet]
@@ -193,7 +189,6 @@ public sealed class PosController : Controller
     {
         var cart = _cart.GetCart();
 
-        // Kiểm tra giỏ hàng và tồn kho
         var error = await _cart.ValidateCartAsync(cart);
 
         if (error != null)
@@ -202,7 +197,6 @@ public sealed class PosController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        // Mở trang nhập tiền khách đưa
         return View("Cash", new PosCheckoutViewModel
         {
             Subtotal = cart.Subtotal,
@@ -212,8 +206,7 @@ public sealed class PosController : Controller
     }
 
     // ==========================================
-    // POS-05: BƯỚC 3, 4, 5
-    // NHẬP TIỀN - TÍNH TIỀN THỪA - XÁC NHẬN
+    // POS-05: XÁC NHẬN THANH TOÁN TIỀN MẶT
     // ==========================================
 
     [HttpPost]
@@ -223,7 +216,6 @@ public sealed class PosController : Controller
     {
         var cart = _cart.GetCart();
 
-        // Kiểm tra giỏ hàng trước khi xác nhận
         var error = await _cart.ValidateCartAsync(cart);
 
         if (error != null)
@@ -240,8 +232,6 @@ public sealed class PosController : Controller
             CashInput = cashReceived ?? ""
         };
 
-        // Kiểm tra số tiền nhập vào:
-        // Không cho nhập chữ, số âm, số thập phân
         if (!long.TryParse(
                 cashReceived,
                 System.Globalization.NumberStyles.None,
@@ -257,32 +247,21 @@ public sealed class PosController : Controller
 
         model.CashReceived = cash;
 
-        // ======================================
-        // NGOẠI LỆ E1: KHÁCH ĐƯA KHÔNG ĐỦ TIỀN
-        // ======================================
-
+        // E1: Khách đưa không đủ tiền
         if (cash < cart.Total)
         {
             model.Error =
                 $"Khách đưa chưa đủ. Còn thiếu " +
                 $"{cart.Total - cash:N0} đ.";
 
-            // Không gọi POS-07 khi thiếu tiền
             return View("Cash", model);
         }
 
-        // ======================================
-        // TÍNH TIỀN THỪA
-        // ======================================
-
+        // Tính tiền thừa
         model.Change = cash - cart.Total;
 
-        // ======================================
-        // BƯỚC 5: GỌI POS-07 TẠM THỜI
-        // ======================================
-
+        // Gọi POS-07 tạm thời
         // Chưa lưu hóa đơn, chưa trừ kho
-        // và chưa xóa giỏ hàng
         model.Message = await _posPayment.PrepareAsync(
             cart,
             cash,
@@ -292,18 +271,85 @@ public sealed class PosController : Controller
     }
 
     // ==========================================
+
+    // ==========================================
     // POS-09: HỦY ĐƠN HÀNG ĐANG BÁN
-    // GIỮ NGUYÊN CODE CỦA BẠN
+    // BR-POS-10: GHI LỊCH SỬ HỦY ĐƠN
     // ==========================================
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Cancel()
+    public async Task<IActionResult> Cancel()
     {
-        _cart.Cancel();
+        // BƯỚC 1: Kiểm tra đăng nhập
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            // Chuyển đến trang đăng nhập
+            // Yêu cầu nhóm đã triển khai Account/Login
+            return Challenge();
+        }
 
-        TempData["Success"] = "Đã hủy đơn hàng.";
+        // BƯỚC 2: Kiểm tra quyền Thu ngân
+        if (!User.IsInRole("Cashier"))
+        {
+            return Forbid();
+        }
 
+        // BƯỚC 3: Xác định người hủy
+        string? cashierId = User.FindFirst(
+            ClaimTypes.NameIdentifier
+        )?.Value;
+
+        if (string.IsNullOrWhiteSpace(cashierId))
+        {
+            TempData["Error"] =
+                "Không xác định được tài khoản thu ngân.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // BƯỚC 4: Kiểm tra giỏ hàng
+        var cart = _cart.GetCart();
+
+        if (cart.Items == null || !cart.Items.Any())
+        {
+            TempData["Error"] =
+                "Giỏ hàng đang trống, không có đơn để hủy.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // BƯỚC 5: Ghi lịch sử và hủy đơn
+        try
+        {
+            bool cancelled =
+                await _cancellation.CancelCurrentAsync(
+                    cashierId,
+                    "POS"
+                );
+
+            if (cancelled)
+            {
+                TempData["Success"] =
+                    "Đã hủy đơn hàng thành công. " +
+                    "Hệ thống đã ghi lịch sử hủy " +
+                    "và tạo giỏ hàng trống mới.";
+            }
+            else
+            {
+                TempData["Error"] =
+                    "Không tìm thấy đơn hàng để hủy.";
+            }
+        }
+        catch (Exception)
+        {
+            // Không xóa giỏ nếu chưa ghi MySQL
+            TempData["Error"] =
+                "Không thể ghi lịch sử hủy đơn. " +
+                "Vui lòng thử lại.";
+        }
+
+        // BƯỚC 6: Quay về trang POS
         return RedirectToAction(nameof(Index));
     }
-}
+} 

@@ -1,4 +1,4 @@
-﻿# Purchasing Code First Verification
+# Purchasing Code First Verification
 
 ## 1. Environment
 
@@ -143,4 +143,3 @@ The corrected runtime verification subsequently passed.
 
 All runtime fixtures were rolled back. No test records
 remained in the nine implemented tables.
-

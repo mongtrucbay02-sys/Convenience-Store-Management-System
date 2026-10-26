@@ -202,6 +202,48 @@ namespace ConvenienceStore.Web.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.TonKho", b =>
+                {
+                    b.Property<uint>("SanPhamId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("san_pham_id");
+
+                    b.Property<decimal>("GiaVonBinhQuan")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(15,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("gia_von_binh_quan");
+
+                    b.Property<DateTime>("NgayCapNhat")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime")
+                        .HasColumnName("ngay_cap_nhat")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+
+                    b.Property<int>("NguongToiThieu")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(5)
+                        .HasColumnName("nguong_toi_thieu");
+
+                    b.Property<int>("SoLuongTon")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("so_luong_ton");
+
+                    b.HasKey("SanPhamId");
+
+                    b.ToTable("ton_kho", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_gia_von_khong_am", "gia_von_binh_quan >= 0");
+
+                            t.HasCheckConstraint("ck_nguong_khong_am", "nguong_toi_thieu >= 0");
+
+                            t.HasCheckConstraint("ck_ton_khong_am", "so_luong_ton >= 0");
+                        });
+                });
+
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Products.Entities.DanhMuc", b =>
                 {
                     b.Property<uint>("Id")
@@ -687,6 +729,18 @@ namespace ConvenienceStore.Web.Data.Migrations
                         .HasConstraintName("fk_tai_khoan_vai_tro");
 
                     b.Navigation("VaiTro");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.TonKho", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.Products.Entities.SanPham", "SanPham")
+                        .WithOne()
+                        .HasForeignKey("ConvenienceStore.Web.Modules.Inventory.Entities.TonKho", "SanPhamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_ton_kho_san_pham");
+
+                    b.Navigation("SanPham");
                 });
 
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Products.Entities.LichSuGia", b =>

@@ -1,3 +1,4 @@
+using ConvenienceStore.Web.Modules.Inventory.Entities;
 using ConvenienceStore.Web.Modules.Shared.Entities;
 using ConvenienceStore.Web.Modules.Purchasing.Entities;
 using ConvenienceStore.Web.Modules.Identity.Entities;
@@ -13,6 +14,8 @@ public class ApplicationDbContext : DbContext
         : base(options)
     {
     }
+
+    public DbSet<TonKho> TonKhos => Set<TonKho>();
 
     public DbSet<BoDemChungTu> BoDemChungTus =>
         Set<BoDemChungTu>();

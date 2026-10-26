@@ -18,6 +18,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<TonKho> TonKhos => Set<TonKho>();
     public DbSet<TheKho> TheKhos => Set<TheKho>();
     public DbSet<PhieuKiemKe> PhieuKiemKes => Set<PhieuKiemKe>();
+    public DbSet<CtKiemKe> CtKiemKes => Set<CtKiemKe>();
 
     public DbSet<BoDemChungTu> BoDemChungTus =>
         Set<BoDemChungTu>();

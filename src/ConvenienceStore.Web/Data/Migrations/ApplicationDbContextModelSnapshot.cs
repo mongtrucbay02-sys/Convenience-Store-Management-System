@@ -202,6 +202,47 @@ namespace ConvenienceStore.Web.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.CtKiemKe", b =>
+                {
+                    b.Property<uint>("PhieuKiemKeId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("phieu_kiem_ke_id");
+
+                    b.Property<uint>("SanPhamId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("san_pham_id");
+
+                    b.Property<int?>("ChenhLechLucDuyet")
+                        .HasColumnType("int")
+                        .HasColumnName("chenh_lech_luc_duyet");
+
+                    b.Property<decimal?>("GiaVonLucDuyet")
+                        .HasColumnType("decimal(15,2)")
+                        .HasColumnName("gia_von_luc_duyet");
+
+                    b.Property<string>("LyDoChenhLech")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("ly_do_chenh_lech");
+
+                    b.Property<int?>("SoLuongThucTe")
+                        .HasColumnType("int")
+                        .HasColumnName("so_luong_thuc_te");
+
+                    b.Property<int>("TonLucLap")
+                        .HasColumnType("int")
+                        .HasColumnName("ton_luc_lap");
+
+                    b.HasKey("PhieuKiemKeId", "SanPhamId");
+
+                    b.HasIndex("SanPhamId")
+                        .HasDatabaseName("idx_ctkk_san_pham");
+
+                    b.ToTable("ct_kiem_ke", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_ctkk_thuc_te", "so_luong_thuc_te IS NULL OR so_luong_thuc_te >= 0");
+                        });
+                });
+
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.PhieuKiemKe", b =>
                 {
                     b.Property<uint>("Id")
@@ -893,6 +934,27 @@ namespace ConvenienceStore.Web.Data.Migrations
                         .HasConstraintName("fk_tai_khoan_vai_tro");
 
                     b.Navigation("VaiTro");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.CtKiemKe", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.Inventory.Entities.PhieuKiemKe", "PhieuKiemKe")
+                        .WithMany()
+                        .HasForeignKey("PhieuKiemKeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_ctkk_phieu");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Products.Entities.SanPham", "SanPham")
+                        .WithMany()
+                        .HasForeignKey("SanPhamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_ctkk_san_pham");
+
+                    b.Navigation("PhieuKiemKe");
+
+                    b.Navigation("SanPham");
                 });
 
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.PhieuKiemKe", b =>

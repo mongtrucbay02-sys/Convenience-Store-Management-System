@@ -752,6 +752,72 @@ namespace ConvenienceStore.Web.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.PointOfSale.Entities.CtHoaDon", b =>
+                {
+                    b.Property<uint>("HoaDonId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("hoa_don_id");
+
+                    b.Property<uint>("SanPhamId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("san_pham_id");
+
+                    b.Property<uint>("DonGia")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("don_gia");
+
+                    b.Property<string>("DonViTinh")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("don_vi_tinh");
+
+                    b.Property<decimal>("GiaVon")
+                        .HasColumnType("decimal(15,2)")
+                        .HasColumnName("gia_von");
+
+                    b.Property<uint>("GiamDonVi")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasDefaultValue(0u)
+                        .HasColumnName("giam_don_vi");
+
+                    b.Property<uint?>("KhuyenMaiId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("khuyen_mai_id");
+
+                    b.Property<uint>("SoLuong")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("so_luong");
+
+                    b.Property<string>("TenSanPham")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("ten_san_pham");
+
+                    b.Property<ulong>("ThanhTien")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bigint unsigned")
+                        .HasColumnName("thanh_tien")
+                        .HasComputedColumnSql("so_luong * (don_gia - giam_don_vi)", true);
+
+                    b.HasKey("HoaDonId", "SanPhamId");
+
+                    b.HasIndex("KhuyenMaiId")
+                        .HasDatabaseName("idx_cthd_km");
+
+                    b.HasIndex("SanPhamId")
+                        .HasDatabaseName("idx_cthd_san_pham");
+
+                    b.ToTable("ct_hoa_don", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_cthd_giam", "giam_don_vi <= don_gia AND giam_don_vi % 100 = 0");
+
+                            t.HasCheckConstraint("ck_cthd_km", "khuyen_mai_id IS NOT NULL OR giam_don_vi = 0");
+
+                            t.HasCheckConstraint("ck_cthd_so_luong", "so_luong > 0");
+                        });
+                });
+
             modelBuilder.Entity("ConvenienceStore.Web.Modules.PointOfSale.Entities.GioHang", b =>
                 {
                     b.Property<uint>("Id")
@@ -1743,6 +1809,35 @@ namespace ConvenienceStore.Web.Data.Migrations
                         .HasConstraintName("fk_ctgh_san_pham");
 
                     b.Navigation("GioHang");
+
+                    b.Navigation("KhuyenMai");
+
+                    b.Navigation("SanPham");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.PointOfSale.Entities.CtHoaDon", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.PointOfSale.Entities.HoaDon", "HoaDon")
+                        .WithMany()
+                        .HasForeignKey("HoaDonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cthd_hd");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Promotions.Entities.ChuongTrinhKhuyenMai", "KhuyenMai")
+                        .WithMany()
+                        .HasForeignKey("KhuyenMaiId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_cthd_km");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Products.Entities.SanPham", "SanPham")
+                        .WithMany()
+                        .HasForeignKey("SanPhamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cthd_san_pham");
+
+                    b.Navigation("HoaDon");
 
                     b.Navigation("KhuyenMai");
 

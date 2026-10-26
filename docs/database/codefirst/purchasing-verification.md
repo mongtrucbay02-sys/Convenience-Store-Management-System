@@ -102,8 +102,11 @@ and verified through `INFORMATION_SCHEMA`.
 Purchasing database schema and the ten executed SQL
 constraint tests meet the verified acceptance criteria.
 
-Further application-service, EF concurrency, inventory
-and end-to-end workflow verification remains required.
+EF Core stale-version checks passed using independent
+ChangeTrackers within one shared transaction.
+
+Independent-connection concurrency, application services,
+inventory posting and end-to-end workflows remain unverified.
 
 ## 8. EF Core Optimistic Concurrency Verification
 

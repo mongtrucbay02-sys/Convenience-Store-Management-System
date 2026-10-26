@@ -105,6 +105,52 @@ namespace ConvenienceStore.Web.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Customers.Entities.QuyTacTichDiem", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("DangBat")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true)
+                        .HasColumnName("dang_bat");
+
+                    b.Property<DateTime>("HieuLucTu")
+                        .HasColumnType("datetime")
+                        .HasColumnName("hieu_luc_tu");
+
+                    b.Property<DateTime>("NgayTao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("ngay_tao")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<uint?>("NguoiTaoId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("nguoi_tao_id");
+
+                    b.Property<uint>("SoTienMotDiem")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasDefaultValue(10000u)
+                        .HasColumnName("so_tien_mot_diem");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HieuLucTu")
+                        .HasDatabaseName("idx_qttd_hieu_luc");
+
+                    b.HasIndex("NguoiTaoId");
+
+                    b.ToTable("quy_tac_tich_diem", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_qttd_so_tien", "so_tien_mot_diem > 0");
+                        });
+                });
+
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Identity.Entities.PhienDangNhap", b =>
                 {
                     b.Property<ulong>("Id")
@@ -1126,6 +1172,17 @@ namespace ConvenienceStore.Web.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_kh_nguoi_tao");
+
+                    b.Navigation("NguoiTao");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Customers.Entities.QuyTacTichDiem", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.Identity.Entities.TaiKhoan", "NguoiTao")
+                        .WithMany()
+                        .HasForeignKey("NguoiTaoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_qttd_nguoi_tao");
 
                     b.Navigation("NguoiTao");
                 });

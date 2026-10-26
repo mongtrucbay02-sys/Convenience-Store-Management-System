@@ -23,6 +23,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<PhieuXuatHuy> PhieuXuatHuys => Set<PhieuXuatHuy>();
     public DbSet<CtXuatHuy> CtXuatHuys => Set<CtXuatHuy>();
     public DbSet<KhachHang> KhachHangs => Set<KhachHang>();
+    public DbSet<QuyTacTichDiem> QuyTacTichDiems => Set<QuyTacTichDiem>();
 
     public DbSet<BoDemChungTu> BoDemChungTus =>
         Set<BoDemChungTu>();

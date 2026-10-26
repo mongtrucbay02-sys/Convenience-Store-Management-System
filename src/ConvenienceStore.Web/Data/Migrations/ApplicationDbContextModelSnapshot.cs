@@ -202,6 +202,80 @@ namespace ConvenienceStore.Web.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.TheKho", b =>
+                {
+                    b.Property<ulong>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint unsigned")
+                        .HasColumnName("id");
+
+                    b.Property<uint>("ChungTuId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("chung_tu_id");
+
+                    b.Property<decimal>("GiaVonApDung")
+                        .HasColumnType("decimal(15,2)")
+                        .HasColumnName("gia_von_ap_dung");
+
+                    b.Property<decimal>("GiaVonSau")
+                        .HasColumnType("decimal(15,2)")
+                        .HasColumnName("gia_von_sau");
+
+                    b.Property<string>("LoaiBienDong")
+                        .IsRequired()
+                        .HasColumnType("enum('NHAP_HANG','BAN_HANG','HUY_HOA_DON','TRA_HANG','KIEM_KE','XUAT_HUY')")
+                        .HasColumnName("loai_bien_dong");
+
+                    b.Property<string>("MaChungTu")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("ma_chung_tu");
+
+                    b.Property<uint>("NguoiThucHienId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("nguoi_thuc_hien_id");
+
+                    b.Property<uint>("SanPhamId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("san_pham_id");
+
+                    b.Property<int>("SoLuongThayDoi")
+                        .HasColumnType("int")
+                        .HasColumnName("so_luong_thay_doi");
+
+                    b.Property<DateTime>("ThoiDiem")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("thoi_diem")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("TonSau")
+                        .HasColumnType("int")
+                        .HasColumnName("ton_sau");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NguoiThucHienId");
+
+                    b.HasIndex("ThoiDiem")
+                        .HasDatabaseName("idx_the_kho_tg");
+
+                    b.HasIndex("LoaiBienDong", "ChungTuId")
+                        .HasDatabaseName("idx_the_kho_chung_tu");
+
+                    b.HasIndex("SanPhamId", "ThoiDiem")
+                        .HasDatabaseName("idx_the_kho_sp_tg");
+
+                    b.ToTable("the_kho", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_the_kho_huong", "(\n                    (loai_bien_dong IN ('NHAP_HANG','HUY_HOA_DON','TRA_HANG')\n                     AND so_luong_thay_doi > 0)\n                    OR\n                    (loai_bien_dong IN ('BAN_HANG','XUAT_HUY')\n                     AND so_luong_thay_doi < 0)\n                    OR\n                    loai_bien_dong = 'KIEM_KE'\n                  )");
+
+                            t.HasCheckConstraint("ck_the_kho_khac_0", "so_luong_thay_doi <> 0");
+
+                            t.HasCheckConstraint("ck_the_kho_ton_sau", "ton_sau >= 0");
+                        });
+                });
+
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.TonKho", b =>
                 {
                     b.Property<uint>("SanPhamId")
@@ -729,6 +803,27 @@ namespace ConvenienceStore.Web.Data.Migrations
                         .HasConstraintName("fk_tai_khoan_vai_tro");
 
                     b.Navigation("VaiTro");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.TheKho", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.Identity.Entities.TaiKhoan", "NguoiThucHien")
+                        .WithMany()
+                        .HasForeignKey("NguoiThucHienId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_the_kho_nguoi");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Products.Entities.SanPham", "SanPham")
+                        .WithMany()
+                        .HasForeignKey("SanPhamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_the_kho_san_pham");
+
+                    b.Navigation("NguoiThucHien");
+
+                    b.Navigation("SanPham");
                 });
 
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.TonKho", b =>

@@ -1633,6 +1633,84 @@ namespace ConvenienceStore.Web.Data.Migrations
                     b.ToTable("chinh_sach_doi_tra", (string)null);
                 });
 
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Returns.Entities.CtPhieuDoiTra", b =>
+                {
+                    b.Property<uint>("PhieuDoiTraId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("phieu_doi_tra_id");
+
+                    b.Property<uint>("SanPhamId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("san_pham_id");
+
+                    b.Property<string>("CachXuLy")
+                        .IsRequired()
+                        .HasColumnType("enum('NHAP_LAI','HUY')")
+                        .HasColumnName("cach_xu_ly");
+
+                    b.Property<uint>("DonGiaThucTra")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("don_gia_thuc_tra");
+
+                    b.Property<string>("GhiChuLyDo")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("ghi_chu_ly_do");
+
+                    b.Property<decimal>("GiaTriHuy")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("decimal(17,2)")
+                        .HasColumnName("gia_tri_huy")
+                        .HasComputedColumnSql("IF(cach_xu_ly = 'HUY', so_luong * gia_von, 0)", true);
+
+                    b.Property<decimal>("GiaVon")
+                        .HasColumnType("decimal(15,2)")
+                        .HasColumnName("gia_von");
+
+                    b.Property<uint>("HoaDonId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("hoa_don_id");
+
+                    b.Property<string>("LyDo")
+                        .IsRequired()
+                        .HasColumnType("enum('LOI_SAN_PHAM','HET_HAN','KHONG_DUNG_NHU_CAU','KHAC')")
+                        .HasColumnName("ly_do");
+
+                    b.Property<bool>("NgoaiLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("ngoai_le");
+
+                    b.Property<uint>("SoLuong")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("so_luong");
+
+                    b.Property<ulong>("ThanhTien")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bigint unsigned")
+                        .HasColumnName("thanh_tien")
+                        .HasComputedColumnSql("so_luong * don_gia_thuc_tra", true);
+
+                    b.Property<string>("TinhTrang")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("tinh_trang");
+
+                    b.HasKey("PhieuDoiTraId", "SanPhamId");
+
+                    b.HasIndex("SanPhamId")
+                        .HasDatabaseName("idx_ctdt_san_pham");
+
+                    b.HasIndex("HoaDonId", "SanPhamId")
+                        .HasDatabaseName("idx_ctdt_dong_hd");
+
+                    b.ToTable("ct_phieu_doi_tra", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_ctdt_khac", "ly_do <> 'KHAC' OR ghi_chu_ly_do IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_ctdt_so_luong", "so_luong > 0");
+                        });
+                });
+
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Returns.Entities.PhieuDoiTra", b =>
                 {
                     b.Property<uint>("Id")
@@ -2243,6 +2321,27 @@ namespace ConvenienceStore.Web.Data.Migrations
                         .HasConstraintName("fk_csdt_nguoi_tao");
 
                     b.Navigation("NguoiTao");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Returns.Entities.CtPhieuDoiTra", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.Returns.Entities.PhieuDoiTra", "PhieuDoiTra")
+                        .WithMany()
+                        .HasForeignKey("PhieuDoiTraId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_ctdt_phieu");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.PointOfSale.Entities.CtHoaDon", "DongHoaDon")
+                        .WithMany()
+                        .HasForeignKey("HoaDonId", "SanPhamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_ctdt_dong_hd");
+
+                    b.Navigation("DongHoaDon");
+
+                    b.Navigation("PhieuDoiTra");
                 });
 
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Returns.Entities.PhieuDoiTra", b =>

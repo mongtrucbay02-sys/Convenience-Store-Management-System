@@ -1,6 +1,7 @@
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Auth;
 using ConvenienceStore.Web.Modules.Auth.Services;
+using ConvenienceStore.Web.Modules.Inventory;
 using ConvenienceStore.Web.Modules.Products.Services;
 using ConvenienceStore.Web.Modules.Reports;
 using ConvenienceStore.Web.Modules.Reports.Services;
@@ -48,6 +49,7 @@ builder.Services.AddScoped<KhoiTaoAdminDauTien>();
 
 builder.Services.AddXuLyLoiApi();
 builder.Services.AddModuleAuth();
+builder.Services.AddModuleInventory();
 
 var app = builder.Build();
 

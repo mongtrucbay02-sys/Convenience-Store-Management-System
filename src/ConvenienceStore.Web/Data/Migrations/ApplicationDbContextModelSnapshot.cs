@@ -19,6 +19,92 @@ namespace ConvenienceStore.Web.Data.Migrations
                 .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Customers.Entities.KhachHang", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("id");
+
+                    b.Property<uint>("DiemHienCo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasDefaultValue(0u)
+                        .HasColumnName("diem_hien_co");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("GioiTinh")
+                        .HasColumnType("enum('NAM','NU','KHAC')")
+                        .HasColumnName("gioi_tinh");
+
+                    b.Property<string>("HoTen")
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("ho_ten");
+
+                    b.Property<DateTime>("NgayCapNhat")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime")
+                        .HasColumnName("ngay_cap_nhat")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime?>("NgaySinh")
+                        .HasColumnType("date")
+                        .HasColumnName("ngay_sinh");
+
+                    b.Property<DateTime>("NgayTao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("ngay_tao")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<uint>("NguoiTaoId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("nguoi_tao_id");
+
+                    b.Property<uint>("PhienBan")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasDefaultValue(1u)
+                        .HasColumnName("phien_ban");
+
+                    b.Property<string>("SoDienThoai")
+                        .HasColumnType("varchar(10)")
+                        .HasColumnName("so_dien_thoai");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("enum('HOAT_DONG','DA_AN')")
+                        .HasDefaultValue("HOAT_DONG")
+                        .HasColumnName("trang_thai");
+
+                    b.Property<DateTime?>("XoaDuLieuLuc")
+                        .HasColumnType("datetime")
+                        .HasColumnName("xoa_du_lieu_luc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HoTen")
+                        .HasDatabaseName("idx_khach_hang_ten");
+
+                    b.HasIndex("NguoiTaoId");
+
+                    b.HasIndex("SoDienThoai")
+                        .IsUnique()
+                        .HasDatabaseName("uq_khach_hang_sdt");
+
+                    b.ToTable("khach_hang", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_kh_hoat_dong", "trang_thai <> 'HOAT_DONG' OR (ho_ten IS NOT NULL AND so_dien_thoai IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_kh_sdt", "so_dien_thoai IS NULL OR REGEXP_LIKE(so_dien_thoai, '^0[0-9]{9}$')");
+                        });
+                });
+
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Identity.Entities.PhienDangNhap", b =>
                 {
                     b.Property<ulong>("Id")
@@ -1030,6 +1116,18 @@ namespace ConvenienceStore.Web.Data.Migrations
                         {
                             t.HasCheckConstraint("ck_bo_dem_tien_to", "tien_to IN ('PN','HD','TH','KK','XH','SP','NCC','KM')");
                         });
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Customers.Entities.KhachHang", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.Identity.Entities.TaiKhoan", "NguoiTao")
+                        .WithMany()
+                        .HasForeignKey("NguoiTaoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_kh_nguoi_tao");
+
+                    b.Navigation("NguoiTao");
                 });
 
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Identity.Entities.PhienDangNhap", b =>

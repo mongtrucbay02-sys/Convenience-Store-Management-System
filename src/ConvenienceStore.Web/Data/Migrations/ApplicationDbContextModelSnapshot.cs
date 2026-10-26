@@ -394,6 +394,251 @@ namespace ConvenienceStore.Web.Data.Migrations
                     b.ToTable("san_pham", (string)null);
                 });
 
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Purchasing.Entities.ChiTietPhieuNhap", b =>
+                {
+                    b.Property<uint>("PhieuNhapId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("phieu_nhap_id");
+
+                    b.Property<uint>("SanPhamId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("san_pham_id");
+
+                    b.Property<string>("DonViTinh")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("don_vi_tinh");
+
+                    b.Property<uint>("GiaNhap")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("gia_nhap");
+
+                    b.Property<uint>("SoLuong")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("so_luong");
+
+                    b.Property<string>("TenSanPham")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("ten_san_pham");
+
+                    b.Property<ulong>("ThanhTien")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bigint unsigned")
+                        .HasColumnName("thanh_tien")
+                        .HasComputedColumnSql("so_luong * gia_nhap", true);
+
+                    b.HasKey("PhieuNhapId", "SanPhamId");
+
+                    b.HasIndex("SanPhamId")
+                        .HasDatabaseName("idx_ctpn_san_pham");
+
+                    b.ToTable("ct_phieu_nhap", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_ctpn_so_luong", "so_luong > 0");
+                        });
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Purchasing.Entities.NhaCungCap", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("id");
+
+                    b.Property<string>("DiaChi")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("dia_chi");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("GhiChu")
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("ghi_chu");
+
+                    b.Property<string>("Ma")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("ma");
+
+                    b.Property<string>("MaSoThue")
+                        .HasColumnType("varchar(14)")
+                        .HasColumnName("ma_so_thue");
+
+                    b.Property<DateTime>("NgayCapNhat")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime")
+                        .HasColumnName("ngay_cap_nhat")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime>("NgayTao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("ngay_tao")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("NguoiLienHe")
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("nguoi_lien_he");
+
+                    b.Property<uint>("PhienBan")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasDefaultValue(1u)
+                        .HasColumnName("phien_ban");
+
+                    b.Property<string>("SoDienThoai")
+                        .IsRequired()
+                        .HasColumnType("varchar(11)")
+                        .HasColumnName("so_dien_thoai");
+
+                    b.Property<string>("Ten")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("ten");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("enum('HOAT_DONG','NGUNG_HOP_TAC')")
+                        .HasDefaultValue("HOAT_DONG")
+                        .HasColumnName("trang_thai");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasDatabaseName("uq_ncc_ma");
+
+                    b.HasIndex("SoDienThoai")
+                        .IsUnique()
+                        .HasDatabaseName("uq_ncc_sdt");
+
+                    b.HasIndex("Ten")
+                        .HasDatabaseName("idx_ncc_ten");
+
+                    b.ToTable("nha_cung_cap", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_ncc_sdt", "REGEXP_LIKE(so_dien_thoai, '^0[0-9]{9,10}$')");
+                        });
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Purchasing.Entities.PhieuNhap", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("id");
+
+                    b.Property<string>("GhiChu")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("ghi_chu");
+
+                    b.Property<DateTime?>("HuyLuc")
+                        .HasColumnType("datetime")
+                        .HasColumnName("huy_luc");
+
+                    b.Property<string>("LyDoHuy")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("ly_do_huy");
+
+                    b.Property<string>("MaPhieu")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("ma_phieu");
+
+                    b.Property<DateTime>("NgayCapNhat")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime")
+                        .HasColumnName("ngay_cap_nhat")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime>("NgayLap")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("ngay_lap")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateOnly>("NgayNhap")
+                        .HasColumnType("date")
+                        .HasColumnName("ngay_nhap");
+
+                    b.Property<uint?>("NguoiHuyId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("nguoi_huy_id");
+
+                    b.Property<uint>("NguoiLapId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("nguoi_lap_id");
+
+                    b.Property<uint?>("NguoiXacNhanId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("nguoi_xac_nhan_id");
+
+                    b.Property<uint>("NhaCungCapId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("nha_cung_cap_id");
+
+                    b.Property<uint>("PhienBan")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasDefaultValue(1u)
+                        .HasColumnName("phien_ban");
+
+                    b.Property<string>("SoChungTuNcc")
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("so_chung_tu_ncc");
+
+                    b.Property<ulong>("TongTien")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint unsigned")
+                        .HasDefaultValue(0ul)
+                        .HasColumnName("tong_tien");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("enum('NHAP','DA_NHAP_KHO','DA_HUY')")
+                        .HasDefaultValue("NHAP")
+                        .HasColumnName("trang_thai");
+
+                    b.Property<DateTime?>("XacNhanLuc")
+                        .HasColumnType("datetime")
+                        .HasColumnName("xac_nhan_luc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaPhieu")
+                        .IsUnique()
+                        .HasDatabaseName("uq_phieu_nhap_ma");
+
+                    b.HasIndex("NguoiHuyId");
+
+                    b.HasIndex("NguoiLapId");
+
+                    b.HasIndex("NguoiXacNhanId");
+
+                    b.HasIndex("XacNhanLuc")
+                        .HasDatabaseName("idx_phieu_nhap_xac_nhan");
+
+                    b.HasIndex("NhaCungCapId", "XacNhanLuc")
+                        .HasDatabaseName("idx_phieu_nhap_ncc");
+
+                    b.HasIndex("TrangThai", "NgayLap")
+                        .HasDatabaseName("idx_phieu_nhap_tt");
+
+                    b.ToTable("phieu_nhap", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_pn_huy", "trang_thai <> 'DA_HUY' OR (nguoi_huy_id IS NOT NULL AND huy_luc IS NOT NULL AND ly_do_huy IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_pn_xac_nhan", "trang_thai <> 'DA_NHAP_KHO' OR (nguoi_xac_nhan_id IS NOT NULL AND xac_nhan_luc IS NOT NULL)");
+                        });
+                });
+
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Identity.Entities.PhienDangNhap", b =>
                 {
                     b.HasOne("ConvenienceStore.Web.Modules.Identity.Entities.TaiKhoan", "TaiKhoan")
@@ -466,6 +711,64 @@ namespace ConvenienceStore.Web.Data.Migrations
                     b.Navigation("DanhMuc");
 
                     b.Navigation("NguoiTao");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Purchasing.Entities.ChiTietPhieuNhap", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.Purchasing.Entities.PhieuNhap", "PhieuNhap")
+                        .WithMany()
+                        .HasForeignKey("PhieuNhapId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("fk_ctpn_phieu");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Products.Entities.SanPham", "SanPham")
+                        .WithMany()
+                        .HasForeignKey("SanPhamId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("fk_ctpn_san_pham");
+
+                    b.Navigation("PhieuNhap");
+
+                    b.Navigation("SanPham");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Purchasing.Entities.PhieuNhap", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.Identity.Entities.TaiKhoan", "NguoiHuy")
+                        .WithMany()
+                        .HasForeignKey("NguoiHuyId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("fk_pn_nguoi_huy");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Identity.Entities.TaiKhoan", "NguoiLap")
+                        .WithMany()
+                        .HasForeignKey("NguoiLapId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("fk_pn_nguoi_lap");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Identity.Entities.TaiKhoan", "NguoiXacNhan")
+                        .WithMany()
+                        .HasForeignKey("NguoiXacNhanId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("fk_pn_nguoi_xac_nhan");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Purchasing.Entities.NhaCungCap", "NhaCungCap")
+                        .WithMany()
+                        .HasForeignKey("NhaCungCapId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("fk_pn_ncc");
+
+                    b.Navigation("NguoiHuy");
+
+                    b.Navigation("NguoiLap");
+
+                    b.Navigation("NguoiXacNhan");
+
+                    b.Navigation("NhaCungCap");
                 });
 #pragma warning restore 612, 618
         }

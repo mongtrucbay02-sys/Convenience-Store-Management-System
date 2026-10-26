@@ -243,6 +243,46 @@ namespace ConvenienceStore.Web.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.CtXuatHuy", b =>
+                {
+                    b.Property<uint>("PhieuXuatHuyId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("phieu_xuat_huy_id");
+
+                    b.Property<uint>("SanPhamId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("san_pham_id");
+
+                    b.Property<string>("GhiChuLyDo")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("ghi_chu_ly_do");
+
+                    b.Property<decimal?>("GiaVonLucDuyet")
+                        .HasColumnType("decimal(15,2)")
+                        .HasColumnName("gia_von_luc_duyet");
+
+                    b.Property<string>("LyDo")
+                        .IsRequired()
+                        .HasColumnType("enum('HONG','HET_HAN','MAT','KHAC')")
+                        .HasColumnName("ly_do");
+
+                    b.Property<uint>("SoLuong")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("so_luong");
+
+                    b.HasKey("PhieuXuatHuyId", "SanPhamId");
+
+                    b.HasIndex("SanPhamId")
+                        .HasDatabaseName("idx_ctxh_san_pham");
+
+                    b.ToTable("ct_xuat_huy", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_ctxh_khac", "ly_do <> 'KHAC' OR ghi_chu_ly_do IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_ctxh_so_luong", "so_luong > 0");
+                        });
+                });
+
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.PhieuKiemKe", b =>
                 {
                     b.Property<uint>("Id")
@@ -1033,6 +1073,27 @@ namespace ConvenienceStore.Web.Data.Migrations
                         .HasConstraintName("fk_ctkk_san_pham");
 
                     b.Navigation("PhieuKiemKe");
+
+                    b.Navigation("SanPham");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.CtXuatHuy", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.Inventory.Entities.PhieuXuatHuy", "PhieuXuatHuy")
+                        .WithMany()
+                        .HasForeignKey("PhieuXuatHuyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_ctxh_phieu");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Products.Entities.SanPham", "SanPham")
+                        .WithMany()
+                        .HasForeignKey("SanPhamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_ctxh_san_pham");
+
+                    b.Navigation("PhieuXuatHuy");
 
                     b.Navigation("SanPham");
                 });

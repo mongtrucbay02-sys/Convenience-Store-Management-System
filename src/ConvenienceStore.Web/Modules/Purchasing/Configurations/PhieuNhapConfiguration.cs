@@ -1,4 +1,4 @@
-﻿using ConvenienceStore.Web.Modules.Identity.Entities;
+using ConvenienceStore.Web.Modules.Identity.Entities;
 using ConvenienceStore.Web.Modules.Purchasing.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -143,4 +143,3 @@ public sealed class PhieuNhapConfiguration
             .HasConstraintName("fk_pn_nguoi_huy");
     }
 }
-

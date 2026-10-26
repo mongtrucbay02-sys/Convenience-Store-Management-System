@@ -24,6 +24,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<NhaCungCap> NhaCungCaps => Set<NhaCungCap>();
 
+    public DbSet<PhieuNhap> PhieuNhaps => Set<PhieuNhap>();
+
     public DbSet<TaiKhoan> TaiKhoans => Set<TaiKhoan>();
 
     public DbSet<PhienDangNhap> PhienDangNhaps =>

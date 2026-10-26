@@ -1,4 +1,5 @@
 using ConvenienceStore.Web.Data;
+using ConvenienceStore.Web.Modules.Auth;
 using ConvenienceStore.Web.Modules.Auth.Services;
 using ConvenienceStore.Web.Modules.Products.Services;
 using ConvenienceStore.Web.Modules.Reports;
@@ -46,6 +47,7 @@ builder.Services.Configure<AdminDauTienOptions>(
 builder.Services.AddScoped<KhoiTaoAdminDauTien>();
 
 builder.Services.AddXuLyLoiApi();
+builder.Services.AddModuleAuth();
 
 var app = builder.Build();
 
@@ -61,6 +63,7 @@ app.UseXuLyLoiApi();
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();

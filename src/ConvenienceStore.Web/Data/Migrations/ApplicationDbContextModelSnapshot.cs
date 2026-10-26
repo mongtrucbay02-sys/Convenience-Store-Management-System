@@ -562,7 +562,7 @@ namespace ConvenienceStore.Web.Data.Migrations
                         .HasColumnName("ngay_lap")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<DateOnly>("NgayNhap")
+                    b.Property<DateTime>("NgayNhap")
                         .HasColumnType("date")
                         .HasColumnName("ngay_nhap");
 
@@ -636,6 +636,32 @@ namespace ConvenienceStore.Web.Data.Migrations
                             t.HasCheckConstraint("ck_pn_huy", "trang_thai <> 'DA_HUY' OR (nguoi_huy_id IS NOT NULL AND huy_luc IS NOT NULL AND ly_do_huy IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_pn_xac_nhan", "trang_thai <> 'DA_NHAP_KHO' OR (nguoi_xac_nhan_id IS NOT NULL AND xac_nhan_luc IS NOT NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Shared.Entities.BoDemChungTu", b =>
+                {
+                    b.Property<string>("TienTo")
+                        .HasColumnType("varchar(3)")
+                        .HasColumnName("tien_to");
+
+                    b.Property<string>("Ky")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(8)")
+                        .HasDefaultValue("")
+                        .HasColumnName("ky");
+
+                    b.Property<uint>("SoCuoi")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasDefaultValue(0u)
+                        .HasColumnName("so_cuoi");
+
+                    b.HasKey("TienTo", "Ky");
+
+                    b.ToTable("bo_dem_chung_tu", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_bo_dem_tien_to", "tien_to IN ('PN','HD','TH','KK','XH','SP','NCC','KM')");
                         });
                 });
 

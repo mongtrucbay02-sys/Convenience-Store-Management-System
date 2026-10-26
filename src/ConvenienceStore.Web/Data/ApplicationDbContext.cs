@@ -1,11 +1,11 @@
-﻿using ConvenienceStore.Web.Modules.Purchasing.Entities;
+using ConvenienceStore.Web.Modules.Shared.Entities;
+using ConvenienceStore.Web.Modules.Purchasing.Entities;
 using ConvenienceStore.Web.Modules.Identity.Entities;
 using ConvenienceStore.Web.Modules.Products.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace ConvenienceStore.Web.Data;
-
 public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(
@@ -13,6 +13,9 @@ public class ApplicationDbContext : DbContext
         : base(options)
     {
     }
+
+    public DbSet<BoDemChungTu> BoDemChungTus =>
+        Set<BoDemChungTu>();
 
     public DbSet<VaiTro> VaiTros => Set<VaiTro>();
 

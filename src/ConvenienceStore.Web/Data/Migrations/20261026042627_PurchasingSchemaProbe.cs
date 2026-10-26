@@ -118,6 +118,11 @@ namespace ConvenienceStore.Web.Data.Migrations
                 })
                 .Annotation("MySQL:Charset", "utf8mb4");
 
+            // MySql.EntityFrameworkCore omits STORED when generating this column.
+            // Keep the generated column consistent with schema_v1.sql.
+            migrationBuilder.Sql(
+                "ALTER TABLE `ct_phieu_nhap` MODIFY COLUMN `thanh_tien` bigint unsigned GENERATED ALWAYS AS (so_luong * gia_nhap) STORED;");
+
             migrationBuilder.CreateIndex(
                 name: "idx_ctpn_san_pham",
                 table: "ct_phieu_nhap",

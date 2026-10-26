@@ -26,6 +26,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<PhieuNhap> PhieuNhaps => Set<PhieuNhap>();
 
+    public DbSet<ChiTietPhieuNhap> ChiTietPhieuNhaps => Set<ChiTietPhieuNhap>();
+
     public DbSet<TaiKhoan> TaiKhoans => Set<TaiKhoan>();
 
     public DbSet<PhienDangNhap> PhienDangNhaps =>

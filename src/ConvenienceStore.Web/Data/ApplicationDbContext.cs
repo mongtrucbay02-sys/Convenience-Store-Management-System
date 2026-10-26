@@ -31,6 +31,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<HoaDon> HoaDons => Set<HoaDon>();
     public DbSet<CtHoaDon> CtHoaDons => Set<CtHoaDon>();
     public DbSet<ChinhSachDoiTra> ChinhSachDoiTras => Set<ChinhSachDoiTra>();
+    public DbSet<PhieuDoiTra> PhieuDoiTras => Set<PhieuDoiTra>();
     public DbSet<QuyTacTichDiem> QuyTacTichDiems => Set<QuyTacTichDiem>();
     public DbSet<ChuongTrinhKhuyenMai> ChuongTrinhKhuyenMais => Set<ChuongTrinhKhuyenMai>();
     public DbSet<KhuyenMaiSanPham> KhuyenMaiSanPhams => Set<KhuyenMaiSanPham>();

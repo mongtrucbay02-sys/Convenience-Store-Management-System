@@ -1633,6 +1633,155 @@ namespace ConvenienceStore.Web.Data.Migrations
                     b.ToTable("chinh_sach_doi_tra", (string)null);
                 });
 
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Returns.Entities.PhieuDoiTra", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("CanDuyetDanhMuc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("can_duyet_danh_muc");
+
+                    b.Property<bool>("CanDuyetQuaHan")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("can_duyet_qua_han");
+
+                    b.Property<bool>("CanDuyetVuotNguong")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("can_duyet_vuot_nguong");
+
+                    b.Property<uint>("ChinhSachId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("chinh_sach_id");
+
+                    b.Property<uint>("DiemThuHoi")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasDefaultValue(0u)
+                        .HasColumnName("diem_thu_hoi");
+
+                    b.Property<DateTime?>("DuyetLuc")
+                        .HasColumnType("datetime")
+                        .HasColumnName("duyet_luc");
+
+                    b.Property<string>("GhiChuDuyet")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("ghi_chu_duyet");
+
+                    b.Property<ulong>("GiaTriHangTra")
+                        .HasColumnType("bigint unsigned")
+                        .HasColumnName("gia_tri_hang_tra");
+
+                    b.Property<uint>("HoaDonGocId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("hoa_don_goc_id");
+
+                    b.Property<uint?>("HoaDonMoiId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("hoa_don_moi_id");
+
+                    b.Property<DateTime?>("HoanTatLuc")
+                        .HasColumnType("datetime")
+                        .HasColumnName("hoan_tat_luc");
+
+                    b.Property<uint?>("KhachHangId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("khach_hang_id");
+
+                    b.Property<string>("Loai")
+                        .IsRequired()
+                        .HasColumnType("enum('TRA_HANG','DOI_HANG')")
+                        .HasColumnName("loai");
+
+                    b.Property<string>("MaPhieu")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("ma_phieu");
+
+                    b.Property<DateTime>("NgayLap")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("ngay_lap")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<uint?>("NguoiDuyetId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("nguoi_duyet_id");
+
+                    b.Property<uint>("ThuNganId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("thu_ngan_id");
+
+                    b.Property<ulong>("TienHoan")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint unsigned")
+                        .HasDefaultValue(0ul)
+                        .HasColumnName("tien_hoan");
+
+                    b.Property<ulong>("TienThuThem")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint unsigned")
+                        .HasDefaultValue(0ul)
+                        .HasColumnName("tien_thu_them");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .HasColumnType("enum('CHO_DUYET','DA_DUYET','HOAN_TAT','BI_TU_CHOI')")
+                        .HasColumnName("trang_thai");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChinhSachId");
+
+                    b.HasIndex("HoaDonGocId")
+                        .HasDatabaseName("idx_pdt_hd_goc");
+
+                    b.HasIndex("HoaDonMoiId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_pdt_hd_moi");
+
+                    b.HasIndex("KhachHangId");
+
+                    b.HasIndex("MaPhieu")
+                        .IsUnique()
+                        .HasDatabaseName("uq_pdt_ma");
+
+                    b.HasIndex("NguoiDuyetId");
+
+                    b.HasIndex("Id", "HoaDonGocId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_pdt_id_hd_goc");
+
+                    b.HasIndex("ThuNganId", "NgayLap")
+                        .HasDatabaseName("idx_pdt_thu_ngan");
+
+                    b.HasIndex("TrangThai", "HoanTatLuc")
+                        .HasDatabaseName("idx_pdt_tt");
+
+                    b.ToTable("phieu_doi_tra", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_pdt_can_duyet", "NOT (can_duyet_qua_han OR can_duyet_danh_muc OR can_duyet_vuot_nguong) OR trang_thai = 'CHO_DUYET' OR (nguoi_duyet_id IS NOT NULL AND duyet_luc IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_pdt_da_duyet", "trang_thai <> 'DA_DUYET' OR loai = 'DOI_HANG'");
+
+                            t.HasCheckConstraint("ck_pdt_doi", "loai <> 'DOI_HANG' OR (tien_hoan = 0 AND (trang_thai <> 'HOAN_TAT' OR hoa_don_moi_id IS NOT NULL))");
+
+                            t.HasCheckConstraint("ck_pdt_hoan_tat", "trang_thai <> 'HOAN_TAT' OR hoan_tat_luc IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_pdt_khong_can_duyet", "can_duyet_qua_han OR can_duyet_danh_muc OR can_duyet_vuot_nguong OR (trang_thai = 'HOAN_TAT' AND nguoi_duyet_id IS NULL)");
+
+                            t.HasCheckConstraint("ck_pdt_tra", "loai <> 'TRA_HANG' OR (hoa_don_moi_id IS NULL AND tien_thu_them = 0 AND tien_hoan = gia_tri_hang_tra)");
+                        });
+                });
+
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Shared.Entities.BoDemChungTu", b =>
                 {
                     b.Property<string>("TienTo")
@@ -2094,6 +2243,60 @@ namespace ConvenienceStore.Web.Data.Migrations
                         .HasConstraintName("fk_csdt_nguoi_tao");
 
                     b.Navigation("NguoiTao");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Returns.Entities.PhieuDoiTra", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.Returns.Entities.ChinhSachDoiTra", "ChinhSach")
+                        .WithMany()
+                        .HasForeignKey("ChinhSachId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_pdt_cs");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.PointOfSale.Entities.HoaDon", "HoaDonGoc")
+                        .WithMany()
+                        .HasForeignKey("HoaDonGocId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_pdt_hd_goc");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.PointOfSale.Entities.HoaDon", "HoaDonMoi")
+                        .WithMany()
+                        .HasForeignKey("HoaDonMoiId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_pdt_hd_moi");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Customers.Entities.KhachHang", "KhachHang")
+                        .WithMany()
+                        .HasForeignKey("KhachHangId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_pdt_khach");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Identity.Entities.TaiKhoan", "NguoiDuyet")
+                        .WithMany()
+                        .HasForeignKey("NguoiDuyetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_pdt_nguoi_duyet");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Identity.Entities.TaiKhoan", "ThuNgan")
+                        .WithMany()
+                        .HasForeignKey("ThuNganId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_pdt_thu_ngan");
+
+                    b.Navigation("ChinhSach");
+
+                    b.Navigation("HoaDonGoc");
+
+                    b.Navigation("HoaDonMoi");
+
+                    b.Navigation("KhachHang");
+
+                    b.Navigation("NguoiDuyet");
+
+                    b.Navigation("ThuNgan");
                 });
 #pragma warning restore 612, 618
         }

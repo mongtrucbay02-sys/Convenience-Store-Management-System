@@ -993,6 +993,24 @@ namespace ConvenienceStore.Web.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Promotions.Entities.KhuyenMaiSanPham", b =>
+                {
+                    b.Property<uint>("ChuongTrinhId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("chuong_trinh_id");
+
+                    b.Property<uint>("SanPhamId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("san_pham_id");
+
+                    b.HasKey("ChuongTrinhId", "SanPhamId");
+
+                    b.HasIndex("SanPhamId")
+                        .HasDatabaseName("idx_kmsp_san_pham");
+
+                    b.ToTable("khuyen_mai_san_pham", (string)null);
+                });
+
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Purchasing.Entities.ChiTietPhieuNhap", b =>
                 {
                     b.Property<uint>("PhieuNhapId")
@@ -1494,6 +1512,27 @@ namespace ConvenienceStore.Web.Data.Migrations
                         .HasConstraintName("fk_ctkm_nguoi_tao");
 
                     b.Navigation("NguoiTao");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Promotions.Entities.KhuyenMaiSanPham", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.Promotions.Entities.ChuongTrinhKhuyenMai", "ChuongTrinh")
+                        .WithMany()
+                        .HasForeignKey("ChuongTrinhId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_kmsp_ct");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Products.Entities.SanPham", "SanPham")
+                        .WithMany()
+                        .HasForeignKey("SanPhamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_kmsp_sp");
+
+                    b.Navigation("ChuongTrinh");
+
+                    b.Navigation("SanPham");
                 });
 
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Purchasing.Entities.ChiTietPhieuNhap", b =>

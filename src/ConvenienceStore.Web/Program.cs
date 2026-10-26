@@ -1,12 +1,13 @@
+using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Auth.Services;
 using ConvenienceStore.Web.Modules.Products.Services;
 using ConvenienceStore.Web.Modules.Reports;
 using ConvenienceStore.Web.Modules.Reports.Services;
-using ConvenienceStore.Web.Data;
+using ConvenienceStore.Web.Shared.Errors;
 using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
 builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>(
@@ -31,9 +32,6 @@ builder.Services.AddAuthorization(options =>
         AuthorizationPolicies.AdminOnly,
         policy => policy.RequireRole(AuthorizationPolicies.AdminRole)));
 
-// CSDL MySQL 9.7.2 (ADR-001). Chuỗi kết nối lấy từ biến môi trường
-// ConnectionStrings__CuaHang hoặc user-secrets "ConnectionStrings:CuaHang";
-// không ghi mật khẩu vào appsettings.
 var connectionString =
     builder.Configuration.GetConnectionString("CuaHang")
     ?? throw new InvalidOperationException(
@@ -43,24 +41,23 @@ builder.Services.AddDbContext<CuaHangDbContext>(options =>
     options.UseMySQL(connectionString)
         .AddInterceptors(new GioVietNamInterceptor()));
 
-// T4-16: tài khoản Admin đầu tiên (biến môi trường AdminDauTien__TenDangNhap, AdminDauTien__MatKhauTam).
 builder.Services.Configure<AdminDauTienOptions>(
     builder.Configuration.GetSection(AdminDauTienOptions.TenMuc));
 builder.Services.AddScoped<KhoiTaoAdminDauTien>();
 
+builder.Services.AddXuLyLoiApi();
+
 var app = builder.Build();
 
-// Chạy sau khi CSDL đã có migration; chỉ tạo khi chưa có tài khoản vai trò AD.
 await KhoiTaoAdminDauTien.ChayKhiKhoiDongAsync(app.Services);
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
+app.UseXuLyLoiApi();
 app.UseHttpsRedirection();
 app.UseRouting();
 
@@ -75,7 +72,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
-
 
 app.Run();

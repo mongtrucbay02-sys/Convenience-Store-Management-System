@@ -91,7 +91,7 @@ and verified through `INFORMATION_SCHEMA`.
 - Receipt-total synchronization is not verified.
 - Inventory increase and stock valuation are not verified.
 - Independent transaction concurrency is not verified.
-- EF Core concurrency behavior for Purchasing is not yet tested.
+- EF Core stale-version behavior passed; independent-connection concurrency remains untested.
 - Integration test implementations currently reside in untracked `tmp/`.
 - Only 9 of the planned 28 tables have been implemented.
 - Views and triggers are not yet implemented.
@@ -104,3 +104,43 @@ constraint tests meet the verified acceptance criteria.
 
 Further application-service, EF concurrency, inventory
 and end-to-end workflow verification remains required.
+
+## 8. EF Core Optimistic Concurrency Verification
+
+### Scope
+
+Verified `NhaCungCap` and `PhieuNhap` using separate
+EF Core ChangeTrackers participating in one shared
+MySQL transaction.
+
+### Test Results
+
+| ID | Test | Result |
+| --- | --- | --- |
+| CC-01 | Supplier version increases from 1 to 2 | PASS |
+| CC-02 | Supplier stale update raises DbUpdateConcurrencyException | PASS |
+| CC-03 | Receipt version increases from 1 to 2 | PASS |
+| CC-04 | Receipt stale update raises DbUpdateConcurrencyException | PASS |
+| CC-05 | No-op SaveChanges preserves version | PASS |
+| CC-06 | Transaction rollback and empty-table verification | PASS |
+
+### DateOnly Provider Compatibility
+
+An initial receipt query failed because the MySQL provider
+returned `DateTime` for the `DATE` column `ngay_nhap`
+while the entity property used `DateOnly`.
+
+A ValueConverter was added to the receipt mapping.
+The corrected runtime verification subsequently passed.
+
+### Verification Boundary
+
+- SQL constraints: 10/10 PASS.
+- EF Core stale-version behavior: 5/5 PASS.
+- Rollback and database cleanup: PASS.
+- Independent-connection concurrency: NOT TESTED.
+- Inventory posting and application workflows: NOT TESTED.
+
+All runtime fixtures were rolled back. No test records
+remained in the nine implemented tables.
+

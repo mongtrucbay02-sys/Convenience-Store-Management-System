@@ -19,6 +19,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<TheKho> TheKhos => Set<TheKho>();
     public DbSet<PhieuKiemKe> PhieuKiemKes => Set<PhieuKiemKe>();
     public DbSet<CtKiemKe> CtKiemKes => Set<CtKiemKe>();
+    public DbSet<PhieuXuatHuy> PhieuXuatHuys => Set<PhieuXuatHuy>();
 
     public DbSet<BoDemChungTu> BoDemChungTus =>
         Set<BoDemChungTu>();

@@ -333,6 +333,86 @@ namespace ConvenienceStore.Web.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.PhieuXuatHuy", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("DuyetLuc")
+                        .HasColumnType("datetime")
+                        .HasColumnName("duyet_luc");
+
+                    b.Property<string>("GhiChu")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("ghi_chu");
+
+                    b.Property<DateTime?>("GuiDuyetLuc")
+                        .HasColumnType("datetime")
+                        .HasColumnName("gui_duyet_luc");
+
+                    b.Property<string>("LyDoTuChoi")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("ly_do_tu_choi");
+
+                    b.Property<string>("MaPhieu")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("ma_phieu");
+
+                    b.Property<DateTime>("NgayLap")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("ngay_lap")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<uint?>("NguoiDuyetId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("nguoi_duyet_id");
+
+                    b.Property<uint>("NguoiLapId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("nguoi_lap_id");
+
+                    b.Property<uint>("PhienBan")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasDefaultValue(1u)
+                        .HasColumnName("phien_ban");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("enum('NHAP','CHO_DUYET','BI_TU_CHOI','DA_XUAT_HUY')")
+                        .HasDefaultValue("NHAP")
+                        .HasColumnName("trang_thai");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DuyetLuc")
+                        .HasDatabaseName("idx_phieu_xuat_huy_duyet");
+
+                    b.HasIndex("MaPhieu")
+                        .IsUnique()
+                        .HasDatabaseName("uq_phieu_xuat_huy_ma");
+
+                    b.HasIndex("NguoiDuyetId");
+
+                    b.HasIndex("NguoiLapId");
+
+                    b.HasIndex("TrangThai")
+                        .HasDatabaseName("idx_phieu_xuat_huy_tt");
+
+                    b.ToTable("phieu_xuat_huy", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_pxh_duyet", "trang_thai NOT IN ('BI_TU_CHOI','DA_XUAT_HUY') OR (nguoi_duyet_id IS NOT NULL AND duyet_luc IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_pxh_tu_choi", "trang_thai <> 'BI_TU_CHOI' OR ly_do_tu_choi IS NOT NULL");
+                        });
+                });
+
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.TheKho", b =>
                 {
                     b.Property<ulong>("Id")
@@ -979,6 +1059,26 @@ namespace ConvenienceStore.Web.Data.Migrations
                         .HasConstraintName("fk_pkk_nguoi_lap");
 
                     b.Navigation("DanhMuc");
+
+                    b.Navigation("NguoiDuyet");
+
+                    b.Navigation("NguoiLap");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Inventory.Entities.PhieuXuatHuy", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.Identity.Entities.TaiKhoan", "NguoiDuyet")
+                        .WithMany()
+                        .HasForeignKey("NguoiDuyetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_pxh_nguoi_duyet");
+
+                    b.HasOne("ConvenienceStore.Web.Modules.Identity.Entities.TaiKhoan", "NguoiLap")
+                        .WithMany()
+                        .HasForeignKey("NguoiLapId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_pxh_nguoi_lap");
 
                     b.Navigation("NguoiDuyet");
 

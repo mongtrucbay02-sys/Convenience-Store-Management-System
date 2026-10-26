@@ -43,7 +43,10 @@ public sealed class PhieuNhapConfiguration
 
         builder.Property(x => x.NgayNhap)
             .HasColumnName("ngay_nhap")
-            .HasColumnType("date");
+            .HasColumnType("date")
+            .HasConversion(
+                date => date.ToDateTime(TimeOnly.MinValue),
+                dateTime => DateOnly.FromDateTime(dateTime));
 
         builder.Property(x => x.TrangThai)
             .HasColumnName("trang_thai")
@@ -140,3 +143,4 @@ public sealed class PhieuNhapConfiguration
             .HasConstraintName("fk_pn_nguoi_huy");
     }
 }
+

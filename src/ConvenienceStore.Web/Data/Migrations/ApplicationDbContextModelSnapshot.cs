@@ -1590,6 +1590,49 @@ namespace ConvenienceStore.Web.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Returns.Entities.ChinhSachDoiTra", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("HieuLucTu")
+                        .HasColumnType("datetime")
+                        .HasColumnName("hieu_luc_tu");
+
+                    b.Property<DateTime>("NgayTao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("ngay_tao")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<uint?>("NguoiTaoId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("nguoi_tao_id");
+
+                    b.Property<ulong>("NguongTienCanDuyet")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint unsigned")
+                        .HasDefaultValue(500000ul)
+                        .HasColumnName("nguong_tien_can_duyet");
+
+                    b.Property<ushort>("SoNgayDoiTra")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint unsigned")
+                        .HasDefaultValue((ushort)7)
+                        .HasColumnName("so_ngay_doi_tra");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HieuLucTu")
+                        .HasDatabaseName("idx_csdt_hieu_luc");
+
+                    b.HasIndex("NguoiTaoId");
+
+                    b.ToTable("chinh_sach_doi_tra", (string)null);
+                });
+
             modelBuilder.Entity("ConvenienceStore.Web.Modules.Shared.Entities.BoDemChungTu", b =>
                 {
                     b.Property<string>("TienTo")
@@ -2040,6 +2083,17 @@ namespace ConvenienceStore.Web.Data.Migrations
                     b.Navigation("NguoiXacNhan");
 
                     b.Navigation("NhaCungCap");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Web.Modules.Returns.Entities.ChinhSachDoiTra", b =>
+                {
+                    b.HasOne("ConvenienceStore.Web.Modules.Identity.Entities.TaiKhoan", "NguoiTao")
+                        .WithMany()
+                        .HasForeignKey("NguoiTaoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_csdt_nguoi_tao");
+
+                    b.Navigation("NguoiTao");
                 });
 #pragma warning restore 612, 618
         }

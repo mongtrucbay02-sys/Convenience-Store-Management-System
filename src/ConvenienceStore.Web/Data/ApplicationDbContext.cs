@@ -1,5 +1,6 @@
 using ConvenienceStore.Web.Modules.Customers.Entities;
 using ConvenienceStore.Web.Modules.PointOfSale.Entities;
+using ConvenienceStore.Web.Modules.Returns.Entities;
 using ConvenienceStore.Web.Modules.Promotions.Entities;
 using ConvenienceStore.Web.Modules.Inventory.Entities;
 using ConvenienceStore.Web.Modules.Shared.Entities;
@@ -29,6 +30,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<CtGioHang> CtGioHangs => Set<CtGioHang>();
     public DbSet<HoaDon> HoaDons => Set<HoaDon>();
     public DbSet<CtHoaDon> CtHoaDons => Set<CtHoaDon>();
+    public DbSet<ChinhSachDoiTra> ChinhSachDoiTras => Set<ChinhSachDoiTra>();
     public DbSet<QuyTacTichDiem> QuyTacTichDiems => Set<QuyTacTichDiem>();
     public DbSet<ChuongTrinhKhuyenMai> ChuongTrinhKhuyenMais => Set<ChuongTrinhKhuyenMai>();
     public DbSet<KhuyenMaiSanPham> KhuyenMaiSanPhams => Set<KhuyenMaiSanPham>();

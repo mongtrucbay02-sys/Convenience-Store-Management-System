@@ -576,6 +576,7 @@ paths:
       description: |
         Chỉ AD; client hỏi xác nhận trước. `targetStatus`: ACTIVE (kích hoạt hoặc tiếp tục từ PAUSED),
         PAUSED, ENDED. Chương trình đã kết thúc không kích hoạt lại được (BR-KM-04, mã `PROMOTION_ENDED`).
+        Tạm dừng chương trình Nháp bị từ chối với mã `PROMOTION_INVALID_TRANSITION` (409).
         Kích hoạt khi đã quá `endAt` thì từ chối (E1, mã `PROMOTION_PAST_END_TIME`), yêu cầu sửa thời gian.
         POS áp hoặc ngừng áp chương trình ngay sau khi đổi.
       parameters:
@@ -1059,6 +1060,12 @@ components:
         status: { $ref: '#/components/schemas/PromotionStatus' }
         displayStatus: { $ref: '#/components/schemas/PromotionDisplayStatus' }
         usageCount: { type: integer, minimum: 0 }
+        imageUrl:
+          type: string
+          format: uri
+          maxLength: 2048
+          nullable: true
+          description: Liên kết ảnh minh họa (không bắt buộc). Chỉ nhận http hoặc https.
     CreatePromotionRequest:
       type: object
       required: [name, discountType, discountValue, productIds, startAt, endAt]
@@ -1078,6 +1085,12 @@ components:
         endAt: { type: string, format: date-time }
         membersOnly: { type: boolean, default: false }
         activate: { type: boolean, default: false, description: "true là Lưu và kích hoạt." }
+        imageUrl:
+          type: string
+          format: uri
+          maxLength: 2048
+          nullable: true
+          description: Liên kết ảnh minh họa (không bắt buộc). Chỉ nhận http hoặc https.
     UpdatePromotionRequest:
       type: object
       additionalProperties: false
@@ -1096,6 +1109,12 @@ components:
         startAt: { type: string, format: date-time }
         endAt: { type: string, format: date-time }
         membersOnly: { type: boolean }
+        imageUrl:
+          type: string
+          format: uri
+          maxLength: 2048
+          nullable: true
+          description: Liên kết ảnh minh họa (không bắt buộc). Chỉ nhận http hoặc https; chuỗi rỗng là xóa ảnh. Được sửa cả khi đã có lượt dùng.
     PromotionUsage:
       type: object
       required: [invoiceId, invoiceNumber, usedAt, discountAmount]

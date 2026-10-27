@@ -1,0 +1,1420 @@
+openapi: 3.0.3
+info:
+  title: T3-14 Hop dong API POS va DT
+  version: 1.0.0-review
+  description: 'Theo Issue #4 va phan hoi review T3-14. AUTH: #1 Thang (Issue #5); KH/KM: #5 Trung. POS-03 GET /customers
+    cho Trung xac nhan. DT Sau MVP.'
+servers:
+- url: /api/v1
+  description: Cung domain voi React; cookie phien cs_session
+tags:
+- name: POS
+- name: DT
+paths:
+  /carts:
+    post:
+      tags:
+      - POS
+      summary: POS-01 Tạo giỏ
+      description: 'Quyen: TN. Ma quyen: BAN_HANG. Uu tien: MVP. Can cu: POS-01; Issue #4 va phan hoi T3-14. '
+      responses:
+        '201':
+          description: Thanh cong; Location header neu 201
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GioHang'
+          headers:
+            Location:
+              description: Duong dan tai nguyen moi
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YeuCauTaoGioHang'
+      operationId: taoGioHang
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+    get:
+      tags:
+      - POS
+      summary: POS-08 Danh sách giỏ
+      description: 'Quyen: TN. Ma quyen: BAN_HANG. Uu tien: Tang 2. Can cu: POS-08; Issue #4 va phan hoi T3-14. '
+      responses:
+        '200':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      operationId: lietKeGioHangTamGiu
+  /carts/{id}/items:
+    post:
+      tags:
+      - POS
+      summary: POS-01 Thêm sản phẩm
+      description: 'Quyen: TN. Ma quyen: BAN_HANG. Uu tien: MVP. Can cu: POS-01; Issue #4 va phan hoi T3-14. '
+      responses:
+        '201':
+          description: Thanh cong; Location header neu 201
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GioHang'
+          headers:
+            Location:
+              description: Duong dan tai nguyen moi
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YeuCauThemSanPham'
+      operationId: themSanPhamVaoGio
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+  /carts/{id}/items/{itemId}:
+    put:
+      tags:
+      - POS
+      summary: POS-02 Sửa dòng giỏ
+      description: 'Quyen: TN. Ma quyen: BAN_HANG. Uu tien: MVP. Can cu: POS-02; Issue #4 va phan hoi T3-14. '
+      responses:
+        '200':
+          description: Thanh cong; Location header neu 201
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GioHang'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YeuCauSuaDongGio'
+      operationId: suaDongGio
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+    delete:
+      tags:
+      - POS
+      summary: POS-02 Xóa dòng giỏ
+      description: 'Quyen: TN. Ma quyen: BAN_HANG. Uu tien: MVP. Can cu: POS-02; Issue #4 va phan hoi T3-14. '
+      responses:
+        '204':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: integer
+      operationId: xoaDongGio
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+  /carts/{id}/customer:
+    put:
+      tags:
+      - POS
+      summary: POS-03 Gắn khách hàng
+      description: 'Quyen: TN. Ma quyen: BAN_HANG. Uu tien: MVP. Can cu: POS-03; Issue #4 va phan hoi T3-14.  POS-03:
+        GET /customers do #5 Trung so huu, cho xac nhan truong tim kiem.'
+      responses:
+        '200':
+          description: Thanh cong; Location header neu 201
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GioHang'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: X-XSRF-TOKEN
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Token chống CSRF từ cookie XSRF-TOKEN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YeuCauGanKhachHang'
+      operationId: ganKhachHangVaoGio
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+  /carts/{id}/apply-promotions:
+    post:
+      tags:
+      - POS
+      summary: POS-04 Áp dụng KM
+      description: 'Quyen: TN. Ma quyen: BAN_HANG. Uu tien: Tang 2. Can cu: POS-04; Issue #4 va phan hoi T3-14. '
+      responses:
+        '200':
+          description: Giỏ đã tính lại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GioHangResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: X-XSRF-TOKEN
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Token chống CSRF từ cookie XSRF-TOKEN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApDungKhuyenMaiRequest'
+      operationId: apDungKhuyenMai
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+  /carts/{id}/checkout:
+    post:
+      tags:
+      - POS
+      summary: POS-07 Hoàn tất đơn
+      description: 'Quyen: TN. Ma quyen: BAN_HANG. Uu tien: MVP. Can cu: POS-07; Issue #4 va phan hoi T3-14.  POS-05
+        tien thua tinh tam o frontend; backend tinh lai khi checkout. Transaction luu hoa don + bien dong kho, chong
+        lap chung tu.'
+      responses:
+        '200':
+          description: Thanh cong; Location header neu 201
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoaDon'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Xung dot hoac TON_KHONG_DU; details gom sanPhamId, tonHienTai, soLuongYeuCau
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loi'
+              example:
+                code: TON_KHONG_DU
+                message: Chi con 2 san pham.
+                details:
+                - sanPhamId: 15
+                  tonHienTai: 2
+                  soLuongYeuCau: 3
+                traceId: 0HN:01
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YeuCauHoanTatDon'
+      operationId: hoanTatDon
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+  /invoices/{id}/print:
+    get:
+      tags:
+      - POS
+      summary: POS-07/11 Dữ liệu in hóa đơn
+      description: 'Quyen: TN, AD. Ma quyen: HOA_DON_XEM_CUA_MINH / HOA_DON_XEM_TAT_CA. Uu tien: MVP. Can cu: POS-11;
+        Issue #4 va phan hoi T3-14. TN chi xem hoa don do minh lap, lay nguoi dung tu cookie phien; truy cap hoa
+        don nguoi khac tra 403. Tra JSON de frontend in K80, khong tra PDF.'
+      responses:
+        '200':
+          description: Thanh cong; Location header neu 201
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuLieuInHoaDon'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      operationId: layDuLieuInHoaDon
+  /carts/{id}/hold:
+    post:
+      tags:
+      - POS
+      summary: POS-08 Tạm giữ
+      description: 'Quyen: TN. Ma quyen: BAN_HANG. Uu tien: Tang 2. Can cu: POS-08; Issue #4 va phan hoi T3-14. '
+      responses:
+        '200':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+      operationId: tamGiuGio
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+  /carts/{id}/resume:
+    post:
+      tags:
+      - POS
+      summary: POS-08 Gọi lại
+      description: 'Quyen: TN. Ma quyen: BAN_HANG. Uu tien: Tang 2. Can cu: POS-08; Issue #4 va phan hoi T3-14. '
+      responses:
+        '200':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+      operationId: goiLaiGio
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+  /carts/{id}/cancel:
+    post:
+      tags:
+      - POS
+      summary: POS-09 Hủy giỏ
+      description: 'Quyen: TN. Ma quyen: BAN_HANG. Uu tien: MVP. Can cu: POS-09; Issue #4 va phan hoi T3-14. '
+      responses:
+        '200':
+          description: Thanh cong; Location header neu 201
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GioHang'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YeuCauHuyGio'
+      operationId: huyGio
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+  /invoices:
+    get:
+      tags:
+      - POS
+      summary: POS-10 Tra cứu hóa đơn
+      description: 'Quyen: TN, AD. Ma quyen: HOA_DON_XEM_CUA_MINH / HOA_DON_XEM_TAT_CA. Uu tien: MVP. Can cu: POS-10;
+        Issue #4 va phan hoi T3-14. TN chi xem hoa don do minh lap, lay nguoi dung tu cookie phien; truy cap hoa
+        don nguoi khac tra 403.'
+      responses:
+        '200':
+          description: Thanh cong; Location header neu 201
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrangHoaDon'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      operationId: traCuuHoaDon
+      parameters:
+      - name: tuNgay
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: denNgay
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: trangThai
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+  /invoices/{id}:
+    get:
+      tags:
+      - POS
+      summary: POS-11 Chi tiết hóa đơn
+      description: 'Quyen: TN, AD. Ma quyen: HOA_DON_XEM_CUA_MINH / HOA_DON_XEM_TAT_CA. Uu tien: MVP. Can cu: POS-11;
+        Issue #4 va phan hoi T3-14. TN chi xem hoa don do minh lap, lay nguoi dung tu cookie phien; truy cap hoa
+        don nguoi khac tra 403.'
+      responses:
+        '200':
+          description: Thanh cong; Location header neu 201
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoaDon'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      operationId: xemChiTietHoaDon
+  /invoices/{id}/cancel:
+    post:
+      tags:
+      - POS
+      summary: POS-12 Hủy hóa đơn
+      description: 'Quyen: AD. Ma quyen: HOA_DON_HUY. Uu tien: Sau MVP. Can cu: POS-12; Issue #4 va phan hoi T3-14. '
+      responses:
+        '200':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+      operationId: huyHoaDon
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+  /returns:
+    post:
+      tags:
+      - DT
+      summary: DT-02 Tạo phiếu trả
+      description: 'Quyen: TN. Ma quyen: DOI_TRA. Uu tien: Sau MVP. Can cu: DT-02; Issue #4 va phan hoi T3-14. '
+      responses:
+        '201':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+      operationId: taoPhieuTra
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+    get:
+      tags:
+      - DT
+      summary: DT-07 Danh sách phiếu
+      description: 'Quyen: TN, AD. Ma quyen: DOI_TRA / DOI_TRA_DUYET_CAU_HINH. Uu tien: Sau MVP. Can cu: DT-07;
+        Issue #4 va phan hoi T3-14. '
+      responses:
+        '200':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      operationId: lietKePhieuTra
+  /returns/{id}/exchange:
+    post:
+      tags:
+      - DT
+      summary: DT-03 Đổi hàng
+      description: 'Quyen: TN. Ma quyen: DOI_TRA. Uu tien: Sau MVP. Can cu: DT-03; Issue #4 va phan hoi T3-14. '
+      responses:
+        '200':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+      operationId: doiHang
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+  /returns/{id}/refund:
+    post:
+      tags:
+      - DT
+      summary: DT-04 Hoàn tiền
+      description: 'Quyen: TN. Ma quyen: DOI_TRA. Uu tien: Sau MVP. Can cu: DT-04; Issue #4 va phan hoi T3-14. '
+      responses:
+        '200':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+      operationId: hoanTien
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+  /returns/{id}/process-stock:
+    post:
+      tags:
+      - DT
+      summary: DT-05 Xử lý hàng trả
+      description: 'Quyen: TN. Ma quyen: DOI_TRA. Uu tien: Sau MVP. Can cu: DT-05; Issue #4 va phan hoi T3-14. '
+      responses:
+        '200':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+      operationId: xuLyTonHangTra
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+  /returns/{id}/approve:
+    post:
+      tags:
+      - DT
+      summary: DT-06 Duyệt ngoại lệ
+      description: 'Quyen: AD. Ma quyen: DOI_TRA_DUYET_CAU_HINH. Uu tien: Sau MVP. Can cu: DT-06; Issue #4 va phan
+        hoi T3-14. '
+      responses:
+        '200':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+      operationId: duyetDoiTraNgoaiLe
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+  /returns/{id}:
+    get:
+      tags:
+      - DT
+      summary: DT-07 Chi tiết phiếu
+      description: 'Quyen: TN, AD. Ma quyen: DOI_TRA / DOI_TRA_DUYET_CAU_HINH. Uu tien: Sau MVP. Can cu: DT-07;
+        Issue #4 va phan hoi T3-14. '
+      responses:
+        '200':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      operationId: xemPhieuTra
+  /returns/{id}/print:
+    get:
+      tags:
+      - DT
+      summary: DT-07 Dữ liệu in
+      description: 'Quyen: TN, AD. Ma quyen: DOI_TRA / DOI_TRA_DUYET_CAU_HINH. Uu tien: Sau MVP. Can cu: DT-07;
+        Issue #4 va phan hoi T3-14. '
+      responses:
+        '200':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      operationId: layDuLieuInPhieuTra
+  /return-policies:
+    get:
+      tags:
+      - DT
+      summary: DT-08 Chính sách
+      description: 'Quyen: AD. Ma quyen: DOI_TRA_DUYET_CAU_HINH. Uu tien: Sau MVP. Can cu: DT-08; Issue #4 va phan
+        hoi T3-14. '
+      responses:
+        '200':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      operationId: lietKeChinhSachDoiTra
+  /return-policies/{id}:
+    put:
+      tags:
+      - DT
+      summary: DT-08 Sửa chính sách
+      description: 'Quyen: AD. Ma quyen: DOI_TRA_DUYET_CAU_HINH. Uu tien: Sau MVP. Can cu: DT-08; Issue #4 va phan
+        hoi T3-14. '
+      responses:
+        '200':
+          description: Thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/KhongTimThay'
+        '500':
+          $ref: '#/components/responses/LoiMayChu'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+      operationId: suaChinhSachDoiTra
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: cs_session
+      description: Cookie phien HttpOnly, Secure, SameSite=Strict; 30 phut khong hoat dong
+    xsrfHeader:
+      type: apiKey
+      in: header
+      name: X-XSRF-TOKEN
+      description: Header cho POST/PUT/DELETE, lay tu cookie XSRF-TOKEN
+  responses:
+    Unauthorized:
+      description: 401 Chưa đăng nhập/hết phiên
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Loi'
+    Forbidden:
+      description: 403 Không đủ quyền/bắt buộc đổi mật khẩu
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Loi'
+    Conflict:
+      description: 409 Xung đột
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Loi'
+    ValidationError:
+      description: 422 Dữ liệu sai nghiệp vụ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Loi'
+    KhongTimThay:
+      description: 404 Khong tim thay
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Loi'
+    LoiMayChu:
+      description: 500 Loi may chu
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Loi'
+    BadRequest:
+      description: 400 Yeu cau sai cu phap
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Loi'
+  schemas:
+    YeuCauGanKhachHang:
+      type: object
+      required:
+      - khachHangId
+      - phienBan
+      properties:
+        khachHangId:
+          type: integer
+          nullable: true
+          example: 8
+        phienBan:
+          type: integer
+          minimum: 1
+          example: 3
+    YeuCauApDungKhuyenMai:
+      type: object
+      required:
+      - phienBan
+      properties:
+        phienBan:
+          type: integer
+          minimum: 1
+          example: 4
+    GioHang:
+      type: object
+      required:
+      - id
+      - chiTiet
+      - tongTienHang
+      - tienGiam
+      - thanhTien
+      - phienBan
+      - trangThai
+      - khachHangId
+      properties:
+        id:
+          type: integer
+        khachHangId:
+          type: integer
+          nullable: true
+        chiTiet:
+          type: array
+          items:
+            $ref: '#/components/schemas/DongGio'
+        tongTienHang:
+          type: integer
+        tienGiam:
+          type: integer
+        thanhTien:
+          type: integer
+        khuyenMaiApDung:
+          type: array
+          items:
+            type: object
+        phienBan:
+          type: integer
+        trangThai:
+          type: string
+          description: Enum phai khop ERD T3-13; can doi chieu truoc merge
+        thoiDiemTao:
+          type: string
+          format: date-time
+          example: '2026-10-16T08:30:00+07:00'
+    Loi:
+      type: object
+      required:
+      - code
+      - message
+      - details
+      - traceId
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          nullable: true
+          items:
+            type: object
+            additionalProperties: true
+          description: null neu khong co chi tiet
+        traceId:
+          type: string
+    LoiTruong:
+      type: object
+      required:
+      - truong
+      - loi
+      properties:
+        truong:
+          type: string
+          example: chiTiet[0].soLuong
+        loi:
+          type: string
+          example: So luong phai lon hon 0.
+    DongGio:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          example: 1
+        sanPhamId:
+          type: integer
+          minimum: 1
+          example: 1
+        tenSanPham:
+          type: string
+          example: Sua tuoi 180ml
+        soLuong:
+          type: integer
+          minimum: 1
+          example: 1
+        donGia:
+          type: integer
+          minimum: 0
+          example: 1
+        tienGiam:
+          type: integer
+          minimum: 0
+          example: 1
+        thanhTien:
+          type: integer
+          minimum: 0
+          example: 1
+      required:
+      - id
+      - sanPhamId
+      - soLuong
+      - donGia
+      - thanhTien
+    YeuCauTaoGioHang:
+      type: object
+      properties: {}
+      description: Body JSON rong {}; nguoi tao lay tu phien, khong truyen userId
+    YeuCauThemSanPham:
+      type: object
+      properties:
+        sanPhamId:
+          type: integer
+          minimum: 1
+          example: 1
+        soLuong:
+          type: integer
+          minimum: 1
+          example: 1
+        phienBan:
+          type: integer
+          minimum: 1
+          example: 1
+      required:
+      - sanPhamId
+      - soLuong
+      - phienBan
+    YeuCauSuaDongGio:
+      type: object
+      properties:
+        soLuong:
+          type: integer
+          minimum: 1
+          example: 1
+        phienBan:
+          type: integer
+          minimum: 1
+          example: 1
+      required:
+      - soLuong
+      - phienBan
+    YeuCauHuyGio:
+      type: object
+      properties:
+        lyDo:
+          type: string
+          nullable: true
+          example: Khach doi y
+        phienBan:
+          type: integer
+          minimum: 1
+          example: 1
+      required:
+      - phienBan
+    YeuCauHoanTatDon:
+      type: object
+      properties:
+        tienKhachDua:
+          type: integer
+          minimum: 0
+          example: 1
+        phienBan:
+          type: integer
+          minimum: 1
+          example: 1
+      required:
+      - tienKhachDua
+      - phienBan
+      description: 'POS-05 va POS-07: chi tien mat; may chu tinh lai thanhTien va tienThua. Khong nhan tienThua
+        tu frontend.'
+    ChiTietHoaDon:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          example: 1
+        sanPhamId:
+          type: integer
+          minimum: 1
+          example: 1
+        tenSanPham:
+          type: string
+          example: Sua tuoi 180ml
+        soLuong:
+          type: integer
+          minimum: 1
+          example: 1
+        donGia:
+          type: integer
+          minimum: 0
+          example: 1
+        tienGiam:
+          type: integer
+          minimum: 0
+          example: 1
+        thanhTien:
+          type: integer
+          minimum: 0
+          example: 1
+      required:
+      - id
+      - sanPhamId
+      - soLuong
+      - donGia
+      - thanhTien
+    HoaDon:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          example: 1
+        ma:
+          type: string
+          example: HD-20261016-001
+        trangThai:
+          type: string
+          example: DA_THANH_TOAN
+        khachHangId:
+          type: integer
+          nullable: true
+        nguoiTaoId:
+          type: integer
+          minimum: 1
+          example: 1
+        chiTiet:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChiTietHoaDon'
+        tongTienHang:
+          type: integer
+          minimum: 0
+          example: 1
+        tienGiam:
+          type: integer
+          minimum: 0
+          example: 1
+        thanhTien:
+          type: integer
+          minimum: 0
+          example: 1
+        tienKhachDua:
+          type: integer
+          minimum: 0
+          example: 1
+        tienThua:
+          type: integer
+          minimum: 0
+          example: 1
+        thoiDiemTao:
+          type: string
+          format: date-time
+          example: '2026-10-16T08:30:00+07:00'
+      required:
+      - id
+      - ma
+      - trangThai
+      - nguoiTaoId
+      - chiTiet
+      - tongTienHang
+      - tienGiam
+      - thanhTien
+      - tienKhachDua
+      - tienThua
+      - thoiDiemTao
+    TrangHoaDon:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HoaDon'
+        total:
+          type: integer
+          minimum: 0
+          example: 1
+        page:
+          type: integer
+          minimum: 1
+          example: 1
+        size:
+          type: integer
+          minimum: 1
+          example: 1
+      required:
+      - items
+      - total
+      - page
+      - size
+    DuLieuInHoaDon:
+      type: object
+      properties:
+        hoaDon:
+          $ref: '#/components/schemas/HoaDon'
+        khoGiay:
+          type: string
+          enum:
+          - K80
+          example: K80
+      required:
+      - hoaDon
+      - khoGiay
+      description: JSON, frontend dung CSS K80 va window.print()
+    TrangGioHang:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GioHang'
+        total:
+          type: integer
+          minimum: 0
+          example: 1
+        page:
+          type: integer
+          minimum: 1
+          example: 1
+        size:
+          type: integer
+          minimum: 1
+          example: 1
+      required:
+      - items
+      - total
+      - page
+      - size
+security:
+- cookieAuth: []

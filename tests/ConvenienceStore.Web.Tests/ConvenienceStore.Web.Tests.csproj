@@ -17,4 +17,8 @@
     <ProjectReference Include="..\..\src\ConvenienceStore.Web\ConvenienceStore.Web.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
 </Project>

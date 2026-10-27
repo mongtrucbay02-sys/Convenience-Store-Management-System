@@ -1,11 +1,18 @@
+using ConvenienceStore.Web.Data;
+using ConvenienceStore.Web.Modules.Auth;
+using ConvenienceStore.Web.Modules.Auth.Services;
+using ConvenienceStore.Web.Modules.Inventory;
+using ConvenienceStore.Web.Modules.Products.Services;
+using ConvenienceStore.Web.Modules.Reports;
+using ConvenienceStore.Web.Modules.Reports.Services;
+using ConvenienceStore.Web.Shared.Errors;
+using Microsoft.EntityFrameworkCore;
+
 
 using ConvenienceStore.Web.Services.Pos;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ==========================================
-// 1. Đăng ký MVC
-// ==========================================
 builder.Services.AddControllersWithViews();
 
 // ==========================================
@@ -29,9 +36,24 @@ builder.Services.AddHttpContextAccessor();
 // POS-01: Tìm kiếm và thêm sản phẩm
 builder.Services.AddScoped<MySqlPosCatalog>();
 
+var connectionString =
+    builder.Configuration.GetConnectionString("CuaHang")
+    ?? throw new InvalidOperationException(
+        "Thiếu chuỗi kết nối ConnectionStrings:CuaHang (biến môi trường ConnectionStrings__CuaHang).");
+
+builder.Services.AddDbContext<CuaHangDbContext>(options =>
+    options.UseMySQL(connectionString)
+        .AddInterceptors(new GioVietNamInterceptor()));
+
+builder.Services.Configure<AdminDauTienOptions>(
+    builder.Configuration.GetSection(AdminDauTienOptions.TenMuc));
+builder.Services.AddScoped<KhoiTaoAdminDauTien>();
 // POS-01, POS-02: Quản lý giỏ hàng
 builder.Services.AddScoped<PosCartService>();
 
+builder.Services.AddXuLyLoiApi();
+builder.Services.AddModuleAuth();
+builder.Services.AddModuleInventory();
 // POS-05: Thanh toán tiền mặt
 // Gọi POS-07 tạm, chưa lưu hóa đơn và trừ kho
 builder.Services.AddScoped<PosPaymentService>();
@@ -40,6 +62,8 @@ builder.Services.AddScoped<PosPaymentService>();
 // 4. Build ứng dụng
 // ==========================================
 var app = builder.Build();
+
+await KhoiTaoAdminDauTien.ChayKhiKhoiDongAsync(app.Services);
 
 // ==========================================
 // 5. Cấu hình HTTP Pipeline
@@ -50,10 +74,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseXuLyLoiApi();
 app.UseHttpsRedirection();
 
 app.UseRouting();
 
+app.UseAuthentication();
 // Nếu nhóm đã tích hợp Authentication,
 // cần cấu hình AddAuthentication và
 // app.UseAuthentication() trước UseAuthorization.
@@ -73,7 +99,4 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-// ==========================================
-// 7. Chạy ứng dụng
-// ==========================================
 app.Run();

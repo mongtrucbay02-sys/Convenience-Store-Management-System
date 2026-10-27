@@ -36,7 +36,7 @@ var connectionString =
         "Missing DefaultConnection configuration.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseMySQL(connectionString));
 
 var app = builder.Build();
 

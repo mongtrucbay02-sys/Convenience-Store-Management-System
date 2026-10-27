@@ -1,15 +1,16 @@
 
 using ConvenienceStore.Web.Services.Pos;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
-// 1. Đăng ký MVC
+// 1. ĐĂNG KÝ MVC
 // ==========================================
 builder.Services.AddControllersWithViews();
 
 // ==========================================
-// 2. Cấu hình Session cho giỏ hàng POS
+// 2. CẤU HÌNH SESSION CHO GIỎ HÀNG POS
 // ==========================================
 builder.Services.AddDistributedMemoryCache();
 
@@ -18,12 +19,13 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(60);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
 builder.Services.AddHttpContextAccessor();
 
 // ==========================================
-// 3. Đăng ký các dịch vụ POS
+// 3. ĐĂNG KÝ CÁC DỊCH VỤ POS
 // ==========================================
 
 // POS-01: Tìm kiếm và thêm sản phẩm
@@ -33,17 +35,54 @@ builder.Services.AddScoped<MySqlPosCatalog>();
 builder.Services.AddScoped<PosCartService>();
 
 // POS-05: Thanh toán tiền mặt
-// Gọi POS-07 tạm, chưa lưu hóa đơn và trừ kho
+// POS-07 hiện mới là xử lý tạm thời
 builder.Services.AddScoped<PosPaymentService>();
 
+// POS-09: Hủy đơn đang bán
+// BR-POS-10: Ghi lịch sử hủy vào MySQL
+builder.Services.AddScoped<PosCancellationService>();
+
 // ==========================================
-// 4. Build ứng dụng
+// 4. CẤU HÌNH AUTHENTICATION
+// ==========================================
+
+// Sử dụng Cookie Authentication
+builder.Services
+    .AddAuthentication(
+        CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        // Đường dẫn đăng nhập của nhóm
+        options.LoginPath = "/Account/Login";
+
+        // Đường dẫn khi không đủ quyền
+        options.AccessDeniedPath = "/Account/AccessDenied";
+
+        // Cấu hình Cookie
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy =
+            CookieSecurePolicy.Always;
+
+        options.Cookie.SameSite = SameSiteMode.Lax;
+
+        // Thời gian tồn tại phiên đăng nhập
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+
+        options.SlidingExpiration = true;
+    });
+
+// Đăng ký Authorization
+builder.Services.AddAuthorization();
+
+// ==========================================
+// 5. BUILD ỨNG DỤNG
 // ==========================================
 var app = builder.Build();
 
 // ==========================================
-// 5. Cấu hình HTTP Pipeline
+// 6. CẤU HÌNH HTTP PIPELINE
 // ==========================================
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -54,9 +93,10 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
-// Nếu nhóm đã tích hợp Authentication,
-// cần cấu hình AddAuthentication và
-// app.UseAuthentication() trước UseAuthorization.
+// Xác thực tài khoản đăng nhập
+app.UseAuthentication();
+
+// Kiểm tra quyền truy cập
 app.UseAuthorization();
 
 // Bật Session cho giỏ hàng POS
@@ -66,14 +106,15 @@ app.UseSession();
 app.MapStaticAssets();
 
 // ==========================================
-// 6. Cấu hình Route mặc định
+// 7. CẤU HÌNH ROUTE MẶC ĐỊNH
 // ==========================================
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 // ==========================================
-// 7. Chạy ứng dụng
+// 8. CHẠY ỨNG DỤNG
 // ==========================================
 app.Run();

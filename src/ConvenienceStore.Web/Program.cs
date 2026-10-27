@@ -1,3 +1,13 @@
+using ConvenienceStore.Web.Data;
+using ConvenienceStore.Web.Modules.Auth;
+using ConvenienceStore.Web.Modules.Auth.Services;
+using ConvenienceStore.Web.Modules.Inventory;
+using ConvenienceStore.Web.Modules.Products.Services;
+using ConvenienceStore.Web.Modules.Reports;
+using ConvenienceStore.Web.Modules.Reports.Services;
+using ConvenienceStore.Web.Shared.Errors;
+using Microsoft.EntityFrameworkCore;
+
 
 using ConvenienceStore.Web.Services.Pos;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -68,11 +78,26 @@ builder.Services
         // Thời gian tồn tại phiên đăng nhập
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
 
+var connectionString =
+    builder.Configuration.GetConnectionString("CuaHang")
+    ?? throw new InvalidOperationException(
+        "Thiếu chuỗi kết nối ConnectionStrings:CuaHang (biến môi trường ConnectionStrings__CuaHang).");
+
+builder.Services.AddDbContext<CuaHangDbContext>(options =>
+    options.UseMySQL(connectionString)
+        .AddInterceptors(new GioVietNamInterceptor()));
+
+builder.Services.Configure<AdminDauTienOptions>(
+    builder.Configuration.GetSection(AdminDauTienOptions.TenMuc));
+builder.Services.AddScoped<KhoiTaoAdminDauTien>();
         options.SlidingExpiration = true;
     });
 
 // Đăng ký Authorization
 builder.Services.AddAuthorization();
+builder.Services.AddXuLyLoiApi();
+builder.Services.AddModuleAuth();
+builder.Services.AddModuleInventory();
 
 // ==========================================
 // 5. BUILD ỨNG DỤNG
@@ -83,12 +108,15 @@ var app = builder.Build();
 // 6. CẤU HÌNH HTTP PIPELINE
 // ==========================================
 
+await KhoiTaoAdminDauTien.ChayKhiKhoiDongAsync(app.Services);
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
+app.UseXuLyLoiApi();
 app.UseHttpsRedirection();
 
 app.UseRouting();

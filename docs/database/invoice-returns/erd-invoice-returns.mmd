@@ -1,0 +1,82 @@
+erDiagram
+    USERS {
+        BIGINT id PK
+        VARCHAR_100 username UK
+    }
+    CUSTOMERS {
+        BIGINT id PK
+        VARCHAR_30 phone UK
+    }
+    PRODUCTS {
+        BIGINT id PK
+        VARCHAR_200 name
+    }
+    INVOICES {
+        BIGINT id PK
+        VARCHAR_50 invoice_code UK
+        BIGINT cashier_id FK
+        BIGINT customer_id FK
+        BIGINT subtotal
+        BIGINT discount_total
+        BIGINT total_amount
+        VARCHAR_20 status
+        DATETIME_6 created_at
+    }
+    INVOICE_DETAILS {
+        BIGINT id PK
+        BIGINT invoice_id FK
+        BIGINT product_id FK
+        INT quantity
+        BIGINT unit_price
+        BIGINT discount_amount
+        BIGINT line_total
+    }
+    CASH_TRANSACTIONS {
+        BIGINT id PK
+        BIGINT invoice_id FK
+        BIGINT return_id FK
+        VARCHAR_20 transaction_type
+        BIGINT amount
+        BIGINT cash_received
+        BIGINT change_amount
+        DATETIME_6 created_at
+    }
+    RETURNS {
+        BIGINT id PK
+        VARCHAR_50 return_code UK
+        BIGINT invoice_id FK
+        BIGINT processed_by FK
+        BIGINT approved_by FK
+        VARCHAR_20 return_type
+        VARCHAR_20 status
+        TEXT reason
+        BIGINT refund_total
+        DATETIME_6 created_at
+    }
+    RETURN_DETAILS {
+        BIGINT id PK
+        BIGINT return_id FK
+        BIGINT invoice_detail_id FK
+        INT quantity
+        BIGINT refund_unit_price
+        BIGINT refund_amount
+        VARCHAR_20 disposition
+    }
+    RETURN_POLICIES {
+        BIGINT id PK
+        VARCHAR_100 name
+        INT return_window_days
+        BIGINT approval_threshold
+        BOOLEAN is_active
+        DATETIME_6 effective_from
+    }
+    USERS ||--o{ INVOICES : "cashier_id"
+    CUSTOMERS ||--o{ INVOICES : "customer_id"
+    PRODUCTS ||--o{ INVOICE_DETAILS : "product_id"
+    INVOICES ||--o{ INVOICE_DETAILS : "invoice_id"
+    INVOICES ||--o{ CASH_TRANSACTIONS : "invoice_id"
+    INVOICES ||--o{ RETURNS : "invoice_id"
+    USERS ||--o{ RETURNS : "processed_by / approved_by"
+    RETURNS ||--o{ RETURN_DETAILS : "return_id"
+    INVOICE_DETAILS ||--o{ RETURN_DETAILS : "invoice_detail_id"
+    RETURNS ||--o{ CASH_TRANSACTIONS : "return_id"

@@ -48,15 +48,40 @@ public sealed class PosController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(
-        int productId, int quantity)
+        int productId,
+        string? quantity)
     {
-        var error = await _cart.UpdateAsync(productId, quantity);
+        // E1: Chặn chữ, số thập phân, giá trị rỗng
+        // và số âm ở phía máy chủ
+        if (!int.TryParse(quantity, out int newQuantity)
+            || newQuantity < 0)
+        {
+            TempData["Error"] =
+                "Số lượng không hợp lệ. Vui lòng nhập số nguyên không âm.";
 
-        TempData[error == null ? "Success" : "Error"] =
-            error ?? "Đã cập nhật giỏ hàng.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Gọi service cập nhật giỏ hàng
+        var error = await _cart.UpdateAsync(
+            productId,
+            newQuantity);
+
+        if (error != null)
+        {
+            TempData["Error"] = error;
+        }
+        else
+        {
+            TempData["Success"] =
+                newQuantity == 0
+                    ? "Đã xóa sản phẩm khỏi giỏ."
+                    : "Đã cập nhật số lượng sản phẩm.";
+        }
 
         return RedirectToAction(nameof(Index));
     }
+
 
     [HttpPost]
     [ValidateAntiForgeryToken]

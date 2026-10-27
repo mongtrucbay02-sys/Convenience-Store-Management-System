@@ -1,0 +1,385 @@
+﻿@model ConvenienceStore.Web.Models.Pos.PosCheckoutViewModel
+
+@{
+    ViewData["Title"] = "Thanh toán đơn hàng";
+    Layout = "_AdminLayout";
+}
+
+<!-- CSS dùng chung cho POS-01, POS-02, POS-05 -->
+<link rel="stylesheet"
+      href="~/css/pos-flow.css"
+      asp-append-version="true" />
+
+<style>
+    .checkout-page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px 10px 50px;
+        color: #142b45;
+    }
+
+    .checkout-heading {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 25px;
+    }
+
+    .checkout-heading-icon {
+        width: 60px;
+        height: 60px;
+        background: #e7f2ff;
+        color: #176db1;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        flex-shrink: 0;
+    }
+
+    .checkout-heading h1 {
+        font-size: 28px;
+        font-weight: 800;
+        margin: 0 0 6px;
+        color: #142b45;
+    }
+
+    .checkout-heading p {
+        margin: 0;
+        color: #718096;
+        font-size: 14px;
+    }
+
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 22px;
+        align-items: stretch;
+    }
+
+    .checkout-card {
+        background: #ffffff;
+        border: 1px solid #e1e8f0;
+        border-radius: 18px;
+        padding: 28px;
+        box-shadow: 0 8px 30px rgba(15, 35, 65, 0.05);
+        height: 100%;
+    }
+
+        .checkout-card h2 {
+            font-size: 19px;
+            font-weight: 800;
+            margin: 0 0 24px;
+            color: #142b45;
+        }
+
+    .checkout-summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin: 17px 0;
+        font-size: 15px;
+    }
+
+        .checkout-summary-row span {
+            color: #64748b;
+        }
+
+        .checkout-summary-row strong {
+            color: #172b45;
+            font-weight: 700;
+        }
+
+    .checkout-divider {
+        border: none;
+        border-top: 1px solid #e2e8f0;
+        margin: 22px 0;
+        opacity: 1;
+    }
+
+    .checkout-total {
+        background: linear-gradient(135deg, #eaf4ff, #f1f8ff);
+        border: 1px solid #d1e5fb;
+        border-radius: 14px;
+        padding: 22px;
+        margin-top: 20px;
+    }
+
+    .checkout-total-label {
+        font-size: 14px;
+        font-weight: 700;
+        color: #476c90;
+    }
+
+    .checkout-total-value {
+        display: block;
+        margin-top: 8px;
+        color: #176db1;
+        font-size: 34px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .checkout-note {
+        margin-top: 20px;
+        background: #f1f5f9;
+        color: #64748b;
+        padding: 15px;
+        border-radius: 12px;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .checkout-method {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 22px;
+        background: #f6faff;
+        border: 2px solid #2581c7;
+        border-radius: 14px;
+        margin-bottom: 24px;
+        transition: background .2s, box-shadow .2s;
+    }
+
+        .checkout-method:hover {
+            background: #edf6ff;
+            box-shadow: 0 5px 18px rgba(23, 109, 177, 0.08);
+        }
+
+    .checkout-method-icon {
+        width: 58px;
+        height: 58px;
+        background: #e2f0ff;
+        color: #176db1;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 27px;
+        flex-shrink: 0;
+    }
+
+    .checkout-method-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+        .checkout-method-info strong {
+            display: block;
+            font-size: 17px;
+            margin-bottom: 6px;
+            color: #142b45;
+        }
+
+        .checkout-method-info span {
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+    .checkout-method-check {
+        color: #179764;
+        font-size: 25px;
+        font-weight: 800;
+    }
+
+    .checkout-payment-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 14px;
+        background: #eff8ff;
+        border: 1px solid #d8eafb;
+        border-radius: 12px;
+        color: #476c90;
+        font-size: 13px;
+        line-height: 1.6;
+        margin-bottom: 22px;
+    }
+
+    @@media (max-width: 850px) {
+        .checkout-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .checkout-card {
+            height: auto;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .checkout-page {
+            padding: 15px 0 35px;
+        }
+
+        .checkout-heading h1 {
+            font-size: 23px;
+        }
+
+        .checkout-card {
+            padding: 19px;
+        }
+
+        .checkout-total-value {
+            font-size: 28px;
+        }
+
+        .checkout-method {
+            padding: 15px;
+            gap: 12px;
+        }
+
+        .checkout-method-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 23px;
+        }
+    }
+</style>
+
+<div class="checkout-page">
+
+    <!-- ===================================== -->
+    <!-- TIÊU ĐỀ TRANG -->
+    <!-- ===================================== -->
+
+    <div class="checkout-heading">
+
+        <div class="checkout-heading-icon">
+            🛒
+        </div>
+
+        <div>
+            <h1>Thanh toán đơn hàng</h1>
+
+            <p>
+                Smart Mart / Bán hàng POS / Chọn phương thức thanh toán
+            </p>
+        </div>
+
+    </div>
+
+    <!-- ===================================== -->
+    <!-- THANH TIẾN TRÌNH DÙNG CHUNG -->
+    <!-- ===================================== -->
+
+    <partial name="_PosSteps" model="2" />
+
+    <!-- ===================================== -->
+    <!-- NỘI DUNG CHÍNH -->
+    <!-- ===================================== -->
+
+    <div class="checkout-grid">
+
+        <!-- CỘT TRÁI: TÓM TẮT ĐƠN HÀNG -->
+        <section class="checkout-card">
+
+            <h2>🧾 Tóm tắt đơn hàng</h2>
+
+            <div class="checkout-summary-row">
+                <span>Tạm tính</span>
+
+                <strong>
+                    @Model.Subtotal.ToString("N0") đ
+                </strong>
+            </div>
+
+            <div class="checkout-summary-row">
+                <span>Giảm giá</span>
+
+                <strong>
+                    @Model.Discount.ToString("N0") đ
+                </strong>
+            </div>
+
+            <hr class="checkout-divider" />
+
+            <div class="checkout-total">
+
+                <span class="checkout-total-label">
+                    Tổng phải thanh toán
+                </span>
+
+                <strong class="checkout-total-value">
+                    @Model.Total.ToString("N0") đ
+                </strong>
+
+            </div>
+
+            <div class="checkout-note">
+                ℹ️ Tổng tiền được tính từ giỏ hàng hiện tại.
+                Vui lòng kiểm tra số tiền trước khi tiếp tục thanh toán.
+            </div>
+
+        </section>
+
+        <!-- CỘT PHẢI: CHỌN PHƯƠNG THỨC -->
+        <section class="checkout-card">
+
+            <h2>💳 Phương thức thanh toán</h2>
+
+            <!-- CHỈ HỖ TRỢ TIỀN MẶT THEO SRS -->
+            <div class="checkout-method">
+
+                <div class="checkout-method-icon">
+                    💵
+                </div>
+
+                <div class="checkout-method-info">
+
+                    <strong>Thanh toán tiền mặt</strong>
+
+                    <span>
+                        Thu ngân nhận tiền trực tiếp từ khách hàng.
+                        Hệ thống tự động tính số tiền thừa cần trả.
+                    </span>
+
+                </div>
+
+                <div class="checkout-method-check">
+                    ✓
+                </div>
+
+            </div>
+
+            <div class="checkout-payment-note">
+                <span>ℹ️</span>
+
+                <span>
+                    Hệ thống hiện hỗ trợ thanh toán bằng tiền mặt.
+                    Sau khi tiếp tục, bạn có thể chọn mệnh giá,
+                    nhập số tiền khách đưa và xác nhận.
+                </span>
+            </div>
+
+            <!-- ĐI TỚI TRANG CASH -->
+            <div class="pos-flow-actions">
+
+                <a asp-controller="Pos"
+                   asp-action="Cash"
+                   class="pos-flow-primary">
+
+                    Tiếp tục thanh toán tiền mặt
+                    <span aria-hidden="true">→</span>
+
+                </a>
+
+                <!-- QUAY LẠI GIỎ HÀNG -->
+                <a asp-controller="Pos"
+                   asp-action="Index"
+                   class="pos-flow-secondary">
+
+                    ← Quay lại quầy bán hàng
+
+                </a>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>

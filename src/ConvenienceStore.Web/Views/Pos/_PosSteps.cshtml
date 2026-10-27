@@ -1,0 +1,34 @@
+﻿@model int
+
+<div class="pos-flow-steps"
+     aria-label="Tiến trình thanh toán">
+
+    <div class="pos-flow-step @(Model == 1 ? "active" : "done")">
+        <span class="pos-flow-number">
+            @(Model > 1 ? "✓" : "1")
+        </span>
+        <div>
+            <strong>Giỏ hàng</strong>
+            <small>Chọn và chỉnh sửa sản phẩm</small>
+        </div>
+    </div>
+
+    <div class="pos-flow-step @(Model == 2 ? "active" : Model > 2 ? "done" : "")">
+        <span class="pos-flow-number">
+            @(Model > 2 ? "✓" : "2")
+        </span>
+        <div>
+            <strong>Phương thức</strong>
+            <small>Chọn thanh toán tiền mặt</small>
+        </div>
+    </div>
+
+    <div class="pos-flow-step @(Model == 3 ? "active" : "")">
+        <span class="pos-flow-number">3</span>
+        <div>
+            <strong>Xác nhận</strong>
+            <small>Nhận tiền và tính tiền thừa</small>
+        </div>
+    </div>
+
+</div>

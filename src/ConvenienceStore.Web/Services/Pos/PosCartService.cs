@@ -154,6 +154,7 @@ public sealed class PosCartService
 
     // ---------- Kiểm tra trước khi thanh toán ----------
 
+
     public async Task<string?> ValidateCartAsync(PosCart cart)
     {
         if (cart.Items.Count == 0)
@@ -161,19 +162,117 @@ public sealed class PosCartService
 
         foreach (var item in cart.Items)
         {
-            var product = await _catalog.FindAsync(item.ProductId);
+            var product = await _catalog.FindAsync(
+                item.ProductId);
 
             if (product == null)
                 return $"Sản phẩm {item.Name} không còn kinh doanh.";
 
-            if (item.Quantity <= 0 || item.Quantity > product.Stock)
-                return $"Chỉ còn {product.Stock} sản phẩm {item.Name}.";
+            if (item.Quantity <= 0)
+                return $"Số lượng {item.Name} không hợp lệ.";
 
-            if (item.UnitPrice <= 0 || item.UnitPrice % 100 != 0)
-                return $"Giá sản phẩm {item.Name} không hợp lệ.";
+            if (item.Quantity > product.Stock)
+                return $"Sản phẩm {item.Name} chỉ còn {product.Stock}.";
+
+            if (product.Price <= 0 ||
+                product.Price % 100 != 0)
+                return $"Giá bán {item.Name} không hợp lệ.";
+
+            if (item.UnitDiscount < 0 || item.UnitDiscount > item.UnitPrice)
+                return $"Giảm giá của {item.Name} không hợp lệ.";
+
+            if (item.UnitPrice != product.Price)
+                return $"Giá sản phẩm {item.Name} đã thay đổi. " +
+                       "Vui lòng cập nhật giỏ hàng.";
         }
 
         return null;
+    }
+
+
+    // ---------- E2: Đồng bộ khuyến mãi không còn hợp lệ ----------
+    // Chỉ gọi sau khi giao dịch thanh toán đã kết thúc/rollback.
+    // Trả về số dòng bị thay đổi. Controller phải yêu cầu thu ngân xác nhận lại.
+    public async Task<int> RefreshInvalidPromotionsAsync()
+    {
+        await using var conn = _catalog.CreateConnection();
+        await conn.OpenAsync();
+        await using var tx = await conn.BeginTransactionAsync(MucCoLap);
+
+        var gioId = await DocGioDangBanAsync(conn, tx, ThuNganId);
+        if (gioId == null)
+        {
+            await tx.RollbackAsync();
+            return 0;
+        }
+
+        // Khóa các dòng chi tiết giỏ hàng, rồi kiểm tra trạng thái KM.
+        var invalidProducts = new List<int>();
+        await using (var cmd = new MySqlCommand(
+            """
+            SELECT ct.san_pham_id, ct.khuyen_mai_id
+            FROM ct_gio_hang ct
+            WHERE ct.gio_hang_id = @g AND ct.khuyen_mai_id IS NOT NULL
+            FOR UPDATE
+            """, conn, tx))
+        {
+            cmd.Parameters.AddWithValue("@g", gioId.Value);
+            await using var reader = await cmd.ExecuteReaderAsync();
+            var promotions = new List<(int ProductId, int PromotionId)>();
+            while (await reader.ReadAsync())
+                promotions.Add((Convert.ToInt32(reader[0]), Convert.ToInt32(reader[1])));
+
+            // Reader phải đóng trước khi thực hiện truy vấn khác trên cùng connection.
+            await reader.CloseAsync();
+
+            if (promotions.Count > 0)
+            {
+                var ids = promotions.Select(x => x.PromotionId).Distinct().ToArray();
+                var names = ids.Select((_, i) => $"@km{i}").ToArray();
+                await using var check = new MySqlCommand(
+                    $"""
+                    SELECT id
+                    FROM v_chuong_trinh_khuyen_mai
+                    WHERE id IN ({string.Join(",", names)})
+                      AND trang_thai_hien_thi = 'DANG_CHAY'
+                      AND (chi_thanh_vien = FALSE OR @coKhach = 1)
+                    """, conn, tx);
+                for (int i = 0; i < ids.Length; i++)
+                    check.Parameters.AddWithValue(names[i], ids[i]);
+                await using (var customerCmd = new MySqlCommand(
+                    "SELECT khach_hang_id FROM gio_hang WHERE id = @g", conn, tx))
+                {
+                    customerCmd.Parameters.AddWithValue("@g", gioId.Value);
+                    var customerId = await customerCmd.ExecuteScalarAsync();
+                    check.Parameters.AddWithValue("@coKhach", customerId is not null and not DBNull ? 1 : 0);
+                }
+
+                var validIds = new HashSet<int>();
+                await using (var validReader = await check.ExecuteReaderAsync())
+                    while (await validReader.ReadAsync())
+                        validIds.Add(Convert.ToInt32(validReader[0]));
+                invalidProducts.AddRange(promotions
+                    .Where(x => !validIds.Contains(x.PromotionId))
+                    .Select(x => x.ProductId));
+            }
+        }
+
+        int changed = 0;
+        foreach (int productId in invalidProducts.Distinct())
+        {
+            await using var update = new MySqlCommand(
+                """
+                UPDATE ct_gio_hang
+                SET khuyen_mai_id = NULL, giam_don_vi = 0
+                WHERE gio_hang_id = @g AND san_pham_id = @p
+                  AND khuyen_mai_id IS NOT NULL
+                """, conn, tx);
+            update.Parameters.AddWithValue("@g", gioId.Value);
+            update.Parameters.AddWithValue("@p", productId);
+            changed += await update.ExecuteNonQueryAsync();
+        }
+        await tx.CommitAsync();
+        return changed;
     }
 
     // ---------- Hủy đơn đang bán ----------
@@ -277,7 +376,8 @@ public sealed class PosCartService
 
         await using var cmd = new MySqlCommand(
             """
-            SELECT ct.san_pham_id, sp.ma, sp.ten_san_pham, ct.don_gia, ct.so_luong
+            SELECT ct.san_pham_id, sp.ma, sp.ten_san_pham, ct.don_gia, ct.so_luong,
+                   ct.khuyen_mai_id, ct.giam_don_vi
             FROM ct_gio_hang ct
             JOIN san_pham sp ON sp.id = ct.san_pham_id
             WHERE ct.gio_hang_id = @g
@@ -294,7 +394,9 @@ public sealed class PosCartService
                 Code = Convert.ToString(doc[1]) ?? "",
                 Name = Convert.ToString(doc[2]) ?? "",
                 UnitPrice = Convert.ToInt64(doc[3]),
-                Quantity = Convert.ToInt32(doc[4])
+                Quantity = Convert.ToInt32(doc[4]),
+                PromotionId = doc.IsDBNull(5) ? null : Convert.ToInt32(doc[5]),
+                UnitDiscount = doc.IsDBNull(6) ? 0 : Convert.ToInt64(doc[6])
             });
         }
 

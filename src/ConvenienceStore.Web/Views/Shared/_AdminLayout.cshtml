@@ -10,7 +10,9 @@
     <div class="shell">
         <aside class="sidebar"><a class="brand" asp-controller="Dashboard" asp-action="Index">▣ Smart Mart</a><div class="sub">QUẢN LÝ CỬA HÀNG</div><nav><a asp-controller="Dashboard" asp-action="Index">▦ Tổng quan</a><a asp-controller="Pos" asp-action="Index">▤ Bán hàng POS</a><a asp-controller="Returns" asp-action="Index">↺ Đổi trả</a></nav><div class="sidefoot">Hệ thống bán hàng</div></aside><div class="main">
         <header class="top"><div><strong>@ViewData["Title"]</strong><span> / Hệ thống quản lý cửa hàng tiện lợi</span></div><span class="chip">Giao diện quản lý</span></header><main class="content">@RenderBody()</main><footer class="admin-footer">
-    © @DateTime.Now.Year - Hệ thống quản lý cửa hàng tiện lợi
-</footer>er></div></div>@await RenderSectionAsync("Scripts", required: false)
+        © @DateTime.Now.Year - Hệ thống quản lý cửa hàng tiện lợi
+    </footer>
+</div>
+</div>@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,0 +1,152 @@
+﻿/* POS-10: màn hình Hóa đơn. Các lớp hero, panel, eyebrow, empty, primary dùng chung từ admin-layout.css. */
+
+.inv-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-end;
+}
+
+    .inv-filter > div {
+        display: grid;
+        gap: 6px;
+    }
+
+    .inv-filter label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #3a4b60;
+    }
+
+    .inv-filter input,
+    .inv-filter select {
+        height: 40px;
+        min-width: 150px;
+        padding: 0 10px;
+        border: 1px solid #cdd8e6;
+        border-radius: 9px;
+        font: inherit;
+        background: #fff;
+    }
+
+.inv-filter-actions {
+    display: flex !important;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    margin-left: auto;
+}
+
+.inv-reset {
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 9px;
+    background: #e8eef8;
+    color: #1f3a63;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .inv-reset:hover {
+        background: #d8e3f3;
+    }
+
+.inv-alert {
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+}
+
+.inv-alert-error {
+    background: #fde8e8;
+    color: #b42318;
+    border: 1px solid #f5c2c0;
+}
+
+.inv-alert-warn {
+    background: #fff4e0;
+    color: #8a5a00;
+    border: 1px solid #f3d9a4;
+}
+
+.inv-table-wrap {
+    overflow-x: auto;
+}
+
+.inv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+    .inv-table th {
+        text-align: left;
+        padding: 13px 16px;
+        background: #f3f6fb;
+        color: #3a4b60;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .inv-table td {
+        padding: 13px 16px;
+        border-top: 1px solid #edf1f7;
+        white-space: nowrap;
+    }
+
+    .inv-table .num {
+        text-align: right;
+    }
+
+    .inv-table tfoot td {
+        background: #f8fafd;
+        border-top: 2px solid #dfe7f1;
+    }
+
+.inv-row-cancelled td {
+    color: #8a97a8;
+}
+
+    .inv-row-cancelled td.num {
+        text-decoration: line-through;
+    }
+
+.inv-muted {
+    color: #8a97a8;
+    font-weight: 400;
+}
+
+.inv-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.inv-badge-paid {
+    background: #e3f6ea;
+    color: #17733a;
+}
+
+.inv-badge-cancel {
+    background: #fde8e8;
+    color: #b42318;
+}
+
+.inv-pager {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    margin-top: 16px;
+    color: #3a4b60;
+}
+
+    .inv-pager a {
+        color: #1f5fbf;
+        text-decoration: none;
+        font-weight: 600;
+    }

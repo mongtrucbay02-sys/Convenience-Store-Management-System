@@ -22,6 +22,9 @@ public sealed class PosInvoiceViewModel
 {
     public long InvoiceId { get; set; }
 
+    // BR-POS-11: đối chiếu tài khoản lập hóa đơn khi mở trực tiếp URL.
+    public int CashierId { get; set; }
+
     public string InvoiceCode { get; set; } = "";
 
     public DateTime CreatedAt { get; set; }

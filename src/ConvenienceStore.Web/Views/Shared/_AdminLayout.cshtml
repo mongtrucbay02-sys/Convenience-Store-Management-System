@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using ConvenienceStore.Web.Modules.Auth.Security
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -8,7 +9,16 @@
 </head>
 <body>
     <div class="shell">
-        <aside class="sidebar"><a class="brand" asp-controller="Dashboard" asp-action="Index">▣ Smart Mart</a><div class="sub">QUẢN LÝ CỬA HÀNG</div><nav><a asp-controller="Dashboard" asp-action="Index">▦ Tổng quan</a><a asp-controller="Pos" asp-action="Index">▤ Bán hàng POS</a><a asp-controller="Returns" asp-action="Index">↺ Đổi trả</a></nav><div class="sidefoot">Hệ thống bán hàng</div></aside><div class="main">
+        <aside class="sidebar">
+            <a class="brand" asp-controller="Dashboard" asp-action="Index">▣ Smart Mart</a><div class="sub">QUẢN LÝ CỬA HÀNG</div><nav>
+            <a asp-controller="Dashboard" asp-action="Index">▦ Tổng quan</a><a asp-controller="Pos" asp-action="Index">▤ Bán hàng POS</a>  @if (User.HasClaim(ThongTinXacThuc.ClaimQuyen, MaQuyen.HoaDonXemCuaMinh) ||
+            User.HasClaim(ThongTinXacThuc.ClaimQuyen, MaQuyen.HoaDonXemTatCa))
+{
+                <a asp-controller="Invoices" asp-action="Index">▥ Hóa đơn</a>
+            }
+            <a asp-controller="Returns" asp-action="Index">↺ Đổi trả</a>
+        </nav><div class="sidefoot">Hệ thống bán hàng</div>
+    </aside><div class="main">
         <header class="top"><div><strong>@ViewData["Title"]</strong><span> / Hệ thống quản lý cửa hàng tiện lợi</span></div><span class="chip">Giao diện quản lý</span></header><main class="content">@RenderBody()</main><footer class="admin-footer">
         © @DateTime.Now.Year - Hệ thống quản lý cửa hàng tiện lợi
     </footer>

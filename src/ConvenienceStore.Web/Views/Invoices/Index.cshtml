@@ -1,0 +1,220 @@
+﻿@model ConvenienceStore.Web.Models.Pos.PosInvoiceListViewModel
+
+@{
+    ViewData["Title"] = "Hóa đơn";
+    Layout = "_AdminLayout";
+
+    var culture = new System.Globalization.CultureInfo("vi-VN");
+    var f = Model.Filter;
+
+    string Money(long amount) => amount.ToString("N0", culture) + " đ";
+
+    string StatusText(string status) => status switch
+    {
+        "DA_THANH_TOAN" => "Đã thanh toán",
+        "DA_HUY" => "Đã hủy",
+        _ => status
+    };
+
+    // Giữ nguyên bộ lọc khi chuyển trang.
+    // Tên khóa PHẢI trùng tên tham số của InvoicesController.Index
+    // (fromDate, toDate, status, cashierId, code, page).
+    Dictionary<string, string> Route(int p)
+    {
+        var r = new Dictionary<string, string>();
+        if (!string.IsNullOrWhiteSpace(f.Code)) r["code"] = f.Code;
+        if (!string.IsNullOrWhiteSpace(f.Customer)) r["Customer"] = f.Customer;
+        r["fromDate"] = f.From.ToString("yyyy-MM-dd");
+        r["toDate"] = f.To.ToString("yyyy-MM-dd");
+        if (Model.CanFilterCashier && f.CashierId is { } tn) r["cashierId"] = tn.ToString();
+        if (!string.IsNullOrWhiteSpace(f.Status)) r["status"] = f.Status;
+        r["page"] = p.ToString();
+        return r;
+    }
+
+    var oneDay = f.From == f.To;
+    var rangeText = oneDay
+        ? $"ngày {f.From:dd/MM/yyyy}"
+        : $"{f.From:dd/MM/yyyy} đến {f.To:dd/MM/yyyy}";
+}
+
+<link rel="stylesheet" href="~/css/invoices.css" asp-append-version="true" />
+
+<section class="hero">
+    <div>
+        <p class="eyebrow">POS / HÓA ĐƠN</p>
+        <h1>Tra cứu hóa đơn</h1>
+        <p>
+            @(Model.CanFilterCashier
+                ? "Bạn đang xem hóa đơn của tất cả thu ngân."
+                : "Bạn chỉ xem được hóa đơn do chính mình lập.")
+        </p>
+    </div>
+</section>
+
+@if (Model.Error is not null)
+{
+    <div class="inv-alert inv-alert-error" role="alert">@Model.Error</div>
+}
+
+<section class="panel">
+    <form method="get" asp-controller="Invoices" asp-action="Index" class="inv-filter">
+        <div>
+            <label for="code">Mã hóa đơn</label>
+            <input id="code" name="code" value="@f.Code" placeholder="HD-20261029-0001" maxlength="20" />
+        </div>
+
+        <div>
+            <label for="fromDate">Từ ngày</label>
+            <input id="fromDate" name="fromDate" type="date" value="@f.From.ToString("yyyy-MM-dd")" data-auto-submit />
+        </div>
+
+        <div>
+            <label for="toDate">Đến ngày</label>
+            <input id="toDate" name="toDate" type="date" value="@f.To.ToString("yyyy-MM-dd")" data-auto-submit />
+        </div>
+
+        <div>
+            <label for="customer">Khách hàng</label>
+            <input id="customer" name="Customer" value="@f.Customer" placeholder="Tên, số điện thoại hoặc Khách lẻ" />
+        </div>
+
+        @if (Model.CanFilterCashier)
+        {
+            <div>
+                <label for="cashierId">Thu ngân</label>
+                <select id="cashierId" name="cashierId" data-auto-submit>
+                    <option value="">Tất cả</option>
+                    @foreach (var c in Model.Cashiers)
+                    {
+                        <option value="@c.Id" selected="@(f.CashierId == c.Id)">@c.Name</option>
+                    }
+                </select>
+            </div>
+        }
+
+        <div>
+            <label for="status">Trạng thái</label>
+            <select id="status" name="status" data-auto-submit>
+                <option value="" selected="@(string.IsNullOrEmpty(f.Status))">Tất cả</option>
+                <option value="DA_THANH_TOAN" selected="@(f.Status == "DA_THANH_TOAN")">Đã thanh toán</option>
+                <option value="DA_HUY" selected="@(f.Status == "DA_HUY")">Đã hủy</option>
+            </select>
+        </div>
+
+        <div class="inv-filter-actions">
+            <button type="submit" class="primary">Lọc</button>
+            <a asp-controller="Invoices" asp-action="Index" class="inv-reset">Hôm nay</a>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    @if (Model.Error is null && Model.Items.Count == 0)
+    {
+        @* E1: không có kết quả *@
+        <div class="empty">Không có hóa đơn phù hợp.</div>
+        <p>
+            <strong>@(Model.CanFilterCashier ? "Tổng cộng doanh thu" : "Doanh thu của bạn"): @Money(Model.PaidRevenue)</strong>
+            <span class="inv-muted">(@rangeText, 0 hóa đơn)</span>
+        </p>
+    }
+    else if (Model.Items.Count > 0)
+    {
+        <div class="inv-table-wrap">
+            <table class="inv-table">
+                <thead>
+                    <tr>
+                        <th>Mã hóa đơn</th>
+                        <th>Thời gian</th>
+                        <th>Thu ngân</th>
+                        <th>Khách hàng</th>
+                        <th class="num">Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        @if (Model.CanOpenReceipt)
+                        {
+                            <th></th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr class="@(item.IsCancelled ? "inv-row-cancelled" : "")">
+                            <td><strong>@item.Code</strong></td>
+                            <td>@item.PaidAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.CashierName</td>
+                            <td>
+                                @if (item.CustomerName == "Khách lẻ")
+                                {
+                                    <span class="inv-muted">Khách lẻ</span>
+                                }
+                                else
+                                {
+                                    @item.CustomerName
+                                }
+                            </td>
+                            <td class="num">@Money(item.Total)</td>
+                            <td>
+                                <span class="inv-badge @(item.IsCancelled ? "inv-badge-cancel" : "inv-badge-paid")">
+                                    @StatusText(item.Status)
+                                </span>
+                            </td>
+                            @if (Model.CanOpenReceipt)
+                            {
+                                <td>
+                                    @if (!item.IsCancelled)
+                                    {
+                                        <a asp-controller="Pos" asp-action="Receipt" asp-route-invoiceId="@item.Id">Xem</a>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4">
+                            <strong>@(Model.CanFilterCashier ? "Tổng cộng doanh thu" : "Doanh thu của bạn")</strong>
+                            <span class="inv-muted"> (@rangeText, chỉ tính hóa đơn đã thanh toán, trên tất cả các trang)</span>
+                        </td>
+                        <td class="num"><strong>@Money(Model.PaidRevenue)</strong></td>
+                        <td colspan="@(Model.CanOpenReceipt ? 2 : 1)">
+                            @Model.TotalCount.ToString("N0", culture) hóa đơn
+                            @if (Model.CancelledCount > 0)
+                            {
+                                <span class="inv-muted"> (@Model.CancelledCount đã hủy)</span>
+                            }
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="inv-pager" aria-label="Phân trang">
+                @if (Model.Page > 1)
+                {
+                    <a asp-controller="Invoices" asp-action="Index" asp-all-route-data="@Route(Model.Page - 1)">← Trước</a>
+                }
+
+                <span>Trang @Model.Page / @Model.TotalPages</span>
+
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <a asp-controller="Invoices" asp-action="Index" asp-all-route-data="@Route(Model.Page + 1)">Sau →</a>
+                }
+            </nav>
+        }
+    }
+</section>
+
+@section Scripts {
+    <script>
+        // Đổi ngày, thu ngân hoặc trạng thái là tự cập nhật danh sách và tổng cộng.
+        document.querySelectorAll('[data-auto-submit]').forEach(function (el) {
+            el.addEventListener('change', function () { el.form.submit(); });
+        });
+    </script>
+}

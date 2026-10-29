@@ -457,9 +457,10 @@ public sealed class PosController : Controller
             return BadRequest(error);
         }
 
-        // TODO: Kiểm tra quyền truy cập hóa đơn
-        // theo cửa hàng/ca bán nếu hệ thống
-        // phân tách dữ liệu giữa các thu ngân.
+        if (!PosInvoiceAccess.CanView(PosInvoiceAccess.FromUser(User), invoice.CashierId))
+        {
+            return Forbid();
+        }
 
         return View("Receipt", invoice);
     }

@@ -50,7 +50,8 @@ public sealed class MySqlPosInvoiceStore(
                     h.tong_thanh_toan,
                     h.tien_khach_dua,
                     h.tien_thua,
-                    h.diem_cong
+                    h.diem_cong,
+                    h.thu_ngan_id
                 FROM hoa_don h
                 INNER JOIN tai_khoan tn
                     ON tn.id = h.thu_ngan_id
@@ -73,7 +74,8 @@ public sealed class MySqlPosInvoiceStore(
                     Total = d.SoNguyenDai(8),
                     CashReceived = d.SoNguyenDai(9),
                     Change = d.SoNguyenDai(10),
-                    PointsEarned = d.SoNguyen(11)
+                    PointsEarned = d.SoNguyen(11),
+                    CashierId = d.SoNguyen(12)
                 },
                 cancellationToken,
                 ("@id", invoiceId)

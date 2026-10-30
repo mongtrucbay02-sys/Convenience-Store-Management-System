@@ -1,0 +1,473 @@
+﻿@model ConvenienceStore.Web.Models.Pos.PosCheckoutViewModel
+
+@{
+    ViewData["Title"] = "Thanh toán tiền mặt";
+    Layout = "_AdminLayout";
+}
+<link rel="stylesheet"
+      href="~/css/pos-flow.css"
+      asp-append-version="true" />
+<style>
+    .cash-page {
+        max-width: 1050px;
+        margin: 0 auto;
+        padding: 20px 0 40px;
+        color: #142b45;
+    }
+
+    .cash-header {
+        margin-bottom: 24px;
+    }
+
+    .cash-header h1 {
+        font-size: 28px;
+        font-weight: 800;
+        margin: 8px 0;
+    }
+
+    .cash-subtitle {
+        color: #718096;
+        font-size: 14px;
+    }
+
+    .cash-grid {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 22px;
+        align-items: start;
+    }
+
+    .cash-card {
+        background: white;
+        border: 1px solid #e1e8f0;
+        border-radius: 18px;
+        padding: 26px;
+        box-shadow: 0 6px 25px rgba(15, 35, 65, 0.04);
+    }
+
+    .cash-card h2 {
+        font-size: 19px;
+        font-weight: 750;
+        margin-bottom: 22px;
+    }
+
+    .cash-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 15px 0;
+        gap: 12px;
+    }
+
+    .cash-row span {
+        color: #65758b;
+    }
+
+    .cash-total {
+        margin-top: 25px;
+        background: #edf5ff;
+        border: 1px solid #d4e7ff;
+        border-radius: 14px;
+        padding: 20px;
+    }
+
+    .cash-total span {
+        color: #496c91;
+        font-weight: 600;
+    }
+
+    .cash-total strong {
+        display: block;
+        margin-top: 8px;
+        color: #1266b0;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .cash-label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .cash-input-wrap {
+        display: flex;
+        align-items: center;
+        border: 2px solid #dce5f0;
+        border-radius: 12px;
+        background: #f8fafc;
+        overflow: hidden;
+        transition: border-color .2s;
+    }
+
+    .cash-input-wrap:focus-within {
+        border-color: #2581d0;
+    }
+
+    .cash-input-wrap input {
+        border: none;
+        outline: none;
+        background: transparent;
+        padding: 17px;
+        width: 100%;
+        min-width: 0;
+        font-size: 22px;
+        font-weight: 700;
+        color: #142b45;
+    }
+
+    .cash-input-wrap span {
+        padding: 0 18px;
+        color: #64748b;
+        font-weight: 700;
+    }
+
+    .cash-denominations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 14px 0;
+    }
+
+    .cash-denomination {
+        background: #f7faff;
+        color: #22649e;
+        border: 1px solid #d5e3f1;
+        border-radius: 10px;
+        padding: 13px 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .cash-denomination:hover,
+    .cash-denomination.active {
+        background: #176eaf;
+        color: white;
+        border-color: #176eaf;
+    }
+
+    .cash-exact {
+        width: 100%;
+        padding: 12px;
+        border: 1px dashed #2b9d76;
+        color: #15805a;
+        background: #effcf6;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .cash-preview {
+        margin: 20px 0;
+        padding: 18px;
+        border-radius: 12px;
+        background: #f1f5f9;
+    }
+
+    .cash-preview.success {
+        background: #e9f9f0;
+        color: #147449;
+    }
+
+    .cash-preview.danger {
+        background: #fff0f0;
+        color: #b42332;
+    }
+
+    .cash-preview strong {
+        display: block;
+        font-size: 25px;
+        margin-top: 6px;
+    }
+
+    .cash-submit {
+        display: block;
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 12px;
+        background: #1674bb;
+        color: white;
+        font-weight: 750;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .cash-submit:hover {
+        background: #0e5d99;
+    }
+
+    .cash-submit:disabled {
+        background: #a6b9ca;
+        cursor: not-allowed;
+    }
+
+    .cash-back {
+        display: block;
+        text-align: center;
+        margin-top: 15px;
+        color: #64748b;
+        text-decoration: none;
+    }
+
+    .cash-back:hover {
+        color: #176eaf;
+    }
+
+    .cash-message {
+        margin-top: 18px;
+        border-radius: 10px;
+        padding: 15px;
+        background: #fff8e7;
+        color: #8b6418;
+    }
+
+    @@media (max-width: 850px) {
+        .cash-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 450px) {
+        .cash-card {
+            padding: 18px;
+        }
+
+        .cash-denominations {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .cash-total strong {
+            font-size: 26px;
+        }
+    }
+</style>
+
+<div class="cash-page">
+
+    <div class="cash-header">
+        <div class="cash-subtitle">
+        </div>
+
+        <h1>Thanh toán tiền mặt</h1>
+
+        <p class="cash-subtitle">
+            Kiểm tra tổng tiền, nhận tiền khách đưa và tính tiền thừa.
+        </p>
+    </div>
+    <!-- TIẾN TRÌNH CHUNG POS -->
+    <partial name="_PosSteps" model="3" />
+    <div class="cash-grid">
+
+
+        <!-- CỘT TRÁI: TỔNG TIỀN -->
+        <section class="cash-card">
+
+            <h2>Chi tiết thanh toán</h2>
+
+            <div class="cash-row">
+                <span>Tạm tính</span>
+                <strong>@Model.Subtotal.ToString("N0") đ</strong>
+            </div>
+
+            <div class="cash-row">
+                <span>Giảm giá</span>
+                <strong>@Model.Discount.ToString("N0") đ</strong>
+            </div>
+
+            <hr />
+
+            <div class="cash-total">
+                <span>Tổng phải trả</span>
+                <strong>@Model.Total.ToString("N0") đ</strong>
+            </div>
+
+            <p class="cash-subtitle mt-3">
+                Phương thức: Tiền mặt
+            </p>
+
+        </section>
+
+        <!-- CỘT PHẢI: NHẬP TIỀN -->
+        <section class="cash-card">
+
+            <h2>Nhận tiền khách hàng</h2>
+
+            <form asp-controller="Pos"
+                  asp-action="ConfirmCash"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <label class="cash-label" for="cashReceived">
+                    Số tiền khách đưa (VNĐ)
+                </label>
+
+                <div class="cash-input-wrap">
+                    <input id="cashReceived"
+                           name="cashReceived"
+                           type="number"
+                           min="0"
+                           step="1"
+                           required
+                           placeholder="Nhập số tiền..."
+                           value="@Model.CashInput"
+                           oninput="calculateChange()" />
+
+                    <span>VNĐ</span>
+                </div>
+
+                <label class="cash-label mt-4">
+                    Mệnh giá gợi ý
+                </label>
+
+                <div class="cash-denominations">
+                    @foreach (long amount in new long[]
+                    {
+                        10000, 20000, 50000,
+                        100000, 200000, 500000
+                    })
+                    {
+                        <button type="button"
+                                class="cash-denomination"
+                                onclick="setCash(@amount)">
+                            @amount.ToString("N0") đ
+                        </button>
+                    }
+                </div>
+
+                <button type="button"
+                        class="cash-exact"
+                        onclick="setCash(@Model.Total)">
+                    Đưa đủ tiền
+                </button>
+
+                <div id="cashPreview"
+                     class="cash-preview"
+                     aria-live="polite">
+                    <span id="previewLabel">
+                        Tiền thừa trả khách
+                    </span>
+
+                    <strong id="previewAmount">
+                        0 đ
+                    </strong>
+                </div>
+
+                <button type="submit"
+                        id="confirmCashButton"
+                        class="cash-submit"
+                        disabled>
+                    Xác nhận thanh toán
+                </button>
+
+                <a asp-controller="Pos"
+                   asp-action="Checkout"
+                   class="cash-back">
+                    ← Quay lại chọn phương thức
+                </a>
+            </form>
+
+            @if (!string.IsNullOrEmpty(Model.Error))
+            {
+                <div class="alert alert-danger mt-3">
+                    @Model.Error
+                </div>
+            }
+
+            @if (Model.Change.HasValue)
+            {
+                <div class="alert alert-success mt-3">
+                    Khách đưa:
+                    <strong>
+                        @Model.CashReceived!.Value.ToString("N0") đ
+                    </strong>
+
+                    <div>
+                        Tiền thừa:
+                        <strong>
+                            @Model.Change.Value.ToString("N0") đ
+                        </strong>
+                    </div>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.Message))
+            {
+                <div class="cash-message">
+                    @Model.Message
+                </div>
+            }
+
+        </section>
+    </div>
+</div>
+
+<script>
+    const totalAmount = @Model.Total;
+    const cashInput = document.getElementById("cashReceived");
+    const preview = document.getElementById("cashPreview");
+    const previewLabel = document.getElementById("previewLabel");
+    const previewAmount = document.getElementById("previewAmount");
+    const confirmButton = document.getElementById("confirmCashButton");
+
+    function setCash(amount) {
+        cashInput.value = amount;
+        calculateChange();
+    }
+
+    function calculateChange() {
+        const value = cashInput.value.trim();
+
+        document.querySelectorAll(".cash-denomination")
+            .forEach(button => {
+                const buttonAmount = Number(
+                    button.getAttribute("onclick")
+                        .match(/\d+/)[0]
+                );
+
+                button.classList.toggle(
+                    "active",
+                    String(buttonAmount) === value
+                );
+            });
+
+        if (!/^\d+$/.test(value)) {
+            preview.className = "cash-preview";
+            previewLabel.textContent = "Trạng thái";
+            previewAmount.textContent = "Nhập số tiền hợp lệ";
+            confirmButton.disabled = true;
+            return;
+        }
+
+        const cash = Number(value);
+
+        if (!Number.isSafeInteger(cash) ||
+            !Number.isSafeInteger(totalAmount)) {
+            preview.className = "cash-preview danger";
+            previewLabel.textContent = "Trạng thái";
+            previewAmount.textContent = "Số tiền không hợp lệ";
+            confirmButton.disabled = true;
+            return;
+        }
+
+        const difference = cash - totalAmount;
+
+        if (difference < 0) {
+            preview.className = "cash-preview danger";
+            previewLabel.textContent = "Số tiền còn thiếu";
+            previewAmount.textContent =
+                Math.abs(difference).toLocaleString("vi-VN") + " đ";
+            confirmButton.disabled = true;
+        } else {
+            preview.className = "cash-preview success";
+            previewLabel.textContent = "Tiền thừa trả khách";
+            previewAmount.textContent =
+                difference.toLocaleString("vi-VN") + " đ";
+            confirmButton.disabled = false;
+        }
+    }
+
+    calculateChange();
+</script>

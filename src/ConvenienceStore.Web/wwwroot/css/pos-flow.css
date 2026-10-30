@@ -1,0 +1,186 @@
+﻿
+/* SMART MART - GIAO DIEN POS THONG NHAT */
+
+:root {
+    --pos-primary: #176db1;
+    --pos-primary-dark: #10568d;
+    --pos-navy: #142b45;
+    --pos-muted: #718096;
+    --pos-border: #dfe7f1;
+    --pos-bg: #f3f6fb;
+    --pos-success: #168257;
+}
+
+.pos-flow {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 20px 8px 40px;
+    color: var(--pos-navy);
+}
+
+.pos-flow-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.pos-flow-eyebrow {
+    color: var(--pos-primary);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.pos-flow-title {
+    font-size: 28px;
+    font-weight: 800;
+    margin: 6px 0;
+}
+
+.pos-flow-description {
+    color: var(--pos-muted);
+    font-size: 14px;
+    margin: 0;
+}
+
+.pos-flow-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.pos-flow-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid var(--pos-border);
+    border-radius: 14px;
+    color: #64748b;
+}
+
+    .pos-flow-step.active {
+        border: 2px solid var(--pos-primary);
+        background: #eaf4ff;
+        color: var(--pos-primary);
+    }
+
+    .pos-flow-step.done {
+        border-color: #bfe7d1;
+        background: #eaf8f0;
+        color: var(--pos-success);
+    }
+
+.pos-flow-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #edf2f8;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.pos-flow-step.active .pos-flow-number {
+    background: #d5eaff;
+}
+
+.pos-flow-step.done .pos-flow-number {
+    background: #d0f1dd;
+}
+
+.pos-flow-step strong {
+    display: block;
+    font-size: 14px;
+}
+
+.pos-flow-step small {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+}
+
+.pos-flow-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 50px;
+    padding: 13px 18px;
+    border: none;
+    border-radius: 12px;
+    background: var(--pos-primary);
+    color: white;
+    text-decoration: none;
+    font-weight: 750;
+    transition: background .2s, transform .2s;
+}
+
+    .pos-flow-primary:hover {
+        background: var(--pos-primary-dark);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .pos-flow-primary.disabled,
+    .pos-flow-primary:disabled {
+        opacity: .5;
+        pointer-events: none;
+    }
+
+.pos-flow-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px;
+    border-radius: 12px;
+    border: 1px solid var(--pos-border);
+    color: var(--pos-navy);
+    background: #fff;
+    text-decoration: none;
+    font-weight: 650;
+}
+
+    .pos-flow-secondary:hover {
+        background: #edf4fc;
+        color: var(--pos-primary);
+    }
+
+.pos-flow-actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+@media (max-width: 700px) {
+    .pos-flow-title {
+        font-size: 23px;
+    }
+
+    .pos-flow-steps {
+        gap: 6px;
+    }
+
+    .pos-flow-step {
+        padding: 10px 8px;
+        gap: 6px;
+        flex-direction: column;
+        text-align: center;
+    }
+
+        .pos-flow-step strong {
+            font-size: 12px;
+        }
+
+        .pos-flow-step small {
+            font-size: 10px;
+        }
+}

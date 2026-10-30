@@ -15,78 +15,90 @@
 
 <div class="row g-3 mb-4">
     <div class="col-md-3">
-        <div class="card h-100"><div class="card-body">
-            <div class="text-muted small">Doanh thu thuần hôm nay</div>
-            <div class="fs-4 fw-semibold" id="net-today">@Vnd(Model.Today.NetRevenue)</div>
-            <div class="small text-muted" id="net-change">
-                @if (Model.NetRevenueChangePercent is null)
-                {
-                    <text>Hôm qua: @Vnd(Model.Yesterday.NetRevenue)</text>
-                }
-                else
-                {
-                    <text>@(Model.NetRevenueChangePercent > 0 ? "+" : "")@Model.NetRevenueChangePercent.Value.ToString("0.#", vi)% so với hôm qua (@Vnd(Model.Yesterday.NetRevenue))</text>
-                }
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Doanh thu thuần hôm nay</div>
+                <div class="fs-4 fw-semibold" id="net-today">@Vnd(Model.Today.NetRevenue)</div>
+                <div class="small text-muted" id="net-change">
+                    @if (Model.NetRevenueChangePercent is null)
+                    {
+                        <text>Hôm qua: @Vnd(Model.Yesterday.NetRevenue)</text>
+                    }
+                    else
+                    {
+                        <text>@(Model.NetRevenueChangePercent > 0 ? "+" : "")@Model.NetRevenueChangePercent.Value.ToString("0.#", vi)% so với hôm qua (@Vnd(Model.Yesterday.NetRevenue))</text>
+                    }
+                </div>
             </div>
-        </div></div>
+        </div>
     </div>
     <div class="col-md-3">
-        <div class="card h-100"><div class="card-body">
-            <div class="text-muted small">Số hóa đơn</div>
-            <div class="fs-4 fw-semibold" id="invoice-count">@Model.Today.InvoiceCount</div>
-        </div></div>
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Số hóa đơn</div>
+                <div class="fs-4 fw-semibold" id="invoice-count">@Model.Today.InvoiceCount</div>
+            </div>
+        </div>
     </div>
     <div class="col-md-3">
-        <div class="card h-100"><div class="card-body">
-            <div class="text-muted small">Giá trị trung bình mỗi đơn</div>
-            <div class="fs-4 fw-semibold" id="avg-order">@Vnd(Model.Today.AverageOrderValue)</div>
-        </div></div>
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Giá trị trung bình mỗi đơn</div>
+                <div class="fs-4 fw-semibold" id="avg-order">@Vnd(Model.Today.AverageOrderValue)</div>
+            </div>
+        </div>
     </div>
     <div class="col-md-3">
-        <div class="card h-100"><div class="card-body">
-            <div class="text-muted small">Sắp hết hàng / phiếu chờ duyệt</div>
-            <div class="fs-4 fw-semibold"><span id="low-stock">@Model.LowStockCount</span> / <span id="pending-total">@pendingTotal</span></div>
-            <div class="small text-muted">Kiểm kê @Model.PendingApprovals.Stocktake · Xuất hủy @Model.PendingApprovals.WriteOff · Đổi trả @Model.PendingApprovals.Returns</div>
-        </div></div>
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Sắp hết hàng / phiếu chờ duyệt</div>
+                <div class="fs-4 fw-semibold"><span id="low-stock">@Model.LowStockCount</span> / <span id="pending-total">@pendingTotal</span></div>
+                <div class="small text-muted">Kiểm kê @Model.PendingApprovals.Stocktake · Xuất hủy @Model.PendingApprovals.WriteOff · Đổi trả @Model.PendingApprovals.Returns</div>
+            </div>
+        </div>
     </div>
 </div>
 
 <div class="row g-3">
     <div class="col-lg-7">
-        <div class="card h-100"><div class="card-body">
-            <h2 class="h6">Doanh thu thuần 7 ngày</h2>
-            <div class="d-flex align-items-end gap-2" style="height:180px" id="chart-7-days">
-                @foreach (var d in Model.Last7Days)
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h6">Doanh thu thuần 7 ngày</h2>
+                <div class="d-flex align-items-end gap-2" style="height:180px" id="chart-7-days">
+                    @foreach (var d in Model.Last7Days)
+                    {
+                        var pct = d.NetRevenue * 100 / max;
+                        <div class="flex-fill text-center">
+                            <div class="bg-primary rounded-top" style="height:@(pct)%;min-height:@(d.NetRevenue > 0 ? "2px" : "0")" title="@Vnd(d.NetRevenue)"></div>
+                            <div class="small text-muted">@d.Date.ToString("dd/MM")</div>
+                        </div>
+                    }
+                </div>
+                @if (Model.Last7Days.All(d => d.NetRevenue == 0))
                 {
-                    var pct = d.NetRevenue * 100 / max;
-                    <div class="flex-fill text-center">
-                        <div class="bg-primary rounded-top" style="height:@(pct)%;min-height:@(d.NetRevenue > 0 ? "2px" : "0")" title="@Vnd(d.NetRevenue)"></div>
-                        <div class="small text-muted">@d.Date.ToString("dd/MM")</div>
-                    </div>
+                    <div class="text-muted small mt-2">Chưa có doanh thu trong 7 ngày.</div>
                 }
             </div>
-            @if (Model.Last7Days.All(d => d.NetRevenue == 0))
-            {
-                <div class="text-muted small mt-2">Chưa có doanh thu trong 7 ngày.</div>
-            }
-        </div></div>
+        </div>
     </div>
     <div class="col-lg-5">
-        <div class="card h-100"><div class="card-body">
-            <h2 class="h6">Top 5 sản phẩm bán chạy hôm nay</h2>
-            @if (Model.TopProductsToday.Count == 0)
-            {
-                <div class="text-muted small">Chưa có giao dịch hôm nay.</div>
-            }
-            else
-            {
-                <ol class="mb-0" id="top-products">
-                    @foreach (var p in Model.TopProductsToday)
-                    {
-                        <li>@p.Name <span class="text-muted">· @p.QuantitySold · @Vnd(p.Revenue)</span></li>
-                    }
-                </ol>
-            }
-        </div></div>
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h6">Top 5 sản phẩm bán chạy hôm nay</h2>
+                @if (Model.TopProductsToday.Count == 0)
+                {
+                    <div class="text-muted small">Chưa có giao dịch hôm nay.</div>
+                }
+                else
+                {
+                    <ol class="mb-0" id="top-products">
+                        @foreach (var p in Model.TopProductsToday)
+                        {
+                            <li>@p.Name <span class="text-muted">· @p.QuantitySold · @Vnd(p.Revenue)</span></li>
+                        }
+                    </ol>
+                }
+            </div>
+        </div>
     </div>
 </div>

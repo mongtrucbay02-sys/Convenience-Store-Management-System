@@ -1,5 +1,6 @@
 using System.Data.Common;
 using ConvenienceStore.Web.Data;
+using ConvenienceStore.Web.Modules.Identity.Entities;
 using ConvenienceStore.Web.Modules.Products.DTOs;
 using ConvenienceStore.Web.Modules.Products.Entities;
 using ConvenienceStore.Web.Modules.Products.Services;
@@ -46,6 +47,48 @@ public sealed class EfCategoryRemovalRepositoryIntegrationTests
             db.ChangeTracker.Clear();
             Assert.False(await db.DanhMucs.AnyAsync(x => x.Id == target.Id));
             Assert.True(await db.DanhMucs.AnyAsync(x => x.Id == other.Id));
+        }
+        finally
+        {
+            await tx.RollbackAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ReferencedCategory_CannotBeDeleted()
+    {
+        await using var db = CreateContext();
+        await using var tx = await db.Database.BeginTransactionAsync();
+        try
+        {
+            var suffix = Guid.NewGuid().ToString("N")[..10];
+            db.VaiTros.Add(new VaiTro { Id = 3, Ma = "NK", Ten = "Test warehouse" });
+            await db.SaveChangesAsync();
+            var user = new TaiKhoan
+            {
+                TenDangNhap = "sp09_" + suffix,
+                MatKhauBam = "integration-test-only",
+                HoTen = "SP09 Tester",
+                VaiTroId = 3
+            };
+            db.TaiKhoans.Add(user);
+            var category = new DanhMuc { Ten = "sp09_ref_" + suffix };
+            db.DanhMucs.Add(category);
+            await db.SaveChangesAsync();
+            db.SanPhams.Add(new SanPham
+            {
+                Ma = "P" + suffix,
+                TenSanPham = "Product " + suffix,
+                DanhMucId = category.Id,
+                NguoiTaoId = user.Id,
+                DonViTinh = "piece"
+            });
+            await db.SaveChangesAsync();
+            var result = await new EfCategoryRemovalRepository(db)
+                .DeleteAsync(category.Id, category.PhienBan);
+            Assert.Equal(CategoryRemovalStatus.Referenced, result.Status);
+            Assert.True(await db.DanhMucs.AnyAsync(x => x.Id == category.Id));
+            Assert.True(await db.SanPhams.AnyAsync(x => x.DanhMucId == category.Id));
         }
         finally
         {

@@ -1,3 +1,4 @@
+
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Auth;
 using ConvenienceStore.Web.Modules.Auth.Services;
@@ -16,26 +17,21 @@ var builder = WebApplication.CreateBuilder(args);
 // ==========================================
 
 builder.Services.AddControllersWithViews();
-
-// Cần cho các service đọc người dùng hiện tại (PosCartService lấy mã thu ngân từ claim).
 builder.Services.AddHttpContextAccessor();
 
 // ==========================================
 // 2. KẾT NỐI MYSQL
 // ==========================================
 
-// Đọc từ User Secrets, appsettings.json hoặc biến môi trường ConnectionStrings__CuaHang.
-// MySqlPosCatalog cũng phải dùng chính khóa "CuaHang" này (không dùng khóa riêng "PosMySql").
 var connectionString =
     builder.Configuration.GetConnectionString("CuaHang");
 
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new InvalidOperationException(
-        "Chưa cấu hình kết nối MySQL. " +
-        "Hãy thiết lập ConnectionStrings:CuaHang " +
-        "bằng .NET User Secrets hoặc biến môi trường " +
-        "ConnectionStrings__CuaHang.");
+        "Chưa cấu hình ConnectionStrings:CuaHang. " +
+        "Hãy thiết lập bằng User Secrets hoặc " +
+        "biến môi trường ConnectionStrings__CuaHang.");
 }
 
 builder.Services.AddDbContext<CuaHangDbContext>(options =>
@@ -45,34 +41,53 @@ builder.Services.AddDbContext<CuaHangDbContext>(options =>
 });
 
 // ==========================================
-// 3. DỊCH VỤ POS
+// 3. ĐĂNG KÝ SERVICE POS
 // ==========================================
 
-// POS-01: tìm sản phẩm, lọc danh mục, giá bán hiệu lực, tồn kho.
+// POS-01: Danh mục và sản phẩm
 builder.Services.AddScoped<MySqlPosCatalog>();
 
-// POS-01, POS-02, POS-09: giỏ hàng lưu trong CSDL (gio_hang, ct_gio_hang),
-// gắn với tài khoản thu ngân đang đăng nhập (BR-POS-03). Không dùng Session.
+// POS-01, POS-02, POS-09: Giỏ hàng
 builder.Services.AddScoped<PosCartService>();
 
-// POS-05: chuẩn bị thanh toán tiền mặt.
+// POS-05: Thanh toán tiền mặt
 builder.Services.AddScoped<PosPaymentService>();
 
+// POS-07: Hoàn tất đơn hàng
+builder.Services.AddScoped<PosCheckoutService>();
+
+// POS-07: Đọc hóa đơn và in K80
+builder.Services.AddScoped<PosInvoiceService>();
+
 // ==========================================
-// 4. MODULE CỦA NHÓM
+// 4. MYSQL STORE POS-07
 // ==========================================
 
-// Xử lý lỗi API theo định dạng của nhóm.
+// Lưu hóa đơn và xử lý đơn hàng
+builder.Services.AddScoped<
+    IPosCheckoutStore,
+    MySqlPosCheckoutStore>();
+
+// Đọc hóa đơn từ MySQL
+builder.Services.AddScoped<
+    IPosInvoiceStore,
+    MySqlPosInvoiceStore>();
+
+// ==========================================
+// 5. MODULE CỦA NHÓM
+// ==========================================
+
+// Xử lý lỗi API
 builder.Services.AddXuLyLoiApi();
 
-// AUTH: đăng nhập, đăng xuất, xác thực phiên, phân quyền bằng Claim và Policy.
+// Đăng nhập và phân quyền
 builder.Services.AddModuleAuth();
 
-// INVENTORY: quản lý tồn kho.
+// Quản lý tồn kho
 builder.Services.AddModuleInventory();
 
 // ==========================================
-// 5. KHỞI TẠO TÀI KHOẢN ADMIN
+// 6. KHỞI TẠO ADMIN
 // ==========================================
 
 builder.Services.Configure<AdminDauTienOptions>(
@@ -82,16 +97,16 @@ builder.Services.Configure<AdminDauTienOptions>(
 builder.Services.AddScoped<KhoiTaoAdminDauTien>();
 
 // ==========================================
-// 6. BUILD ỨNG DỤNG
+// 7. BUILD APPLICATION
 // ==========================================
 
 var app = builder.Build();
 
-// Giữ nguyên cơ chế khởi tạo Admin của module AUTH.
-await KhoiTaoAdminDauTien.ChayKhiKhoiDongAsync(app.Services);
+await KhoiTaoAdminDauTien.ChayKhiKhoiDongAsync(
+    app.Services);
 
 // ==========================================
-// 7. HTTP PIPELINE (thứ tự quan trọng)
+// 8. HTTP PIPELINE
 // ==========================================
 
 if (!app.Environment.IsDevelopment())
@@ -100,34 +115,42 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// Middleware xử lý lỗi của nhóm (đặt sớm để bắt lỗi của các middleware phía sau).
 app.UseXuLyLoiApi();
 
 app.UseHttpsRedirection();
 
-// File tĩnh trong wwwroot (css, js, images, login.html).
 app.UseStaticFiles();
 
 app.UseRouting();
 
-// Xác thực trước, phân quyền sau.
-// PosController phải có [Authorize(Policy = ...)] theo quyền BanHang của module AUTH.
+// Xác thực phải đứng trước phân quyền
 app.UseAuthentication();
 app.UseAuthorization();
 
 // ==========================================
-// 8. ROUTE
+// 9. ROUTING
 // ==========================================
 
+// Static assets
 app.MapStaticAssets();
 
-// Route MVC mặc định.
+// Hỗ trợ MVC Areas nếu dự án có sử dụng
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}")
+    .WithStaticAssets();
+
+// Route MVC mặc định
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-// API Controller dùng attribute routing, ví dụ POST /api/v1/auth/login.
+// Hỗ trợ Attribute Routing
 app.MapControllers();
+
+// ==========================================
+// 10. RUN
+// ==========================================
 
 app.Run();

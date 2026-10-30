@@ -76,4 +76,39 @@ public sealed class EfSupplierDiscontinuationRepositoryIntegrationTests
             await tx.RollbackAsync();
         }
     }
+
+    [Fact]
+    public async Task DiscontinueAndDeleteUnusedSupplier_PreserveOtherSupplier()
+    {
+        await using var db = CreateContext();
+        await using var tx = await db.Database.BeginTransactionAsync();
+        try
+        {
+            var suffix = Guid.NewGuid().ToString("N")[..8];
+            var stopped = new NhaCungCap
+            {
+                Ma = "S" + suffix, Ten = "Stopped " + suffix, SoDienThoai = "0900000001"
+            };
+            var unused = new NhaCungCap
+            {
+                Ma = "U" + suffix, Ten = "Unused " + suffix, SoDienThoai = "0900000002"
+            };
+            db.NhaCungCaps.AddRange(stopped, unused);
+            await db.SaveChangesAsync();
+            var repo = new EfSupplierDiscontinuationRepository(db);
+            Assert.Equal(SupplierDiscontinuationStatus.Success,
+                (await repo.DiscontinueAsync(stopped.Id, stopped.PhienBan)).Status);
+            Assert.Equal("NGUNG_HOP_TAC", stopped.TrangThai);
+            Assert.Equal(SupplierDiscontinuationStatus.Success,
+                (await repo.DeleteUnusedAsync(unused.Id, unused.PhienBan)).Status);
+            db.ChangeTracker.Clear();
+            Assert.True(await db.NhaCungCaps.AnyAsync(x => x.Id == stopped.Id &&
+                x.TrangThai == "NGUNG_HOP_TAC"));
+            Assert.False(await db.NhaCungCaps.AnyAsync(x => x.Id == unused.Id));
+        }
+        finally
+        {
+            await tx.RollbackAsync();
+        }
+    }
 }

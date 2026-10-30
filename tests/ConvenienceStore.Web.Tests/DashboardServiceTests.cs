@@ -1,3 +1,4 @@
+using Xunit;
 using ConvenienceStore.Web.Modules.Reports.Services;
 
 namespace ConvenienceStore.Web.Tests;

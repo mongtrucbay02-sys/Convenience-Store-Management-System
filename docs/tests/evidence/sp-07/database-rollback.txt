@@ -1,0 +1,7 @@
+﻿SP-07 Database Rollback Verification
+Date: 2026-10-30
+Target: Docker MySQL / sp07_repository_tests
+Source: Verified MySQL query output
+
+categories  products  users  roles
+0           0         0      0

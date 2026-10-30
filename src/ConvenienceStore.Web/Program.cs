@@ -21,6 +21,8 @@ builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions
     });
 
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ICategoryReadRepository, EfCategoryReadRepository>();
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IDashboardDataSource, SampleDashboardDataSource>();
@@ -64,5 +66,7 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 
+
+app.MapControllers();
 
 app.Run();

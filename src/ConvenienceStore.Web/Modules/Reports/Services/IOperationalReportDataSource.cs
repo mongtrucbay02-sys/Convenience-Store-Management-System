@@ -21,13 +21,15 @@ public sealed record ReportPurchaseReceiptLineFact(long ProductId, string Produc
 public sealed record ReportPurchaseReceiptFact(long Id, DateTimeOffset ReceivedAt, int SupplierId, string SupplierName,
     IReadOnlyList<ReportPurchaseReceiptLineFact> Lines);
 public sealed record ReportReturnedLineFact(long ProductId, string ProductName, int CategoryId, string CategoryName,
-    int Quantity, long UnitCostSnapshot, int RestockedQuantity, long RefundAmount);
+    int Quantity, long UnitCostSnapshot, int RestockedQuantity, long RefundAmount, long DestroyedValue = 0);
 public sealed record ReportReturnFact(long Id, long InvoiceId, DateTimeOffset ReturnedAt,
-    IReadOnlyList<ReportReturnedLineFact> Lines);
+    IReadOnlyList<ReportReturnedLineFact> Lines, long CashierId = 0, string CashierName = "");
+public sealed record ReportWriteOffFact(long Id, DateTimeOffset WrittenOffAt, long ProductId, int CategoryId,
+    int Quantity, long UnitCostSnapshot);
 
 /// <summary>
-/// Report input boundary. The main branch has no transaction entities/tables yet, so the registered
-/// implementation is deterministic demo data; replace it with direct EF queries when NH/POS/KHO land.
+/// Report input boundary for BC-02 through BC-08. The production adapter queries the shared MySQL schema;
+/// the sample adapter remains available for isolated deterministic tests.
 /// </summary>
 public interface IOperationalReportDataSource
 {
@@ -47,3 +49,17 @@ public interface IOperationalReportDataSource
         DateTimeOffset fromInclusive, DateTimeOffset toExclusive, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<ReportReturnFact>>([]);
 }
+
+/// <summary>Live transactional tables used by BC-07/08 once the shared MySQL schema is available.</summary>
+public interface ITransactionalReportsDataSource
+{
+    Task<IReadOnlyList<ReportPaidInvoiceFact>> GetPaidInvoicesAsync(
+        DateTimeOffset fromInclusive, DateTimeOffset toExclusive, CancellationToken cancellationToken);
+    Task<IReadOnlyList<ReportPurchaseReceiptFact>> GetPurchaseReceiptsAsync(
+        DateTimeOffset fromInclusive, DateTimeOffset toExclusive, CancellationToken cancellationToken);
+    Task<IReadOnlyList<ReportReturnFact>> GetReturnsAsync(
+        DateTimeOffset fromInclusive, DateTimeOffset toExclusive, CancellationToken cancellationToken);
+    Task<IReadOnlyList<ReportWriteOffFact>> GetWriteOffsAsync(
+        DateTimeOffset fromInclusive, DateTimeOffset toExclusive, CancellationToken cancellationToken);
+}
+

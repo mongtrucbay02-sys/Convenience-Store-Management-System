@@ -13,6 +13,14 @@
 
 <h1 class="h3 mb-3">Tổng quan</h1>
 
+<nav class="nav nav-pills gap-2 mb-3" aria-label="Các báo cáo">
+    <a class="nav-link" asp-area="Reports" asp-controller="Reports" asp-action="Revenue">Theo thời gian</a>
+    <a class="nav-link" asp-area="Reports" asp-controller="Reports" asp-action="Products">Theo sản phẩm</a>
+    <a class="nav-link" asp-area="Reports" asp-controller="Reports" asp-action="Categories">Theo danh mục</a>
+    <a class="nav-link" asp-area="Reports" asp-controller="Reports" asp-action="Cashiers">Theo thu ngân</a>
+    <a class="nav-link" asp-area="Reports" asp-controller="Reports" asp-action="Inventory">Tồn kho</a>
+</nav>
+
 <div class="row g-3 mb-4">
     <div class="col-md-3">
         <div class="card h-100"><div class="card-body">

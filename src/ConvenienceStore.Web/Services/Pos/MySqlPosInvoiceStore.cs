@@ -51,12 +51,15 @@ public sealed class MySqlPosInvoiceStore(
                     h.tien_khach_dua,
                     h.tien_thua,
                     h.diem_cong,
-                    h.thu_ngan_id
+                    h.thu_ngan_id,
+                    h.khach_hang_id, kh.so_dien_thoai, h.tien_tru_hang_doi,
+                    h.huy_luc, h.ly_do_huy, nh.ho_ten
                 FROM hoa_don h
                 INNER JOIN tai_khoan tn
                     ON tn.id = h.thu_ngan_id
                 LEFT JOIN khach_hang kh
                     ON kh.id = h.khach_hang_id
+                LEFT JOIN tai_khoan nh ON nh.id = h.nguoi_huy_id
                 WHERE h.id = @id
                   AND h.thanh_toan_luc IS NOT NULL
                 LIMIT 1
@@ -75,7 +78,13 @@ public sealed class MySqlPosInvoiceStore(
                     CashReceived = d.SoNguyenDai(9),
                     Change = d.SoNguyenDai(10),
                     PointsEarned = d.SoNguyen(11),
-                    CashierId = d.SoNguyen(12)
+                    CashierId = d.SoNguyen(12),
+                    CustomerId = d.IsDBNull(13) ? null : d.SoNguyen(13),
+                    CustomerPhone = d.ChuoiHoacNull(14),
+                    ExchangeCredit = d.SoNguyenDai(15),
+                    CancelledAt = d.NgayGioHoacNull(16),
+                    CancellationReason = d.ChuoiHoacNull(17),
+                    CancelledBy = d.ChuoiHoacNull(18)
                 },
                 cancellationToken,
                 ("@id", invoiceId)
@@ -97,14 +106,13 @@ public sealed class MySqlPosInvoiceStore(
             var items = await db.DocDanhSachAsync(
                 """
                 SELECT
-                    ten_san_pham,
-                    so_luong,
-                    don_gia,
-                    so_luong * giam_don_vi,
-                    thanh_tien
-                FROM ct_hoa_don
-                WHERE hoa_don_id = @id
-                ORDER BY san_pham_id
+                    d.ten_san_pham, d.so_luong, d.don_gia,
+                    d.so_luong * d.giam_don_vi, d.thanh_tien,
+                    d.san_pham_id, d.don_vi_tinh, d.khuyen_mai_id, km.ma
+                FROM ct_hoa_don d
+                LEFT JOIN chuong_trinh_khuyen_mai km ON km.id = d.khuyen_mai_id
+                WHERE d.hoa_don_id = @id
+                ORDER BY d.san_pham_id
                 """,
                 d => new PosInvoiceItemViewModel
                 {
@@ -112,7 +120,11 @@ public sealed class MySqlPosInvoiceStore(
                     Quantity = d.SoNguyen(1),
                     UnitPrice = d.SoNguyenDai(2),
                     Discount = d.SoNguyenDai(3),
-                    LineTotal = d.SoNguyenDai(4)
+                    LineTotal = d.SoNguyenDai(4),
+                    ProductId = d.SoNguyen(5),
+                    Unit = d.Chuoi(6),
+                    PromotionId = d.IsDBNull(7) ? null : d.SoNguyen(7),
+                    PromotionCode = d.ChuoiHoacNull(8)
                 },
                 cancellationToken,
                 ("@id", invoiceId)
@@ -133,6 +145,20 @@ public sealed class MySqlPosInvoiceStore(
 
             // 5. Đưa danh sách sản phẩm vào ViewModel
             invoice.Items.AddRange(items);
+
+            // Liên kết theo cả hóa đơn gốc và hóa đơn mới của phiếu đổi hàng.
+            invoice.RelatedReturns = await db.DocDanhSachAsync(
+                """
+                SELECT id, ma_phieu, loai, trang_thai, ngay_lap, tien_hoan,
+                       tien_thu_them, diem_thu_hoi, hoa_don_goc_id
+                FROM phieu_doi_tra
+                WHERE hoa_don_goc_id = @id OR hoa_don_moi_id = @id
+                ORDER BY ngay_lap DESC, id DESC
+                """,
+                d => new PosInvoiceReturn(d.SoNguyenDai(0), d.Chuoi(1), d.Chuoi(2),
+                    d.Chuoi(3), d.NgayGio(4), d.SoNguyenDai(5), d.SoNguyenDai(6),
+                    d.SoNguyen(7), d.SoNguyenDai(8) == invoiceId),
+                cancellationToken, ("@id", invoiceId));
 
             log.LogInformation(
                 "POS-07: Đọc thành công hóa đơn " +

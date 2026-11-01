@@ -1,15 +1,9 @@
-﻿@model ConvenienceStore.Web.Models.Pos.PosInvoiceViewModel
+@model ConvenienceStore.Web.Models.Pos.PosInvoiceViewModel
 
 @{
     ViewData["Title"] = "Hóa đơn thanh toán";
     Layout = "_AdminLayout";
 
-    var culture = new System.Globalization.CultureInfo("vi-VN");
-
-    string Money(long amount)
-    {
-        return amount.ToString("N0", culture) + " đ";
-    }
 }
 
 <!-- CSS riêng của hóa đơn POS-07 -->
@@ -77,146 +71,7 @@
 
     <div class="receipt-wrapper">
 
-        <div class="receipt-paper" id="receipt-print-area">
-
-            <!-- THÔNG TIN CỬA HÀNG -->
-            <div class="receipt-store">
-                <h2>SMART MART</h2>
-                <p>CỬA HÀNG TIỆN LỢI</p>
-            </div>
-
-            <hr class="receipt-line" />
-
-            <!-- TIÊU ĐỀ HÓA ĐƠN -->
-            <div class="receipt-title">
-                PHIẾU THANH TOÁN BÁN HÀNG
-            </div>
-
-            <!-- THÔNG TIN HÓA ĐƠN -->
-            <div class="receipt-info-row">
-                <span>Mã hóa đơn:</span>
-                <strong>@Model.InvoiceCode</strong>
-            </div>
-
-            <div class="receipt-info-row">
-                <span>Ngày bán:</span>
-                <span>
-                    @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
-                </span>
-            </div>
-
-            <div class="receipt-info-row">
-                <span>Thu ngân:</span>
-                <span>
-                    @(string.IsNullOrWhiteSpace(Model.CashierName)
-                        ? "Nhân viên bán hàng"
-                        : Model.CashierName)
-                </span>
-            </div>
-
-            @if (!string.IsNullOrWhiteSpace(Model.CustomerName))
-            {
-                <div class="receipt-info-row">
-                    <span>Khách hàng:</span>
-                    <span>@Model.CustomerName</span>
-                </div>
-            }
-
-            <div class="receipt-info-row">
-                <span>Thanh toán:</span>
-                <strong>Tiền mặt</strong>
-            </div>
-
-            <div class="receipt-info-row">
-                <span>Trạng thái:</span>
-                <strong>Đã thanh toán</strong>
-            </div>
-
-            <hr class="receipt-line" />
-
-            <!-- DANH SÁCH SẢN PHẨM -->
-            <table class="receipt-table">
-                <thead>
-                    <tr>
-                        <th scope="col">Sản phẩm</th>
-                        <th scope="col">SL</th>
-                        <th scope="col">Đơn giá</th>
-                        <th scope="col">Thành tiền</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var item in Model.Items)
-                    {
-                        <tr>
-                            <td>
-                                <strong>@item.ProductName</strong>
-
-                                @if (item.Discount > 0)
-                                {
-                                    <div class="receipt-item-discount">
-                                        Giảm: @Money(item.Discount)
-                                    </div>
-                                }
-                            </td>
-
-                            <td>
-                                @item.Quantity
-                            </td>
-
-                            <td>
-                                @item.UnitPrice.ToString("N0", culture)
-                            </td>
-
-                            <td>
-                                @item.LineTotal.ToString("N0", culture)
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-
-            <hr class="receipt-line" />
-
-            <!-- TỔNG TIỀN -->
-            <div class="receipt-info-row">
-                <span>Tạm tính:</span>
-                <strong>@Money(Model.Subtotal)</strong>
-            </div>
-
-            <div class="receipt-info-row">
-                <span>Giảm giá:</span>
-                <strong>-@Money(Model.Discount)</strong>
-            </div>
-
-            <div class="receipt-info-row receipt-total">
-                <span>TỔNG THANH TOÁN:</span>
-                <strong>@Money(Model.Total)</strong>
-            </div>
-
-            <!-- THÔNG TIN THANH TOÁN -->
-            <div class="receipt-info-row">
-                <span>Tiền khách đưa:</span>
-                <strong>@Money(Model.CashReceived)</strong>
-            </div>
-
-            <div class="receipt-info-row">
-                <span>Tiền thừa:</span>
-                <strong>@Money(Model.Change)</strong>
-            </div>
-
-            <hr class="receipt-line" />
-
-            <!-- CHÂN HÓA ĐƠN -->
-            <div class="receipt-footer">
-                <p><strong>CẢM ƠN QUÝ KHÁCH!</strong></p>
-                <p>Hẹn gặp lại quý khách.</p>
-                <p>Giá bán đã bao gồm thuế GTGT.</p>
-                <p><strong>PHIẾU TÍNH TIỀN NỘI BỘ</strong></p>
-                <p>Không phải hóa đơn điện tử theo quy định thuế.</p>
-            </div>
-
-        </div>
+        <partial name="_ReceiptPaper" model="Model" />
     </div>
 
     <!-- NÚT THAO TÁC -->

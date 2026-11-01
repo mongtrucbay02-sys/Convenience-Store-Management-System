@@ -1,4 +1,4 @@
-﻿@model ConvenienceStore.Web.Models.Pos.PosInvoiceListViewModel
+@model ConvenienceStore.Web.Models.Pos.PosInvoiceListViewModel
 
 @{
     ViewData["Title"] = "Hóa đơn";
@@ -131,10 +131,7 @@
                         <th>Khách hàng</th>
                         <th class="num">Tổng tiền</th>
                         <th>Trạng thái</th>
-                        @if (Model.CanOpenReceipt)
-                        {
-                            <th></th>
-                        }
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -160,15 +157,7 @@
                                     @StatusText(item.Status)
                                 </span>
                             </td>
-                            @if (Model.CanOpenReceipt)
-                            {
-                                <td>
-                                    @if (!item.IsCancelled)
-                                    {
-                                        <a asp-controller="Pos" asp-action="Receipt" asp-route-invoiceId="@item.Id">Xem</a>
-                                    }
-                                </td>
-                            }
+                            <td><a asp-controller="InvoiceDetails" asp-action="Details" asp-route-id="@item.Id">Xem chi tiết</a></td>
                         </tr>
                     }
                 </tbody>
@@ -179,7 +168,7 @@
                             <span class="inv-muted"> (@rangeText, chỉ tính hóa đơn đã thanh toán, trên tất cả các trang)</span>
                         </td>
                         <td class="num"><strong>@Money(Model.PaidRevenue)</strong></td>
-                        <td colspan="@(Model.CanOpenReceipt ? 2 : 1)">
+                        <td colspan="2">
                             @Model.TotalCount.ToString("N0", culture) hóa đơn
                             @if (Model.CancelledCount > 0)
                             {

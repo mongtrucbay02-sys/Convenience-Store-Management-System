@@ -65,6 +65,23 @@ public sealed class PosInvoiceService
         return invoice;
     }
 
+    // POS-11: quyền xem của TN/AD áp dụng cho cả xem chi tiết lẫn dữ liệu in lại.
+    public async Task<PosInvoiceViewModel?> GetDetailsAsync(long invoiceId,
+        PosInvoiceViewer viewer, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(viewer);
+        if (!viewer.CanView) throw new UnauthorizedAccessException("Không có quyền xem hóa đơn.");
+        if (invoiceId <= 0) return null;
+        var invoice = await _invoiceStore.GetByIdAsync(invoiceId, cancellationToken);
+        if (invoice is null) return null;
+        if (!PosInvoiceAccess.CanView(viewer, invoice.CashierId))
+            throw new UnauthorizedAccessException("Không có quyền xem hóa đơn của thu ngân khác.");
+        if (invoice.Status is not ("DA_THANH_TOAN" or "DA_HUY")) return null;
+        // Không ghi DB, không tính lại giá/khuyến mãi/điểm khi xem hoặc in lại.
+        invoice.IsReprint = true;
+        return invoice;
+    }
+
     // ==========================================
     // POS-07: KIỂM TRA DỮ LIỆU HÓA ĐƠN
     // ==========================================
@@ -105,8 +122,9 @@ public sealed class PosInvoiceService
         }
 
         if (invoice.Total < 0 ||
-            invoice.CashReceived < invoice.Total ||
-            invoice.Change != invoice.CashReceived - invoice.Total)
+            invoice.ExchangeCredit < 0 || invoice.ExchangeCredit > invoice.Total ||
+            invoice.CashReceived + invoice.ExchangeCredit < invoice.Total ||
+            invoice.Change != invoice.CashReceived + invoice.ExchangeCredit - invoice.Total)
         {
             error = "Dữ liệu thanh toán không hợp lệ.";
             return false;

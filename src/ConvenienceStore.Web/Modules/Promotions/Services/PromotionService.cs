@@ -176,7 +176,9 @@ public sealed class PromotionService : IPromotionService
         };
 
         if (!await _dataSource.UpdateAsync(updated, cancellationToken)) return NotFound();
-        return PromotionResult<PromotionDto>.Ok(ToDto(updated, now));
+        // Return the persisted shape (some storage schemas may not support optional display metadata).
+        var persisted = await _dataSource.GetByIdAsync(id, cancellationToken) ?? updated;
+        return PromotionResult<PromotionDto>.Ok(ToDto(persisted, now));
     }
 
     // ---------------- KM-04 ----------------
@@ -355,3 +357,4 @@ public sealed class PromotionService : IPromotionService
     private static DateTimeOffset StartOfDay(DateOnly d) =>
         new(d.ToDateTime(TimeOnly.MinValue), VietnamOffset);
 }
+

@@ -1,0 +1,158 @@
+@using System.Globalization
+@using System.Text.Json
+@using ConvenienceStore.Web.Modules.Reports.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model OperationalReportResponse
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = Model.Title;
+    var vi = CultureInfo.GetCultureInfo("vi-VN");
+    var max = Math.Max(1, Model.Chart.Select(p => Math.Max(p.Value, p.SecondaryValue ?? 0)).DefaultIfEmpty(1).Max());
+    var chartPoints = Model.Chart.Select((p, i) => {
+        var x = Model.Chart.Count <= 1 ? 50 : 5 + i * 90d / (Model.Chart.Count - 1);
+        var y = 95 - Math.Max(0, p.Value) * 85d / max;
+        return $"{x.ToString("0.0", CultureInfo.InvariantCulture)},{y.ToString("0.0", CultureInfo.InvariantCulture)}";
+    }).ToArray();
+    var linePoints = string.Join(" ", chartPoints);
+    var actionName = Model.Code switch { "BC-02" => "Revenue", "BC-03" => "Products", "BC-04" => "Categories", "BC-05" => "Cashiers", _ => "Inventory" };
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div><div class="small text-muted">@Model.Code · Báo cáo và thống kê</div><h1 class="h3 mb-0">@Model.Title</h1></div>
+    <a class="btn btn-outline-secondary" asp-area="Reports" asp-controller="Reports" asp-action="Dashboard">Tổng quan</a>
+</div>
+
+<nav class="nav nav-pills gap-2 mb-3" aria-label="Các báo cáo">
+    <a class="nav-link @(Model.Code == "BC-02" ? "active" : "")" asp-area="Reports" asp-controller="Reports" asp-action="Revenue">Theo thời gian</a>
+    <a class="nav-link @(Model.Code == "BC-03" ? "active" : "")" asp-area="Reports" asp-controller="Reports" asp-action="Products">Theo sản phẩm</a>
+    <a class="nav-link @(Model.Code == "BC-04" ? "active" : "")" asp-area="Reports" asp-controller="Reports" asp-action="Categories">Theo danh mục</a>
+    <a class="nav-link @(Model.Code == "BC-05" ? "active" : "")" asp-area="Reports" asp-controller="Reports" asp-action="Cashiers">Theo thu ngân</a>
+    <a class="nav-link @(Model.Code == "BC-06" ? "active" : "")" asp-area="Reports" asp-controller="Reports" asp-action="Inventory">Tồn kho</a>
+</nav>
+
+<form method="get" asp-area="Reports" asp-controller="Reports" asp-action="@actionName" class="card card-body mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-sm-6 col-lg-2"><label class="form-label" for="period">Khoảng thời gian</label>
+            <select class="form-select" id="period" name="Period">
+                <option value="today" selected="@(Model.Query.Period == "today")">Hôm nay</option>
+                <option value="last7days" selected="@(Model.Query.Period == "last7days")">7 ngày</option>
+                <option value="thisMonth" selected="@(Model.Query.Period == "thisMonth")">Tháng này</option>
+                <option value="lastMonth" selected="@(Model.Query.Period == "lastMonth")">Tháng trước</option>
+                <option value="custom" selected="@(Model.Query.Period == "custom")">Tùy chọn</option>
+            </select>
+        </div>
+        <div class="col-sm-6 col-lg-2"><label class="form-label" for="from">Từ ngày</label><input class="form-control" id="from" type="date" name="From" value="@(Model.Query.From?.ToString("yyyy-MM-dd") ?? Model.Range.From.ToString("yyyy-MM-dd"))" /></div>
+        <div class="col-sm-6 col-lg-2"><label class="form-label" for="to">Đến ngày</label><input class="form-control" id="to" type="date" name="To" value="@(Model.Query.To?.ToString("yyyy-MM-dd") ?? Model.Range.To.ToString("yyyy-MM-dd"))" /></div>
+        @if (Model.Code == "BC-02")
+        {
+            <div class="col-sm-6 col-lg-2"><label class="form-label" for="groupBy">Nhóm theo</label><select class="form-select" name="GroupBy" id="groupBy"><option value="day" selected="@(Model.Query.GroupBy == "day")">Ngày</option><option value="week" selected="@(Model.Query.GroupBy == "week")">Tuần</option><option value="month" selected="@(Model.Query.GroupBy == "month")">Tháng</option></select></div>
+        }
+        @if (Model.Code is "BC-03" or "BC-06")
+        {
+            <div class="col-sm-6 col-lg-2"><label class="form-label" for="categoryId">Danh mục</label><select class="form-select" id="categoryId" name="CategoryId"><option value="">Tất cả</option><option value="1" selected="@(Model.Query.CategoryId == 1)">Đồ uống</option><option value="2" selected="@(Model.Query.CategoryId == 2)">Thực phẩm khô</option><option value="3" selected="@(Model.Query.CategoryId == 3)">Sữa và lạnh</option><option value="4" selected="@(Model.Query.CategoryId == 4)">Chăm sóc cá nhân</option></select></div>
+            <div class="col-sm-6 col-lg-2"><label class="form-label" for="productId">Sản phẩm ID</label><input class="form-control" id="productId" type="number" min="1" name="ProductId" value="@Model.Query.ProductId" /></div>
+        }
+        @if (Model.Code == "BC-03")
+        {
+            <div class="col-sm-6 col-lg-2"><label class="form-label" for="topN">Top</label><select class="form-select" id="topN" name="TopN"><option value="10" selected="@(Model.Query.TopN == 10)">10</option><option value="20" selected="@(Model.Query.TopN == 20)">20</option><option value="50" selected="@(Model.Query.TopN == 50)">50</option></select></div>
+            <div class="col-sm-6 col-lg-2"><label class="form-label" for="sortBy">Sắp xếp</label><select class="form-select" id="sortBy" name="SortBy"><option value="quantity" selected="@(Model.Query.SortBy == "quantity")">Số lượng</option><option value="revenue" selected="@(Model.Query.SortBy == "revenue")">Doanh thu</option></select></div>
+        }
+        @if (Model.Code == "BC-05")
+        {
+            <div class="col-sm-6 col-lg-2"><label class="form-label" for="cashierId">Thu ngân ID</label><input class="form-control" id="cashierId" type="number" min="1" name="CashierId" value="@Model.Query.CashierId" /></div>
+        }
+        @if (Model.Code == "BC-06")
+        {
+            <div class="col-sm-6 col-lg-2"><label class="form-label" for="stockStatus">Trạng thái tồn</label><select class="form-select" id="stockStatus" name="StockStatus"><option value="all" selected="@(Model.Query.StockStatus == "all")">Tất cả</option><option value="low" selected="@(Model.Query.StockStatus == "low")">Sắp hết</option><option value="out" selected="@(Model.Query.StockStatus == "out")">Hết hàng</option></select></div>
+        }
+        <div class="col-sm-6 col-lg-2 d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Xem</button>
+            @if (Model.Message is null)
+            {
+                <a class="btn btn-outline-secondary" asp-area="Reports" asp-controller="Reports" asp-action="Export"
+                   asp-route-code="@Model.Code" asp-route-Period="@Model.Query.Period"
+                   asp-route-From="@Model.Query.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.Query.To?.ToString("yyyy-MM-dd")"
+                   asp-route-GroupBy="@Model.Query.GroupBy" asp-route-CategoryId="@Model.Query.CategoryId"
+                   asp-route-ProductId="@Model.Query.ProductId" asp-route-CashierId="@Model.Query.CashierId"
+                   asp-route-TopN="@Model.Query.TopN" asp-route-SortBy="@Model.Query.SortBy"
+                   asp-route-StockStatus="@Model.Query.StockStatus">Xuất Excel</a>
+            }
+            else
+            {
+                <button class="btn btn-outline-secondary" type="button" disabled title="Không có dữ liệu để xuất">Xuất Excel</button>
+            }
+        </div>
+    </div>
+</form>
+
+<div class="row g-3 mb-3">
+    @foreach (var metric in Model.Metrics)
+    {
+        <div class="col-6 col-lg-@(12 / Math.Clamp(Model.Metrics.Count, 1, 6))"><div class="card h-100"><div class="card-body py-3"><div class="small text-muted">@metric.Label</div><div class="fs-5 fw-semibold">@(metric.Format == "currency" ? metric.Value.ToString("N0", vi) + " ₫" : metric.Value.ToString("N0", vi))</div></div></div></div>
+    }
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-info" role="status">@Model.Message</div>
+}
+@if (TempData["ReportExportError"] is string exportError)
+{
+    <div class="alert alert-danger" role="alert">@exportError</div>
+}
+
+@if (Model.Chart.Count > 0 && Model.Code != "BC-06")
+{
+    <section class="card mb-3"><div class="card-body">
+        <h2 class="h6">Biểu đồ</h2>
+        @if (Model.Code == "BC-02")
+        {
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Đường doanh thu thuần theo kỳ" style="width:100%;height:220px">
+                <polyline points="@linePoints" fill="none" stroke="#0d6efd" stroke-width="1.8" vector-effect="non-scaling-stroke" />
+                @for (var i = 0; i < chartPoints.Length; i++)
+                {
+                    var parts = chartPoints[i].Split(',');
+                    <circle cx="@parts[0]" cy="@parts[1]" r="1.8" fill="#0d6efd"><title>@Model.Chart[i].Label: @Model.Chart[i].Value.ToString("N0", vi) ₫</title></circle>
+                }
+            </svg>
+            <div class="d-flex justify-content-between small text-muted"><span>@Model.Chart.First().Label</span><span>@Model.Chart.Last().Label</span></div>
+        }
+        else
+        {
+            <div class="d-grid gap-2">
+                @foreach (var point in Model.Chart)
+                {
+                    var width = Math.Max(1, point.Value * 100 / max);
+                    <div><div class="d-flex justify-content-between small"><span>@point.Label</span><span>@point.Value.ToString("N0", vi)</span></div><div class="progress" role="img" aria-label="@point.Label"><div class="progress-bar" style="width:@(width)%"></div></div></div>
+                }
+            </div>
+        }
+    </div></section>
+}
+
+<section class="card"><div class="card-body">
+    <h2 class="h6">Chi tiết số liệu · @Model.Range.From.ToString("dd/MM/yyyy") – @Model.Range.To.ToString("dd/MM/yyyy") (UTC+7)</h2>
+    <div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0"><thead><tr>@foreach (var column in Model.Columns){<th scope="col">@column</th>}</tr></thead><tbody>
+    @foreach (var row in Model.Rows)
+    {
+        <tr data-row-key="@row.Key">
+            @for (var columnIndex = 0; columnIndex < row.Cells.Count; columnIndex++)
+            {
+                <td>
+                    @if (columnIndex == 0 && row.Key != "total")
+                    {
+                        <a asp-area="Reports" asp-controller="Reports" asp-action="Detail"
+                           asp-route-code="@Model.Code" asp-route-key="@row.Key"
+                           asp-route-Period="@Model.Query.Period" asp-route-From="@Model.Query.From?.ToString("yyyy-MM-dd")"
+                           asp-route-To="@Model.Query.To?.ToString("yyyy-MM-dd")" asp-route-GroupBy="@Model.Query.GroupBy">@row.Cells[columnIndex]</a>
+                    }
+                    else { @row.Cells[columnIndex] }
+                </td>
+            }
+        </tr>
+    }
+    </tbody></table></div>
+    @if (Model.Rows.Count == 0){<div class="text-muted py-3">Không có dữ liệu trong khoảng đã chọn</div>}
+</div></section>
+
+<p class="small text-muted mt-2 mb-0">Nguồn đang dùng: dữ liệu demo 60 ngày. Sẽ chuyển sang truy vấn giao dịch/thẻ kho khi schema NH/POS/KHO được tích hợp.</p>

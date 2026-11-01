@@ -1,0 +1,66 @@
+@model ConvenienceStore.Web.Models.Pos.PosInvoiceViewModel
+@{
+    ViewData["Title"] = "Chi tiết hóa đơn";
+    Layout = "_AdminLayout";
+    var culture = new System.Globalization.CultureInfo("vi-VN");
+    string Money(long value) => value.ToString("N0", culture) + " đ";
+    string ReturnStatus(string status) => status switch {
+        "CHO_DUYET" => "Chờ duyệt", "DA_DUYET" => "Đã duyệt",
+        "HOAN_TAT" => "Hoàn tất", "BI_TU_CHOI" => "Bị từ chối", _ => status
+    };
+}
+<link rel="stylesheet" href="~/css/receipt.css" asp-append-version="true" />
+<div class="receipt-page">
+    <div class="receipt-heading">
+        <h1>Chi tiết hóa đơn @Model.InvoiceCode</h1>
+        <p>Xem dữ liệu đã lưu tại thời điểm bán. Bản in lại sử dụng mẫu K80.</p>
+    </div>
+    @if (Model.IsCancelled)
+    {
+        <div class="receipt-alert-error" role="status">
+            <strong>ĐÃ HỦY</strong> · @Model.CancelledAt?.ToString("dd/MM/yyyy HH:mm")
+            <div>Người hủy: @Model.CancelledBy · Lý do: @Model.CancellationReason</div>
+        </div>
+    }
+    <div class="receipt-actions receipt-details-actions">
+        <a asp-controller="Invoices" asp-action="Index" class="receipt-btn receipt-btn-secondary">← Danh sách hóa đơn</a>
+        <button type="button" class="receipt-btn receipt-btn-primary" id="reprintInvoice">In lại hóa đơn K80</button>
+    </div>
+    <p class="receipt-print-status" id="reprintStatus" role="status" hidden></p>
+    <div class="receipt-details-grid">
+        <div class="receipt-wrapper"><partial name="_ReceiptPaper" model="Model" /></div>
+        <section class="panel receipt-related" aria-labelledby="returnsTitle">
+            <h2 id="returnsTitle">Phiếu đổi trả liên quan</h2>
+            @if (Model.RelatedReturns.Count == 0)
+            {
+                <p class="muted">Chưa có phiếu đổi trả liên quan.</p>
+            }
+            else
+            {
+                @foreach (var item in Model.RelatedReturns)
+                {
+                    <article class="receipt-return">
+                        <h3>@item.Code · @(item.Type == "DOI_HANG" ? "Đổi hàng" : "Trả hàng")</h3>
+                        <p>@ReturnStatus(item.Status) · @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                        <p>Vai trò hóa đơn: @(item.IsOriginalInvoice ? "Hóa đơn gốc" : "Hóa đơn mới khi đổi hàng")</p>
+                        <p>Tiền hoàn: @Money(item.Refund) · Thu thêm: @Money(item.AdditionalPayment)</p>
+                        <p>Điểm thu hồi: @item.PointsReversed</p>
+                    </article>
+                }
+            }
+            <p class="muted">Tra cứu và xử lý đổi trả thực hiện tại DT-01.</p>
+        </section>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        document.getElementById('reprintInvoice').addEventListener('click', function () {
+            const status = document.getElementById('reprintStatus');
+            try { window.print(); }
+            catch (error) {
+                status.textContent = 'Không mở được hộp thoại in. Bạn có thể thử lại; dữ liệu hóa đơn không thay đổi.';
+                status.hidden = false;
+            }
+        });
+    </script>
+}

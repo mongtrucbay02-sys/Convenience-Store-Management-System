@@ -1288,6 +1288,14 @@ components:
           type: integer
           minimum: 0
           example: 1
+        donViTinh:
+          type: string
+        khuyenMaiId:
+          type: integer
+          nullable: true
+        maKhuyenMai:
+          type: string
+          nullable: true
       required:
       - id
       - sanPhamId
@@ -1342,6 +1350,45 @@ components:
           type: string
           format: date-time
           example: '2026-10-16T08:30:00+07:00'
+        tenThuNgan:
+          type: string
+        tenKhachHang:
+          type: string
+          nullable: true
+        soDienThoaiKhach:
+          type: string
+          nullable: true
+        tienTruHangDoi:
+          type: integer
+          minimum: 0
+        diemDaCong:
+          type: integer
+          minimum: 0
+          description: Diem da cong tai thoi diem ban, khong tinh lai khi in.
+        huyLuc:
+          type: string
+          format: date-time
+          nullable: true
+        lyDoHuy:
+          type: string
+          nullable: true
+        nguoiHuy:
+          type: string
+          nullable: true
+        phieuDoiTra:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              ma: { type: string }
+              loai: { type: string }
+              trangThai: { type: string }
+              ngayLap: { type: string, format: date-time }
+              tienHoan: { type: integer, minimum: 0 }
+              tienThuThem: { type: integer, minimum: 0 }
+              diemThuHoi: { type: integer, minimum: 0 }
+              laHoaDonGoc: { type: boolean }
       required:
       - id
       - ma
@@ -1388,6 +1435,12 @@ components:
           enum:
           - K80
           example: K80
+        inLai:
+          type: boolean
+          description: POS-11 luon true; frontend hien dong In lai trong vung in.
+        daHuy:
+          type: boolean
+          description: Neu true, frontend in dau DA HUY va van cho xem hoa don.
       required:
       - hoaDon
       - khoGiay

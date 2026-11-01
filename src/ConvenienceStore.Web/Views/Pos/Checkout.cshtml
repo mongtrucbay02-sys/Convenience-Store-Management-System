@@ -3,9 +3,10 @@
 @{
     ViewData["Title"] = "Thanh toán đơn hàng";
     Layout = "_AdminLayout";
+
+    bool hasValidTotal = Model.Total > 0;
 }
 
-<!-- CSS dùng chung cho POS-01, POS-02, POS-05 -->
 <link rel="stylesheet"
       href="~/css/pos-flow.css"
       asp-append-version="true" />
@@ -59,11 +60,11 @@
     }
 
     .checkout-card {
-        background: #ffffff;
+        background: #fff;
         border: 1px solid #e1e8f0;
         border-radius: 18px;
         padding: 28px;
-        box-shadow: 0 8px 30px rgba(15, 35, 65, 0.05);
+        box-shadow: 0 8px 30px rgba(15,35,65,.05);
         height: 100%;
     }
 
@@ -100,7 +101,7 @@
     }
 
     .checkout-total {
-        background: linear-gradient(135deg, #eaf4ff, #f1f8ff);
+        background: linear-gradient(135deg,#eaf4ff,#f1f8ff);
         border: 1px solid #d1e5fb;
         border-radius: 14px;
         padding: 22px;
@@ -141,13 +142,7 @@
         border: 2px solid #2581c7;
         border-radius: 14px;
         margin-bottom: 24px;
-        transition: background .2s, box-shadow .2s;
     }
-
-        .checkout-method:hover {
-            background: #edf6ff;
-            box-shadow: 0 5px 18px rgba(23, 109, 177, 0.08);
-        }
 
     .checkout-method-icon {
         width: 58px;
@@ -200,6 +195,45 @@
         margin-bottom: 22px;
     }
 
+    .checkout-alert {
+        padding: 14px 18px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .checkout-alert-error {
+        background: #fff1f2;
+        border: 1px solid #fecdd3;
+        color: #9f1239;
+    }
+
+    .checkout-alert-success {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #065f46;
+    }
+
+    .checkout-steps-note {
+        margin-top: 18px;
+        font-size: 13px;
+        color: #64748b;
+        line-height: 1.7;
+    }
+
+    .checkout-disabled {
+        display: block;
+        padding: 13px 18px;
+        background: #cbd5e1;
+        color: #475569;
+        border-radius: 10px;
+        text-align: center;
+        font-weight: 700;
+        cursor: not-allowed;
+        margin-bottom: 12px;
+    }
+
     @@media (max-width: 850px) {
         .checkout-grid {
             grid-template-columns: 1fr;
@@ -242,46 +276,50 @@
 
 <div class="checkout-page">
 
-    <!-- ===================================== -->
-    <!-- TIÊU ĐỀ TRANG -->
-    <!-- ===================================== -->
-
+    <!-- TIÊU ĐỀ -->
     <div class="checkout-heading">
-
         <div class="checkout-heading-icon">
             🛒
         </div>
 
         <div>
             <h1>Thanh toán đơn hàng</h1>
-
             <p>
-                Smart Mart / Bán hàng POS / Chọn phương thức thanh toán
+                Smart Mart / Bán hàng POS /
+                Chọn phương thức thanh toán
             </p>
         </div>
-
     </div>
 
-    <!-- ===================================== -->
-    <!-- THANH TIẾN TRÌNH DÙNG CHUNG -->
-    <!-- ===================================== -->
+    <!-- THÔNG BÁO TỪ CONTROLLER -->
+    @if (TempData["Error"] is string error)
+    {
+        <div class="checkout-alert checkout-alert-error"
+             role="alert">
+            ⚠️ @error
+        </div>
+    }
 
+    @if (TempData["Success"] is string success)
+    {
+        <div class="checkout-alert checkout-alert-success"
+             role="status">
+            ✓ @success
+        </div>
+    }
+
+    <!-- TIẾN TRÌNH POS -->
     <partial name="_PosSteps" model="2" />
-
-    <!-- ===================================== -->
-    <!-- NỘI DUNG CHÍNH -->
-    <!-- ===================================== -->
 
     <div class="checkout-grid">
 
-        <!-- CỘT TRÁI: TÓM TẮT ĐƠN HÀNG -->
+        <!-- CỘT TRÁI: TÓM TẮT -->
         <section class="checkout-card">
 
             <h2>🧾 Tóm tắt đơn hàng</h2>
 
             <div class="checkout-summary-row">
                 <span>Tạm tính</span>
-
                 <strong>
                     @Model.Subtotal.ToString("N0") đ
                 </strong>
@@ -289,16 +327,14 @@
 
             <div class="checkout-summary-row">
                 <span>Giảm giá</span>
-
                 <strong>
-                    @Model.Discount.ToString("N0") đ
+                    -@Model.Discount.ToString("N0") đ
                 </strong>
             </div>
 
             <hr class="checkout-divider" />
 
             <div class="checkout-total">
-
                 <span class="checkout-total-label">
                     Tổng phải thanh toán
                 </span>
@@ -306,74 +342,81 @@
                 <strong class="checkout-total-value">
                     @Model.Total.ToString("N0") đ
                 </strong>
-
             </div>
 
             <div class="checkout-note">
-                ℹ️ Tổng tiền được tính từ giỏ hàng hiện tại.
-                Vui lòng kiểm tra số tiền trước khi tiếp tục thanh toán.
+                ℹ️ Tổng tiền được lấy từ giỏ hàng hiện tại.
+                Số tiền cuối cùng sẽ được hệ thống kiểm tra
+                lại khi hoàn tất đơn POS-07.
+            </div>
+
+            <div class="checkout-steps-note">
+                <strong>Quy trình thanh toán:</strong>
+                <div>1. Kiểm tra tổng tiền đơn hàng.</div>
+                <div>2. Chọn thanh toán tiền mặt.</div>
+                <div>3. Nhập và xác nhận tiền khách đưa.</div>
+                <div>4. Hoàn tất đơn và in hóa đơn.</div>
             </div>
 
         </section>
 
-        <!-- CỘT PHẢI: CHỌN PHƯƠNG THỨC -->
+        <!-- CỘT PHẢI: PHƯƠNG THỨC -->
         <section class="checkout-card">
 
             <h2>💳 Phương thức thanh toán</h2>
 
-            <!-- CHỈ HỖ TRỢ TIỀN MẶT THEO SRS -->
             <div class="checkout-method">
-
                 <div class="checkout-method-icon">
                     💵
                 </div>
 
                 <div class="checkout-method-info">
-
                     <strong>Thanh toán tiền mặt</strong>
-
                     <span>
                         Thu ngân nhận tiền trực tiếp từ khách hàng.
-                        Hệ thống tự động tính số tiền thừa cần trả.
+                        Hệ thống tính số tiền thừa và xác nhận
+                        thanh toán trước khi hoàn tất đơn hàng.
                     </span>
-
                 </div>
 
                 <div class="checkout-method-check">
                     ✓
                 </div>
-
             </div>
 
             <div class="checkout-payment-note">
                 <span>ℹ️</span>
-
                 <span>
-                    Hệ thống hiện hỗ trợ thanh toán bằng tiền mặt.
-                    Sau khi tiếp tục, bạn có thể chọn mệnh giá,
-                    nhập số tiền khách đưa và xác nhận.
+                    Hiện tại hệ thống hỗ trợ thanh toán tiền mặt.
+                    Sau khi tiếp tục, bạn có thể nhập số tiền
+                    khách đưa, kiểm tra tiền thừa và hoàn tất
+                    đơn hàng.
                 </span>
             </div>
 
-            <!-- ĐI TỚI TRANG CASH -->
             <div class="pos-flow-actions">
 
-                <a asp-controller="Pos"
-                   asp-action="Cash"
-                   class="pos-flow-primary">
+                @if (hasValidTotal)
+                {
+                    <a asp-controller="Pos"
+                       asp-action="Cash"
+                       class="pos-flow-primary">
+                        Tiếp tục thanh toán tiền mặt
+                        <span aria-hidden="true">→</span>
+                    </a>
+                }
+                else
+                {
+                    <span class="checkout-disabled"
+                          aria-disabled="true">
+                        Không thể thanh toán đơn hàng trống
+                    </span>
+                }
 
-                    Tiếp tục thanh toán tiền mặt
-                    <span aria-hidden="true">→</span>
-
-                </a>
-
-                <!-- QUAY LẠI GIỎ HÀNG -->
                 <a asp-controller="Pos"
                    asp-action="Index"
                    class="pos-flow-secondary">
-
                     ← Quay lại quầy bán hàng
-
                 </a>
 
             </div>
@@ -381,5 +424,4 @@
         </section>
 
     </div>
-
 </div>

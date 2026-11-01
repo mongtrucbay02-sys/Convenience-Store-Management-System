@@ -41,7 +41,7 @@ builder.Services.AddDbContext<CuaHangDbContext>(options =>
 });
 
 // ==========================================
-// 3. ĐĂNG KÝ SERVICE POS
+// 3. SERVICE POS-01, POS-05, POS-07
 // ==========================================
 
 // POS-01: Danh mục và sản phẩm
@@ -56,22 +56,28 @@ builder.Services.AddScoped<PosPaymentService>();
 // POS-07: Hoàn tất đơn hàng
 builder.Services.AddScoped<PosCheckoutService>();
 
-// POS-07: Đọc hóa đơn và in K80
+// POS-07: Đọc và in hóa đơn
 builder.Services.AddScoped<PosInvoiceService>();
 
-// ==========================================
-// 4. MYSQL STORE POS-07
-// ==========================================
-
-// Lưu hóa đơn và xử lý đơn hàng
+// POS-07: Store lưu đơn hàng
 builder.Services.AddScoped<
     IPosCheckoutStore,
     MySqlPosCheckoutStore>();
 
-// Đọc hóa đơn từ MySQL
+// POS-07: Store đọc hóa đơn
 builder.Services.AddScoped<
     IPosInvoiceStore,
     MySqlPosInvoiceStore>();
+
+// ==========================================
+// 4. SERVICE POS-10
+// ==========================================
+
+// Service tra cứu danh sách hóa đơn
+builder.Services.AddScoped<PosInvoiceListService>();
+
+// Store đọc danh sách hóa đơn
+builder.Services.AddScoped<IPosInvoiceListStore, MySqlPosInvoiceListStore>();
 
 // ==========================================
 // 5. MODULE CỦA NHÓM
@@ -80,14 +86,32 @@ builder.Services.AddScoped<
 // Xử lý lỗi API
 builder.Services.AddXuLyLoiApi();
 
-// Đăng nhập và phân quyền
+// AUTH: đăng nhập và phân quyền
 builder.Services.AddModuleAuth();
 
 // Quản lý tồn kho
 builder.Services.AddModuleInventory();
 
 // ==========================================
-// 6. KHỞI TẠO ADMIN
+// 6. PHÂN QUYỀN POS-10
+// ==========================================
+
+// Dùng claim quyền do module AUTH cấp khi đăng nhập.
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(
+        PosInvoiceAccess.PolicyXem,
+        policy =>
+        {
+            policy.RequireAuthenticatedUser();
+
+            // BR-POS-11: quyền xem tất cả hoặc xem của mình.
+            policy.RequireAssertion(context => PosInvoiceAccess.CoQuyenXem(context.User));
+        });
+});
+
+// ==========================================
+// 7. KHỞI TẠO ADMIN
 // ==========================================
 
 builder.Services.Configure<AdminDauTienOptions>(
@@ -97,7 +121,7 @@ builder.Services.Configure<AdminDauTienOptions>(
 builder.Services.AddScoped<KhoiTaoAdminDauTien>();
 
 // ==========================================
-// 7. BUILD APPLICATION
+// 8. BUILD APPLICATION
 // ==========================================
 
 var app = builder.Build();
@@ -106,7 +130,7 @@ await KhoiTaoAdminDauTien.ChayKhiKhoiDongAsync(
     app.Services);
 
 // ==========================================
-// 8. HTTP PIPELINE
+// 9. HTTP PIPELINE
 // ==========================================
 
 if (!app.Environment.IsDevelopment())
@@ -118,39 +142,33 @@ if (!app.Environment.IsDevelopment())
 app.UseXuLyLoiApi();
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseRouting();
 
-// Xác thực phải đứng trước phân quyền
 app.UseAuthentication();
 app.UseAuthorization();
 
 // ==========================================
-// 9. ROUTING
+// 10. ROUTING
 // ==========================================
 
-// Static assets
 app.MapStaticAssets();
 
-// Hỗ trợ MVC Areas nếu dự án có sử dụng
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-// Route MVC mặc định
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-// Hỗ trợ Attribute Routing
 app.MapControllers();
 
 // ==========================================
-// 10. RUN
+// 11. RUN
 // ==========================================
 
 app.Run();
+

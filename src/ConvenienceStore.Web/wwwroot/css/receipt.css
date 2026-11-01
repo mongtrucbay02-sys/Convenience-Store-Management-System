@@ -447,3 +447,17 @@
     .receipt-print-status[hidden] {
         display: none;
     }
+/* POS-11 dùng chung giấy in K80 với POS-07. */
+.receipt-stamp { border: 2px solid currentColor; padding: 5px; margin: 8px 0; text-align: center; font-size: 15px; font-weight: 800; }
+.receipt-cancelled { color: #991b1b; border-style: double; }
+.receipt-details-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; align-items: start; margin-top: 24px; }
+.receipt-details-actions { margin-bottom: 20px; }
+.receipt-related { margin-top: 0; }
+.receipt-return + .receipt-return { border-top: 1px solid #e2e8f0; margin-top: 18px; padding-top: 12px; }
+.receipt-return h3 { font-size: 16px; overflow-wrap: anywhere; }
+@media(max-width: 800px) { .receipt-details-grid { grid-template-columns: minmax(0, 1fr); } }
+@media print {
+    .receipt-related, .receipt-print-status { display: none !important; }
+    .shell, .main, .content, .receipt-details-grid { display: block !important; width: 80mm !important; max-width: 80mm !important; margin: 0 !important; padding: 0 !important; }
+    .receipt-stamp { border-color: #000 !important; break-inside: avoid; }
+}

@@ -11,9 +11,12 @@ public sealed class MySqlPosCatalog
     public MySqlPosCatalog(IConfiguration config)
     {
         _connectionString =
+            // Ưu tiên PosMySql nếu có; không thì dùng chung chuỗi kết nối
+            // CuaHang của Program.cs để chỉ cần cấu hình MỘT chuỗi.
             config.GetConnectionString("PosMySql")
+            ?? config.GetConnectionString("CuaHang")
             ?? throw new InvalidOperationException(
-                "Chưa cấu hình ConnectionStrings:PosMySql");
+                "Chưa cấu hình ConnectionStrings:CuaHang (hoặc PosMySql)");
     }
 
     public MySqlConnection CreateConnection()

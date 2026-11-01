@@ -30,7 +30,7 @@ public sealed class MySqlPromotionDataSource(ApplicationDbContext db, IHttpConte
             """;
         var rows = await QueryAsync(sql, null, r => new PromotionRow(
             Long(r,"id"), Text(r,"ma"), Text(r,"ten"), NullableText(r,"mo_ta"), Text(r,"loai_giam"),
-            Long(r,"gia_tri"), NullableLong(r,"giam_toi_da"), VietnamDate(r,"bat_dau_luc"), VietnamDate(r,"ket_thuc_luc"),
+            Long(r,"gia_tri"), NullableLong(r,"giam_toi_da") is 0 ? null : NullableLong(r,"giam_toi_da"), VietnamDate(r,"bat_dau_luc"), VietnamDate(r,"ket_thuc_luc"),
             Bool(r,"chi_thanh_vien"), Text(r,"trang_thai"), Int(r,"usage_count"),
             r["product_id"] is DBNull ? null : new ProductRefDto(Long(r,"product_id"),Text(r,"product_sku"),Text(r,"product_name"))), ct);
         return rows.GroupBy(r=>r.Id).Select(g=>ToRecord(g.First(),g.Where(x=>x.Product is not null).Select(x=>x.Product!).ToArray())).ToArray();
@@ -103,7 +103,7 @@ public sealed class MySqlPromotionDataSource(ApplicationDbContext db, IHttpConte
     {
         ["@id"]=r.Id,["@code"]=r.Code,["@name"]=r.Name,["@description"]=r.Description,
         ["@type"]=r.DiscountType==DiscountType.Percent?"PHAN_TRAM":"SO_TIEN",["@value"]=r.DiscountValue,
-        ["@max"]=r.MaxDiscountAmount,["@start"]=DbDate(r.StartAt),["@end"]=DbDate(r.EndAt),
+        ["@max"]=r.MaxDiscountAmount ?? 0,["@start"]=DbDate(r.StartAt),["@end"]=DbDate(r.EndAt),
         ["@members"]=r.MembersOnly,["@status"]=r.Status switch {PromotionStatus.Draft=>"NHAP",PromotionStatus.Active=>"DA_KICH_HOAT",PromotionStatus.Paused=>"TAM_DUNG",_=>"DA_KET_THUC"}
     };
     private static PromotionRecord ToRecord(PromotionRow r,IReadOnlyList<ProductRefDto> products)=>new(

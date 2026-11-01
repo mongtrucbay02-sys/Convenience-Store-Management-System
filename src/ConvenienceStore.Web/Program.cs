@@ -23,6 +23,8 @@ builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICategoryReadRepository, EfCategoryReadRepository>();
+builder.Services.AddScoped<ICategoryMutationRepository, EfCategoryMutationRepository>();
+builder.Services.AddScoped<CategoryMutationService>();
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IDashboardDataSource, SampleDashboardDataSource>();

@@ -17,6 +17,13 @@ public sealed record ReportPaidInvoiceFact(
 public sealed record ReportCancelledOrderFact(long Id, DateTimeOffset CancelledAt, long CashierId, string CashierName);
 public sealed record ReportVoidedInvoiceFact(long Id, DateTimeOffset VoidedAt, long CashierId, string CashierName);
 public sealed record StockMovementFact(long ProductId, DateTimeOffset OccurredAt, int Quantity, bool IsInbound);
+public sealed record ReportPurchaseReceiptLineFact(long ProductId, string ProductName, int Quantity, long UnitCost);
+public sealed record ReportPurchaseReceiptFact(long Id, DateTimeOffset ReceivedAt, int SupplierId, string SupplierName,
+    IReadOnlyList<ReportPurchaseReceiptLineFact> Lines);
+public sealed record ReportReturnedLineFact(long ProductId, string ProductName, int CategoryId, string CategoryName,
+    int Quantity, long UnitCostSnapshot, int RestockedQuantity, long RefundAmount);
+public sealed record ReportReturnFact(long Id, long InvoiceId, DateTimeOffset ReturnedAt,
+    IReadOnlyList<ReportReturnedLineFact> Lines);
 
 /// <summary>
 /// Report input boundary. The main branch has no transaction entities/tables yet, so the registered
@@ -33,4 +40,10 @@ public interface IOperationalReportDataSource
         DateTimeOffset fromInclusive, DateTimeOffset toExclusive, CancellationToken cancellationToken);
     Task<IReadOnlyList<StockMovementFact>> GetStockMovementsAsync(
         DateTimeOffset fromInclusive, DateTimeOffset toExclusive, CancellationToken cancellationToken);
+    Task<IReadOnlyList<ReportPurchaseReceiptFact>> GetPurchaseReceiptsAsync(
+        DateTimeOffset fromInclusive, DateTimeOffset toExclusive, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<ReportPurchaseReceiptFact>>([]);
+    Task<IReadOnlyList<ReportReturnFact>> GetReturnsAsync(
+        DateTimeOffset fromInclusive, DateTimeOffset toExclusive, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<ReportReturnFact>>([]);
 }

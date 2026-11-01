@@ -9,6 +9,8 @@ public interface IOperationalReportsService
     Task<OperationalReportResponse> GetCategoriesAsync(ReportQuery query, CancellationToken cancellationToken);
     Task<OperationalReportResponse> GetCashiersAsync(ReportQuery query, CancellationToken cancellationToken);
     Task<OperationalReportResponse> GetInventoryAsync(ReportQuery query, CancellationToken cancellationToken);
+    Task<OperationalReportResponse> GetPurchasesAsync(ReportQuery query, CancellationToken cancellationToken);
+    Task<OperationalReportResponse> GetGrossProfitAsync(ReportQuery query, CancellationToken cancellationToken);
     Task<OperationalReportResponse> GetDetailsAsync(string reportCode, string key, ReportQuery query,
         CancellationToken cancellationToken);
 }

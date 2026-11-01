@@ -28,12 +28,16 @@ public sealed class SampleOperationalReportDataSource : IOperationalReportDataSo
     ];
     private static readonly (long Id, string Name)[] Cashiers =
     [(1, "Nguyễn An"), (2, "Trần Bình"), (3, "Lê Chi")];
+    private static readonly (int Id, string Name)[] Suppliers =
+    [(1, "Công ty Minh Phát"), (2, "Nhà phân phối An Khang"), (3, "Thực phẩm Việt")];
 
     private readonly IReadOnlyList<ReportProductFact> _products;
     private readonly IReadOnlyList<ReportPaidInvoiceFact> _invoices;
     private readonly IReadOnlyList<ReportCancelledOrderFact> _cancelledOrders;
     private readonly IReadOnlyList<ReportVoidedInvoiceFact> _voidedInvoices;
     private readonly IReadOnlyList<StockMovementFact> _movements;
+    private readonly IReadOnlyList<ReportPurchaseReceiptFact> _purchaseReceipts;
+    private readonly IReadOnlyList<ReportReturnFact> _returns;
 
     public SampleOperationalReportDataSource(TimeProvider timeProvider)
     {
@@ -41,7 +45,9 @@ public sealed class SampleOperationalReportDataSource : IOperationalReportDataSo
         var firstDay = DateOnly.FromDateTime(now.DateTime).AddDays(-59);
         var stock = Catalog.ToDictionary(p => p.Id, _ => 35);
         var movements = new List<StockMovementFact>();
+        var purchaseReceipts = new List<ReportPurchaseReceiptFact>();
         var invoices = new List<ReportPaidInvoiceFact>();
+        var returns = new List<ReportReturnFact>();
         var cancelled = new List<ReportCancelledOrderFact>();
         var voided = new List<ReportVoidedInvoiceFact>();
         long invoiceId = 1;
@@ -55,14 +61,21 @@ public sealed class SampleOperationalReportDataSource : IOperationalReportDataSo
             // Demo receipts are dated every ten days and stock-card movements reconcile to closing stock.
             if (dayIndex % 10 == 0)
             {
+                var supplier = Suppliers[(dayIndex / 10) % Suppliers.Length];
+                var receiptLines = new List<ReportPurchaseReceiptLineFact>();
                 for (var p = 0; p < Catalog.Length; p++)
                 {
                     var product = Catalog[p];
                     var quantity = 16 + (p % 5) * 3;
                     stock[product.Id] += quantity;
+                    var unitCost = product.Cost - (dayIndex / 10 % 3) * 100L;
+                    receiptLines.Add(new ReportPurchaseReceiptLineFact(product.Id, product.Name, quantity, unitCost));
                     movements.Add(new StockMovementFact(
                         product.Id, new DateTimeOffset(dateTime.AddHours(6), VietnamOffset), quantity, true));
                 }
+                purchaseReceipts.Add(new ReportPurchaseReceiptFact(
+                    dayIndex / 10 + 1, new DateTimeOffset(dateTime.AddHours(6), VietnamOffset),
+                    supplier.Id, supplier.Name, receiptLines));
             }
 
             var invoiceCount = 4 + (dayIndex * 7 % 5);
@@ -95,6 +108,14 @@ public sealed class SampleOperationalReportDataSource : IOperationalReportDataSo
                 invoices.Add(new ReportPaidInvoiceFact(
                     invoiceId++, paidAt, cashier.Id, cashier.Name, lines, promotion, refund, net));
 
+                if (refund > 0 && lines.Count > 0)
+                {
+                    var returned = lines[0];
+                    returns.Add(new ReportReturnFact(returns.Count + 1, invoiceId - 1, paidAt.AddHours(2),
+                    [new ReportReturnedLineFact(returned.ProductId, returned.ProductName, returned.CategoryId,
+                        returned.CategoryName, 1, returned.UnitCostSnapshot, 1, refund)]));
+                }
+
                 if (n % 9 == 8)
                     voided.Add(new ReportVoidedInvoiceFact(invoiceId + 100_000,
                         paidAt.AddMinutes(20), cashier.Id, cashier.Name));
@@ -115,6 +136,8 @@ public sealed class SampleOperationalReportDataSource : IOperationalReportDataSo
         _cancelledOrders = cancelled;
         _voidedInvoices = voided;
         _movements = movements;
+        _purchaseReceipts = purchaseReceipts;
+        _returns = returns;
     }
 
     public Task<IReadOnlyList<ReportProductFact>> GetProductsAsync(CancellationToken cancellationToken) =>
@@ -139,4 +162,14 @@ public sealed class SampleOperationalReportDataSource : IOperationalReportDataSo
         DateTimeOffset fromInclusive, DateTimeOffset toExclusive, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<StockMovementFact>>(
             _movements.Where(m => m.OccurredAt >= fromInclusive && m.OccurredAt < toExclusive).ToArray());
+
+    public Task<IReadOnlyList<ReportPurchaseReceiptFact>> GetPurchaseReceiptsAsync(
+        DateTimeOffset fromInclusive, DateTimeOffset toExclusive, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<ReportPurchaseReceiptFact>>(
+            _purchaseReceipts.Where(x => x.ReceivedAt >= fromInclusive && x.ReceivedAt < toExclusive).ToArray());
+
+    public Task<IReadOnlyList<ReportReturnFact>> GetReturnsAsync(
+        DateTimeOffset fromInclusive, DateTimeOffset toExclusive, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<ReportReturnFact>>(
+            _returns.Where(x => x.ReturnedAt >= fromInclusive && x.ReturnedAt < toExclusive).ToArray());
 }

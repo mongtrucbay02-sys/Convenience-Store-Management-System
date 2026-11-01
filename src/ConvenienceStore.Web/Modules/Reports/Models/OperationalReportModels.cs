@@ -10,6 +10,7 @@ public sealed class ReportQuery
     public int? CategoryId { get; set; }
     public long? ProductId { get; set; }
     public long? CashierId { get; set; }
+    public int? SupplierId { get; set; }
     public int TopN { get; set; } = 10;
     public string SortBy { get; set; } = "quantity";
     public string StockStatus { get; set; } = "all";

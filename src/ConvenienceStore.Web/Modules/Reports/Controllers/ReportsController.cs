@@ -43,6 +43,12 @@ public class ReportsController : Controller
     public Task<IActionResult> Inventory([FromQuery] Models.ReportQuery query, CancellationToken ct) =>
         Render(_reportsService.GetInventoryAsync(query, ct));
 
+    public Task<IActionResult> Purchases([FromQuery] Models.ReportQuery query, CancellationToken ct) =>
+        Render(_reportsService.GetPurchasesAsync(query, ct));
+
+    public Task<IActionResult> GrossProfit([FromQuery] Models.ReportQuery query, CancellationToken ct) =>
+        Render(_reportsService.GetGrossProfitAsync(query, ct));
+
     public Task<IActionResult> Detail(string code, string key, [FromQuery] Models.ReportQuery query,
         CancellationToken ct) => RenderDetail(_reportsService.GetDetailsAsync(code, key, query, ct));
 
@@ -66,6 +72,8 @@ public class ReportsController : Controller
                 "BC-04" => await _reportsService.GetCategoriesAsync(query, ct),
                 "BC-05" => await _reportsService.GetCashiersAsync(query, ct),
                 "BC-06" => await _reportsService.GetInventoryAsync(query, ct),
+                "BC-07" => await _reportsService.GetPurchasesAsync(query, ct),
+                "BC-08" => await _reportsService.GetGrossProfitAsync(query, ct),
                 _ => null
             };
             if (report is null) return NotFound();
@@ -104,6 +112,8 @@ public class ReportsController : Controller
         "BC-04" => "Categories",
         "BC-05" => "Cashiers",
         "BC-06" => "Inventory",
+        "BC-07" => "Purchases",
+        "BC-08" => "GrossProfit",
         _ => null
     };
 }

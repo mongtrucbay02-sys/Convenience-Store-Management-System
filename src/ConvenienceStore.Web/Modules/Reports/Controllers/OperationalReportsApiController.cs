@@ -39,6 +39,14 @@ public sealed class OperationalReportsApiController : ControllerBase
     public Task<ActionResult<OperationalReportResponse>> Inventory([FromQuery] ReportQuery query, CancellationToken ct) =>
         Execute(query, q => _reports.GetInventoryAsync(q, ct));
 
+    [HttpGet("purchases")]
+    public Task<ActionResult<OperationalReportResponse>> Purchases([FromQuery] ReportQuery query, CancellationToken ct) =>
+        Execute(query, q => _reports.GetPurchasesAsync(q, ct));
+
+    [HttpGet("gross-profit")]
+    public Task<ActionResult<OperationalReportResponse>> GrossProfit([FromQuery] ReportQuery query, CancellationToken ct) =>
+        Execute(query, q => _reports.GetGrossProfitAsync(q, ct));
+
     private async Task<ActionResult<OperationalReportResponse>> Execute(
         ReportQuery query, Func<ReportQuery, Task<OperationalReportResponse>> execute)
     {

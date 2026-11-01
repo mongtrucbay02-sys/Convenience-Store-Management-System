@@ -13,11 +13,11 @@ public sealed record PaidInvoiceFact(
     DateTimeOffset PaidAt,
     IReadOnlyList<InvoiceLineFact> Lines,
     long PromotionDiscount,
-    long RefundAmount);
+    long RefundAmount,
+    bool IsReturn = false);
 
 /// <summary>
-/// Nguồn dữ liệu cho dashboard. Hiện là dữ liệu mẫu (POS-07, KHO-07 chưa có từ tuần 5);
-/// thay bằng bản truy vấn thật (PA-BC-03.A) khi các bảng đó có, không cần đổi DashboardService.
+/// Data source for dashboard revenue and operational approval counts.
 /// </summary>
 public interface IDashboardDataSource
 {
@@ -30,3 +30,4 @@ public interface IDashboardDataSource
     Task<(int Stocktake, int WriteOff, int Returns)> GetPendingApprovalCountsAsync(
         CancellationToken cancellationToken);
 }
+

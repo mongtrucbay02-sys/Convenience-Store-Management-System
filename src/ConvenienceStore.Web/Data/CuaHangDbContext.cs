@@ -479,6 +479,7 @@ public partial class CuaHangDbContext : DbContext
                 .HasColumnName("ngay_tao");
             entity.Property(e => e.PhienBan)
                 .HasDefaultValueSql("'1'")
+                .IsConcurrencyToken()
                 .HasColumnName("phien_ban");
             entity.Property(e => e.Ten)
                 .HasMaxLength(100)

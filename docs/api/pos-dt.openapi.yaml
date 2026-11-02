@@ -665,6 +665,8 @@ paths:
       security:
       - cookieAuth: []
         xsrfHeader: []
+  /returns/invoice-lookup:
+    $ref: './returns-lookup.openapi.yaml#/paths/~1returns~1invoice-lookup'
   /returns:
     post:
       tags:

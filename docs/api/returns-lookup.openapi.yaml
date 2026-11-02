@@ -1,0 +1,107 @@
+openapi: 3.0.3
+info:
+  title: DT-01 Tra cuu hoa don goc
+  version: 1.0.0
+  description: Theo issue 148 va T6-02 muc DT1-DT7. Chi tra cuu, khong tao phieu hoac duyet ngoai le.
+servers:
+  - url: /api/v1
+security:
+  - cookieAuth: []
+paths:
+  /returns/invoice-lookup:
+    get:
+      tags: [DT]
+      operationId: traCuuHoaDonGoc
+      summary: DT-01 Tra cuu hoa don cua moi thu ngan
+      description: >-
+        Can vai tro TN va quyen DOI_TRA. Nhap dung mot trong ma hoac soDienThoai.
+        Ma duoc so khop chinh xac, ke ca hoa don qua han hoac da huy.
+        So dien thoai khop chinh xac; chi tra hoa don con trong han theo chinh sach dang hieu luc.
+        Khong tim thay tra items rong. Khong thay doi quyen POS-10/11.
+        SL da tra bao gom CHO_DUYET, DA_DUYET, HOAN_TAT; bo qua BI_TU_CHOI.
+        CanDuyetNgoaiLe khong phai la ket qua da duoc AD duyet.
+      parameters:
+        - { name: ma, in: query, schema: { type: string, maxLength: 20 }, description: Ma hoa don chinh xac }
+        - { name: soDienThoai, in: query, schema: { type: string, pattern: '^0[0-9]{9}$' }, description: So dien thoai thanh vien chinh xac }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: size, in: query, schema: { type: integer, minimum: 1, default: 20 }, description: Tu ha xuong 100 neu lon hon 100 }
+      responses:
+        '200':
+          description: Danh sach hoa don va dieu kien tung dong; khong tim thay thi items rong
+          headers:
+            Cache-Control: { schema: { type: string }, description: no-store }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TrangHoaDonGoc' }
+        '400': { $ref: '#/components/responses/Loi' }
+        '401': { $ref: '#/components/responses/Loi' }
+        '403': { $ref: '#/components/responses/Loi' }
+        '409': { $ref: '#/components/responses/Loi' }
+        '422': { $ref: '#/components/responses/Loi' }
+        '500': { $ref: '#/components/responses/Loi' }
+components:
+  securitySchemes:
+    cookieAuth: { type: apiKey, in: cookie, name: cs_session }
+  responses:
+    Loi:
+      description: >-
+        Envelope loi chung: 400 sai kieu tham so; 401 chua dang nhap;
+        403 sai actor/quyen hoac phai doi mat khau; 409 chua co chinh sach hieu luc;
+        422 dieu kien tim khong hop le; 500 loi may chu.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [code, message, details, traceId]
+            properties:
+              code: { type: string }
+              message: { type: string }
+              details: { nullable: true }
+              traceId: { type: string }
+  schemas:
+    TrangHoaDonGoc:
+      type: object
+      required: [items, total, page, size]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/HoaDonGoc' } }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        size: { type: integer, minimum: 1, maximum: 100 }
+    HoaDonGoc:
+      type: object
+      required: [id, ma, ngayMua, trangThai, tenThuNgan, tenKhachHang, soDienThoai, tongThanhToan, chinhSachId, soNgayDoiTra, ngayHetHan, daHuy, coTheDoiTra, canDuyetNgoaiLe, chiTiet]
+      properties:
+        id: { type: integer, format: int64 }
+        ma: { type: string }
+        ngayMua: { type: string, format: date-time, description: ISO 8601 voi mui gio +07:00 }
+        trangThai: { type: string, enum: [DA_THANH_TOAN, DA_HUY] }
+        tenThuNgan: { type: string }
+        tenKhachHang: { type: string }
+        soDienThoai: { type: string, nullable: true, description: Che tat ca tru 4 so cuoi cho TN }
+        tongThanhToan: { type: integer, format: int64, minimum: 0 }
+        chinhSachId: { type: integer }
+        soNgayDoiTra: { type: integer, minimum: 0 }
+        ngayHetHan: { type: string, format: date, description: Hop le den het ngay nay theo gio Viet Nam }
+        daHuy: { type: boolean }
+        coTheDoiTra: { type: boolean, description: Co it nhat mot dong hop le de lap phieu; buoc lap phieu phai kiem tra lai }
+        canDuyetNgoaiLe: { type: boolean, description: Co dong ngoai le; chua duoc phe duyet }
+        chiTiet: { type: array, items: { $ref: '#/components/schemas/DongHoaDonGoc' } }
+    DongHoaDonGoc:
+      type: object
+      required: [sanPhamId, tenSanPham, donViTinh, tenDanhMuc, soLuongMua, giaThucTraMoiDonVi, soLuongDaTraHoacDangXuLy, soLuongConDuocTra, hopLe, canDuyetNgoaiLe, lyDo]
+      properties:
+        sanPhamId: { type: integer }
+        tenSanPham: { type: string, description: Ten snapshot tu ct_hoa_don }
+        donViTinh: { type: string }
+        tenDanhMuc: { type: string }
+        soLuongMua: { type: integer, minimum: 1 }
+        giaThucTraMoiDonVi: { type: integer, format: int64, minimum: 0, description: don_gia tru giam_don_vi tai luc ban }
+        soLuongDaTraHoacDangXuLy: { type: integer, format: int64, minimum: 0 }
+        soLuongConDuocTra: { type: integer, format: int64, minimum: 0 }
+        hopLe: { type: boolean }
+        canDuyetNgoaiLe: { type: boolean }
+        lyDo:
+          type: array
+          items:
+            type: string
+            enum: [HOA_DON_DA_HUY, HOA_DON_KHONG_HOP_LE, HET_SO_LUONG, QUA_HAN, DANH_MUC_KHONG_DOI_TRA]

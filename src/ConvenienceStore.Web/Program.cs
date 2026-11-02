@@ -1,4 +1,5 @@
 using ConvenienceStore.Web.Modules.Products.Services;
+using ConvenienceStore.Web.Modules.Purchasing.Services;
 using ConvenienceStore.Web.Modules.Reports;
 using ConvenienceStore.Web.Modules.Reports.Services;
 using ConvenienceStore.Web.Data;
@@ -21,6 +22,8 @@ builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions
     });
 
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IReceiptListRepository, EfReceiptListRepository>();
+builder.Services.AddScoped<ReceiptListService>();
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IDashboardDataSource, SampleDashboardDataSource>();

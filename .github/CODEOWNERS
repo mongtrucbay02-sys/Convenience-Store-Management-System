@@ -8,7 +8,7 @@
 /.github/                             @mongtrucbay02-sys @zlatanofficial111-netizen
 
 # Migration CSDL: #1 duyệt
-/src/ConvenienceStore.Web/Migrations/ @zlatanofficial111-netizen @mongtrucbay02-sys
+/src/ConvenienceStore.Web/Data/Migrations/ @zlatanofficial111-netizen @mongtrucbay02-sys
 
 # Giao diện: #6 duyệt
 /src/ConvenienceStore.Web/Views/      @caotrang250226-png @mongtrucbay02-sys

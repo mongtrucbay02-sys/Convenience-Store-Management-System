@@ -7,6 +7,7 @@ public static class TinhToanKho
     public static IReadOnlySet<LoaiBienDong> LoaiDangHoTro { get; } = new HashSet<LoaiBienDong>
     {
         LoaiBienDong.NHAP_HANG, LoaiBienDong.BAN_HANG, LoaiBienDong.KIEM_KE, LoaiBienDong.XUAT_HUY,
+        LoaiBienDong.TRA_HANG, LoaiBienDong.HUY_HOA_DON,
     };
 
     public static bool CanGiaVon(LoaiBienDong loai) =>

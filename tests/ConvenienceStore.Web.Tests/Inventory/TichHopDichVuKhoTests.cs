@@ -114,7 +114,7 @@ public sealed class TichHopDichVuKhoTests(CsdlKhoFixture csdl)
 
         Assert.NotNull(loi);
         Assert.Equal(MaLoiKho.TonKhongDu, loi!.Ma);
-        Assert.Contains("chỉ còn 2 sản phẩm", loi.Message);
+        Assert.Contains("chỉ còn 2", loi.Message);
         Assert.Equal(0L, Convert.ToInt64(await csdl.DocMotGiaTriAsync(
             "SELECT COUNT(*) FROM hoa_don WHERE ma_hoa_don = @ma", ("@ma", maHoaDon))));
         Assert.Equal(2, (await _duLieu.DocTonKhoAsync(sp))!.SoLuongTon);

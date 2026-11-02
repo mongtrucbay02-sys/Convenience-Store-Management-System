@@ -50,6 +50,12 @@ public sealed class DanhMucConcurrencyTests(CsdlMySqlTam csdl) : IAsyncLifetime
         await db.SaveChangesAsync();
 
         Assert.Equal(initialVersion + 1, danhMuc.PhienBan);
+
+        await using var verificationDb = csdl.TaoDbContext();
+        var saved = await verificationDb.DanhMucs
+            .AsNoTracking()
+            .SingleAsync(x => x.Id == _danhMucId);
+        Assert.Equal(initialVersion + 1, saved.PhienBan);
     }
 
     [Fact]
@@ -78,5 +84,10 @@ public sealed class DanhMucConcurrencyTests(CsdlMySqlTam csdl) : IAsyncLifetime
         categoryB.MoTa = "changed by B";
         await Assert.ThrowsAsync<DbUpdateConcurrencyException>(
             () => contextB.SaveChangesAsync());
+
+        var versionAfterConflict = categoryB.PhienBan;
+        await Assert.ThrowsAsync<DbUpdateConcurrencyException>(
+            () => contextB.SaveChangesAsync());
+        Assert.Equal(versionAfterConflict, categoryB.PhienBan);
     }
 }

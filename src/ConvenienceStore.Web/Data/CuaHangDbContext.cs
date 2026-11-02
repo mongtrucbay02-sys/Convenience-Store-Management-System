@@ -32,7 +32,9 @@ public partial class CuaHangDbContext : DbContext
         {
             if (entry.State == EntityState.Modified)
             {
-                entry.Entity.PhienBan = checked(entry.Entity.PhienBan + 1);
+                var phienBanGoc = entry.OriginalValues.GetValue<uint>(
+                    nameof(DanhMuc.PhienBan));
+                entry.Entity.PhienBan = checked(phienBanGoc + 1);
             }
         }
     }

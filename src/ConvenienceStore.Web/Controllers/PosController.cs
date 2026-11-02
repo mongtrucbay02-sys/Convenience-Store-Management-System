@@ -1,28 +1,34 @@
-﻿
-using ConvenienceStore.Web.Models.Pos;
-using ConvenienceStore.Web.Services.Pos;
-using Microsoft.AspNetCore.Mvc;
+﻿using System.Globalization;
 using System.Security.Claims;
+using ConvenienceStore.Web.Models.Pos;
+using ConvenienceStore.Web.Modules.Auth.Security;
+using ConvenienceStore.Web.Services.Pos;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ConvenienceStore.Web.Controllers;
 
+[Authorize(Policy = MaQuyen.BanHang)]
 public sealed class PosController : Controller
 {
     private readonly MySqlPosCatalog _catalog;
     private readonly PosCartService _cart;
     private readonly PosPaymentService _posPayment;
     private readonly PosCancellationService _cancellation;
+    private readonly ILogger<PosController> _logger;
 
     public PosController(
         MySqlPosCatalog catalog,
         PosCartService cart,
         PosPaymentService posPayment,
-        PosCancellationService cancellation)
+        PosCancellationService cancellation,
+        ILogger<PosController> logger)
     {
         _catalog = catalog;
         _cart = cart;
         _posPayment = posPayment;
         _cancellation = cancellation;
+        _logger = logger;
     }
 
     // ==========================================
@@ -35,7 +41,8 @@ public sealed class PosController : Controller
         int? categoryId)
     {
         var products = await _catalog.SearchAsync(
-            search, categoryId);
+            search,
+            categoryId);
 
         return View(new PosPageViewModel
         {
@@ -55,6 +62,12 @@ public sealed class PosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Add(int productId)
     {
+        if (!ModelState.IsValid || productId <= 0)
+        {
+            TempData["Error"] = "Mã sản phẩm không hợp lệ.";
+            return RedirectToAction(nameof(Index));
+        }
+
         var error = await _cart.AddAsync(productId);
 
         TempData[error == null ? "Success" : "Error"] =
@@ -73,7 +86,17 @@ public sealed class PosController : Controller
         int productId,
         string? quantity)
     {
-        if (!int.TryParse(quantity, out int newQuantity)
+        if (!ModelState.IsValid || productId <= 0)
+        {
+            TempData["Error"] = "Mã sản phẩm không hợp lệ.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!int.TryParse(
+                quantity,
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var newQuantity)
             || newQuantity < 0)
         {
             TempData["Error"] =
@@ -84,19 +107,14 @@ public sealed class PosController : Controller
         }
 
         var error = await _cart.UpdateAsync(
-            productId, newQuantity);
+            productId,
+            newQuantity);
 
-        if (error != null)
-        {
-            TempData["Error"] = error;
-        }
-        else
-        {
-            TempData["Success"] =
+        TempData[error == null ? "Success" : "Error"] =
+            error ?? (
                 newQuantity == 0
                     ? "Đã xóa sản phẩm khỏi giỏ."
-                    : "Đã cập nhật số lượng sản phẩm.";
-        }
+                    : "Đã cập nhật số lượng sản phẩm.");
 
         return RedirectToAction(nameof(Index));
     }
@@ -109,6 +127,12 @@ public sealed class PosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Remove(int productId)
     {
+        if (!ModelState.IsValid || productId <= 0)
+        {
+            TempData["Error"] = "Mã sản phẩm không hợp lệ.";
+            return RedirectToAction(nameof(Index));
+        }
+
         var error = await _cart.UpdateAsync(productId, 0);
 
         TempData[error == null ? "Success" : "Error"] =
@@ -123,11 +147,17 @@ public sealed class PosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Calculate(
-        long cashReceived)
+    public async Task<IActionResult> Calculate(long cashReceived)
     {
-        var cart = _cart.GetCart();
+        if (!ModelState.IsValid || cashReceived < 0)
+        {
+            TempData["Error"] =
+                "Tiền khách đưa không hợp lệ.";
 
+            return RedirectToAction(nameof(Index));
+        }
+
+        var cart = _cart.GetCart();
         var error = await _cart.ValidateCartAsync(cart);
 
         if (error != null)
@@ -139,8 +169,8 @@ public sealed class PosController : Controller
         if (cashReceived < cart.Total)
         {
             TempData["Error"] =
-                $"Khách đưa chưa đủ. Cần thêm " +
-                $"{cart.Total - cashReceived:N0} đ.";
+                $"Khách đưa chưa đủ. " +
+                $"Cần thêm {cart.Total - cashReceived:N0} đ.";
 
             return RedirectToAction(nameof(Index));
         }
@@ -150,6 +180,7 @@ public sealed class PosController : Controller
             Products = await _catalog.SearchAsync(null),
             Categories = await _catalog.GetCategoriesAsync(),
             Cart = cart,
+            Search = "",
             CashReceived = cashReceived,
             Change = cashReceived - cart.Total
         });
@@ -163,7 +194,6 @@ public sealed class PosController : Controller
     public async Task<IActionResult> Checkout()
     {
         var cart = _cart.GetCart();
-
         var error = await _cart.ValidateCartAsync(cart);
 
         if (error != null)
@@ -188,7 +218,6 @@ public sealed class PosController : Controller
     public async Task<IActionResult> Cash()
     {
         var cart = _cart.GetCart();
-
         var error = await _cart.ValidateCartAsync(cart);
 
         if (error != null)
@@ -206,7 +235,7 @@ public sealed class PosController : Controller
     }
 
     // ==========================================
-    // POS-05: XÁC NHẬN THANH TOÁN TIỀN MẶT
+    // POS-05: XÁC NHẬN SỐ TIỀN KHÁCH ĐƯA
     // ==========================================
 
     [HttpPost]
@@ -215,7 +244,6 @@ public sealed class PosController : Controller
         string? cashReceived)
     {
         var cart = _cart.GetCart();
-
         var error = await _cart.ValidateCartAsync(cart);
 
         if (error != null)
@@ -232,11 +260,12 @@ public sealed class PosController : Controller
             CashInput = cashReceived ?? ""
         };
 
-        if (!long.TryParse(
-                cashReceived,
-                System.Globalization.NumberStyles.None,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out long cash))
+        if (!ModelState.IsValid
+            || !long.TryParse(
+                cashReceived?.Trim(),
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out var cash))
         {
             model.Error =
                 "Tiền khách đưa không hợp lệ. " +
@@ -247,68 +276,58 @@ public sealed class PosController : Controller
 
         model.CashReceived = cash;
 
-        // E1: Khách đưa không đủ tiền
         if (cash < cart.Total)
         {
             model.Error =
-                $"Khách đưa chưa đủ. Còn thiếu " +
-                $"{cart.Total - cash:N0} đ.";
+                $"Khách đưa chưa đủ. " +
+                $"Còn thiếu {cart.Total - cash:N0} đ.";
 
             return View("Cash", model);
         }
 
-        // Tính tiền thừa
-        model.Change = cash - cart.Total;
+        var change = cash - cart.Total;
+        model.Change = change;
 
-        // Gọi POS-07 tạm thời
-        // Chưa lưu hóa đơn, chưa trừ kho
+        // Giữ lời gọi service thanh toán hiện có.
+        // Việc lưu hóa đơn và hoàn tất đơn thuộc POS-07.
         model.Message = await _posPayment.PrepareAsync(
             cart,
             cash,
-            model.Change.Value);
+            change);
 
         return View("Cash", model);
     }
 
     // ==========================================
-
-    // ==========================================
-    // POS-09: HỦY ĐƠN HÀNG ĐANG BÁN
-    // BR-POS-10: GHI LỊCH SỬ HỦY ĐƠN
+    // POS-09: HỦY ĐƠN ĐANG BÁN
+    // BR-POS-10: GHI NHẬN LỊCH SỬ HỦY
     // ==========================================
 
+    // Kết hợp với policy BAN_HANG trên controller:
+    // người gọi phải có quyền bán hàng và vai trò TN.
+    [Authorize(Roles = "TN")]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancel()
     {
-        // BƯỚC 1: Kiểm tra đăng nhập
-        if (User.Identity?.IsAuthenticated != true)
-        {
-            // Chuyển đến trang đăng nhập
-            // Yêu cầu nhóm đã triển khai Account/Login
-            return Challenge();
-        }
+        // ID lấy từ phiên đăng nhập, không nhận từ form.
+        var claimValue = User.FindFirstValue(
+            ClaimTypes.NameIdentifier);
 
-        // BƯỚC 2: Kiểm tra quyền Thu ngân
-        if (!User.IsInRole("Cashier"))
+        if (!int.TryParse(
+                claimValue,
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out var cashierId)
+            || cashierId <= 0)
         {
+            _logger.LogWarning(
+                "POS-09: Từ chối hủy đơn vì phiên đăng nhập " +
+                "thiếu ID thu ngân hợp lệ.");
+
             return Forbid();
         }
 
-        // BƯỚC 3: Xác định người hủy
-        string? cashierId = User.FindFirst(
-            ClaimTypes.NameIdentifier
-        )?.Value;
-
-        if (string.IsNullOrWhiteSpace(cashierId))
-        {
-            TempData["Error"] =
-                "Không xác định được tài khoản thu ngân.";
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        // BƯỚC 4: Kiểm tra giỏ hàng
         var cart = _cart.GetCart();
 
         if (cart.Items == null || !cart.Items.Any())
@@ -319,37 +338,47 @@ public sealed class PosController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        // BƯỚC 5: Ghi lịch sử và hủy đơn
         try
         {
-            bool cancelled =
+            // Giữ đúng chữ ký service bạn đang sử dụng:
+            // CancelCurrentAsync(string cashierId, string source).
+            var cancelled =
                 await _cancellation.CancelCurrentAsync(
-                    cashierId,
-                    "POS"
-                );
+                    cashierId.ToString(
+                        CultureInfo.InvariantCulture),
+                    "POS");
 
-            if (cancelled)
-            {
-                TempData["Success"] =
-                    "Đã hủy đơn hàng thành công. " +
-                    "Hệ thống đã ghi lịch sử hủy " +
-                    "và tạo giỏ hàng trống mới.";
-            }
-            else
+            if (!cancelled)
             {
                 TempData["Error"] =
-                    "Không tìm thấy đơn hàng để hủy.";
-            }
-        }
-        catch (Exception)
-        {
-            // Không xóa giỏ nếu chưa ghi MySQL
-            TempData["Error"] =
-                "Không thể ghi lịch sử hủy đơn. " +
-                "Vui lòng thử lại.";
-        }
+                    "Không tìm thấy đơn đang bán để hủy.";
 
-        // BƯỚC 6: Quay về trang POS
-        return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["Success"] =
+                "Đã hủy đơn hàng thành công.";
+
+            return RedirectToAction(nameof(Index));
+        }
+        catch (OperationCanceledException)
+            when (HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "POS-09: Hủy đơn thất bại. " +
+                "Thu ngân: {CashierId}.",
+                cashierId);
+
+            TempData["Error"] =
+                "Không thể hủy đơn lúc này. " +
+                "Vui lòng tải lại giỏ hàng và kiểm tra trước khi thử lại.";
+
+            return RedirectToAction(nameof(Index));
+        }
     }
-} 
+}

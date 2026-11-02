@@ -1,0 +1,161 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đăng nhập - Smart Mart</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            color: #182638;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            padding: 32px;
+            background: white;
+            border: 1px solid #e1e8f0;
+            border-radius: 18px;
+            box-shadow: 0 12px 40px #10243e12;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            color: #1769aa;
+        }
+
+        p {
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        label {
+            display: block;
+            margin: 20px 0 8px;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 13px;
+            border-radius: 9px;
+            font: inherit;
+        }
+
+        input {
+            border: 1px solid #cbd5e1;
+        }
+
+        button {
+            margin-top: 24px;
+            border: 0;
+            background: #1769aa;
+            color: white;
+            cursor: pointer;
+        }
+
+            button:disabled {
+                opacity: .6;
+                cursor: wait;
+            }
+
+        #message {
+            color: #b42318;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+<body>
+    <main class="login-card">
+        <h1>Smart Mart</h1>
+        <p>Đăng nhập để bắt đầu làm việc.</p>
+
+        <form id="loginForm">
+            <label for="username">Tên đăng nhập</label>
+            <input id="username"
+                   name="username"
+                   autocomplete="username"
+                   maxlength="50"
+                   required>
+
+            <label for="password">Mật khẩu</label>
+            <input id="password"
+                   name="password"
+                   type="password"
+                   autocomplete="current-password"
+                   required>
+
+            <button id="loginButton" type="submit">
+                Đăng nhập
+            </button>
+
+            <p id="message" role="status" aria-live="polite"></p>
+        </form>
+    </main>
+
+    <script>const form = document.getElementById("loginForm");
+        const button = document.getElementById("loginButton");
+        const message = document.getElementById("message");
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            button.disabled = true;
+            button.textContent = "Đang đăng nhập...";
+            message.textContent = "";
+
+            try {
+                const response = await fetch("/api/v1/auth/login", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        tenDangNhap:
+                            document.getElementById("username").value.trim(),
+                        matKhau:
+                            document.getElementById("password").value
+                    })
+                });
+
+                const data = await response.json().catch(() => null);
+
+                if (!response.ok) {
+                    message.textContent =
+                        data?.message ||
+                        "Đăng nhập thất bại. Vui lòng kiểm tra tài khoản.";
+
+                    return;
+                }
+
+                if (data?.batBuocDoiMatKhau) {
+                    message.textContent =
+                        "Tài khoản cần đổi mật khẩu theo luồng AUTH " +
+                        "trước khi sử dụng hệ thống.";
+
+                    return;
+                }
+
+                window.location.assign("/Pos");
+            } catch {
+                message.textContent =
+                    "Không kết nối được máy chủ. Vui lòng thử lại.";
+            } finally {
+                button.disabled = false;
+                button.textContent = "Đăng nhập";
+            }
+        });</script>
+</body>
+</html>

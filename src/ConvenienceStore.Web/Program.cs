@@ -2,113 +2,114 @@ using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Auth;
 using ConvenienceStore.Web.Modules.Auth.Services;
 using ConvenienceStore.Web.Modules.Inventory;
-using ConvenienceStore.Web.Modules.Products.Services;
-using ConvenienceStore.Web.Modules.Reports;
-using ConvenienceStore.Web.Modules.Reports.Services;
+using ConvenienceStore.Web.Services.Pos;
 using ConvenienceStore.Web.Shared.Errors;
 using Microsoft.EntityFrameworkCore;
-
-
-using ConvenienceStore.Web.Services.Pos;
-using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
-// 1. ĐĂNG KÝ MVC
+// 1. MVC VÀ HTTP CONTEXT
 // ==========================================
+
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
 
 // ==========================================
-// 2. CẤU HÌNH SESSION CHO GIỎ HÀNG POS
+// 2. SESSION CHO GIỎ HÀNG POS
 // ==========================================
+
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(60);
+
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
+
+    // HTTPS dùng cookie Secure; vẫn hỗ trợ HTTP khi phát triển.
+    options.Cookie.SecurePolicy =
+        CookieSecurePolicy.SameAsRequest;
 });
 
-builder.Services.AddHttpContextAccessor();
-
 // ==========================================
-// 3. ĐĂNG KÝ CÁC DỊCH VỤ POS
+// 3. KẾT NỐI MYSQL
 // ==========================================
 
-// POS-01: Tìm kiếm và thêm sản phẩm
+// Dùng chung khóa với MySqlPosCatalog.
+// Không ghi mật khẩu trực tiếp trong Program.cs.
+var connectionString =
+    builder.Configuration.GetConnectionString(
+        "DefaultConnection");
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "Chưa cấu hình ConnectionStrings:DefaultConnection. " +
+        "Hãy cấu hình bằng User Secrets hoặc biến môi trường " +
+        "ConnectionStrings__DefaultConnection.");
+}
+
+builder.Services.AddDbContext<CuaHangDbContext>(options =>
+{
+    options
+        .UseMySQL(connectionString)
+        .AddInterceptors(new GioVietNamInterceptor());
+});
+
+// ==========================================
+// 4. ĐĂNG KÝ DỊCH VỤ POS
+// ==========================================
+
+// POS-01: Tìm kiếm sản phẩm.
 builder.Services.AddScoped<MySqlPosCatalog>();
 
-// POS-01, POS-02: Quản lý giỏ hàng
+// POS-01, POS-02: Quản lý giỏ hàng.
 builder.Services.AddScoped<PosCartService>();
 
-// POS-05: Thanh toán tiền mặt
-// POS-07 hiện mới là xử lý tạm thời
+// POS-05: Thanh toán tiền mặt.
 builder.Services.AddScoped<PosPaymentService>();
 
-// POS-09: Hủy đơn đang bán
-// BR-POS-10: Ghi lịch sử hủy vào MySQL
+// POS-09: Hủy đơn và ghi nhận lịch sử hủy.
 builder.Services.AddScoped<PosCancellationService>();
 
 // ==========================================
-// 4. CẤU HÌNH AUTHENTICATION
+// 5. MODULE AUTH, INVENTORY VÀ XỬ LÝ LỖI
 // ==========================================
 
-// Sử dụng Cookie Authentication
-builder.Services
-    .AddAuthentication(
-        CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        // Đường dẫn đăng nhập của nhóm
-        options.LoginPath = "/Account/Login";
-
-        // Đường dẫn khi không đủ quyền
-        options.AccessDeniedPath = "/Account/AccessDenied";
-
-        // Cấu hình Cookie
-        options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy =
-            CookieSecurePolicy.Always;
-
-        options.Cookie.SameSite = SameSiteMode.Lax;
-
-        // Thời gian tồn tại phiên đăng nhập
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-
-var connectionString =
-    builder.Configuration.GetConnectionString("CuaHang")
-    ?? throw new InvalidOperationException(
-        "Thiếu chuỗi kết nối ConnectionStrings:CuaHang (biến môi trường ConnectionStrings__CuaHang).");
-
-builder.Services.AddDbContext<CuaHangDbContext>(options =>
-    options.UseMySQL(connectionString)
-        .AddInterceptors(new GioVietNamInterceptor()));
-
-builder.Services.Configure<AdminDauTienOptions>(
-    builder.Configuration.GetSection(AdminDauTienOptions.TenMuc));
-builder.Services.AddScoped<KhoiTaoAdminDauTien>();
-        options.SlidingExpiration = true;
-    });
-
-// Đăng ký Authorization
-builder.Services.AddAuthorization();
 builder.Services.AddXuLyLoiApi();
+
+// Module AUTH tự đăng ký Authentication và các policy.
+// Không đăng ký thêm AddCookie riêng tại đây.
 builder.Services.AddModuleAuth();
+
 builder.Services.AddModuleInventory();
 
 // ==========================================
-// 5. BUILD ỨNG DỤNG
+// 6. KHỞI TẠO ADMIN ĐẦU TIÊN
 // ==========================================
+
+builder.Services.Configure<AdminDauTienOptions>(
+    builder.Configuration.GetSection(
+        AdminDauTienOptions.TenMuc));
+
+builder.Services.AddScoped<KhoiTaoAdminDauTien>();
+
+// ==========================================
+// 7. BUILD ỨNG DỤNG
+// ==========================================
+
 var app = builder.Build();
 
-// ==========================================
-// 6. CẤU HÌNH HTTP PIPELINE
-// ==========================================
+// Chỉ tạo admin nếu đáp ứng điều kiện của module AUTH.
+await KhoiTaoAdminDauTien.ChayKhiKhoiDongAsync(
+    app.Services);
 
-await KhoiTaoAdminDauTien.ChayKhiKhoiDongAsync(app.Services);
+// ==========================================
+// 8. HTTP PIPELINE
+// ==========================================
 
 if (!app.Environment.IsDevelopment())
 {
@@ -117,32 +118,45 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseXuLyLoiApi();
+
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 app.UseRouting();
 
-// Xác thực tài khoản đăng nhập
-app.UseAuthentication();
-
-// Kiểm tra quyền truy cập
-app.UseAuthorization();
-
-// Bật Session cho giỏ hàng POS
+// Cho phép các thành phần phía sau sử dụng session.
 app.UseSession();
 
-// Phục vụ tài nguyên tĩnh
+// Thứ tự: xác thực trước, phân quyền sau.
+app.UseAuthentication();
+app.UseAuthorization();
+
+// ==========================================
+// 9. ROUTING
+// ==========================================
+
 app.MapStaticAssets();
 
-// ==========================================
-// 7. CẤU HÌNH ROUTE MẶC ĐỊNH
-// ==========================================
-
+// Hỗ trợ các controller thuộc MVC Area.
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    name: "areas",
+    pattern:
+        "{area:exists}/{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+// Route MVC mặc định.
+app.MapControllerRoute(
+    name: "default",
+    pattern:
+        "{controller=Home}/{action=Index}/{id?}")
+    .WithStaticAssets();
+
+// Các API dùng attribute routing,
+// ví dụ /api/v1/auth/login.
+app.MapControllers();
+
 // ==========================================
-// 8. CHẠY ỨNG DỤNG
+// 10. CHẠY ỨNG DỤNG
 // ==========================================
+
 app.Run();

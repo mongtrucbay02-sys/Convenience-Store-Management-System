@@ -1,5 +1,5 @@
-﻿
-using ConvenienceStore.Web.Models.Pos;
+﻿using ConvenienceStore.Web.Models.Pos;
+using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 
 namespace ConvenienceStore.Web.Services.Pos;
@@ -10,17 +10,30 @@ public sealed class MySqlPosCatalog
 
     public MySqlPosCatalog(IConfiguration config)
     {
-        _connectionString =
-            config.GetConnectionString("PosMySql")
-            ?? throw new InvalidOperationException(
-                "Chưa cấu hình ConnectionStrings:PosMySql");
+        ArgumentNullException.ThrowIfNull(config);
+
+        var connectionString =
+            config.GetConnectionString("DefaultConnection");
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
+                "Chưa cấu hình ConnectionStrings:DefaultConnection. " +
+                "Hãy cấu hình bằng User Secrets hoặc biến môi trường " +
+                "ConnectionStrings__DefaultConnection.");
+        }
+
+        _connectionString = connectionString;
     }
 
     public MySqlConnection CreateConnection()
-        => new MySqlConnection(_connectionString);
+    {
+        return new MySqlConnection(_connectionString);
+    }
 
     public async Task<List<PosProduct>> SearchAsync(
-        string? keyword, int? categoryId = null)
+        string? keyword,
+        int? categoryId = null)
     {
         const string sql = """
             SELECT
@@ -47,11 +60,12 @@ public sealed class MySqlPosCatalog
                   @categoryId IS NULL
                   OR sp.danh_muc_id = @categoryId
               )
-            ORDER BY sp.ten_san_pham
+            ORDER BY sp.ten_san_pham, sp.id
             LIMIT 100;
             """;
 
         var products = new List<PosProduct>();
+        var search = keyword?.Trim() ?? "";
 
         await using var connection = CreateConnection();
         await connection.OpenAsync();
@@ -59,25 +73,19 @@ public sealed class MySqlPosCatalog
         await using var command =
             new MySqlCommand(sql, connection);
 
-        var search = keyword?.Trim() ?? "";
-
         command.Parameters.AddWithValue("@keyword", search);
         command.Parameters.AddWithValue("@pattern", $"%{search}%");
-        command.Parameters.AddWithValue(
-            "@categoryId", (object?)categoryId ?? DBNull.Value);
 
-        await using var reader = await command.ExecuteReaderAsync();
+        command.Parameters.AddWithValue(
+            "@categoryId",
+            (object?)categoryId ?? DBNull.Value);
+
+        await using var reader =
+            await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
         {
-            products.Add(new PosProduct
-            {
-                Id = Convert.ToInt32(reader["id"]),
-                Code = Convert.ToString(reader["ma"]) ?? "",
-                Name = Convert.ToString(reader["ten_san_pham"]) ?? "",
-                Price = Convert.ToInt64(reader["gia_ban"]),
-                Stock = Convert.ToInt32(reader["so_luong_ton"])
-            });
+            products.Add(ReadProduct(reader));
         }
 
         return products;
@@ -86,15 +94,25 @@ public sealed class MySqlPosCatalog
     public async Task<List<PosCategory>> GetCategoriesAsync()
     {
         const string sql = """
-            SELECT id, ten FROM danh_muc
+            SELECT
+                id,
+                ten
+            FROM danh_muc
             WHERE trang_thai = 'HOAT_DONG'
-            ORDER BY ten;
+            ORDER BY ten, id;
             """;
+
         var categories = new List<PosCategory>();
+
         await using var connection = CreateConnection();
         await connection.OpenAsync();
-        await using var command = new MySqlCommand(sql, connection);
-        await using var reader = await command.ExecuteReaderAsync();
+
+        await using var command =
+            new MySqlCommand(sql, connection);
+
+        await using var reader =
+            await command.ExecuteReaderAsync();
+
         while (await reader.ReadAsync())
         {
             categories.Add(new PosCategory
@@ -103,30 +121,60 @@ public sealed class MySqlPosCatalog
                 Name = Convert.ToString(reader["ten"]) ?? ""
             });
         }
+
         return categories;
     }
 
     public async Task<PosProduct?> FindAsync(int productId)
     {
-        if (productId <= 0) return null;
+        if (productId <= 0)
+        {
+            return null;
+        }
+
         const string sql = """
-            SELECT sp.id, sp.ma, sp.ten_san_pham,
-                   g.gia_ban, tk.so_luong_ton
+            SELECT
+                sp.id,
+                sp.ma,
+                sp.ten_san_pham,
+                g.gia_ban,
+                tk.so_luong_ton
             FROM san_pham sp
-            INNER JOIN danh_muc dm ON dm.id = sp.danh_muc_id
-            INNER JOIN v_gia_ban_hien_hanh g ON g.san_pham_id = sp.id
-            INNER JOIN ton_kho tk ON tk.san_pham_id = sp.id
+            INNER JOIN danh_muc dm
+                ON dm.id = sp.danh_muc_id
+            INNER JOIN v_gia_ban_hien_hanh g
+                ON g.san_pham_id = sp.id
+            INNER JOIN ton_kho tk
+                ON tk.san_pham_id = sp.id
             WHERE sp.id = @productId
               AND sp.trang_thai = 'DANG_KINH_DOANH'
               AND dm.trang_thai = 'HOAT_DONG'
             LIMIT 1;
             """;
+
         await using var connection = CreateConnection();
         await connection.OpenAsync();
-        await using var command = new MySqlCommand(sql, connection);
-        command.Parameters.AddWithValue("@productId", productId);
-        await using var reader = await command.ExecuteReaderAsync();
-        if (!await reader.ReadAsync()) return null;
+
+        await using var command =
+            new MySqlCommand(sql, connection);
+
+        command.Parameters.AddWithValue(
+            "@productId",
+            productId);
+
+        await using var reader =
+            await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        return ReadProduct(reader);
+    }
+
+    private static PosProduct ReadProduct(MySqlDataReader reader)
+    {
         return new PosProduct
         {
             Id = Convert.ToInt32(reader["id"]),

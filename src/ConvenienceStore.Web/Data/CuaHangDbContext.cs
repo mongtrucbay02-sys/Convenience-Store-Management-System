@@ -12,6 +12,31 @@ public partial class CuaHangDbContext : DbContext
     {
     }
 
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        TangPhienBanDanhMucBiSua();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
+    {
+        TangPhienBanDanhMucBiSua();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void TangPhienBanDanhMucBiSua()
+    {
+        foreach (var entry in ChangeTracker.Entries<DanhMuc>())
+        {
+            if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.PhienBan = checked(entry.Entity.PhienBan + 1);
+            }
+        }
+    }
+
     public virtual DbSet<BoDemChungTu> BoDemChungTus { get; set; }
 
     public virtual DbSet<ChinhSachDoiTra> ChinhSachDoiTras { get; set; }
@@ -165,6 +190,7 @@ public partial class CuaHangDbContext : DbContext
             entity.Property(e => e.NguoiTaoId).HasColumnName("nguoi_tao_id");
             entity.Property(e => e.PhienBan)
                 .HasDefaultValueSql("'1'")
+                .IsConcurrencyToken()
                 .HasColumnName("phien_ban");
             entity.Property(e => e.Ten)
                 .HasMaxLength(200)

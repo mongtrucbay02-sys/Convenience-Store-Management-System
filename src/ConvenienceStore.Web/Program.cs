@@ -25,6 +25,8 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICategoryReadRepository, EfCategoryReadRepository>();
 builder.Services.AddScoped<ICategoryMutationRepository, EfCategoryMutationRepository>();
 builder.Services.AddScoped<CategoryMutationService>();
+builder.Services.AddScoped<ICategoryRemovalRepository, EfCategoryRemovalRepository>();
+builder.Services.AddScoped<CategoryRemovalService>();
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IDashboardDataSource, SampleDashboardDataSource>();

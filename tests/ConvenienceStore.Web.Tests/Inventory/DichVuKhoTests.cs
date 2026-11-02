@@ -69,7 +69,7 @@ public sealed class DichVuKhoTests(CsdlKhoFixture csdl)
 
         Assert.Equal(MaLoiKho.TonKhongDu, loi.Ma);
         Assert.Equal(409, loi.MaHttp);
-        Assert.Contains("chỉ còn 5 sản phẩm", loi.Message);
+        Assert.Contains("chỉ còn 5", loi.Message);
         var thieu = Assert.Single(Assert.IsAssignableFrom<IReadOnlyList<ThieuTon>>(loi.ChiTiet));
         Assert.Equal(new ThieuTon(sp, 5, 6), thieu);
         Assert.Equal(0, await _duLieu.DemTheKhoAsync(sp, "BAN_HANG"));
@@ -153,6 +153,87 @@ public sealed class DichVuKhoTests(CsdlKhoFixture csdl)
     }
 
     [Fact]
+    public async Task Ut10_TraHangNhapLai1GiaVon8000KhiTon2GiaVon9000()
+    {
+        var sp = await _goi.TaoSanPhamCoTonAsync("UT10", 2, 9000m);
+
+        var kq = await _goi.GhiVaCommitAsync(LoaiBienDong.TRA_HANG, new DongBienDong(sp, SoLuong: 1, GiaVon: 8000m));
+
+        var ton = await _duLieu.DocTonKhoAsync(sp);
+        Assert.Equal(3, ton!.SoLuongTon);
+        Assert.Equal(8666.67m, ton.GiaVonBinhQuan);
+        var dong = Assert.Single(kq.Dong);
+        Assert.Equal(1, dong.SoLuongThayDoi);
+        Assert.Equal(9000m, dong.GiaVonTruoc);
+        Assert.Equal(8666.67m, dong.GiaVonSau);
+        Assert.Equal(8000m, dong.GiaVonApDung);
+        Assert.Equal(1, await _duLieu.DemTheKhoAsync(sp, "TRA_HANG"));
+    }
+
+    [Fact]
+    public async Task TraHang_TonTruocBang0_GiaVonMoiBangGiaVonDongHoaDon()
+    {
+        var sp = await _goi.TaoSanPhamCoTonAsync("TH0", 0, 0m);
+
+        var kq = await _goi.GhiVaCommitAsync(LoaiBienDong.TRA_HANG, new DongBienDong(sp, SoLuong: 2, GiaVon: 7250.5m));
+
+        var ton = await _duLieu.DocTonKhoAsync(sp);
+        Assert.Equal(2, ton!.SoLuongTon);
+        Assert.Equal(7250.5m, ton.GiaVonBinhQuan);
+        Assert.Equal(7250.5m, kq.Dong[0].GiaVonApDung);
+    }
+
+    [Fact]
+    public async Task HuyHoaDon_HoanTon2GiaVon8500KhiTon4GiaVon10000_GiaVon9500()
+    {
+        var sp = await _goi.TaoSanPhamCoTonAsync("HHD", 4, 10000m);
+
+        var kq = await _goi.GhiVaCommitAsync(LoaiBienDong.HUY_HOA_DON, new DongBienDong(sp, SoLuong: 2, GiaVon: 8500m));
+
+        var ton = await _duLieu.DocTonKhoAsync(sp);
+        Assert.Equal(6, ton!.SoLuongTon);
+        Assert.Equal(9500m, ton.GiaVonBinhQuan);
+        Assert.Equal(2, kq.Dong[0].SoLuongThayDoi);
+        Assert.Equal(8500m, kq.Dong[0].GiaVonApDung);
+        Assert.Equal(1, await _duLieu.DemTheKhoAsync(sp, "HUY_HOA_DON"));
+    }
+
+    [Fact]
+    public async Task HuyHoaDon_LamTronNuaLen2ChuSo_Ton3GiaVon10000Them4Gia10500()
+    {
+        var sp = await _goi.TaoSanPhamCoTonAsync("HHD", 3, 10000m);
+
+        await _goi.GhiVaCommitAsync(LoaiBienDong.HUY_HOA_DON, new DongBienDong(sp, SoLuong: 4, GiaVon: 10500m));
+
+        var ton = await _duLieu.DocTonKhoAsync(sp);
+        Assert.Equal(7, ton!.SoLuongTon);
+        Assert.Equal(10285.71m, ton.GiaVonBinhQuan);
+    }
+
+    [Fact]
+    public async Task HuyHoaDon_NhieuDong_GhiMoiDongMotTheKho_BenGoiRollbackThiKhongConGi()
+    {
+        var sp1 = await _goi.TaoSanPhamCoTonAsync("HHD", 1, 6000m);
+        var sp2 = await _goi.TaoSanPhamCoTonAsync("HHD", 0, 0m);
+
+        await using (var db = csdl.TaoDbContext())
+        {
+            await using var giaoTac = await db.Database.BeginTransactionAsync();
+            var kq = await BoTroGoiDichVuKho.TaoDichVu(db).GhiNhanBienDongAsync(_goi.TaoYeuCau(
+                LoaiBienDong.HUY_HOA_DON,
+                [new DongBienDong(sp1, SoLuong: 1, GiaVon: 6000m), new DongBienDong(sp2, SoLuong: 3, GiaVon: 4000m)]));
+            Assert.Equal(2, kq.Dong.Count);
+            Assert.All(kq.Dong, d => Assert.NotNull(d.TheKhoId));
+            await giaoTac.RollbackAsync();
+        }
+
+        Assert.Equal(1, (await _duLieu.DocTonKhoAsync(sp1))!.SoLuongTon);
+        Assert.Equal(0, (await _duLieu.DocTonKhoAsync(sp2))!.SoLuongTon);
+        Assert.Equal(0, await _duLieu.DemTheKhoAsync(sp1, "HUY_HOA_DON"));
+        Assert.Equal(0, await _duLieu.DemTheKhoAsync(sp2, "HUY_HOA_DON"));
+    }
+
+    [Fact]
     public async Task Ut11_YeuCauSai_DuLieuKhongHopLe()
     {
         var sp = await _goi.TaoSanPhamCoTonAsync("UT11", 5, 9000m);
@@ -162,7 +243,10 @@ public sealed class DichVuKhoTests(CsdlKhoFixture csdl)
             (LoaiBienDong.BAN_HANG, [new DongBienDong(sp, SoLuong: 1), new DongBienDong(sp, SoLuong: 2)], "dong[1].sanPhamId"),
             (LoaiBienDong.BAN_HANG, [new DongBienDong(sp, SoLuong: 0)], "dong[0].soLuong"),
             (LoaiBienDong.NHAP_HANG, [new DongBienDong(sp, SoLuong: 3)], "dong[0].giaVon"),
-            (LoaiBienDong.TRA_HANG, [new DongBienDong(sp, SoLuong: 1, GiaVon: 8000m)], "loai"),
+            (LoaiBienDong.TRA_HANG, [new DongBienDong(sp, SoLuong: 1)], "dong[0].giaVon"),
+            (LoaiBienDong.HUY_HOA_DON, [new DongBienDong(sp, SoLuong: 1, GiaVon: -1m)], "dong[0].giaVon"),
+            (LoaiBienDong.TRA_HANG, [new DongBienDong(sp, SoLuong: 0, GiaVon: 8000m)], "dong[0].soLuong"),
+            ((LoaiBienDong)99, [new DongBienDong(sp, SoLuong: 1)], "loai"),
         };
 
         foreach (var (loai, dong, truongLoi) in truongHop)

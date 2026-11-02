@@ -64,8 +64,15 @@ public sealed class BoTroGoiDichVuKho(CsdlKhoFixture csdl)
             LoaiBienDong.NHAP_HANG => "PN",
             LoaiBienDong.BAN_HANG => "HD",
             LoaiBienDong.KIEM_KE => "KK",
+            LoaiBienDong.TRA_HANG => "TH",
+            LoaiBienDong.HUY_HOA_DON => "HD",
             _ => "XH",
         }),
-        loai == LoaiBienDong.BAN_HANG ? csdl.TaiKhoanThuNganId : csdl.TaiKhoanKhoId,
+        loai switch
+        {
+            LoaiBienDong.BAN_HANG or LoaiBienDong.TRA_HANG => csdl.TaiKhoanThuNganId,
+            LoaiBienDong.HUY_HOA_DON => csdl.TaiKhoanAdminId,
+            _ => csdl.TaiKhoanKhoId,
+        },
         dong);
 }

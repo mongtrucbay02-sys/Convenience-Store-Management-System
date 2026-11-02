@@ -1,3 +1,5 @@
+using ConvenienceStore.Web.Services.Pos;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Data.Common;
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Auth.Dtos;
@@ -128,10 +130,25 @@ public sealed class DichVuXacThuc(CuaHangDbContext db) : IDichVuXacThuc
         return new KetQuaDangNhapNoiBo(ketQua, token);
     }
 
-    public async Task DangXuatAsync(long phienId, CancellationToken ct = default) =>
-        await db.ChayAsync(
-            "UPDATE phien_dang_nhap SET huy_luc = NOW() WHERE id = @id AND huy_luc IS NULL", ct, ("@id", phienId));
-
+    public async Task DangXuatAsync(long phienId, CancellationToken ct = default)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(
+            System.Data.IsolationLevel.ReadCommitted, ct);
+        var accountId = await db.DocMotDongAsync(
+            "SELECT p.tai_khoan_id, v.ma FROM phien_dang_nhap p JOIN tai_khoan t ON t.id = p.tai_khoan_id JOIN vai_tro v ON v.id = t.vai_tro_id WHERE p.id = @id AND p.huy_luc IS NULL FOR UPDATE OF p",
+            reader => new { Id = Convert.ToInt32(reader.GetValue(0)), Role = reader.GetString(1) }, ct, ("@id", phienId));
+        // Replayed logout must not cancel a cart started after the original logout.
+        if (accountId is not null)
+        {
+            if (accountId.Role == "TN")
+                await HuyGioDangBan.HuyAsync(db.Database.GetDbConnection(),
+                transaction.GetDbTransaction(), accountId.Id, ct);
+            await db.ChayAsync(
+                "UPDATE phien_dang_nhap SET huy_luc = NOW() WHERE id = @id AND huy_luc IS NULL",
+                ct, ("@id", phienId));
+        }
+        await transaction.CommitAsync(ct);
+    }
     public async Task DoiMatKhauAsync(int taiKhoanId, YeuCauDoiMatKhau yeuCau, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(yeuCau);

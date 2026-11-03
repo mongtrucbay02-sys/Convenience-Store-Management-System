@@ -86,10 +86,11 @@ public sealed class DashboardService : IDashboardService
         var gross = invoices.Sum(i => i.Lines.Sum(l => (long)l.Quantity * l.ListPrice));
         var deductions = invoices.Sum(i => i.PromotionDiscount + i.RefundAmount);
         var net = gross - deductions;
-        var average = invoices.Count == 0
+        var invoiceCount = invoices.Count(i => !i.IsReturn);
+        var average = invoiceCount == 0
             ? 0
-            : (long)Math.Round((decimal)net / invoices.Count, MidpointRounding.AwayFromZero);
-        return new DayStatsDto(gross, deductions, net, invoices.Count, average);
+            : (long)Math.Round((decimal)net / invoiceCount, MidpointRounding.AwayFromZero);
+        return new DayStatsDto(gross, deductions, net, invoiceCount, average);
     }
 
     private static DateTimeOffset StartOfDay(DateOnly date) =>

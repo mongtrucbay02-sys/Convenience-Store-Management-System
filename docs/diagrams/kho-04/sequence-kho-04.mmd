@@ -1,0 +1,60 @@
+sequenceDiagram
+    autonumber
+    actor AD as Admin hoặc Quản lý
+    participant UI as Giao diện kiểm kê
+    participant KK as Điều phối KHO-04 dự kiến
+    participant DB as MySQL
+    participant KHO as DichVuKho
+
+    AD->>UI: Mở phiếu CHO_DUYET
+    UI->>KK: Yêu cầu xem phiếu kiểm kê
+    KK->>KK: Kiểm tra quyền KIEM_KE_XUAT_HUY_DUYET
+    KK->>DB: Đọc phiếu, dòng, tồn và giá trị chênh lệch tạm tính
+    KK-->>UI: Hiển thị từng dòng và tổng giá trị
+
+    alt AD từ chối kèm lý do (A1)
+        AD->>UI: Chọn từ chối, nhập lý do
+        UI->>KK: Gửi quyết định từ chối
+        KK->>DB: BeginTransactionAsync(), khóa phiếu
+        KK->>DB: UPDATE CHO_DUYET -> BI_TU_CHOI, ghi lý do và người/thời điểm
+        alt UPDATE ném exception hoặc cập nhật 0 dòng (E1)
+            DB-->>KK: Exception hoặc 0 dòng
+            KK->>DB: RollbackAsync()
+            KK-->>UI: Báo xung đột và tải lại
+        else Cập nhật đúng 1 dòng
+            DB-->>KK: 1 dòng
+            KK->>DB: CommitAsync()
+            KK-->>UI: Từ chối#59; tồn không đổi, NK kiểm lại
+        end
+    else AD duyệt
+        AD->>UI: Chọn duyệt
+        UI->>KK: Gửi quyết định duyệt
+        KK->>DB: BeginTransactionAsync(), khóa phiếu và đọc lại dòng
+        alt Không còn CHO_DUYET hoặc số đếm không hợp lệ (E1)
+            KK->>DB: RollbackAsync()
+            KK-->>UI: Báo xung đột hoặc dữ liệu không hợp lệ, tải lại
+        else Phiếu hợp lệ
+            KK->>KHO: GhiNhanBienDongAsync(KIEM_KE, số thực tế mỗi sản phẩm)
+            KHO->>DB: Khóa ton_kho FOR UPDATE theo SanPhamId tăng dần
+            KHO->>KHO: Chênh lệch = thực tế - tồn vừa khóa
+            KHO->>DB: Điều chỉnh số lượng, giữ giá vốn#59; ghi the_kho nếu lệch khác 0
+            alt GhiNhanBienDongAsync ném exception
+                KHO-->>KK: Ném exception
+                KK->>DB: RollbackAsync()
+                KK-->>UI: Báo lỗi, tồn và phiếu giữ trạng thái cũ
+            else KHO trả KetQuaBienDong
+                KHO-->>KK: KetQuaBienDong gồm TonTruoc và SoLuongThayDoi
+                KK->>DB: Ghi chenh_lech_luc_duyet, gia_von_luc_duyet
+                KK->>DB: UPDATE CHO_DUYET -> DA_DIEU_CHINH, ghi người/thời điểm
+                alt Ghi chi tiết hoặc UPDATE phiếu ném exception / cập nhật 0 dòng
+                    DB-->>KK: Exception hoặc 0 dòng
+                    KK->>DB: RollbackAsync()
+                    KK-->>UI: Báo lỗi hoặc xung đột, tải lại phiếu
+                else Hoàn tất
+                    DB-->>KK: Ghi thành công, UPDATE đúng 1 dòng
+                    KK->>DB: CommitAsync()
+                    KK-->>UI: Phiếu DA_DIEU_CHINH và tồn sau duyệt
+                end
+            end
+        end
+    end

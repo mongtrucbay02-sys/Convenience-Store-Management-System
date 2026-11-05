@@ -4,6 +4,7 @@ using ConvenienceStore.Web.Modules.Auth;
 using ConvenienceStore.Web.Modules.Auth.Services;
 using ConvenienceStore.Web.Modules.Inventory;
 using ConvenienceStore.Web.Modules.Products.Services;
+using ConvenienceStore.Web.Modules.Promotions.Services;
 using ConvenienceStore.Web.Modules.Reports;
 using ConvenienceStore.Web.Modules.Reports.Services;
 using ConvenienceStore.Web.Modules.Returns;
@@ -19,6 +20,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<IDashboardDataSource, MySqlDashboardDataSource>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IOperationalReportDataSource, MySqlTransactionalReportsDataSource>();
+builder.Services.AddScoped<ITransactionalReportsDataSource, MySqlTransactionalReportsDataSource>();
+builder.Services.AddScoped<IOperationalReportsService, OperationalReportsService>();
+builder.Services.AddScoped<IPromotionDataSource, MySqlPromotionDataSource>();
+builder.Services.AddScoped<IProductLookup, MySqlProductLookup>();
+builder.Services.AddScoped<IPromotionService, PromotionService>();
 
 // ==========================================
 // 2. KẾT NỐI MYSQL
@@ -101,6 +111,9 @@ builder.Services.AddModuleReturns();
 // Dùng claim quyền do module AUTH cấp khi đăng nhập.
 builder.Services.AddAuthorization(options =>
 {
+    options.AddPolicy(
+        AuthorizationPolicies.AdminOnly,
+        policy => policy.RequireRole(AuthorizationPolicies.AdminRole));
     options.AddPolicy(
         PosInvoiceAccess.PolicyXem,
         policy =>

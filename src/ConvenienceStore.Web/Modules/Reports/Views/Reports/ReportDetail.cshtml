@@ -1,0 +1,25 @@
+@using System.Globalization
+@using ConvenienceStore.Web.Modules.Reports.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model OperationalReportResponse
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = Model.Title;
+    var vi = CultureInfo.GetCultureInfo("vi-VN");
+    var backAction = Model.Code switch { "BC-02 detail" => "Revenue", "BC-03 detail" => "Products", "BC-04 detail" => "Categories", "BC-05 detail" => "Cashiers", "BC-06 detail" => "Inventory", "BC-07 detail" => "Purchases", _ => "GrossProfit" };
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div><div class="small text-muted">@Model.Code</div><h1 class="h3 mb-0">@Model.Title</h1></div>
+    <a class="btn btn-outline-secondary" asp-area="Reports" asp-controller="Reports" asp-action="@backAction"
+       asp-route-Period="@Model.Query.Period" asp-route-From="@Model.Query.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.Query.To?.ToString("yyyy-MM-dd")">Quay lại báo cáo</a>
+</div>
+<div class="row g-3 mb-3">
+    @foreach (var metric in Model.Metrics)
+    {
+        <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body py-3"><div class="small text-muted">@metric.Label</div><div class="fs-5 fw-semibold">@(metric.Format == "currency" ? metric.Value.ToString("N0", vi) + " ₫" : metric.Format == "percent" ? (metric.Value / 10m).ToString("N1", vi) + "%" : metric.Value.ToString("N0", vi))</div></div></div></div>
+    }
+</div>
+@if (Model.Message is not null){<div class="alert alert-info">@Model.Message</div>}
+<section class="card"><div class="card-body"><div class="table-responsive"><table class="table table-sm table-hover"><thead><tr>@foreach (var c in Model.Columns){<th>@c</th>}</tr></thead><tbody>
+@foreach(var row in Model.Rows){<tr>@foreach(var cell in row.Cells){<td>@cell</td>}</tr>}
+</tbody></table></div>@if(Model.Rows.Count == 0){<div class="text-muted">Không có dữ liệu trong khoảng đã chọn</div>}</div></section>

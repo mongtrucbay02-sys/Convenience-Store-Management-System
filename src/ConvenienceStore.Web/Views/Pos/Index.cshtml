@@ -1,4 +1,4 @@
-﻿@model ConvenienceStore.Web.Models.Pos.PosPageViewModel
+@model ConvenienceStore.Web.Models.Pos.PosPageViewModel
 
 @{
     ViewData["Title"] = "Quầy bán hàng";
@@ -162,6 +162,11 @@
                 </p>
             }
 
+            @if (Model.Cart.PromotionsChanged)
+            {
+                <p role="status">Khuyến mãi đã được tính lại. Vui lòng kiểm tra tổng tiền.</p>
+            }
+            <p class="text-muted small">Khuyến mãi tự động áp dụng theo sản phẩm. Chương trình dành cho thành viên cần gắn khách hàng qua POS-03.</p>
             <!-- DANH SÁCH SẢN PHẨM TRONG GIỎ -->
             @foreach (var item in Model.Cart.Items)
             {
@@ -170,6 +175,10 @@
                     <!-- THÔNG TIN SẢN PHẨM -->
                     <div>
                         <strong>@item.Name</strong>
+                        @if (item.Discount > 0)
+                        {
+                            <div class="text-success">@item.PromotionName · Giảm @item.Discount.ToString("N0") đ</div>
+                        }
 
                         <div class="text-muted small">
                             Đơn giá:
@@ -294,6 +303,8 @@
                     </strong>
                 </div>
 
+                @if (Model.Cart.Discount > 0)
+                {
                 <!-- GIẢM GIÁ POS-04 -->
                 <div class="pos-total-row">
                     <span>Giảm giá:</span>
@@ -302,6 +313,8 @@
                         @Model.Cart.Discount.ToString("N0") đ
                     </strong>
                 </div>
+
+                }
 
                 <hr />
 

@@ -1,4 +1,4 @@
-﻿@model ConvenienceStore.Web.Models.Pos.PosPageViewModel
+@model ConvenienceStore.Web.Models.Pos.PosPageViewModel
 
 @{
     ViewData["Title"] = "Quầy bán hàng";
@@ -7,6 +7,7 @@
 
 <link rel="stylesheet" href="~/css/pos.css" asp-append-version="true" />
 <link rel="stylesheet" href="~/css/pos-flow.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/pos-held-orders.css" asp-append-version="true" />
 
 <div class="pos-flow pos-index-page">
     <div class="pos-flow-header">
@@ -35,6 +36,8 @@
             @success
         </div>
     }
+
+    <partial name="_HeldOrders" model="Model" />
 
     <div class="pos-grid">
 

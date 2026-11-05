@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -94,6 +94,7 @@ public sealed class PosCart
 
 public sealed class PosPageViewModel
 {
+    public IReadOnlyList<ConvenienceStore.Web.Services.Pos.PosHeldOrder> HeldOrders { get; set; } = Array.Empty<ConvenienceStore.Web.Services.Pos.PosHeldOrder>();
     public List<PosProduct> Products { get; set; } = new();
 
     public List<PosCategory> Categories { get; set; } = new();

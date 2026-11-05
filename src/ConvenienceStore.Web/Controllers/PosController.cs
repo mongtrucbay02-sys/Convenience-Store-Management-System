@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using ConvenienceStore.Web.Models.Pos;
 using ConvenienceStore.Web.Modules.Auth.Security;
@@ -11,6 +11,7 @@ namespace ConvenienceStore.Web.Controllers;
 [Authorize(Policy = MaQuyen.BanHang)]
 public sealed class PosController : Controller
 {
+    private readonly PosHeldOrderService _heldOrders;
     private readonly MySqlPosCatalog _catalog;
     private readonly PosCartService _cart;
     private readonly PosPaymentService _posPayment;
@@ -26,8 +27,10 @@ public sealed class PosController : Controller
         PosCartService cart,
         PosPaymentService posPayment,
         PosCheckoutService checkoutService,
-        PosInvoiceService invoiceService)
+        PosInvoiceService invoiceService,
+        PosHeldOrderService heldOrders)
     {
+        _heldOrders = heldOrders;
         _catalog = catalog;
         _cart = cart;
         _posPayment = posPayment;
@@ -49,6 +52,8 @@ public sealed class PosController : Controller
             categoryId = null;
         }
 
+        var held = await _heldOrders.ListAsync();
+        if (held.ExpiredCount > 0) TempData["Success"] = $"Đã tự hủy {held.ExpiredCount} đơn tạm giữ từ ngày trước.";
         var model = new PosPageViewModel
         {
             Products = await _catalog.SearchAsync(
@@ -56,12 +61,31 @@ public sealed class PosController : Controller
 
             Categories = await _catalog.GetCategoriesAsync(),
 
+            HeldOrders = held.Orders,
             CategoryId = categoryId,
             Cart = await _cart.GetCartAsync(),
             Search = search ?? ""
         };
 
         return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Hold(string? note)
+    {
+        var result = await _heldOrders.HoldAsync(note);
+        TempData[result.Success ? "Success" : "Error"] = result.Message;
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Recall(int orderId)
+    {
+        var result = await _heldOrders.RecallAsync(orderId);
+        TempData[result.Success ? "Success" : "Error"] = result.Message;
+        return RedirectToAction(nameof(Index));
     }
 
     // ==========================================
@@ -191,6 +215,7 @@ public sealed class PosController : Controller
 
         var model = new PosPageViewModel
         {
+            HeldOrders = (await _heldOrders.ListAsync()).Orders,
             Products = await _catalog.SearchAsync(null),
             Categories = await _catalog.GetCategoriesAsync(),
             Cart = cart,

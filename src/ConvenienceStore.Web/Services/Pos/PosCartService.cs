@@ -250,27 +250,7 @@ public sealed class PosCartService
         await conn.OpenAsync();
         await using var tx = await conn.BeginTransactionAsync(MucCoLap);
 
-        var gioId = await DocGioDangBanAsync(conn, tx, ThuNganId);
-        if (gioId == null)
-        {
-            await tx.RollbackAsync();
-            return;
-        }
-
-        // ck_gio_huy bắt buộc có huy_luc, ly_do_huy, gia_tri_khi_huy khi DA_HUY.
-        await using var huy = new MySqlCommand(
-            """
-            UPDATE gio_hang
-            SET trang_thai = 'DA_HUY',
-                huy_luc = NOW(),
-                ly_do_huy = 'THU_NGAN_HUY',
-                gia_tri_khi_huy = COALESCE((
-                    SELECT CAST(SUM(so_luong * (don_gia - giam_don_vi)) AS UNSIGNED)
-                    FROM ct_gio_hang WHERE gio_hang_id = @g), 0)
-            WHERE id = @g AND trang_thai = 'DANG_BAN'
-            """, conn, tx);
-        huy.Parameters.AddWithValue("@g", gioId.Value);
-        await huy.ExecuteNonQueryAsync();
+        await HuyGioDangBan.HuyAsync(conn, tx, ThuNganId);
 
         await tx.CommitAsync();
     }

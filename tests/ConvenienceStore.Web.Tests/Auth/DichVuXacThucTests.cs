@@ -308,6 +308,66 @@ public sealed class DichVuXacThucTests(CsdlXacThucFixture csdl) : IAsyncLifetime
         Assert.Equal(MaLoiChung.DuLieuKhongHopLe, loi.Ma);
     }
 
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task Pos09_Logout_CancelsOnlyNonemptyCart_AndReplayPreservesNewCart(bool hasItems, bool directCancel)
+    {
+        var tk = await _duLieu.TaoTaiKhoanAsync("TN");
+        var other = await _duLieu.TaoTaiKhoanAsync("TN");
+        var token = (await DangNhapAsync(tk.TenDangNhap, tk.MatKhau)).TokenPhien;
+        var session = (await TaoDichVu().XacThucPhienAsync(token)).NguoiDung!.PhienId;
+        await csdl.ChayAsync("INSERT INTO gio_hang (thu_ngan_id) VALUES (@t), (@other)",
+            ("@t", tk.Id), ("@other", other.Id));
+        var cartId = Convert.ToInt32(await csdl.DocMotGiaTriAsync(
+            "SELECT id FROM gio_hang WHERE thu_ngan_id = @t", ("@t", tk.Id)));
+        if (hasItems)
+        {
+            var name = Guid.NewGuid().ToString("N");
+            await csdl.ChayAsync("INSERT INTO danh_muc (ten) VALUES (@n)", ("@n", name));
+            await csdl.ChayAsync("""
+                INSERT INTO san_pham (ma, ten_san_pham, danh_muc_id, don_vi_tinh, nguoi_tao_id)
+                VALUES (@code, 'POS09 test', (SELECT id FROM danh_muc WHERE ten = @n), 'Cai', @t)
+                """, ("@code", name[..20]), ("@n", name), ("@t", tk.Id));
+            await csdl.ChayAsync("""
+                INSERT INTO ct_gio_hang (gio_hang_id, san_pham_id, so_luong, don_gia)
+                SELECT @g, id, 2, 15000 FROM san_pham WHERE ma = @code
+                """, ("@g", cartId), ("@code", name[..20]));
+        }
+        if (directCancel)
+        {
+            await using var connection = new MySqlConnector.MySqlConnection(csdl.ChuoiKetNoi);
+            await connection.OpenAsync();
+            await using var transaction = await connection.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
+            await ConvenienceStore.Web.Services.Pos.HuyGioDangBan.HuyAsync(connection, transaction, tk.Id);
+            await transaction.CommitAsync();
+        }
+        await TaoDichVu().DangXuatAsync(session);
+        Assert.Null((await TaoDichVu().XacThucPhienAsync(token)).NguoiDung);
+        Assert.Equal(hasItems ? "DA_HUY" : "DANG_BAN", await csdl.DocMotGiaTriAsync(
+            "SELECT trang_thai FROM gio_hang WHERE id = @g", ("@g", cartId)));
+        Assert.Equal("DANG_BAN", await csdl.DocMotGiaTriAsync(
+            "SELECT trang_thai FROM gio_hang WHERE thu_ngan_id = @t", ("@t", other.Id)));
+        if (hasItems)
+        {
+            Assert.Equal(30000L, Convert.ToInt64(await csdl.DocMotGiaTriAsync(
+                "SELECT gia_tri_khi_huy FROM gio_hang WHERE id = @g", ("@g", cartId))));
+            Assert.Equal("THU_NGAN_HUY", await csdl.DocMotGiaTriAsync(
+                "SELECT ly_do_huy FROM gio_hang WHERE id = @g AND huy_luc IS NOT NULL", ("@g", cartId)));
+            await csdl.ChayAsync("INSERT INTO gio_hang (thu_ngan_id) VALUES (@t)", ("@t", tk.Id));
+            await csdl.ChayAsync("""
+                INSERT INTO ct_gio_hang (gio_hang_id, san_pham_id, so_luong, don_gia)
+                SELECT g.id, c.san_pham_id, c.so_luong, c.don_gia FROM gio_hang g
+                JOIN ct_gio_hang c ON c.gio_hang_id = @old
+                WHERE g.thu_ngan_id = @t AND g.trang_thai = 'DANG_BAN'
+                """, ("@old", cartId), ("@t", tk.Id));
+            await TaoDichVu().DangXuatAsync(session);
+            Assert.Equal(1L, Convert.ToInt64(await csdl.DocMotGiaTriAsync(
+                "SELECT COUNT(*) FROM gio_hang WHERE thu_ngan_id = @t AND trang_thai = 'DANG_BAN'", ("@t", tk.Id))));
+        }
+    }
     private DichVuXacThuc TaoDichVu()
     {
         var db = csdl.TaoDbContext();

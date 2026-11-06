@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,6 +46,7 @@ public sealed class PosCartItem
 
     // Mã chương trình khuyến mãi
     public int? PromotionId { get; set; }
+    public string PromotionName { get; set; } = "";
 
     // Số tiền giảm trên một sản phẩm
     public long UnitDiscount { get; set; }
@@ -69,6 +70,7 @@ public sealed class PosCartItem
 
 public sealed class PosCart
 {
+    public bool PromotionsChanged { get; set; }
     public List<PosCartItem> Items { get; set; } = new();
 
     // Tổng tiền hàng trước giảm giá

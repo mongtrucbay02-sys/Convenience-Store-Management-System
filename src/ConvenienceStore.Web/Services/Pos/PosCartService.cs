@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using ConvenienceStore.Web.Models.Pos;
 using ConvenienceStore.Web.Modules.Auth;
 using ConvenienceStore.Web.Modules.Auth.Security;
@@ -43,7 +43,9 @@ public sealed class PosCartService
         await using var tx = await conn.BeginTransactionAsync(MucCoLap);
 
         var gioId = await LayHoacTaoGioAsync(conn, tx, ThuNganId);
+        var changed = await ApplyPromotionsAsync(conn, tx, gioId);
         var cart = await DocDongAsync(conn, tx, gioId);
+        cart.PromotionsChanged = changed > 0;
 
         await tx.CommitAsync();
         return cart;
@@ -206,72 +208,37 @@ public sealed class PosCartService
             return 0;
         }
 
-        // Khóa các dòng chi tiết giỏ hàng, rồi kiểm tra trạng thái KM.
-        var invalidProducts = new List<int>();
-        await using (var cmd = new MySqlCommand(
-            """
-            SELECT ct.san_pham_id, ct.khuyen_mai_id
-            FROM ct_gio_hang ct
-            WHERE ct.gio_hang_id = @g AND ct.khuyen_mai_id IS NOT NULL
-            FOR UPDATE
-            """, conn, tx))
-        {
-            cmd.Parameters.AddWithValue("@g", gioId.Value);
-            await using var reader = await cmd.ExecuteReaderAsync();
-            var promotions = new List<(int ProductId, int PromotionId)>();
-            while (await reader.ReadAsync())
-                promotions.Add((Convert.ToInt32(reader[0]), Convert.ToInt32(reader[1])));
+        int changed = await ApplyPromotionsAsync(conn, tx, gioId.Value);
+        await tx.CommitAsync();
+        return changed;
+    }
 
-            // Reader phải đóng trước khi thực hiện truy vấn khác trên cùng connection.
-            await reader.CloseAsync();
-
-            if (promotions.Count > 0)
-            {
-                var ids = promotions.Select(x => x.PromotionId).Distinct().ToArray();
-                var names = ids.Select((_, i) => $"@km{i}").ToArray();
-                await using var check = new MySqlCommand(
-                    $"""
-                    SELECT id
-                    FROM v_chuong_trinh_khuyen_mai
-                    WHERE id IN ({string.Join(",", names)})
-                      AND trang_thai_hien_thi = 'DANG_CHAY'
-                      AND (chi_thanh_vien = FALSE OR @coKhach = 1)
-                    """, conn, tx);
-                for (int i = 0; i < ids.Length; i++)
-                    check.Parameters.AddWithValue(names[i], ids[i]);
-                await using (var customerCmd = new MySqlCommand(
-                    "SELECT khach_hang_id FROM gio_hang WHERE id = @g", conn, tx))
-                {
-                    customerCmd.Parameters.AddWithValue("@g", gioId.Value);
-                    var customerId = await customerCmd.ExecuteScalarAsync();
-                    check.Parameters.AddWithValue("@coKhach", customerId is not null and not DBNull ? 1 : 0);
-                }
-
-                var validIds = new HashSet<int>();
-                await using (var validReader = await check.ExecuteReaderAsync())
-                    while (await validReader.ReadAsync())
-                        validIds.Add(Convert.ToInt32(validReader[0]));
-                invalidProducts.AddRange(promotions
-                    .Where(x => !validIds.Contains(x.PromotionId))
-                    .Select(x => x.ProductId));
-            }
-        }
-
+    private static async Task<int> ApplyPromotionsAsync(MySqlConnection conn, MySqlTransaction tx, int gioId)
+    {
+        var promotions = await PosPromotionCalculator.ReadAsync(conn, tx);
+        await using var customer = new MySqlCommand("""
+            SELECT COUNT(*) FROM gio_hang g JOIN khach_hang k ON k.id = g.khach_hang_id
+            WHERE g.id = @g AND k.trang_thai = 'HOAT_DONG'
+            """, conn, tx);
+        customer.Parameters.AddWithValue("@g", gioId);
+        bool member = Convert.ToInt32(await customer.ExecuteScalarAsync()) > 0;
+        var cart = await DocDongAsync(conn, tx, gioId);
         int changed = 0;
-        foreach (int productId in invalidProducts.Distinct())
+        foreach (var item in cart.Items)
         {
-            await using var update = new MySqlCommand(
-                """
-                UPDATE ct_gio_hang
-                SET khuyen_mai_id = NULL, giam_don_vi = 0
+            var best = PosPromotionCalculator.Best(promotions, item.ProductId, item.UnitPrice, member);
+            long discount = best is null ? 0 : PosPromotionCalculator.Discount(item.UnitPrice, best);
+            if (item.PromotionId == best?.Id && item.UnitDiscount == discount) continue;
+            await using var update = new MySqlCommand("""
+                UPDATE ct_gio_hang SET khuyen_mai_id = @km, giam_don_vi = @d
                 WHERE gio_hang_id = @g AND san_pham_id = @p
-                  AND khuyen_mai_id IS NOT NULL
                 """, conn, tx);
-            update.Parameters.AddWithValue("@g", gioId.Value);
-            update.Parameters.AddWithValue("@p", productId);
+            update.Parameters.AddWithValue("@km", (object?)best?.Id ?? DBNull.Value);
+            update.Parameters.AddWithValue("@d", discount);
+            update.Parameters.AddWithValue("@g", gioId);
+            update.Parameters.AddWithValue("@p", item.ProductId);
             changed += await update.ExecuteNonQueryAsync();
         }
-        await tx.CommitAsync();
         return changed;
     }
 
@@ -377,9 +344,10 @@ public sealed class PosCartService
         await using var cmd = new MySqlCommand(
             """
             SELECT ct.san_pham_id, sp.ma, sp.ten_san_pham, ct.don_gia, ct.so_luong,
-                   ct.khuyen_mai_id, ct.giam_don_vi
+                   ct.khuyen_mai_id, ct.giam_don_vi, km.ten
             FROM ct_gio_hang ct
             JOIN san_pham sp ON sp.id = ct.san_pham_id
+            LEFT JOIN chuong_trinh_khuyen_mai km ON km.id = ct.khuyen_mai_id
             WHERE ct.gio_hang_id = @g
             ORDER BY ct.them_luc, ct.san_pham_id
             """, conn, tx);
@@ -396,7 +364,8 @@ public sealed class PosCartService
                 UnitPrice = Convert.ToInt64(doc[3]),
                 Quantity = Convert.ToInt32(doc[4]),
                 PromotionId = doc.IsDBNull(5) ? null : Convert.ToInt32(doc[5]),
-                UnitDiscount = doc.IsDBNull(6) ? 0 : Convert.ToInt64(doc[6])
+                UnitDiscount = doc.IsDBNull(6) ? 0 : Convert.ToInt64(doc[6]),
+                PromotionName = doc.IsDBNull(7) ? "" : doc.GetString(7)
             });
         }
 

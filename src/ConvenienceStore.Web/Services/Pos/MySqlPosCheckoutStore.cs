@@ -1,4 +1,5 @@
-﻿
+using Microsoft.EntityFrameworkCore.Storage;
+
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -533,109 +534,14 @@ public sealed class MySqlPosCheckoutStore(
         bool coKhach,
         CancellationToken ct)
     {
-        var ids = dong
-            .Where(d => d.KhuyenMaiId.HasValue)
-            .Select(d => d.KhuyenMaiId!.Value)
-            .Distinct()
-            .OrderBy(id => id)
-            .ToList();
-
-        if (ids.Count == 0)
+        var promotions = await PosPromotionCalculator.ReadAsync(db.Database.GetDbConnection(),
+            db.Database.CurrentTransaction!.GetDbTransaction(), ct);
+        foreach (var line in dong)
         {
-            return;
+            var best = PosPromotionCalculator.Best(promotions, line.SanPhamId, line.DonGia, coKhach);
+            long discount = best is null ? 0 : PosPromotionCalculator.Discount(line.DonGia, best);
+            if (line.KhuyenMaiId != best?.Id || line.GiamDonVi != discount)
+                throw new PosCheckoutException("Khuyến mãi đã thay đổi. Đơn hàng chưa được thanh toán. Vui lòng kiểm tra và xác nhận lại tổng tiền.");
         }
-
-        var (danhSach, thamSoId) =
-            TruyVanCsdl.TaoThamSoIn("km", ids);
-
-        var thamSo = thamSoId
-            .Append((
-                "@coKhach",
-                (object?)(coKhach ? 1 : 0)))
-            .ToArray();
-
-        // Lấy danh sách khuyến mãi đang hợp lệ.
-        var idsHopLe = await db.DocDanhSachAsync(
-            $"""
-            SELECT id
-            FROM v_chuong_trinh_khuyen_mai
-            WHERE id IN ({danhSach})
-              AND trang_thai_hien_thi = 'DANG_CHAY'
-              AND (
-                  chi_thanh_vien = FALSE
-                  OR @coKhach = 1
-              )
-            """,
-            d => d.SoNguyen(0),
-            ct,
-            thamSo);
-
-        var tapHopHopLe = idsHopLe.ToHashSet();
-
-        var dongKhongHopLe = dong
-            .Where(d =>
-                d.KhuyenMaiId.HasValue &&
-                !tapHopHopLe.Contains(
-                    d.KhuyenMaiId.Value))
-            .ToList();
-
-        if (dongKhongHopLe.Count == 0)
-        {
-            return;
-        }
-
-        long tongCu = 0;
-        long tongMoi = 0;
-
-        checked
-        {
-            foreach (var d in dong)
-            {
-                long tienHang =
-                    (long)d.SoLuong * d.DonGia;
-
-                long giamCu =
-                    (long)d.SoLuong * d.GiamDonVi;
-
-                tongCu += tienHang - giamCu;
-
-                bool khuyenMaiHopLe =
-                    !d.KhuyenMaiId.HasValue ||
-                    tapHopHopLe.Contains(
-                        d.KhuyenMaiId.Value);
-
-                long giamMoi = khuyenMaiHopLe
-                    ? giamCu
-                    : 0;
-
-                tongMoi += tienHang - giamMoi;
-            }
-        }
-
-        var tenSanPham = string.Join(
-            ", ",
-            dongKhongHopLe
-                .Select(d => d.Ten)
-                .Distinct());
-
-        log.LogWarning(
-            "POS-07 E2: Khuyến mãi không còn hợp lệ. " +
-            "Sản phẩm: {Products}. " +
-            "Tổng cũ: {OldTotal}. " +
-            "Tổng mới dự kiến: {NewTotal}",
-            tenSanPham,
-            tongCu,
-            tongMoi);
-
-        // Chưa cập nhật giỏ trong transaction này.
-        // Nếu cập nhật rồi throw, toàn bộ cập nhật
-        // sẽ bị rollback bởi PosCheckoutService.
-        throw new PosCheckoutException(
-            "Khuyến mãi đã hết hạn hoặc bị tạm dừng " +
-            $"đối với sản phẩm: {tenSanPham}. " +
-            $"Tổng tiền ban đầu: {tongCu:N0} đ. " +
-            $"Tổng tiền mới dự kiến: {tongMoi:N0} đ. " +
-            "Đơn hàng chưa được thanh toán. " +
-            "Vui lòng kiểm tra và xác nhận lại giá mới.");
     }
 }

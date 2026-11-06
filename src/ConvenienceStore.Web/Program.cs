@@ -7,6 +7,7 @@ using ConvenienceStore.Web.Modules.Products.Services;
 using ConvenienceStore.Web.Modules.Promotions.Services;
 using ConvenienceStore.Web.Modules.Reports;
 using ConvenienceStore.Web.Modules.Reports.Services;
+using ConvenienceStore.Web.Modules.Returns;
 using ConvenienceStore.Web.Services.Pos;
 using ConvenienceStore.Web.Shared.Errors;
 using Microsoft.EntityFrameworkCore;
@@ -102,6 +103,7 @@ builder.Services.AddModuleAuth();
 
 // Quản lý tồn kho
 builder.Services.AddModuleInventory();
+builder.Services.AddModuleReturns();
 
 // ==========================================
 // 6. PHÂN QUYỀN POS-10

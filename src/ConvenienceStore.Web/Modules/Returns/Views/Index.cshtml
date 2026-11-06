@@ -1,0 +1,109 @@
+@using ConvenienceStore.Web.Modules.Returns.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model InvoiceLookupViewModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Tra cứu hóa đơn đổi trả";
+    var culture = new System.Globalization.CultureInfo("vi-VN");
+    string Money(long amount) => amount.ToString("N0", culture) + " đ";
+    string Reason(string code) => code switch {
+        "HOA_DON_DA_HUY" => "Hóa đơn đã hủy, không được đổi trả",
+        "HOA_DON_KHONG_HOP_LE" => "Hóa đơn không hợp lệ, cần kiểm tra lại",
+        "HET_SO_LUONG" => "Không còn số lượng để trả",
+        "QUA_HAN" => "Quá thời hạn đổi trả",
+        "DANH_MUC_KHONG_DOI_TRA" => "Danh mục không đổi trả", _ => code
+    };
+}
+<link rel="stylesheet" href="~/css/return-lookup.css" asp-append-version="true" />
+<section class="hero">
+    <div>
+        <p class="eyebrow">SMART MART / ĐỔI TRẢ</p>
+        <h1>Tra cứu hóa đơn gốc</h1>
+        <p>Tìm hóa đơn của khách và kiểm tra số lượng còn được đổi trả.</p>
+    </div>
+</section>
+<section class="panel">
+    <h2>Tìm hóa đơn</h2>
+    <form method="get" asp-controller="Returns" asp-action="Index" class="ret-search">
+        <div><label for="ma">Mã hóa đơn</label><input id="ma" name="ma" value="@Model.Query.Ma" maxlength="20" placeholder="Nhập đúng mã trên hóa đơn" /></div>
+        <span class="ret-or">hoặc</span>
+        <div><label for="soDienThoai">Số điện thoại thành viên</label><input id="soDienThoai" name="soDienThoai" value="@Model.Query.SoDienThoai" type="tel" inputmode="numeric" maxlength="10" pattern="0[0-9]{9}" placeholder="10 chữ số, bắt đầu bằng 0" /></div>
+        <div class="ret-actions"><button type="submit">Tra cứu</button><a asp-controller="Returns" asp-action="Index">Xóa bộ lọc</a></div>
+    </form>
+    <p class="muted">Nhập một trong hai ô. Tra theo số điện thoại chỉ hiển thị hóa đơn còn trong hạn; dùng mã chính xác để kiểm tra hóa đơn quá hạn.</p>
+</section>
+@if (Model.Error is { } error)
+{
+    <div class="ret-alert ret-danger" role="alert">@error</div>
+}
+@if (Model.Result is { } result)
+{
+    if (result.Total == 0)
+    {
+        <section class="panel"><div class="empty" role="status">Không tìm thấy hóa đơn phù hợp. Vui lòng kiểm tra mã hóa đơn hoặc số điện thoại.</div></section>
+    }
+    else
+    {
+        <p class="ret-result-count" role="status">Tìm thấy <strong>@result.Total</strong> hóa đơn. Chọn một hóa đơn để xem điều kiện từng dòng.</p>
+        @foreach (var invoice in result.Items)
+        {
+            <details class="panel ret-invoice" open="@(result.Items.Count == 1)">
+                <summary>
+                    <span><strong>@invoice.Ma</strong><span class="ret-summary-meta">@invoice.NgayMua.ToString("dd/MM/yyyy HH:mm") · @invoice.TenThuNgan</span></span>
+                    <span>@Money(invoice.TongThanhToan)</span>
+                    <span class="ret-badge @(invoice.DaHuy ? "ret-badge-danger" : "ret-badge-paid")">@(invoice.DaHuy ? "ĐÃ HỦY" : "Đã thanh toán")</span>
+                </summary>
+                <div class="ret-meta">
+                    <p><span>Khách hàng</span><strong>@invoice.TenKhachHang</strong>@if (invoice.SoDienThoai is not null) { <small>@invoice.SoDienThoai</small> }</p>
+                    <p><span>Hạn đổi trả theo chính sách hiện tại</span><strong>Hết ngày @invoice.NgayHetHan.ToString("dd/MM/yyyy")</strong><small>@invoice.SoNgayDoiTra ngày kể từ ngày mua</small></p>
+                </div>
+                @if (invoice.DaHuy)
+                {
+                    <div class="ret-alert ret-danger">Hóa đơn đã hủy. Không được dùng để trả hàng hoặc đổi hàng.</div>
+                }
+                else if (invoice.CanDuyetNgoaiLe)
+                {
+                    <div class="ret-alert ret-warning">Có dòng ngoại lệ. Những dòng này chỉ được tiếp tục sau khi quản lý duyệt theo DT-06; thu ngân không được tự bỏ qua điều kiện.</div>
+                }
+                <div class="ret-table-wrap">
+                    <table class="ret-table">
+                        <thead><tr><th>Sản phẩm / danh mục</th><th>SL mua</th><th>Thực trả / đơn vị</th><th>Đã trả / đang xử lý</th><th>Còn được trả</th><th>Điều kiện</th></tr></thead>
+                        <tbody>
+                        @foreach (var line in invoice.ChiTiet)
+                        {
+                            <tr>
+                                <td><strong>@line.TenSanPham</strong><small>@line.TenDanhMuc · @line.DonViTinh</small></td>
+                                <td class="ret-number">@line.SoLuongMua</td>
+                                <td class="ret-number">@Money(line.GiaThucTraMoiDonVi)</td>
+                                <td class="ret-number">@line.SoLuongDaTraHoacDangXuLy</td>
+                                <td class="ret-number"><strong>@line.SoLuongConDuocTra</strong></td>
+                                <td><strong class="@(line.HopLe ? "ret-valid" : line.CanDuyetNgoaiLe ? "ret-exception" : "ret-invalid")">@(line.HopLe ? "Hợp lệ" : line.CanDuyetNgoaiLe ? "Ngoại lệ — cần AD duyệt" : "Không hợp lệ")</strong>
+                                    @foreach (var reason in line.LyDo) { <small>@Reason(reason)</small> }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+                @if (invoice.ChiTiet.Count == 0)
+                {
+                    <p class="ret-invalid">Hóa đơn không có chi tiết sản phẩm. Vui lòng liên hệ quản lý.</p>
+                }
+                else if (invoice.CoTheDoiTra)
+                {
+                    <p class="ret-valid">Đã xác định hóa đơn gốc; có dòng đủ điều kiện đổi trả.</p>
+                }
+                <p class="muted">Số lượng đã trả tính cả phiếu đang chờ duyệt, đã duyệt và hoàn tất. Điều kiện và số lượng phải được kiểm tra lại khi lập phiếu.</p>
+            </details>
+        }
+        @if (result.Total > result.Size)
+        {
+            var pages = (int)Math.Ceiling(result.Total / (double)result.Size);
+            <nav class="ret-pager" aria-label="Phân trang hóa đơn">
+                @if (result.Page > 1) { <a asp-controller="Returns" asp-action="Index" asp-route-ma="@Model.Query.Ma" asp-route-soDienThoai="@Model.Query.SoDienThoai" asp-route-page="@(result.Page - 1)" asp-route-size="@result.Size">← Trước</a> }
+                <span>Trang @result.Page / @pages</span>
+                @if (result.Page < pages) { <a asp-controller="Returns" asp-action="Index" asp-route-ma="@Model.Query.Ma" asp-route-soDienThoai="@Model.Query.SoDienThoai" asp-route-page="@(result.Page + 1)" asp-route-size="@result.Size">Sau →</a> }
+            </nav>
+        }
+    }
+}

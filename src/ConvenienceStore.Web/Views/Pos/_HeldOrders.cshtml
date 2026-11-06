@@ -1,0 +1,28 @@
+@model ConvenienceStore.Web.Models.Pos.PosPageViewModel
+    <section class="pos-panel pos-held-orders" aria-labelledby="held-orders-title">
+        <h2 id="held-orders-title">Đơn tạm giữ (@Model.HeldOrders.Count/5)</h2>
+        <p>Đơn chỉ có hiệu lực trong ngày và không giữ chỗ tồn kho.</p>
+        <form asp-action="Hold" asp-controller="Pos" method="post" class="pos-hold-form">
+            <label for="hold-note">Ghi chú (không bắt buộc)</label>
+            <input id="hold-note" name="note" maxlength="100" class="form-control" placeholder="Ví dụ: khách quay lại lấy thêm đồ" />
+            <button type="submit" class="btn btn-primary" disabled="@(Model.Cart.Items.Count == 0 || Model.HeldOrders.Count >= 5)">Tạm giữ đơn</button>
+        </form>
+        @if (Model.HeldOrders.Count == 0)
+        {
+            <p class="mt-3">Chưa có đơn tạm giữ trong ngày.</p>
+        }
+        @foreach (var held in Model.HeldOrders)
+        {
+            <div class="pos-product pos-held-row">
+                <div><strong>Đơn #@held.Id · @held.HeldAt.ToString("HH:mm")</strong>
+                    <div>@held.Note</div>
+                    <div>@held.Quantity sản phẩm · @held.Total.ToString("N0") đ (giá lúc tạm giữ)</div>
+                </div>
+                <form asp-action="Recall" asp-controller="Pos" method="post">
+                    <input type="hidden" name="orderId" value="@held.Id" />
+                    <button type="submit" class="btn btn-outline-primary">Gọi lại</button>
+                </form>
+            </div>
+        }
+    </section>
+

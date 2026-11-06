@@ -1,0 +1,11 @@
+.pos-held-orders { margin-bottom: 24px; }
+.pos-hold-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: end; }
+.pos-hold-form label { grid-column: 1 / -1; font-weight: 600; }
+.pos-held-row { margin-top: 16px; gap: 20px; }
+.pos-held-row > div { min-width: 0; overflow-wrap: anywhere; }
+.pos-held-row form { flex-shrink: 0; }
+@media (max-width: 640px) {
+  .pos-hold-form { grid-template-columns: minmax(0, 1fr); }
+  .pos-held-row { flex-direction: column; align-items: stretch; }
+  .pos-held-row button { width: 100%; }
+}

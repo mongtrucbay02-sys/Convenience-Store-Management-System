@@ -59,6 +59,7 @@ builder.Services.AddScoped<MySqlPosCatalog>();
 
 // POS-01, POS-02, POS-09: Giỏ hàng
 builder.Services.AddScoped<PosCartService>();
+builder.Services.AddScoped<PosHeldOrderService>();
 
 // POS-05: Thanh toán tiền mặt
 builder.Services.AddScoped<PosPaymentService>();

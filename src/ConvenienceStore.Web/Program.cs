@@ -20,6 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ConvenienceStore.Web.Modules.Customers.CustomerService>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IDashboardDataSource, MySqlDashboardDataSource>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();

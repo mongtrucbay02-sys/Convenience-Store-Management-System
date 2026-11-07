@@ -1,0 +1,29 @@
+@model List<ConvenienceStore.Web.Modules.Customers.CustomerRow>
+@{ ViewData["Title"] = "Khách hàng"; Layout = "_AdminLayout"; var attach = ViewData["AttachToCart"] is true; }
+<h1>Khách hàng</h1>
+@if (TempData["Error"] is string error) { <p role="alert">@error</p> }
+@if (TempData["Success"] is string success) { <p role="status">@success</p> }
+<form method="get">
+    <input type="hidden" name="attachToCart" value="@attach.ToString().ToLowerInvariant()" />
+    <label>Tên, số điện thoại hoặc mã <input name="search" value="@ViewData["Search"]" maxlength="100" /></label>
+    <button>Tìm kiếm</button>
+</form>
+<a asp-action="Create" asp-route-attachToCart="@attach" asp-route-phone="@ViewData["Search"]">Thêm khách mới</a>
+<p>Hiển thị tối đa 100 khách phù hợp. Nhập từ khóa để thu hẹp kết quả.</p>
+@if (Model.Count == 0) { <p>Không tìm thấy khách hàng. Bạn có thể thêm khách mới.</p> }
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Mã</th><th>Họ tên</th><th>Số điện thoại</th><th>Điểm</th><th>Tổng chi tiêu</th><th>Lần mua gần nhất</th><th>Thao tác</th></tr></thead>
+<tbody>@foreach (var row in Model) {
+<tr><td>@row.Id</td><td>@row.Name</td><td>@row.Phone</td><td>@row.Points</td><td>@row.Spending.ToString("N0") đ</td><td>@row.LastPurchase?.ToString("dd/MM/yyyy HH:mm")</td><td>
+    <a asp-action="Edit" asp-route-id="@row.Id">Sửa</a>
+    <a asp-action="History" asp-route-id="@row.Id">Lịch sử</a>
+    @if (attach && User.IsInRole("TN")) {
+        <form asp-action="Attach" method="post"><input type="hidden" name="customerId" value="@row.Id" /><button>Chọn khách — @row.Points điểm</button></form>
+    }
+    @if (User.IsInRole("AD")) {
+        <form asp-action="Delete" method="post" onsubmit="return confirm('Xóa khách chưa có giao dịch, hoặc ẩn và xóa thông tin cá nhân nếu đã có giao dịch. Xác nhận?')">
+            <input type="hidden" name="id" value="@row.Id" /><button>Xóa / ẩn</button>
+        </form>
+    }
+</td></tr>
+}</tbody></table></div>

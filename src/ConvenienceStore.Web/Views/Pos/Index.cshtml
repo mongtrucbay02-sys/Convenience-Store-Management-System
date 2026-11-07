@@ -37,6 +37,15 @@
         </div>
     }
 
+    <section class="pos-panel">
+        <h2>Khách hàng thành viên</h2>
+        @if (Model.Cart.CustomerId.HasValue) {
+            <p>@Model.Cart.CustomerName — @Model.Cart.CustomerPoints điểm</p>
+            <form asp-controller="Customers" asp-action="Attach" method="post"><button>Gỡ khách khỏi đơn</button></form>
+        }
+        <a asp-controller="Customers" asp-action="Index" asp-route-attachToCart="true">Tìm / gắn khách hàng</a>
+        <a asp-controller="Customers" asp-action="Create" asp-route-attachToCart="true">Thêm nhanh khách</a>
+    </section>
     <partial name="_HeldOrders" model="Model" />
 
     <div class="pos-grid">

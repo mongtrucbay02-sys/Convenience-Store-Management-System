@@ -221,19 +221,17 @@ public sealed class MySqlPosCheckoutStore(
                     d.DungSai(1)),
                 cancellationToken);
 
-            if (quyTac is { DangBat: true })
+            if (quyTac is null || quyTac.DangBat)
             {
-                if (quyTac.SoTienMotDiem <= 0)
+                if (quyTac?.SoTienMotDiem <= 0)
                 {
                     throw new InvalidOperationException(
                         "Quy tắc tích điểm không hợp lệ.");
                 }
 
-                soTienMotDiem = quyTac.SoTienMotDiem;
+                soTienMotDiem = quyTac?.SoTienMotDiem ?? 10000;
 
-                diemCong = checked((int)(
-                    tongThanhToan /
-                    quyTac.SoTienMotDiem));
+                diemCong = ConvenienceStore.Web.Modules.Customers.CustomerRules.EarnedPoints(tongThanhToan, soTienMotDiem);
             }
         }
 
@@ -351,54 +349,13 @@ public sealed class MySqlPosCheckoutStore(
                     giaVonTheoSanPham[d.SanPhamId]));
         }
 
-        // 11. Tích điểm khách hàng.
+        // KH-06: append points in the transaction that saves the invoice.
         if (khach is not null && diemCong > 0)
         {
-            long diemSau = checked(
-                khach.DiemHienCo + diemCong);
-
-            var soDongCapNhat = await db.ChayAsync(
-                """
-                UPDATE khach_hang
-                SET diem_hien_co = @sau,
-                    phien_ban = phien_ban + 1
-                WHERE id = @k
-                """,
-                cancellationToken,
-                ("@sau", diemSau),
-                ("@k", gio.KhachHangId));
-
-            if (soDongCapNhat != 1)
-            {
-                throw new InvalidOperationException(
-                    "Không cập nhật được điểm khách hàng.");
-            }
-
-            await db.ChayAsync(
-                """
-                INSERT INTO lich_su_diem
-                (
-                    khach_hang_id,
-                    loai,
-                    so_diem,
-                    diem_sau,
-                    hoa_don_id,
-                    nguoi_thuc_hien_id
-                )
-                VALUES
-                (
-                    @k, 'TICH_DIEM',
-                    @diem, @sau, @hd, @t
-                )
-                """,
-                cancellationToken,
-                ("@k", gio.KhachHangId),
-                ("@diem", diemCong),
-                ("@sau", diemSau),
-                ("@hd", hoaDonId),
-                ("@t", cashierId));
+            await ConvenienceStore.Web.Modules.Customers.CustomerPoints.ChangeAsync(
+                db, checked((uint)gio.KhachHangId!.Value), diemCong, "TICH_DIEM", cashierId,
+                checked((uint)hoaDonId), null, null, cancellationToken);
         }
-
         // 12. Hoàn tất giỏ hàng.
         var daChot = await db.ChayAsync(
             """

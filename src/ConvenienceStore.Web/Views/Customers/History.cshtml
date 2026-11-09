@@ -1,0 +1,25 @@
+@model ConvenienceStore.Web.Modules.Customers.CustomerHistory
+@{ ViewData["Title"] = "Lịch sử khách hàng"; Layout = "_AdminLayout"; }
+<h1>@Model.Customer.Name</h1>
+<p>Mã @Model.Customer.Id — @Model.Customer.Phone — @Model.Customer.Points điểm</p>
+@if (TempData["Error"] is string error) { <p role="alert">@error</p> }
+@if (TempData["Success"] is string success) { <p role="status">@success</p> }
+<h2>Lịch sử mua hàng</h2>
+@if (Model.Invoices.Count == 0) { <p>Khách hàng chưa mua lần nào.</p> }
+<div style="overflow-x:auto"><table><thead><tr><th>Hóa đơn</th><th>Ngày</th><th>Tổng tiền</th><th>Điểm cộng</th></tr></thead><tbody>
+@foreach (var i in Model.Invoices) { <tr><td><a href="/Invoices/@i.Id">@i.Code</a></td><td>@i.PaidAt.ToString("dd/MM/yyyy HH:mm")</td><td>@i.Total.ToString("N0") đ</td><td>@i.Points</td></tr> }
+</tbody></table></div>
+<h2>Biến động điểm</h2>
+@if (Model.Points.Count == 0) { <p>Chưa có biến động điểm.</p> }
+<div style="overflow-x:auto"><table><thead><tr><th>Thời điểm</th><th>Loại</th><th>Điểm</th><th>Số dư</th><th>Lý do</th></tr></thead><tbody>
+@foreach (var p in Model.Points) { <tr><td>@p.At.ToString("dd/MM/yyyy HH:mm")</td><td>@p.Type</td><td>@p.Points</td><td>@p.Balance</td><td>@p.Reason</td></tr> }
+</tbody></table></div>
+@if (User.IsInRole("AD")) {
+<h2>Điều chỉnh điểm</h2>
+<form asp-action="Adjust" method="post"><input type="hidden" name="id" value="@Model.Customer.Id" />
+<p><label>Điểm cộng/trừ <input name="Points" type="number" required /></label></p>
+<p><label>Lý do * <input name="Reason" required maxlength="500" /></label></p>
+<p><label>Mã nội bộ hóa đơn liên quan (tùy chọn) <input name="InvoiceId" type="number" min="1" /></label></p>
+<button>Lưu điều chỉnh</button></form>
+}
+<a asp-action="Index">Quay lại danh sách</a>

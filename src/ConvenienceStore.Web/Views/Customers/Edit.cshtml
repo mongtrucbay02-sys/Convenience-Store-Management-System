@@ -1,0 +1,15 @@
+@model ConvenienceStore.Web.Modules.Customers.CustomerInput
+@{ ViewData["Title"] = ViewData["Id"] == null ? "Thêm khách hàng" : "Sửa khách hàng"; Layout = "_AdminLayout"; }
+<h1>@ViewData["Title"]</h1>
+<form asp-action="Save" method="post">
+    <div asp-validation-summary="All" role="alert"></div>
+    <input type="hidden" name="id" value="@ViewData["Id"]" />
+    <input asp-for="Version" type="hidden" /><input asp-for="AttachToCart" type="hidden" />
+    <p><label>Họ tên * <input asp-for="Name" required maxlength="100" /></label></p>
+    <p><label>Số điện thoại * <input asp-for="Phone" required pattern="0[0-9]{9}" maxlength="10" /></label></p>
+    <p><label>Email <input asp-for="Email" type="email" maxlength="100" /></label></p>
+    <p><label>Ngày sinh <input asp-for="BirthDate" type="date" /></label></p>
+    <p><label>Giới tính <select asp-for="Gender"><option value="">Không cung cấp</option><option value="NAM">Nam</option><option value="NU">Nữ</option><option value="KHAC">Khác</option></select></label></p>
+    <p>Khách đồng ý cung cấp thông tin. Điểm và lịch sử không thay đổi qua biểu mẫu này.</p>
+    <button>Lưu khách hàng</button> <a asp-action="Index">Quay lại</a>
+</form>

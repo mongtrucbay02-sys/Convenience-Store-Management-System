@@ -70,6 +70,9 @@ public sealed class PosCartItem
 
 public sealed class PosCart
 {
+    public int? CustomerId { get; set; }
+    public string? CustomerName { get; set; }
+    public uint CustomerPoints { get; set; }
     public bool PromotionsChanged { get; set; }
     public List<PosCartItem> Items { get; set; } = new();
 

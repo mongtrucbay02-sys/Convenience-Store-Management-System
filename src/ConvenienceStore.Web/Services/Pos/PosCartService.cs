@@ -51,6 +51,32 @@ public sealed class PosCartService
         return cart;
     }
 
+    // POS-03: mutate only the authenticated cashier's existing active cart.
+    public async Task<string?> SetCustomerAsync(int? customerId)
+    {
+        if (customerId is <= 0) return "Khách hàng không hợp lệ.";
+        await using var conn = _catalog.CreateConnection();
+        await conn.OpenAsync();
+        await using var tx = await conn.BeginTransactionAsync(MucCoLap);
+        var cartId = await DocGioDangBanAsync(conn, tx, ThuNganId);
+        if (cartId == null) return "Không có đơn đang bán. Hãy mở quầy bán hàng trước.";
+        if (customerId.HasValue)
+        {
+            await using var customer = new MySqlCommand(
+                "SELECT id FROM khach_hang WHERE id=@id AND trang_thai='HOAT_DONG' FOR UPDATE", conn, tx);
+            customer.Parameters.AddWithValue("@id", customerId.Value);
+            if (await customer.ExecuteScalarAsync() == null) return "Khách hàng không còn hoạt động.";
+        }
+        await using var update = new MySqlCommand(
+            "UPDATE gio_hang SET khach_hang_id=@id WHERE id=@g AND trang_thai='DANG_BAN'", conn, tx);
+        update.Parameters.AddWithValue("@id", (object?)customerId ?? DBNull.Value);
+        update.Parameters.AddWithValue("@g", cartId.Value);
+        await update.ExecuteNonQueryAsync();
+        await ApplyPromotionsAsync(conn, tx, cartId.Value);
+        await tx.CommitAsync();
+        return null;
+    }
+
     // ---------- Thêm sản phẩm (qty 1, hoặc +1 nếu đã có) ----------
 
     public async Task<string?> AddAsync(int productId)
@@ -320,6 +346,20 @@ public sealed class PosCartService
     private static async Task<PosCart> DocDongAsync(MySqlConnection conn, MySqlTransaction tx, int gioId)
     {
         var cart = new PosCart();
+        await using (var customer = new MySqlCommand("""
+            SELECT k.id,k.ho_ten,k.diem_hien_co FROM gio_hang g
+            JOIN khach_hang k ON k.id=g.khach_hang_id WHERE g.id=@g
+            """, conn, tx))
+        {
+            customer.Parameters.AddWithValue("@g", gioId);
+            await using var reader = await customer.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                cart.CustomerId = Convert.ToInt32(reader[0]);
+                cart.CustomerName = reader.IsDBNull(1) ? "Khách đã ẩn" : reader.GetString(1);
+                cart.CustomerPoints = Convert.ToUInt32(reader[2]);
+            }
+        }
 
         await using var cmd = new MySqlCommand(
             """

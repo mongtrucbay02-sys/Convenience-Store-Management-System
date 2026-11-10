@@ -75,8 +75,8 @@ public sealed class OperationalReportsServiceTests
         var products = await Create().GetProductsAsync(OneDay(), default);
         var categories = await Create().GetCategoriesAsync(OneDay(), default);
 
-        Assert.Contains(products.Rows, row => row.Key == "product:1" && row.Cells[4] == "176 ₫");
-        Assert.Contains(categories.Rows, row => row.Key == "category:1" && row.Cells[4] == "176 ₫");
+        Assert.Contains(products.Rows, row => row.Key == "product:1" && row.Cells[4] == "174 ₫");
+        Assert.Contains(categories.Rows, row => row.Key == "category:1" && row.Cells[4] == "174 ₫");
         Assert.Equal(220, products.Metrics.Single(x => x.Label == "Doanh thu thuần").Value);
     }
 

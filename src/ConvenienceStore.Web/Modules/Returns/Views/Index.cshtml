@@ -93,6 +93,10 @@
                 {
                     <p class="ret-valid">Đã xác định hóa đơn gốc; có dòng đủ điều kiện đổi trả.</p>
                 }
+                @if(!invoice.DaHuy && invoice.ChiTiet.Any(l=>l.SoLuongConDuocTra>0 && (l.HopLe||l.CanDuyetNgoaiLe))) {
+                    <a asp-controller="ReturnOrders" asp-action="New" asp-route-invoiceId="@invoice.Id">Trả hàng / lập phiếu chờ duyệt</a>
+                    <a asp-controller="ReturnOrders" asp-action="Exchange" asp-route-invoiceId="@invoice.Id">Đổi hàng — DT-03</a>
+                }
                 <p class="muted">Số lượng đã trả tính cả phiếu đang chờ duyệt, đã duyệt và hoàn tất. Điều kiện và số lượng phải được kiểm tra lại khi lập phiếu.</p>
             </details>
         }

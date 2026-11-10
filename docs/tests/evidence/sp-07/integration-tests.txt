@@ -1,0 +1,253 @@
+Build started 10/30/2026 10:22:55 PM.
+     1>Project "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\ConvenienceStore.Web.Tests.csproj" on node 1 (Restore target(s)).
+     1>_GetAllRestoreProjectPathItems:
+         Determining projects to restore...
+     1>Project "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\ConvenienceStore.Web.Tests.csproj" (1) is building "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\ConvenienceStore.Web.csproj" (2:4) on node 1 (_GenerateProjectRestoreGraph target(s)).
+     2>AddPrunePackageReferences:
+         Loading prune package data from PrunePackageData folder
+         Failed to load prune package data from PrunePackageData folder, loading from targeting packs instead
+         Looking for targeting packs in C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref
+         Pack directories found: C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.12
+         Found package overrides file C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.12\data\PackageOverrides.txt
+         Loading prune package data from PrunePackageData folder
+         Failed to load prune package data from PrunePackageData folder, loading from targeting packs instead
+         Looking for targeting packs in C:\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref
+         Pack directories found: C:\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref\10.0.12
+         Found package overrides file C:\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref\10.0.12\data\PackageOverrides.txt
+     2>Done Building Project "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\ConvenienceStore.Web.csproj" (_GenerateProjectRestoreGraph target(s)).
+     1>Project "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\ConvenienceStore.Web.Tests.csproj" (1) is building "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\ConvenienceStore.Web.Tests.csproj" (1:6) on node 1 (_GenerateProjectRestoreGraph target(s)).
+     1>AddPrunePackageReferences:
+         Loading prune package data from PrunePackageData folder
+         Failed to load prune package data from PrunePackageData folder, loading from targeting packs instead
+         Looking for targeting packs in C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref
+         Pack directories found: C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.12
+         Found package overrides file C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.12\data\PackageOverrides.txt
+     1>Done Building Project "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\ConvenienceStore.Web.Tests.csproj" (_GenerateProjectRestoreGraph target(s)).
+     1>Restore:
+         X.509 certificate chain validation will use the default trust store selected by .NET for code signing.
+         X.509 certificate chain validation will use the default trust store selected by .NET for timestamping.
+         Assets file has not changed. Skipping assets file writing. Path: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\obj\project.assets.json
+         Assets file has not changed. Skipping assets file writing. Path: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\project.assets.json
+         Restored D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\ConvenienceStore.Web.Tests.csproj (in 46 ms).
+         Restored D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\ConvenienceStore.Web.csproj (in 46 ms).
+
+         NuGet Config files used:
+             C:\Users\Admin\AppData\Roaming\NuGet\NuGet.Config
+             C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.FallbackLocation.config
+             C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.Offline.config
+
+         Feeds used:
+             https://api.nuget.org/v3/index.json
+             C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\
+         All projects are up-to-date for restore.
+     1>Done Building Project "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\ConvenienceStore.Web.Tests.csproj" (Restore target(s)).
+   1:7>Project "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\ConvenienceStore.Web.Tests.csproj" on node 1 (VSTest target(s)).
+     1>BuildProject:
+         Build started, please wait...
+   1:7>Project "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\ConvenienceStore.Web.Tests.csproj" (1:7) is building "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\ConvenienceStore.Web.Tests.csproj" (1:8) on node 1 (default targets).
+   1:8>Project "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\ConvenienceStore.Web.Tests.csproj" (1:8) is building "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\ConvenienceStore.Web.csproj" (2:6) on node 1 (default targets).
+     2>GenerateTargetFrameworkMonikerAttribute:
+       Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+       CoreGenerateAssemblyInfo:
+       Skipping target "CoreGenerateAssemblyInfo" because all output files are up-to-date with respect to the input files.
+       _DiscoverMvcApplicationParts:
+       Skipping target "_DiscoverMvcApplicationParts" because all output files are up-to-date with respect to the input files.
+       _CoreGenerateRazorAssemblyInfo:
+       Skipping target "_CoreGenerateRazorAssemblyInfo" because all output files are up-to-date with respect to the input files.
+       _GenerateSourceLinkFile:
+         Source Link file 'obj\Debug\net10.0\ConvenienceStore.Web.sourcelink.json' is up-to-date.
+       CoreCompile:
+       Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+       _CreateAppHost:
+       Skipping target "_CreateAppHost" because all output files are up-to-date with respect to the input files.
+       _ProcessScopedCssFiles:
+       Skipping target "_ProcessScopedCssFiles" because all output files are up-to-date with respect to the input files.
+       ResolveBuildCompressedStaticWebAssetsConfiguration:
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\swt6jjfwuv-{0}-b9sayid5wm-b9sayid5wm.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\css\site.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\gdrbcwg057-{0}-61n19gt1b8-61n19gt1b8.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\favicon.ico'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\g1fos6baj2-{0}-xtxxf3hu2r-xtxxf3hu2r.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\js\site.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\np6mjs5ka0-{0}-t1cqhe9u97-t1cqhe9u97.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\5axf9m95dt-{0}-c2jlpeoesf-c2jlpeoesf.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\h3i2fmpv1l-{0}-sejl45xvog-sejl45xvog.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\7pojicm8c8-{0}-aexeepp0ev-aexeepp0ev.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\6tubzs500s-{0}-xvp3kq03qx-xvp3kq03qx.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\n9b7phwue4-{0}-ausgxo2sd3-ausgxo2sd3.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\kh8ift6i2m-{0}-22vffe00uq-22vffe00uq.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.min.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\sbllrj68qv-{0}-cosvhxvwiu-cosvhxvwiu.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.min.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\e69o3g297t-{0}-qesaa3a1fm-qesaa3a1fm.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\f5foebikhc-{0}-fvhpjtyr6v-fvhpjtyr6v.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\zehsz0awi3-{0}-tmc1g35s3z-tmc1g35s3z.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.min.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\yn4it5bwn5-{0}-fsbi9cje9m-fsbi9cje9m.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.min.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\9r8rntpvmq-{0}-rxsg74s51o-rxsg74s51o.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\7pcjmo12ss-{0}-ee0r1s7dh0-ee0r1s7dh0.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\mgszunn8z2-{0}-q9ht133ko3-q9ht133ko3.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.min.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\nydydmi474-{0}-jd9uben2k1-jd9uben2k1.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.min.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\6apj5zx0d7-{0}-gye83jo8yx-gye83jo8yx.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\0bq4dzoese-{0}-r4e9w2rdcm-r4e9w2rdcm.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\cb0wrfrtfd-{0}-wl58j5mj3v-wl58j5mj3v.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.min.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\lcn5kk7ghq-{0}-c2oey78nd0-c2oey78nd0.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.min.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\a675xt1bjg-{0}-d4r6k3f320-d4r6k3f320.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\7kt5ncbgl0-{0}-j5mq2jizvt-j5mq2jizvt.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\qlq6hakvge-{0}-keugtjm085-keugtjm085.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.min.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\8ofvpskage-{0}-nvvlpmu67g-nvvlpmu67g.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.min.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\0u57r4j4k2-{0}-zub09dkrxp-zub09dkrxp.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\lejf9m4qck-{0}-pj5nd1wqec-pj5nd1wqec.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\bq7ivq2jwi-{0}-43atpzeawx-43atpzeawx.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap.min.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\nbo4soect7-{0}-v0zj4ognzu-v0zj4ognzu.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap.min.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\3btbavlp5n-{0}-ynyaa8k90p-ynyaa8k90p.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\efrke78jfw-{0}-hrwsygsryq-hrwsygsryq.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\r5d4pypo5g-{0}-c63t5i9ira-c63t5i9ira.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.min.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\8sbhbufm3q-{0}-ft3s53vfgj-ft3s53vfgj.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.min.css.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\xq61dlxoi8-{0}-4094rpi4f9-4094rpi4f9.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\alfv0v7f13-{0}-6pdc2jztkx-6pdc2jztkx.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\tnyt5soc1n-{0}-hd3gran6i8-hd3gran6i8.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\bz4qneunar-{0}-iovd86k7lj-iovd86k7lj.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\8kbxsnp9zs-{0}-ltid2c489k-ltid2c489k.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\js\bootstrap.esm.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\ktqurjlj02-{0}-kbrnm935zg-kbrnm935zg.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\js\bootstrap.esm.js.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\cbijkufhso-{0}-8vyfqsqgz1-8vyfqsqgz1.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\js\bootstrap.esm.min.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\bpb84c10g0-{0}-y7v9cxd14o-y7v9cxd14o.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\js\bootstrap.esm.min.js.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\0fyshguar7-{0}-u9q1upor1n-u9q1upor1n.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\js\bootstrap.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\ei57924ux7-{0}-h1s4sie4z3-h1s4sie4z3.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\js\bootstrap.js.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\pkve05tr8s-{0}-4d85u1mtcx-4d85u1mtcx.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\js\bootstrap.min.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\j5ahyj284g-{0}-0j3bgjxly4-0j3bgjxly4.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\bootstrap\dist\js\bootstrap.min.js.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\mu0ljocqw0-{0}-03hjc8e09r-03hjc8e09r.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery-validation-unobtrusive\dist\jquery.validate.unobtrusive.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\b43xcgej9k-{0}-48y08845bh-48y08845bh.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery-validation-unobtrusive\dist\jquery.validate.unobtrusive.min.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\vsun0jb7o9-{0}-356vix0kms-356vix0kms.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery-validation-unobtrusive\LICENSE.txt'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\mj20eec58b-{0}-83jwlth58m-83jwlth58m.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery-validation\dist\additional-methods.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\9uueezlxas-{0}-mrlpezrjn3-mrlpezrjn3.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery-validation\dist\additional-methods.min.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\k3jwxvtnc9-{0}-worgj0nhwm-worgj0nhwm.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery-validation\dist\jquery.validate.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\8eedcbhrhf-{0}-gk0pw8i4co-gk0pw8i4co.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery-validation\dist\jquery.validate.min.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\qq9160ykyb-{0}-x0q3zqp4vz-x0q3zqp4vz.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery-validation\LICENSE.md'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\ka96imq64n-{0}-d6nrnj6jjx-d6nrnj6jjx.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery\dist\jquery.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\46or5o1dai-{0}-m9qm4tazc0-m9qm4tazc0.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery\dist\jquery.min.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\0escrgt1w7-{0}-ttgo8qnofa-ttgo8qnofa.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery\dist\jquery.min.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\oybyctw0xq-{0}-jjsuc0puko-jjsuc0puko.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery\dist\jquery.slim.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\l33v493zgm-{0}-9vr69e8ynj-9vr69e8ynj.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery\dist\jquery.slim.min.js'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\rwjd4otern-{0}-87fc7y1x7t-87fc7y1x7t.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery\dist\jquery.slim.min.map'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\vgoe1qzznz-{0}-mlv21k5csn-mlv21k5csn.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\wwwroot\lib\jquery\LICENSE.txt'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\caz8j9olk0-{0}-im10ixy7px-im10ixy7px.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\scopedcss\bundle\ConvenienceStore.Web.styles.css'.
+         Accepted compressed asset 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\252zc2akj9-{0}-im10ixy7px-im10ixy7px.gz' for 'D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\scopedcss\projectbundle\ConvenienceStore.Web.bundle.scp.css'.
+         Resolved 64 compressed assets for 64 candidate assets.
+       ResolveBuildCompressedStaticWebAssets:
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\swt6jjfwuv-{0}-b9sayid5wm-b9sayid5wm.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\gdrbcwg057-{0}-61n19gt1b8-61n19gt1b8.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\g1fos6baj2-{0}-xtxxf3hu2r-xtxxf3hu2r.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\np6mjs5ka0-{0}-t1cqhe9u97-t1cqhe9u97.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\5axf9m95dt-{0}-c2jlpeoesf-c2jlpeoesf.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\h3i2fmpv1l-{0}-sejl45xvog-sejl45xvog.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\7pojicm8c8-{0}-aexeepp0ev-aexeepp0ev.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\6tubzs500s-{0}-xvp3kq03qx-xvp3kq03qx.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\n9b7phwue4-{0}-ausgxo2sd3-ausgxo2sd3.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\kh8ift6i2m-{0}-22vffe00uq-22vffe00uq.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\sbllrj68qv-{0}-cosvhxvwiu-cosvhxvwiu.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\e69o3g297t-{0}-qesaa3a1fm-qesaa3a1fm.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\f5foebikhc-{0}-fvhpjtyr6v-fvhpjtyr6v.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\zehsz0awi3-{0}-tmc1g35s3z-tmc1g35s3z.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\yn4it5bwn5-{0}-fsbi9cje9m-fsbi9cje9m.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\9r8rntpvmq-{0}-rxsg74s51o-rxsg74s51o.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\7pcjmo12ss-{0}-ee0r1s7dh0-ee0r1s7dh0.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\mgszunn8z2-{0}-q9ht133ko3-q9ht133ko3.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\nydydmi474-{0}-jd9uben2k1-jd9uben2k1.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\6apj5zx0d7-{0}-gye83jo8yx-gye83jo8yx.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\0bq4dzoese-{0}-r4e9w2rdcm-r4e9w2rdcm.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\cb0wrfrtfd-{0}-wl58j5mj3v-wl58j5mj3v.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\lcn5kk7ghq-{0}-c2oey78nd0-c2oey78nd0.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\a675xt1bjg-{0}-d4r6k3f320-d4r6k3f320.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\7kt5ncbgl0-{0}-j5mq2jizvt-j5mq2jizvt.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\qlq6hakvge-{0}-keugtjm085-keugtjm085.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\8ofvpskage-{0}-nvvlpmu67g-nvvlpmu67g.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\0u57r4j4k2-{0}-zub09dkrxp-zub09dkrxp.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\lejf9m4qck-{0}-pj5nd1wqec-pj5nd1wqec.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\bq7ivq2jwi-{0}-43atpzeawx-43atpzeawx.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\nbo4soect7-{0}-v0zj4ognzu-v0zj4ognzu.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\3btbavlp5n-{0}-ynyaa8k90p-ynyaa8k90p.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\efrke78jfw-{0}-hrwsygsryq-hrwsygsryq.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\r5d4pypo5g-{0}-c63t5i9ira-c63t5i9ira.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\8sbhbufm3q-{0}-ft3s53vfgj-ft3s53vfgj.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\xq61dlxoi8-{0}-4094rpi4f9-4094rpi4f9.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\alfv0v7f13-{0}-6pdc2jztkx-6pdc2jztkx.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\tnyt5soc1n-{0}-hd3gran6i8-hd3gran6i8.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\bz4qneunar-{0}-iovd86k7lj-iovd86k7lj.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\8kbxsnp9zs-{0}-ltid2c489k-ltid2c489k.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\ktqurjlj02-{0}-kbrnm935zg-kbrnm935zg.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\cbijkufhso-{0}-8vyfqsqgz1-8vyfqsqgz1.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\bpb84c10g0-{0}-y7v9cxd14o-y7v9cxd14o.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\0fyshguar7-{0}-u9q1upor1n-u9q1upor1n.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\ei57924ux7-{0}-h1s4sie4z3-h1s4sie4z3.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\pkve05tr8s-{0}-4d85u1mtcx-4d85u1mtcx.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\j5ahyj284g-{0}-0j3bgjxly4-0j3bgjxly4.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\mu0ljocqw0-{0}-03hjc8e09r-03hjc8e09r.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\b43xcgej9k-{0}-48y08845bh-48y08845bh.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\vsun0jb7o9-{0}-356vix0kms-356vix0kms.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\mj20eec58b-{0}-83jwlth58m-83jwlth58m.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\9uueezlxas-{0}-mrlpezrjn3-mrlpezrjn3.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\k3jwxvtnc9-{0}-worgj0nhwm-worgj0nhwm.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\8eedcbhrhf-{0}-gk0pw8i4co-gk0pw8i4co.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\qq9160ykyb-{0}-x0q3zqp4vz-x0q3zqp4vz.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\ka96imq64n-{0}-d6nrnj6jjx-d6nrnj6jjx.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\46or5o1dai-{0}-m9qm4tazc0-m9qm4tazc0.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\0escrgt1w7-{0}-ttgo8qnofa-ttgo8qnofa.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\oybyctw0xq-{0}-jjsuc0puko-jjsuc0puko.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\l33v493zgm-{0}-9vr69e8ynj-9vr69e8ynj.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\rwjd4otern-{0}-87fc7y1x7t-87fc7y1x7t.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\vgoe1qzznz-{0}-mlv21k5csn-mlv21k5csn.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\caz8j9olk0-{0}-im10ixy7px-im10ixy7px.gz
+         Processing compressed asset: D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\obj\Debug\net10.0\compressed\252zc2akj9-{0}-im10ixy7px-im10ixy7px.gz
+       _BuildCopyStaticWebAssetsPreserveNewest:
+       Skipping target "_BuildCopyStaticWebAssetsPreserveNewest" because it has no outputs.
+       _CopyOutOfDateSourceItemsToOutputDirectory:
+       Skipping target "_CopyOutOfDateSourceItemsToOutputDirectory" because all output files are up-to-date with respect to the input files.
+       GenerateBuildDependencyFile:
+       Skipping target "GenerateBuildDependencyFile" because all output files are up-to-date with respect to the input files.
+       GenerateBuildRuntimeConfigurationFiles:
+       Skipping target "GenerateBuildRuntimeConfigurationFiles" because all output files are up-to-date with respect to the input files.
+       CopyFilesToOutputDirectory:
+         ConvenienceStore.Web -> D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\bin\Debug\net10.0\ConvenienceStore.Web.dll
+     2>Done Building Project "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\src\ConvenienceStore.Web\ConvenienceStore.Web.csproj" (default targets).
+     1>GenerateTargetFrameworkMonikerAttribute:
+       Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+       CoreGenerateAssemblyInfo:
+       Skipping target "CoreGenerateAssemblyInfo" because all output files are up-to-date with respect to the input files.
+       _GenerateSourceLinkFile:
+         Source Link file 'obj\Debug\net10.0\ConvenienceStore.Web.Tests.sourcelink.json' is up-to-date.
+       CoreCompile:
+       Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+       _CopyOutOfDateSourceItemsToOutputDirectory:
+       Skipping target "_CopyOutOfDateSourceItemsToOutputDirectory" because all output files are up-to-date with respect to the input files.
+       GenerateBuildDependencyFile:
+       Skipping target "GenerateBuildDependencyFile" because all output files are up-to-date with respect to the input files.
+       GenerateBuildRuntimeConfigurationFiles:
+       Skipping target "GenerateBuildRuntimeConfigurationFiles" because all output files are up-to-date with respect to the input files.
+       CopyFilesToOutputDirectory:
+         ConvenienceStore.Web.Tests -> D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\bin\Debug\net10.0\ConvenienceStore.Web.Tests.dll
+     1>Done Building Project "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\ConvenienceStore.Web.Tests.csproj" (default targets).
+     1>BuildProject:
+         Build completed.
+
+Test run for D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\bin\Debug\net10.0\ConvenienceStore.Web.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.08]   Discovering: ConvenienceStore.Web.Tests
+[xUnit.net 00:00:00.15]   Discovered:  ConvenienceStore.Web.Tests
+[xUnit.net 00:00:00.17]   Starting:    ConvenienceStore.Web.Tests
+  Passed ConvenienceStore.Web.Tests.Modules.Products.Integration.EfCategoryReadRepositoryIntegrationTests.DB06_Size150_IsNormalizedTo100 [1 s]
+[xUnit.net 00:00:02.48]   Finished:    ConvenienceStore.Web.Tests
+  Passed ConvenienceStore.Web.Tests.Modules.Products.Integration.EfCategoryReadRepositoryIntegrationTests.DB08_StoppedProduct_IsCurrentlyCounted [575 ms]
+  Passed ConvenienceStore.Web.Tests.Modules.Products.Integration.EfCategoryReadRepositoryIntegrationTests.DB01_EmptyDatabase_ReturnsEmptyPage [119 ms]
+  Passed ConvenienceStore.Web.Tests.Modules.Products.Integration.EfCategoryReadRepositoryIntegrationTests.DB07_HiddenCategory_IsCurrentlyIncluded [55 ms]
+  Passed ConvenienceStore.Web.Tests.Modules.Products.Integration.EfCategoryReadRepositoryIntegrationTests.DB03_PageTwo_ReturnsLastCategory [198 ms]
+  Passed ConvenienceStore.Web.Tests.Modules.Products.Integration.EfCategoryReadRepositoryIntegrationTests.DB04_CategoryWithTwoProducts_CountsTwo [123 ms]
+  Passed ConvenienceStore.Web.Tests.Modules.Products.Integration.EfCategoryReadRepositoryIntegrationTests.DB02_ThreeCategories_ReturnsTotalThree [37 ms]
+  Passed ConvenienceStore.Web.Tests.Modules.Products.Integration.EfCategoryReadRepositoryIntegrationTests.DB05_CategoryWithoutProducts_CountsZero [21 ms]
+
+Test Run Successful.
+Total tests: 8
+     Passed: 8
+ Total time: 3.0475 Seconds
+     1>Done Building Project "D:\DEV\Languages\web\Convenience-Store-SP07-Integration\tests\ConvenienceStore.Web.Tests\ConvenienceStore.Web.Tests.csproj" (VSTest target(s)).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.78

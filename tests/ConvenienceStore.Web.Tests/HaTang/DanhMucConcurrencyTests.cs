@@ -40,6 +40,31 @@ public sealed class DanhMucConcurrencyTests(CsdlMySqlTam csdl) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Added_UsesInitialDatabaseVersion()
+    {
+        await using var db = csdl.TaoDbContext();
+        var danhMuc = await db.DanhMucs.SingleAsync(x => x.Id == _danhMucId);
+        Assert.Equal(1u, danhMuc.PhienBan);
+    }
+
+    [Fact]
+    public void UpdateSync_IncrementsVersionExactlyOnce()
+    {
+        using var db = csdl.TaoDbContext();
+        var danhMuc = db.DanhMucs.Single(x => x.Id == _danhMucId);
+        var initialVersion = danhMuc.PhienBan;
+
+        danhMuc.MoTa = "updated synchronously";
+        db.SaveChanges();
+
+        Assert.Equal(initialVersion + 1, danhMuc.PhienBan);
+        using var verificationDb = csdl.TaoDbContext();
+        Assert.Equal(initialVersion + 1,
+            verificationDb.DanhMucs.AsNoTracking()
+                .Single(x => x.Id == _danhMucId).PhienBan);
+    }
+
+    [Fact]
     public async Task Update_IncrementsVersionExactlyOnce()
     {
         await using var db = csdl.TaoDbContext();
@@ -68,6 +93,10 @@ public sealed class DanhMucConcurrencyTests(CsdlMySqlTam csdl) : IAsyncLifetime
         await db.SaveChangesAsync();
 
         Assert.Equal(initialVersion, danhMuc.PhienBan);
+        await using var verificationDb = csdl.TaoDbContext();
+        Assert.Equal(initialVersion,
+            (await verificationDb.DanhMucs.AsNoTracking()
+                .SingleAsync(x => x.Id == _danhMucId)).PhienBan);
     }
 
     [Fact]
@@ -89,5 +118,46 @@ public sealed class DanhMucConcurrencyTests(CsdlMySqlTam csdl) : IAsyncLifetime
         await Assert.ThrowsAsync<DbUpdateConcurrencyException>(
             () => contextB.SaveChangesAsync());
         Assert.Equal(versionAfterConflict, categoryB.PhienBan);
+
+        await using var verificationDb = csdl.TaoDbContext();
+        var saved = await verificationDb.DanhMucs.AsNoTracking()
+            .SingleAsync(x => x.Id == _danhMucId);
+        Assert.Equal("changed by A", saved.MoTa);
+        Assert.Equal(categoryA.PhienBan, saved.PhienBan);
+    }
+
+    [Fact]
+    public async Task TwoContexts_ReloadThenRetry_SucceedsWithoutOverwritingPriorChange()
+    {
+        await using var contextA = csdl.TaoDbContext();
+        await using var contextB = csdl.TaoDbContext();
+        var categoryA = await contextA.DanhMucs.SingleAsync(x => x.Id == _danhMucId);
+        var categoryB = await contextB.DanhMucs.SingleAsync(x => x.Id == _danhMucId);
+        var initialVersion = categoryA.PhienBan;
+
+        categoryA.MoTa = "changed by A";
+        await contextA.SaveChangesAsync();
+
+        categoryB.KhongDoiTra = true;
+        await Assert.ThrowsAsync<DbUpdateConcurrencyException>(
+            () => contextB.SaveChangesAsync());
+        Assert.Equal(initialVersion + 1, categoryB.PhienBan);
+
+        var entry = contextB.Entry(categoryB);
+        var databaseValues = await entry.GetDatabaseValuesAsync();
+        Assert.NotNull(databaseValues);
+        entry.CurrentValues.SetValues(databaseValues);
+        entry.OriginalValues.SetValues(databaseValues);
+        categoryB.KhongDoiTra = true;
+
+        await contextB.SaveChangesAsync();
+
+        await using var verificationDb = csdl.TaoDbContext();
+        var saved = await verificationDb.DanhMucs.AsNoTracking()
+            .SingleAsync(x => x.Id == _danhMucId);
+        Assert.Equal("changed by A", saved.MoTa);
+        Assert.True(saved.KhongDoiTra);
+        Assert.Equal(initialVersion + 2, saved.PhienBan);
+        Assert.Equal(saved.PhienBan, categoryB.PhienBan);
     }
 }

@@ -17,7 +17,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ConvenienceStore.Web.Modules.Returns.Services;
 
 public sealed class ReturnOrderService(CuaHangDbContext db, IDichVuKho stock,
-    IReturnPointsGateway points, TimeProvider time)
+    IReturnPointsGateway points, TimeProvider time, ReturnRefundService? refunds = null)
 {
     private sealed record Header(long Id, string Code, string Status, DateTime PurchasedAt,
         int? CustomerId, int PointsEarned);
@@ -133,7 +133,9 @@ public sealed class ReturnOrderService(CuaHangDbContext db, IDichVuKho stock,
             throw Conflict("Điều kiện hoặc số lượng còn trả đã thay đổi. Vui lòng tính lại và xác nhận.");
         if (!preview.NeedsApproval && !request.CashConfirmed)
             throw LoiNghiepVu.DuLieuKhongHopLe("cashConfirmed", "Cần xác nhận hoàn tiền mặt cho khách.");
-        // Phiếu chờ duyệt chưa thực hiện hoàn tiền, cập nhật kho hoặc thu hồi điểm.
+        // Pending slips never execute stock/cash/points side effects.
+        if (!preview.NeedsApproval && preview.PointsBlocked && points is PendingKh06ReturnPointsGateway)
+            throw new LoiNghiepVu("CHUA_TICH_HOP_KH06", 409, "Hóa đơn có điểm tích lũy. Chưa thể hoàn tất vì chưa tích hợp KH-06; chưa hoàn tiền, chưa nhập kho.");
         string period = Now.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
         await db.ChayAsync("INSERT INTO bo_dem_chung_tu (tien_to,ky,so_cuoi) VALUES ('TH',@ky,1) ON DUPLICATE KEY UPDATE so_cuoi=so_cuoi+1", ct, ("@ky", period));
         long serial = Convert.ToInt64(await db.DocMotGiaTriAsync("SELECT so_cuoi FROM bo_dem_chung_tu WHERE tien_to='TH' AND ky=@ky", ct, ("@ky", period)));
@@ -166,6 +168,11 @@ public sealed class ReturnOrderService(CuaHangDbContext db, IDichVuKho stock,
                 if (recovered < 0) throw new InvalidOperationException("KH-06 trả số điểm không hợp lệ.");
                 await db.ChayAsync("UPDATE phieu_doi_tra SET diem_thu_hoi=@d WHERE id=@id", ct, ("@d", recovered), ("@id", id));
             }
+
+            // DT-04: ghi nhận khoản chi tiền mặt trong cùng transaction với DT-02,
+            // tồn kho và KH-06. Thiếu quỹ hoặc lỗi ghi sổ sẽ rollback toàn bộ phiếu.
+            await (refunds ?? new ReturnRefundService(new CashLedgerService()))
+                .RefundAsync(db, id, actor, ct);
         }
         await tx.CommitAsync(ct); return id;
     }

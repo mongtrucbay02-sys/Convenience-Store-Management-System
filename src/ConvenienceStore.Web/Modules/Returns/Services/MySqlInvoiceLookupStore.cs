@@ -41,12 +41,19 @@ public sealed class MySqlInvoiceLookupStore(CuaHangDbContext db) : IInvoiceLooku
             LEFT JOIN khach_hang k ON k.id = h.khach_hang_id
             WHERE {where} ORDER BY h.thanh_toan_luc DESC, h.id DESC
             LIMIT @size OFFSET @offset
-            """, r => new OriginalInvoiceFact {
-                Id = r.SoNguyenDai(0), Ma = r.Chuoi(1), NgayMua = r.NgayGio(2), ThuNganId = r.SoNguyen(3),
-                TenThuNgan = r.Chuoi(4), KhachHangId = r.IsDBNull(5) ? null : r.SoNguyen(5),
-                TenKhachHang = r.ChuoiHoacNull(6), SoDienThoai = r.ChuoiHoacNull(7),
-                TongThanhToan = r.SoNguyenDai(8), TrangThai = r.Chuoi(9)
-            }, cancellationToken, [.. parameters, ("@size", filter.Size), ("@offset", (page - 1) * filter.Size)]);
+            """, r => new OriginalInvoiceFact
+        {
+            Id = r.SoNguyenDai(0),
+            Ma = r.Chuoi(1),
+            NgayMua = r.NgayGio(2),
+            ThuNganId = r.SoNguyen(3),
+            TenThuNgan = r.Chuoi(4),
+            KhachHangId = r.IsDBNull(5) ? null : r.SoNguyen(5),
+            TenKhachHang = r.ChuoiHoacNull(6),
+            SoDienThoai = r.ChuoiHoacNull(7),
+            TongThanhToan = r.SoNguyenDai(8),
+            TrangThai = r.Chuoi(9)
+        }, cancellationToken, [.. parameters, ("@size", filter.Size), ("@offset", (page - 1) * filter.Size)]);
         if (invoices.Count > 0)
         {
             var (ids, args) = TruyVanCsdl.TaoThamSoIn("hd", invoices.Select(i => checked((int)i.Id)));

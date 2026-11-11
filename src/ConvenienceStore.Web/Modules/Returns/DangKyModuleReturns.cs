@@ -11,7 +11,7 @@ public static class DangKyModuleReturns
         services.AddScoped<IInvoiceLookupStore, MySqlInvoiceLookupStore>();
         services.AddScoped<InvoiceLookupService>();
         services.AddScoped<ReturnOrderService>();
-        services.TryAddScoped<IReturnPointsGateway, PendingKh06ReturnPointsGateway>();
+        services.TryAddScoped<IReturnPointsGateway, MySqlReturnPointsGateway>();
         return services;
     }
 }

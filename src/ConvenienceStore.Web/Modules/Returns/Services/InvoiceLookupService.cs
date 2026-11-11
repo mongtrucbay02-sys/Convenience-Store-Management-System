@@ -84,13 +84,21 @@ public sealed class InvoiceLookupService(IInvoiceLookupStore store, TimeProvider
         }).ToArray();
         return new OriginalInvoiceDto
         {
-            Id = invoice.Id, Ma = invoice.Ma, NgayMua = GioVietNam.ThanhOffset(invoice.NgayMua),
-            TrangThai = invoice.TrangThai, TenThuNgan = invoice.TenThuNgan,
+            Id = invoice.Id,
+            Ma = invoice.Ma,
+            NgayMua = GioVietNam.ThanhOffset(invoice.NgayMua),
+            TrangThai = invoice.TrangThai,
+            TenThuNgan = invoice.TenThuNgan,
             TenKhachHang = string.IsNullOrWhiteSpace(invoice.TenKhachHang) ? "Khách lẻ" : invoice.TenKhachHang,
-            SoDienThoai = MaskPhone(invoice.SoDienThoai), TongThanhToan = invoice.TongThanhToan,
-            ChinhSachId = policy.Id, SoNgayDoiTra = policy.SoNgayDoiTra, NgayHetHan = deadline,
-            DaHuy = cancelled, CoTheDoiTra = lines.Any(line => line.HopLe),
-            CanDuyetNgoaiLe = lines.Any(line => line.CanDuyetNgoaiLe), ChiTiet = lines
+            SoDienThoai = MaskPhone(invoice.SoDienThoai),
+            TongThanhToan = invoice.TongThanhToan,
+            ChinhSachId = policy.Id,
+            SoNgayDoiTra = policy.SoNgayDoiTra,
+            NgayHetHan = deadline,
+            DaHuy = cancelled,
+            CoTheDoiTra = lines.Any(line => line.HopLe),
+            CanDuyetNgoaiLe = lines.Any(line => line.CanDuyetNgoaiLe),
+            ChiTiet = lines
         };
     }
 

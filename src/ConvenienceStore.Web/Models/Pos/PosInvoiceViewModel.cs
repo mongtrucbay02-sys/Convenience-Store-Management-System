@@ -33,6 +33,7 @@ public sealed class PosInvoiceViewModel
     public string? CancellationReason { get; set; }
     public string? CancelledBy { get; set; }
     public IReadOnlyList<PosInvoiceReturn> RelatedReturns { get; set; } = [];
+    public PosInvoiceRefund? CancellationRefund { get; set; }
     public long InvoiceId { get; set; }
 
     // BR-POS-11: đối chiếu tài khoản lập hóa đơn khi mở trực tiếp URL.
@@ -66,3 +67,5 @@ public sealed class PosInvoiceViewModel
 
 public sealed record PosInvoiceReturn(long Id, string Code, string Type, string Status,
     DateTime CreatedAt, long Refund, long AdditionalPayment, int PointsReversed, bool IsOriginalInvoice);
+
+public sealed record PosInvoiceRefund(long Amount, string Method, uint PointsReversed, uint PointsNotReversed, string Reason, DateTime At, string Actor);

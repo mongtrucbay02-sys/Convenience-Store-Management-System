@@ -1,39 +1,59 @@
 @using ConvenienceStore.Web.Modules.Returns.Models
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model ReturnOrderPage
-@{ Layout="_AdminLayout";ViewData["Title"]="Lập phiếu trả hàng"; }
+@{
+    Layout = "_AdminLayout"; ViewData["Title"] = "Lập phiếu trả hàng";
+}
 <link rel="stylesheet" href="~/css/return-order.css" asp-append-version="true" />
 <div class="return-order">
-<h1>Lập phiếu trả hàng</h1>
-<p>Hóa đơn @Model.Invoice!.InvoiceCode · @Model.Invoice.PurchasedAt.ToString("dd/MM/yyyy HH:mm")</p>
-<a href="/Returns">← Tra cứu hóa đơn khác</a>
-@if(Model.Error is not null) { <div class="return-warning" role="alert">@Model.Error</div> }
-<p>Nhập 0 để bỏ qua dòng. Giá hoàn được lấy từ hóa đơn gốc; chỉ hoàn tiền mặt.</p>
-<form method="post" asp-controller="ReturnOrders" asp-action="Preview">
-<input type="hidden" name="Request.InvoiceId" value="@Model.Invoice.InvoiceId" />
-@for(int i=0;i<Model.Invoice.Lines.Count;i++)
-{
-    var line=Model.Invoice.Lines[i];var input=Model.Request.Lines?.FirstOrDefault(l=>l.ProductId==line.ProductId);
-    <fieldset class="return-line"><legend>@line.Name</legend>
-    <p>Thực trả: @line.UnitPaid.ToString("N0") đ/@line.Unit · Còn được trả: @line.Remaining</p>
-    @if(line.Forbidden) { <p class="return-warning">Danh mục không đổi trả — phiếu sẽ cần quản lý duyệt.</p> }
-    <input type="hidden" name="Request.Lines[@i].ProductId" value="@line.ProductId" />
-    <label>Số lượng trả<input type="number" name="Request.Lines[@i].Quantity" min="0" max="@line.Remaining" value="@(input?.Quantity??0)" /></label>
-    <label>Lý do<select name="Request.Lines[@i].Reason">
-        <option value="">Chọn lý do</option>
-        <option value="LOI_SAN_PHAM" selected="@(input?.Reason=="LOI_SAN_PHAM")">Lỗi sản phẩm</option>
-        <option value="HET_HAN" selected="@(input?.Reason=="HET_HAN")">Hết hạn</option>
-        <option value="KHONG_DUNG_NHU_CAU" selected="@(input?.Reason=="KHONG_DUNG_NHU_CAU")">Không đúng nhu cầu</option>
-        <option value="KHAC" selected="@(input?.Reason=="KHAC")">Khác</option>
-    </select></label>
-    <label>Ghi chú lý do (bắt buộc nếu chọn Khác)<input name="Request.Lines[@i].Note" maxlength="255" value="@input?.Note" /></label>
-    <label>Tình trạng hàng<input name="Request.Lines[@i].Condition" maxlength="255" value="@input?.Condition" placeholder="Ví dụ: còn nguyên bao bì" /></label>
-    <label>Xử lý hàng<select name="Request.Lines[@i].Handling">
-        <option value="NHAP_LAI" selected="@(input?.Handling!="HUY")">Nhập lại kho</option>
-        <option value="HUY" selected="@(input?.Handling=="HUY")">Hủy — không nhập kho</option>
-    </select></label>
-    </fieldset>
-}
-<button type="submit">Tính tiền hoàn</button>
-<a asp-controller="ReturnOrders" asp-action="Exchange" asp-route-invoiceId="@Model.Invoice.InvoiceId">Khách muốn đổi hàng → DT-03</a>
-</form></div>
+    <h1>Lập phiếu trả hàng</h1>
+    <p>Hóa đơn @Model.Invoice!.InvoiceCode · @Model.Invoice.PurchasedAt.ToString("dd/MM/yyyy HH:mm")</p>
+    <a href="/Returns">← Tra cứu hóa đơn khác</a>
+    @if (Model.Error is not null)
+    {
+        <div class="return-warning" role="alert">@Model.Error</div>
+    }
+    <p>Nhập 0 để bỏ qua dòng. Giá hoàn được lấy từ hóa đơn gốc; chỉ hoàn tiền mặt.</p>
+    <form method="post" asp-controller="ReturnOrders" asp-action="Preview">
+        <input type="hidden" name="Request.InvoiceId" value="@Model.Invoice.InvoiceId" />
+        @for (int i = 0; i < Model.Invoice.Lines.Count; i++)
+        {
+            var line = Model.Invoice.Lines[i]; var input = Model.Request.Lines?.FirstOrDefault(l => l.ProductId == line.ProductId);
+            <fieldset class="return-line">
+                <legend>@line.Name</legend>
+                <p>Thực trả: @line.UnitPaid.ToString("N0") đ/@line.Unit · Còn được trả: @line.Remaining</p>
+                @if (line.Forbidden)
+                {
+                    <p class="return-warning">Danh mục không đổi trả — phiếu sẽ cần quản lý duyệt.</p>
+                }
+                @if (line.Discontinued)
+                {
+                    <p class="return-warning" role="status">E1 — Sản phẩm đã ngừng kinh doanh. Vẫn có thể chọn nhập lại kho theo quy tắc DT-05.</p>
+                }
+                <input type="hidden" name="Request.Lines[@i].ProductId" value="@line.ProductId" />
+                <label>Số lượng trả<input type="number" name="Request.Lines[@i].Quantity" min="0" max="@line.Remaining" value="@(input?.Quantity ?? 0)" /></label>
+                <label>
+                    Lý do
+                    <select name="Request.Lines[@i].Reason">
+                        <option value="">Chọn lý do</option>
+                        <option value="LOI_SAN_PHAM" selected="@(input?.Reason == "LOI_SAN_PHAM")">Lỗi sản phẩm</option>
+                        <option value="HET_HAN" selected="@(input?.Reason == "HET_HAN")">Hết hạn</option>
+                        <option value="KHONG_DUNG_NHU_CAU" selected="@(input?.Reason == "KHONG_DUNG_NHU_CAU")">Không đúng nhu cầu</option>
+                        <option value="KHAC" selected="@(input?.Reason == "KHAC")">Khác</option>
+                    </select>
+                </label>
+                <label>Ghi chú lý do (bắt buộc nếu chọn Khác)<input name="Request.Lines[@i].Note" maxlength="255" value="@input?.Note" /></label>
+                <label>Tình trạng hàng<input name="Request.Lines[@i].Condition" maxlength="255" value="@input?.Condition" placeholder="Ví dụ: còn nguyên bao bì" /></label>
+                <label>
+                    Xử lý hàng
+                    <select name="Request.Lines[@i].Handling">
+                        <option value="NHAP_LAI" selected="@(input?.Handling != "HUY")">Nhập lại kho</option>
+                        <option value="HUY" selected="@(input?.Handling == "HUY")">Hủy — không nhập kho</option>
+                    </select>
+                </label>
+            </fieldset>
+        }
+        <button type="submit">Tính tiền hoàn</button>
+        <a asp-controller="ReturnOrders" asp-action="Exchange" asp-route-invoiceId="@Model.Invoice.InvoiceId">Khách muốn đổi hàng → DT-03</a>
+    </form>
+</div>

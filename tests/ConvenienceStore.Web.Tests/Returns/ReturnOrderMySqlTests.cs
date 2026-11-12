@@ -12,11 +12,37 @@ namespace ConvenienceStore.Web.Tests.Returns;
 [Collection(CsdlKhoCollection.Ten)]
 public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
 {
+
+    /// <summary>
+    /// Gateway giả lập KH-06 chưa được tích hợp.
+    /// Chỉ sử dụng trong kiểm thử.
+    /// </summary>
+    private sealed class PendingKh06ReturnPointsGateway
+        : IReturnPointsGateway
+    {
+        public Task<int> RecoverAsync(
+            CuaHangDbContext db,
+            long invoiceId,
+            long returnId,
+            int cashierId,
+            long refund,
+            CancellationToken ct)
+        {
+            return Task.FromException<int>(
+                new LoiNghiepVu(
+                    "CHUA_TICH_HOP_KH06",
+                    409,
+                    "Chưa tích hợp KH-06 nên không thể thu hồi điểm."
+                )
+            );
+        }
+    }
+
     private static readonly DateTimeOffset Now = new(2026, 11, 5, 15, 0, 0, TimeSpan.FromHours(7));
     private readonly TimeProvider clock = new InvoiceLookupServiceTests.FixedTime(Now);
     private System.Security.Claims.ClaimsPrincipal User => InvoiceLookupServiceTests.Cashier(id: fixture.TaiKhoanThuNganId.ToString());
     private ReturnOrderService Service(CuaHangDbContext db, IReturnPointsGateway? gateway = null) =>
-        new(db, BoTroGoiDichVuKho.TaoDichVu(db), gateway ?? new MySqlReturnPointsGateway(), clock);
+        new(db, BoTroGoiDichVuKho.TaoDichVu(db), gateway ?? new PendingKh06ReturnPointsGateway(), clock);
     private async Task<long> Insert(string sql, params (string, object?)[] args) => Convert.ToInt64(await fixture.DocMotGiaTriAsync(sql, args));
     private sealed record Seed(long Invoice, int Product, long Price, int Quantity, int? Customer);
     private async Task<Seed> Setup(long price = 25000, int quantity = 10, int age = 1, bool forbidden = false, int points = 0, bool withStock = true, long discount = 0)
@@ -74,6 +100,7 @@ public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
         var stock = await new DuLieuTestKho(fixture).DocTonKhoAsync(seed.Product);
         Assert.Equal(3, stock!.SoLuongTon); Assert.Equal(6000m, stock.GiaVonBinhQuan);
         Assert.Equal(1, await new DuLieuTestKho(fixture).DemTheKhoAsync(seed.Product, "TRA_HANG"));
+        Assert.Equal(0m, Assert.Single(receipt.Lines).ScrapValue);
         Assert.Equal(0, receipt.PointsRecovered);
     }
     [Fact]
@@ -89,7 +116,46 @@ public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
         long id = await Create(service, Request(seed, 2, "HUY")); var receipt = await service.ReceiptAsync(id, User);
         Assert.Equal(50000, receipt.Refund); Assert.Equal(2, (await new DuLieuTestKho(fixture).DocTonKhoAsync(seed.Product))!.SoLuongTon);
         Assert.Equal(0, await new DuLieuTestKho(fixture).DemTheKhoAsync(seed.Product, "TRA_HANG"));
+        Assert.Equal(16000m, Assert.Single(receipt.Lines).ScrapValue);
+        // gia_tri_huy là GENERATED STORED: giá vốn gốc 8.000 × 2 sản phẩm.
+        var scrapValue = await fixture.DocMotGiaTriAsync("""
+            SELECT gia_tri_huy
+            FROM ct_phieu_doi_tra
+            WHERE phieu_doi_tra_id = @id AND san_pham_id = @sp
+            """, ("@id", id), ("@sp", seed.Product));
+        Assert.Equal(16000m, Convert.ToDecimal(scrapValue));
     }
+    [Fact]
+    public async Task DiscontinuedProduct_CanStillBeRestocked_E1()
+    {
+        var seed = await Setup();
+        await fixture.ChayAsync(
+            "UPDATE san_pham SET trang_thai='NGUNG_KINH_DOANH' WHERE id=@id",
+            ("@id", seed.Product));
+
+        await using var db = fixture.TaoDbContext();
+        var service = Service(db);
+
+        var form = await service.FormAsync(seed.Invoice, User);
+        Assert.True(Assert.Single(form.Lines).Discontinued);
+
+        var request = Request(seed, 1, "NHAP_LAI");
+        var preview = await service.PreviewAsync(request, User);
+        Assert.True(Assert.Single(preview.Lines).Discontinued);
+        Assert.False(preview.NeedsApproval);
+
+        request.ConfirmationToken = preview.ConfirmationToken;
+        var returnId = await service.CreateAsync(request, User);
+        var receipt = await service.ReceiptAsync(returnId, User);
+
+        Assert.Equal("HOAN_TAT", receipt.Status);
+        Assert.True(Assert.Single(receipt.Lines).Discontinued);
+        Assert.Equal(3, (await new DuLieuTestKho(fixture)
+            .DocTonKhoAsync(seed.Product))!.SoLuongTon);
+        Assert.Equal(1, await new DuLieuTestKho(fixture)
+            .DemTheKhoAsync(seed.Product, "TRA_HANG"));
+    }
+
     [Theory]
     [InlineData(8, false, 25000)]
     [InlineData(1, true, 25000)]
@@ -167,27 +233,12 @@ public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
         var results = await Task.WhenAll(Try(sa, a), Try(sb, b)); Assert.Single(results, x => x); Assert.Equal(1, await CountSlips(seed.Invoice));
     }
     [Fact]
-    public async Task MemberReturn_RecoversPointsProportionallyAcrossPartialReturns()
+    public async Task MissingKh06BlocksMemberCompletionWithoutPartialRefundOrStock()
     {
-        var seed = await Setup(points: 5); await using var db = fixture.TaoDbContext(); var service = Service(db);
-
-        // 25.000/250.000 * 5 = 0,5 điểm: lần trả đầu làm tròn xuống 0.
-        long first = await Create(service, Request(seed, 1));
-        Assert.Equal(0, (await service.ReceiptAsync(first, User)).PointsRecovered);
-
-        // Tính lũy kế 50.000/250.000 * 5 = 1 điểm: lần trả thứ hai thu hồi đủ 1.
-        long second = await Create(service, Request(seed, 1));
-        Assert.Equal(1, (await service.ReceiptAsync(second, User)).PointsRecovered);
-
-        var balance = await fixture.DocMotGiaTriAsync(
-            "SELECT diem_hien_co FROM khach_hang WHERE id=@id", ("@id", seed.Customer));
-        var recovered = await fixture.DocMotGiaTriAsync(
-            "SELECT COALESCE(SUM(-so_diem),0) FROM lich_su_diem WHERE khach_hang_id=@id AND loai='THU_HOI_TRA_HANG'",
-            ("@id", seed.Customer));
-        Assert.Equal(4, Convert.ToInt32(balance));
-        Assert.Equal(1, Convert.ToInt32(recovered));
-        Assert.Equal(1, (await service.ReceiptAsync(first, User)).PointsRecovered
-            + (await service.ReceiptAsync(second, User)).PointsRecovered);
+        var seed = await Setup(points: 5); await using var db = fixture.TaoDbContext(); var service = Service(db); var request = Request(seed);
+        var preview = await service.PreviewAsync(request, User); Assert.True(preview.PointsBlocked); request.ConfirmationToken = preview.ConfirmationToken;
+        Assert.Equal("CHUA_TICH_HOP_KH06", (await Assert.ThrowsAsync<LoiNghiepVu>(() => service.CreateAsync(request, User))).Ma);
+        Assert.Equal(0, await CountSlips(seed.Invoice)); Assert.Equal(2, (await new DuLieuTestKho(fixture).DocTonKhoAsync(seed.Product))!.SoLuongTon);
     }
     private sealed class ThrowingPoints : IReturnPointsGateway
     {

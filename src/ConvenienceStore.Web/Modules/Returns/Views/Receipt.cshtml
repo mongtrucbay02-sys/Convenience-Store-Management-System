@@ -1,15 +1,45 @@
 @using ConvenienceStore.Web.Modules.Returns.Models
 @model ReturnReceipt
-@{ Layout="_AdminLayout";ViewData["Title"]="Phiếu trả hàng";bool done=Model.Status=="HOAN_TAT"; }
+@{
+    Layout = "_AdminLayout"; ViewData["Title"] = "Phiếu trả hàng"; bool done = Model.Status == "HOAN_TAT";
+}
 <link rel="stylesheet" href="~/css/return-order.css" asp-append-version="true" />
-<div class="return-order"><div class="return-no-print"><button type="button" onclick="window.print()">In phiếu trả</button> <a href="/Returns">Về tra cứu</a></div>
-<article class="return-receipt"><h1>SMART MART</h1><h2>PHIẾU TRẢ HÀNG</h2>
-<p>@Model.Code</p><p>Hóa đơn gốc: @Model.InvoiceCode</p>
-<p>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm") · Thu ngân: @Model.Cashier</p>
-@if(!done) { <h2>@(Model.Status=="BI_TU_CHOI"?"BỊ TỪ CHỐI — KHÔNG HOÀN TIỀN":"CHỜ DUYỆT — CHƯA HOÀN TIỀN")</h2> }
-@foreach(var line in Model.Lines) { <div class="return-line"><strong>@line.Name</strong><p>@line.Quantity × @line.UnitPaid.ToString("N0") đ = @((line.Quantity*line.UnitPaid).ToString("N0")) đ</p><p>@(line.Handling=="NHAP_LAI"?"Nhập lại kho":"Hủy") · @line.Condition</p></div> }
-<h2>@(done?"Hoàn tiền mặt":"Giá trị đề nghị hoàn"): @Model.Refund.ToString("N0") đ</h2>
-<p>Điểm đã thu hồi: @Model.PointsRecovered</p>
-@if(done) { <p>Khách xác nhận nhận đủ tiền hoàn.</p><div class="return-sign">Khách hàng ký, ghi rõ họ tên<br /><br /><br />________________________</div> }
-else { <p>Phiếu này không xác nhận đã hoàn tiền hoặc đã xử lý tồn kho.</p> }
-</article></div>
+<div class="return-order">
+    <div class="return-no-print"><button type="button" onclick="window.print()">In phiếu trả</button> <a href="/Returns">Về tra cứu</a></div>
+    <article class="return-receipt">
+        <h1>SMART MART</h1><h2>PHIẾU TRẢ HÀNG</h2>
+        <p>@Model.Code</p><p>Hóa đơn gốc: @Model.InvoiceCode</p>
+        <p>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm") · Thu ngân: @Model.Cashier</p>
+        @if (!done)
+        {
+            <h2>@(Model.Status == "BI_TU_CHOI" ? "BỊ TỪ CHỐI — KHÔNG HOÀN TIỀN" : "CHỜ DUYỆT — CHƯA HOÀN TIỀN")</h2>
+        }
+        @foreach (var line in Model.Lines)
+        {
+            <div class="return-line">
+                <strong>@line.Name</strong>
+                <p>@line.Quantity × @line.UnitPaid.ToString("N0") đ = @((line.Quantity * line.UnitPaid).ToString("N0")) đ</p>
+                <p>@(line.Handling == "NHAP_LAI" ? "Nhập lại kho" : "Hủy") · @line.Condition</p>
+                @if (line.Discontinued && line.Handling == "NHAP_LAI")
+                {
+                    <p class="return-warning">E1 — Sản phẩm đã ngừng kinh doanh; vẫn nhập lại kho.</p>
+                }
+                @if (line.Handling == "HUY")
+                {
+                    <p>Giá trị hàng hủy: <strong>@line.ScrapValue.ToString("N0") đ</strong></p>
+                }
+            </div>
+        }
+        <h2>@(done ? "Hoàn tiền mặt" : "Giá trị đề nghị hoàn"): @Model.Refund.ToString("N0") đ</h2>
+        <p>Điểm đã thu hồi: @Model.PointsRecovered</p>
+        @if (done)
+        {
+            <p>Khách xác nhận nhận đủ tiền hoàn.</p><div class="return-sign">Khách hàng ký, ghi rõ họ tên<br /><br /><br />________________________</div>
+        }
+        else
+        {
+
+            <p>Phiếu này không xác nhận đã hoàn tiền hoặc đã xử lý tồn kho.</p>
+        }
+    </article>
+</div>

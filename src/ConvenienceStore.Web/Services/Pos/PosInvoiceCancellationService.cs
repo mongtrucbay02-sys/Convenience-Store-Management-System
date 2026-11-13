@@ -14,20 +14,21 @@ namespace ConvenienceStore.Web.Services.Pos;
 
 /// <summary>
 /// POS-12: Hủy hóa đơn đã thanh toán.
-/// Không xóa hóa đơn. Các thay đổi nghiệp vụ phải cùng transaction.
+/// Không xóa hóa đơn, không thay đổi mã hóa đơn.
+/// Các thay đổi nghiệp vụ được thực hiện trong cùng transaction.
 /// </summary>
 public sealed class PosInvoiceCancellationService(
     CuaHangDbContext db,
     IDichVuKho stock,
     TimeProvider time)
 {
+    // Thông tin hóa đơn lấy từ bảng hoa_don.
     private sealed record InvoiceRow(
         uint Id,
         string Code,
         string Status,
         uint? CustomerId,
         uint PointsEarned,
-        ulong Total,
         ulong CashReceived,
         ulong Change);
 
@@ -52,7 +53,7 @@ public sealed class PosInvoiceCancellationService(
         ClaimsPrincipal user,
         CancellationToken ct = default)
     {
-        // 1. Validate dữ liệu đầu vào.
+        // 1. Kiểm tra dữ liệu đầu vào.
         if (invoiceId <= 0 || invoiceId > uint.MaxValue)
         {
             throw LoiNghiepVu.DuLieuKhongHopLe(
@@ -71,14 +72,13 @@ public sealed class PosInvoiceCancellationService(
 
         int actor = GetActorId(user);
 
-        // 2. Bắt đầu transaction.
+        // 2. Mở transaction.
         await using var tx =
             await db.Database.BeginTransactionAsync(
                 IsolationLevel.ReadCommitted,
                 ct);
 
-        // 3. Kiểm tra tài khoản và khóa dòng tài khoản.
-        // Ngăn tài khoản bị khóa hoặc đổi vai trò trong lúc hủy.
+        // 3. Kiểm tra tài khoản Admin.
         var role = await db.DocMotGiaTriAsync("""
             SELECT v.ma
             FROM tai_khoan t
@@ -102,7 +102,8 @@ public sealed class PosInvoiceCancellationService(
                 "Chỉ Admin/Quản lý được hủy hóa đơn đã thanh toán.");
         }
 
-        // 4. Khóa hóa đơn để tránh hai Admin hủy đồng thời.
+        // 4. Đọc và khóa hóa đơn.
+        // diem_cong là cột điểm tích lũy trên bảng hoa_don.
         var invoice = await db.DocMotDongAsync("""
             SELECT
                 id,
@@ -110,7 +111,6 @@ public sealed class PosInvoiceCancellationService(
                 trang_thai,
                 khach_hang_id,
                 diem_cong,
-                tong_thanh_toan,
                 tien_khach_dua,
                 tien_thua
             FROM hoa_don
@@ -124,10 +124,11 @@ public sealed class PosInvoiceCancellationService(
                 r.IsDBNull(3)
                     ? null
                     : Convert.ToUInt32(r[3]),
-                Convert.ToUInt32(r[4]),
+                r.IsDBNull(4)
+                    ? 0
+                    : Convert.ToUInt32(r[4]),
                 Convert.ToUInt64(r[5]),
-                Convert.ToUInt64(r[6]),
-                Convert.ToUInt64(r[7])),
+                Convert.ToUInt64(r[6])),
             ct,
             ("@id", invoiceId));
 
@@ -170,9 +171,8 @@ public sealed class PosInvoiceCancellationService(
                 "Không thể hủy; hãy tiếp tục xử lý tại chức năng đổi trả.");
         }
 
-        // 6. Đọc chi tiết hóa đơn.
-        // Tính giá vốn bình quân có trọng số nếu sản phẩm xuất hiện
-        // ở nhiều dòng với giá vốn khác nhau.
+        // 6. Đọc chi tiết sản phẩm của hóa đơn.
+        // Gộp các dòng trùng sản phẩm và tính giá vốn bình quân.
         var lines = await db.DocDanhSachAsync("""
             SELECT
                 san_pham_id,
@@ -198,7 +198,7 @@ public sealed class PosInvoiceCancellationService(
         {
             throw LoiNghiepVu.XungDot(
                 MaLoiChung.XungDotDuLieu,
-                "Hóa đơn không có dòng sản phẩm để hoàn tồn.");
+                "Hóa đơn không có sản phẩm để hoàn tồn kho.");
         }
 
         if (lines.Any(x =>
@@ -208,22 +208,22 @@ public sealed class PosInvoiceCancellationService(
         {
             throw LoiNghiepVu.XungDot(
                 MaLoiChung.XungDotDuLieu,
-                "Chi tiết hóa đơn có dữ liệu số lượng hoặc giá vốn không hợp lệ.");
+                "Chi tiết hóa đơn có số lượng hoặc giá vốn không hợp lệ.");
         }
 
-        // 7. Kiểm tra dữ liệu thanh toán.
+        // 7. Tính số tiền hoàn lại.
         if (invoice.CashReceived < invoice.Change)
         {
             throw LoiNghiepVu.XungDot(
                 MaLoiChung.XungDotDuLieu,
-                "Dữ liệu tiền khách đưa và tiền thừa không hợp lệ.");
+                "Tiền khách đưa và tiền thừa không hợp lệ.");
         }
 
         ulong cashRefund =
             invoice.CashReceived - invoice.Change;
 
-        // 8. Hoàn lại tồn kho và ghi biến động HUY_HOA_DON.
-        // IDichVuKho phải tham gia transaction hiện tại của DbContext.
+        // 8. Hoàn lại tồn kho và ghi thẻ kho.
+        // DichVuKho sử dụng transaction hiện tại của DbContext.
         await stock.GhiNhanBienDongAsync(
             new YeuCauBienDong(
                 LoaiBienDong.HUY_HOA_DON,
@@ -238,7 +238,7 @@ public sealed class PosInvoiceCancellationService(
                     .ToList()),
             ct);
 
-        // 9. E2: Thu hồi điểm đã tích.
+        // 9. E2: Thu hồi điểm tích lũy.
         uint pointsReversed = 0;
         uint pointsNotReversed = 0;
 
@@ -259,12 +259,14 @@ public sealed class PosInvoiceCancellationService(
             {
                 throw LoiNghiepVu.XungDot(
                     MaLoiChung.XungDotDuLieu,
-                    "Khách hàng gắn với hóa đơn không còn hoạt động; " +
+                    "Khách hàng không còn hoạt động; " +
                     "không thể thu hồi điểm an toàn.");
             }
 
             uint balance = Convert.ToUInt32(current);
 
+            // Chỉ thu hồi số điểm khách đang có.
+            // Không để số dư điểm bị âm.
             pointsReversed = Math.Min(
                 invoice.PointsEarned,
                 balance);
@@ -277,9 +279,10 @@ public sealed class PosInvoiceCancellationService(
                     ? $"Thu hồi điểm do hủy hóa đơn {invoice.Code}."
                     : $"Hủy hóa đơn {invoice.Code}; " +
                       $"thu hồi {pointsReversed}/{invoice.PointsEarned} điểm. " +
-                      $"Còn thiếu {pointsNotReversed} điểm do khách đã sử dụng hoặc điều chỉnh.";
+                      $"Còn thiếu {pointsNotReversed} điểm do khách đã sử dụng " +
+                      "hoặc điều chỉnh.";
 
-            // Chỉ thay đổi số dư khi thực sự có điểm cần thu hồi.
+            // Chỉ thay đổi số dư khi có điểm thực tế cần thu hồi.
             if (pointsReversed > 0)
             {
                 await CustomerPoints.ChangeAsync(
@@ -295,14 +298,8 @@ public sealed class PosInvoiceCancellationService(
             }
         }
 
-        // 10. Giải phóng lượt sử dụng khuyến mãi.
-        // Điều kiện: View v_luot_dung_khuyen_mai chỉ đếm hóa đơn
-        // có trạng thái DA_THANH_TOAN.
-        // Khi chuyển trạng thái sang DA_HUY, lượt sử dụng được giải phóng.
-
-        // 11. Ghi nhận hoàn tiền mặt và lịch sử xử lý.
-        // Unique(hoa_don_id) nên được thiết lập trong CSDL
-        // để chống ghi nhận hoàn tiền hai lần.
+        // 10. Ghi nhận hoàn tiền và thông tin kiểm toán.
+        // Cần có bảng hoan_tien_hoa_don với các cột tương ứng.
         await db.ChayAsync("""
             INSERT INTO hoan_tien_hoa_don
             (
@@ -335,8 +332,8 @@ public sealed class PosInvoiceCancellationService(
             ("@reason", reason),
             ("@actor", actor));
 
-        // 12. Chuyển trạng thái hóa đơn.
-        // Không DELETE hóa đơn, không thay đổi mã hóa đơn.
+        // 11. Chuyển trạng thái hóa đơn.
+        // Không xóa hóa đơn và không thay đổi mã hóa đơn.
         var changed = await db.ChayAsync("""
             UPDATE hoa_don
             SET
@@ -356,10 +353,10 @@ public sealed class PosInvoiceCancellationService(
         {
             throw LoiNghiepVu.XungDot(
                 MaLoiChung.XungDotDuLieu,
-                "Hóa đơn đã thay đổi bởi một thao tác khác. Hãy tải lại trang.");
+                "Hóa đơn đã thay đổi bởi thao tác khác. Hãy tải lại trang.");
         }
 
-        // 13. Chỉ commit khi tất cả nghiệp vụ thành công.
+        // 12. Commit khi toàn bộ nghiệp vụ thành công.
         await tx.CommitAsync(ct);
 
         return new CancellationResult(

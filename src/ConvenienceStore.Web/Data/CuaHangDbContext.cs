@@ -34,7 +34,15 @@ public partial class CuaHangDbContext : DbContext
             {
                 var phienBanGoc = entry.OriginalValues.GetValue<uint>(
                     nameof(DanhMuc.PhienBan));
-                entry.Entity.PhienBan = checked(phienBanGoc + 1);
+                // Adapt #168's business-property guard while keeping #204/#207's
+                // retry semantics. Detached Update has equal local originals, so
+                // business IsModified flags must remain authoritative.
+                var coThayDoi = entry.Properties.Any(property =>
+                    property.IsModified &&
+                    property.Metadata.Name != nameof(DanhMuc.PhienBan));
+                var phienBan = entry.Property(e => e.PhienBan);
+                phienBan.CurrentValue = coThayDoi ? checked(phienBanGoc + 1) : phienBanGoc;
+                phienBan.IsModified = coThayDoi;
             }
         }
     }

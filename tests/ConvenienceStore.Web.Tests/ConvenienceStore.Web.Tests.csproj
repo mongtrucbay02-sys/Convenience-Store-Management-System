@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <None Include="..\..\docs\db\schema_v1.sql" Link="SchemaReference\schema_v1.sql" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

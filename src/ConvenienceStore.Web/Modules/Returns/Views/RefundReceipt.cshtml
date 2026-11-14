@@ -1,0 +1,17 @@
+﻿@model ConvenienceStore.Web.Modules.Returns.Services.ReturnRefundReceipt
+@{
+    Layout = "_AdminLayout"; ViewData["Title"] = "Biên nhận hoàn tiền mặt";
+}
+<link rel="stylesheet" href="~/css/return-order.css" asp-append-version="true" />
+<div class="return-order">
+    <h1>Biên nhận hoàn tiền mặt</h1>
+    <p>Phiếu trả: <strong>@Model.ReturnCode</strong></p>
+    <p>Hóa đơn gốc: <strong>@Model.InvoiceCode</strong></p>
+    <h2>Số tiền đã hoàn: @Model.Amount.ToString("N0") đ</h2>
+    <p>Hình thức: Tiền mặt</p>
+    <p>Thu ngân xác nhận: @Model.Cashier</p>
+    <p>Thời điểm ghi nhận: @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</p>
+    <p>Số dư quỹ sau hoàn: @Model.BalanceAfter.ToString("N0") đ</p>
+    <button type="button" onclick="window.print()">In biên nhận</button>
+    <a asp-controller="ReturnOrders" asp-action="Receipt" asp-route-id="@Model.ReturnId">Quay lại phiếu trả hàng</a>
+</div>

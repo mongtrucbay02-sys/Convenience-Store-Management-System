@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore.Storage;
 
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Inventory.Models;
 using ConvenienceStore.Web.Modules.Inventory.Services;
+using ConvenienceStore.Web.Modules.Returns.Services;
 using ConvenienceStore.Web.Shared.Data;
 
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,7 @@ namespace ConvenienceStore.Web.Services.Pos;
 public sealed class MySqlPosCheckoutStore(
     CuaHangDbContext db,
     IDichVuKho kho,
+    CashLedgerService cashLedger,
     ILogger<MySqlPosCheckoutStore> log) : IPosCheckoutStore
 {
     private sealed record GioDangBan(
@@ -58,15 +60,14 @@ public sealed class MySqlPosCheckoutStore(
         long cashReceived,
         CancellationToken cancellationToken)
     {
-        // 1. Bắt buộc có transaction từ PosCheckoutService.
+        // Bắt buộc có transaction từ PosCheckoutService.
         if (db.Database.CurrentTransaction is null)
         {
             throw new InvalidOperationException(
                 "SaveOrderAsync phải chạy trong transaction.");
         }
 
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(
-            cashierId);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(cashierId);
 
         if (cashReceived < 0)
         {
@@ -74,7 +75,7 @@ public sealed class MySqlPosCheckoutStore(
                 "Tiền khách đưa không hợp lệ.");
         }
 
-        // 2. Khóa giỏ hàng đang bán.
+        // 1. Khóa giỏ hàng đang bán.
         var gio = await db.DocMotDongAsync(
             """
             SELECT id, khach_hang_id
@@ -95,7 +96,7 @@ public sealed class MySqlPosCheckoutStore(
                 "Không có đơn đang bán để thanh toán.");
         }
 
-        // 3. Đọc lại giỏ hàng trực tiếp từ database.
+        // 2. Đọc lại giỏ hàng từ database.
         var dong = await db.DocDanhSachAsync(
             """
             SELECT
@@ -125,15 +126,13 @@ public sealed class MySqlPosCheckoutStore(
 
         KiemTraDong(dong);
 
-        // 4. E2: Kiểm tra khuyến mãi trước mọi thao tác ghi.
-        // Nếu có khuyến mãi không hợp lệ, phương thức sẽ
-        // ném PosCheckoutException để Service rollback.
+        // 3. Kiểm tra khuyến mãi.
         await KiemTraKhuyenMaiAsync(
             dong,
             gio.KhachHangId is not null,
             cancellationToken);
 
-        // 5. Tính lại tiền từ dữ liệu trong database.
+        // 4. Tính lại tiền từ dữ liệu database.
         long tongTienHang = 0;
         long tongGiam = 0;
 
@@ -141,16 +140,12 @@ public sealed class MySqlPosCheckoutStore(
         {
             foreach (var d in dong)
             {
-                tongTienHang +=
-                    (long)d.SoLuong * d.DonGia;
-
-                tongGiam +=
-                    (long)d.SoLuong * d.GiamDonVi;
+                tongTienHang += (long)d.SoLuong * d.DonGia;
+                tongGiam += (long)d.SoLuong * d.GiamDonVi;
             }
         }
 
-        long tongThanhToan = checked(
-            tongTienHang - tongGiam);
+        long tongThanhToan = checked(tongTienHang - tongGiam);
 
         if (tongThanhToan <= 0)
         {
@@ -161,13 +156,12 @@ public sealed class MySqlPosCheckoutStore(
         if (cashReceived < tongThanhToan)
         {
             throw new PosCheckoutException(
-                $"Khách đưa chưa đủ. Còn thiếu " +
-                $"{tongThanhToan - cashReceived:N0} đ.");
+                $"Khách đưa chưa đủ. Còn thiếu {tongThanhToan - cashReceived:N0} đ.");
         }
 
         long tienThua = cashReceived - tongThanhToan;
 
-        // 6. Lấy thời gian database và cấp mã hóa đơn.
+        // 5. Lấy thời gian database và cấp mã hóa đơn.
         var bayGio = Convert.ToDateTime(
             await db.DocMotGiaTriAsync(
                 "SELECT NOW()",
@@ -181,7 +175,7 @@ public sealed class MySqlPosCheckoutStore(
             ky,
             cancellationToken);
 
-        // 7. Khóa khách hàng và tính điểm.
+        // 6. Khóa khách hàng và tính điểm.
         KhachHang? khach = null;
         int? soTienMotDiem = null;
         int diemCong = 0;
@@ -201,8 +195,7 @@ public sealed class MySqlPosCheckoutStore(
                 cancellationToken,
                 ("@k", khachId));
 
-            if (khach is null ||
-                khach.TrangThai != "HOAT_DONG")
+            if (khach is null || khach.TrangThai != "HOAT_DONG")
             {
                 throw new PosCheckoutException(
                     "Khách hàng không còn hoạt động.");
@@ -231,11 +224,13 @@ public sealed class MySqlPosCheckoutStore(
 
                 soTienMotDiem = quyTac?.SoTienMotDiem ?? 10000;
 
-                diemCong = ConvenienceStore.Web.Modules.Customers.CustomerRules.EarnedPoints(tongThanhToan, soTienMotDiem);
+                diemCong =
+                    ConvenienceStore.Web.Modules.Customers.CustomerRules
+                        .EarnedPoints(tongThanhToan, soTienMotDiem);
             }
         }
 
-        // 8. Lưu hóa đơn.
+        // 7. Lưu hóa đơn.
         var hoaDonId = Convert.ToInt64(
             await db.DocMotGiaTriAsync(
                 """
@@ -283,9 +278,7 @@ public sealed class MySqlPosCheckoutStore(
                 "Không lấy được ID hóa đơn vừa tạo.");
         }
 
-        // 9. E1: Kiểm tra và trừ tồn kho nguyên tử.
-        // Nếu thiếu tồn, IDichVuKho sẽ ném lỗi.
-        // PosCheckoutService sẽ rollback cả hóa đơn.
+        // 8. Trừ tồn kho trong transaction hiện tại.
         var ketQuaKho = await kho.GhiNhanBienDongAsync(
             new YeuCauBienDong(
                 LoaiBienDong.BAN_HANG,
@@ -305,15 +298,14 @@ public sealed class MySqlPosCheckoutStore(
 
         foreach (var d in dong)
         {
-            if (!giaVonTheoSanPham.ContainsKey(
-                d.SanPhamId))
+            if (!giaVonTheoSanPham.ContainsKey(d.SanPhamId))
             {
                 throw new InvalidOperationException(
                     $"Thiếu thông tin giá vốn của {d.Ten}.");
             }
         }
 
-        // 10. Lưu chi tiết hóa đơn.
+        // 9. Lưu chi tiết hóa đơn.
         foreach (var d in dong)
         {
             await db.ChayAsync(
@@ -345,18 +337,26 @@ public sealed class MySqlPosCheckoutStore(
                 ("@gia", d.DonGia),
                 ("@km", d.KhuyenMaiId),
                 ("@giam", d.GiamDonVi),
-                ("@von",
-                    giaVonTheoSanPham[d.SanPhamId]));
+                ("@von", giaVonTheoSanPham[d.SanPhamId]));
         }
 
-        // KH-06: append points in the transaction that saves the invoice.
+        // 10. Tích điểm khách hàng trong cùng transaction.
         if (khach is not null && diemCong > 0)
         {
-            await ConvenienceStore.Web.Modules.Customers.CustomerPoints.ChangeAsync(
-                db, checked((uint)gio.KhachHangId!.Value), diemCong, "TICH_DIEM", cashierId,
-                checked((uint)hoaDonId), null, null, cancellationToken);
+            await ConvenienceStore.Web.Modules.Customers.CustomerPoints
+                .ChangeAsync(
+                    db,
+                    checked((uint)gio.KhachHangId!.Value),
+                    diemCong,
+                    "TICH_DIEM",
+                    cashierId,
+                    checked((uint)hoaDonId),
+                    null,
+                    null,
+                    cancellationToken);
         }
-        // 12. Hoàn tất giỏ hàng.
+
+        // 11. Hoàn tất giỏ hàng.
         var daChot = await db.ChayAsync(
             """
             UPDATE gio_hang
@@ -376,14 +376,23 @@ public sealed class MySqlPosCheckoutStore(
                 "Không thể hoàn tất đơn hàng.");
         }
 
+        // 12. DT-04: Ghi tăng quỹ bằng doanh thu thực thu.
+        // Dùng cùng DbContext và transaction của POS.
+        // Không commit transaction tại đây.
+        await cashLedger.RecordSaleAsync(
+            db,
+            hoaDonId,
+            cashierId,
+            tongThanhToan,
+            cancellationToken);
+
         log.LogInformation(
-            "POS-07: Đã ghi hóa đơn {Ma}, ID {Id}, " +
-            "tổng tiền {Tong}. Đang chờ commit.",
+            "POS-07: Đã ghi hóa đơn {Ma}, ID {Id}, tổng tiền {Tong}. Đang chờ commit.",
             maHoaDon,
             hoaDonId,
             tongThanhToan);
 
-        // Không commit ở đây.
+        // PosCheckoutService chịu trách nhiệm commit.
         return new PosOrderSaved(
             hoaDonId,
             maHoaDon,
@@ -452,8 +461,7 @@ public sealed class MySqlPosCheckoutStore(
     {
         foreach (var d in dong)
         {
-            if (d.TrangThaiSanPham !=
-                "DANG_KINH_DOANH")
+            if (d.TrangThaiSanPham != "DANG_KINH_DOANH")
             {
                 throw new PosCheckoutException(
                     $"Sản phẩm {d.Ten} không còn kinh doanh.");
@@ -465,8 +473,7 @@ public sealed class MySqlPosCheckoutStore(
                     $"Số lượng của {d.Ten} không hợp lệ.");
             }
 
-            if (d.DonGia <= 0 ||
-                d.DonGia % 100 != 0)
+            if (d.DonGia <= 0 || d.DonGia % 100 != 0)
             {
                 throw new PosCheckoutException(
                     $"Giá của {d.Ten} không hợp lệ.");
@@ -491,14 +498,30 @@ public sealed class MySqlPosCheckoutStore(
         bool coKhach,
         CancellationToken ct)
     {
-        var promotions = await PosPromotionCalculator.ReadAsync(db.Database.GetDbConnection(),
-            db.Database.CurrentTransaction!.GetDbTransaction(), ct);
+        var promotions = await PosPromotionCalculator.ReadAsync(
+            db.Database.GetDbConnection(),
+            db.Database.CurrentTransaction!.GetDbTransaction(),
+            ct);
+
         foreach (var line in dong)
         {
-            var best = PosPromotionCalculator.Best(promotions, line.SanPhamId, line.DonGia, coKhach);
-            long discount = best is null ? 0 : PosPromotionCalculator.Discount(line.DonGia, best);
-            if (line.KhuyenMaiId != best?.Id || line.GiamDonVi != discount)
-                throw new PosCheckoutException("Khuyến mãi đã thay đổi. Đơn hàng chưa được thanh toán. Vui lòng kiểm tra và xác nhận lại tổng tiền.");
+            var best = PosPromotionCalculator.Best(
+                promotions,
+                line.SanPhamId,
+                line.DonGia,
+                coKhach);
+
+            long discount = best is null
+                ? 0
+                : PosPromotionCalculator.Discount(line.DonGia, best);
+
+            if (line.KhuyenMaiId != best?.Id ||
+                line.GiamDonVi != discount)
+            {
+                throw new PosCheckoutException(
+                    "Khuyến mãi đã thay đổi. Đơn hàng chưa được thanh toán. " +
+                    "Vui lòng kiểm tra và xác nhận lại tổng tiền.");
+            }
         }
     }
 }

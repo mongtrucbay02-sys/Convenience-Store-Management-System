@@ -10,6 +10,8 @@ public static class DangKyModuleReturns
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<IInvoiceLookupStore, MySqlInvoiceLookupStore>();
         services.AddScoped<InvoiceLookupService>();
+        services.AddScoped<ReturnOrderService>();
+        services.TryAddScoped<IReturnPointsGateway, MySqlReturnPointsGateway>();
         return services;
     }
 }

@@ -1,0 +1,69 @@
+@using ConvenienceStore.Web.Modules.Returns.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model ReturnOrderPage
+@{
+    Layout = "_AdminLayout"; ViewData["Title"] = "Xác nhận trả hàng"; var preview = Model.Preview!;
+}
+<link rel="stylesheet" href="~/css/return-order.css" asp-append-version="true" />
+<div class="return-order">
+    <h1>Xác nhận trả hàng</h1><p>Hóa đơn @preview.InvoiceCode</p>
+    @foreach (var line in preview.Lines)
+    {
+        <div class="return-line">
+            <strong>@line.Name</strong><p>@line.Quantity × @line.UnitPaid.ToString("N0") đ = @((line.Quantity * line.UnitPaid).ToString("N0")) đ</p>
+            <p>@(line.Handling == "NHAP_LAI" ? "Nhập lại kho" : "Hủy, không nhập kho") · @line.Condition</p>
+            @if (line.Exception)
+            {
+                <p class="return-warning">Ngoại lệ — cần quản lý duyệt.</p>
+            }
+        </div>
+    }
+    <h2>Tiền hoàn: @preview.Refund.ToString("N0") đ</h2>
+    @if (preview.PointsBlocked)
+    {
+        <p>Hóa đơn có điểm tích lũy. Hệ thống sẽ thu hồi điểm tương ứng với giá trị hàng thực trả khi hoàn tất phiếu; số dư điểm không bị âm.</p>
+    }
+    else
+    {
+
+        <p>Không có điểm cần thu hồi.</p>
+    }
+    @if (preview.NeedsApproval)
+    {
+        <div class="return-warning">
+            Phiếu sẽ ở trạng thái CHỜ DUYỆT theo DT-06. Chưa hoàn tiền, chưa thay đổi tồn kho hoặc điểm.
+            @if (preview.Expired)
+            {
+                <p>Quá thời hạn đổi trả.</p>
+            }
+            @if (preview.Forbidden)
+            {
+                <p>Thuộc danh mục không đổi trả.</p>
+            }
+            @if (preview.OverThreshold)
+            {
+                <p>Tiền hoàn vượt ngưỡng chính sách.</p>
+            }
+        </div>
+    }
+    <form method="post" asp-controller="ReturnOrders" asp-action="Create">
+        <input type="hidden" name="Request.InvoiceId" value="@Model.Request.InvoiceId" />
+        <input type="hidden" name="Request.ConfirmationToken" value="@preview.ConfirmationToken" />
+        @for (int i = 0; i < Model.Request.Lines.Count; i++)
+        {
+            var line = Model.Request.Lines[i];
+            <input type="hidden" name="Request.Lines[@i].ProductId" value="@line.ProductId" />
+            <input type="hidden" name="Request.Lines[@i].Quantity" value="@line.Quantity" />
+            <input type="hidden" name="Request.Lines[@i].Reason" value="@line.Reason" />
+            <input type="hidden" name="Request.Lines[@i].Note" value="@line.Note" />
+            <input type="hidden" name="Request.Lines[@i].Condition" value="@line.Condition" />
+            <input type="hidden" name="Request.Lines[@i].Handling" value="@line.Handling" />
+        }
+        @if (!preview.NeedsApproval)
+        {
+            <label><input type="checkbox" name="Request.CashConfirmed" value="true" required /> Xác nhận hoàn tiền mặt khi phiếu hoàn tất</label>
+        }
+        <button type="submit">@(preview.NeedsApproval ? "Gửi chờ duyệt" : "Hoàn tất phiếu trả")</button>
+        <a asp-controller="ReturnOrders" asp-action="New" asp-route-invoiceId="@preview.InvoiceId">Quay lại chọn hàng</a>
+    </form>
+</div>

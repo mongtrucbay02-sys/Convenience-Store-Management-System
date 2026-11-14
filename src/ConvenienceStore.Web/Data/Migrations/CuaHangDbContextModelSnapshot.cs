@@ -265,6 +265,7 @@ namespace ConvenienceStore.Web.Data.Migrations
 
                     b.Property<ulong?>("ThanhTien")
                         .HasColumnType("bigint unsigned")
+                        .HasComputedColumnSql("so_luong * (don_gia - giam_don_vi)", true)
                         .HasColumnName("thanh_tien");
 
                     b.HasKey("HoaDonId", "SanPhamId")
@@ -344,6 +345,7 @@ namespace ConvenienceStore.Web.Data.Migrations
                     b.Property<decimal?>("GiaTriHuy")
                         .HasPrecision(17)
                         .HasColumnType("decimal(17,2)")
+                        .HasComputedColumnSql("IF(cach_xu_ly = 'HUY', so_luong * gia_von, 0)", true)
                         .HasColumnName("gia_tri_huy");
 
                     b.Property<decimal>("GiaVon")
@@ -370,6 +372,7 @@ namespace ConvenienceStore.Web.Data.Migrations
 
                     b.Property<ulong?>("ThanhTien")
                         .HasColumnType("bigint unsigned")
+                        .HasComputedColumnSql("so_luong * don_gia_thuc_tra", true)
                         .HasColumnName("thanh_tien");
 
                     b.Property<string>("TinhTrang")
@@ -421,6 +424,7 @@ namespace ConvenienceStore.Web.Data.Migrations
 
                     b.Property<ulong?>("ThanhTien")
                         .HasColumnType("bigint unsigned")
+                        .HasComputedColumnSql("so_luong * gia_nhap", true)
                         .HasColumnName("thanh_tien");
 
                     b.HasKey("PhieuNhapId", "SanPhamId")
@@ -533,6 +537,7 @@ namespace ConvenienceStore.Web.Data.Migrations
 
                     b.Property<uint?>("DangBanCuaThuNgan")
                         .HasColumnType("int unsigned")
+                        .HasComputedColumnSql("IF(trang_thai = 'DANG_BAN', thu_ngan_id, NULL)", true)
                         .HasColumnName("dang_ban_cua_thu_ngan");
 
                     b.Property<string>("GhiChuTamGiu")

@@ -160,6 +160,22 @@ public sealed class MySqlPosInvoiceStore(
                     d.SoNguyen(7), d.SoNguyenDai(8) == invoiceId),
                 cancellationToken, ("@id", invoiceId));
 
+            if (invoice.Status == "DA_HUY")
+            {
+                invoice.CancellationRefund = await db.DocMotDongAsync(
+                    """
+                    SELECT r.so_tien_hoan,r.phuong_thuc,r.diem_da_thu_hoi,
+                           r.diem_chua_thu_hoi,r.ly_do,r.thoi_diem,t.ho_ten
+                    FROM hoan_tien_hoa_don r
+                    JOIN tai_khoan t ON t.id=r.nguoi_thuc_hien_id
+                    WHERE r.hoa_don_id=@id
+                    """,
+                    r => new PosInvoiceRefund(
+                        r.SoNguyenDai(0), r.Chuoi(1), Convert.ToUInt32(r[2]),
+                        Convert.ToUInt32(r[3]), r.Chuoi(4), r.NgayGio(5), r.Chuoi(6)),
+                    cancellationToken, ("@id", invoiceId));
+            }
+
             log.LogInformation(
                 "POS-07: Đọc thành công hóa đơn " +
                 "{InvoiceCode}, ID {InvoiceId}",

@@ -4,9 +4,13 @@
     Layout = "_AdminLayout";
     var culture = new System.Globalization.CultureInfo("vi-VN");
     string Money(long value) => value.ToString("N0", culture) + " đ";
-    string ReturnStatus(string status) => status switch {
-        "CHO_DUYET" => "Chờ duyệt", "DA_DUYET" => "Đã duyệt",
-        "HOAN_TAT" => "Hoàn tất", "BI_TU_CHOI" => "Bị từ chối", _ => status
+    string ReturnStatus(string status) => status switch
+    {
+        "CHO_DUYET" => "Chờ duyệt",
+        "DA_DUYET" => "Đã duyệt",
+        "HOAN_TAT" => "Hoàn tất",
+        "BI_TU_CHOI" => "Bị từ chối",
+        _ => status
     };
 }
 <link rel="stylesheet" href="~/css/receipt.css" asp-append-version="true" />
@@ -26,7 +30,55 @@
         <a asp-controller="Invoices" asp-action="Index" class="receipt-btn receipt-btn-secondary">← Danh sách hóa đơn</a>
         <button type="button" class="receipt-btn receipt-btn-primary" id="reprintInvoice">In lại hóa đơn K80</button>
     </div>
+    @if (TempData["InvoiceCancelSuccess"] is string success)
+    {
+        <div class="receipt-alert-success" role="status">@success</div>
+    }
+    @if (TempData["InvoiceCancelWarning"] is string warning)
+    {
+        <div class="receipt-alert-error" role="status">@warning</div>
+    }
+    @if (TempData["InvoiceCancelError"] is string cancelError)
+    {
+        <div class="receipt-alert-error" role="alert">@cancelError</div>
+    }
+    @if (ViewData["ShowPos12Alternative"] is true)
+    {
+        <div class="receipt-alert-error" role="note">
+            Nếu phát hiện hóa đơn lập sai, vui lòng báo trực tiếp Admin/Quản lý để người có thẩm quyền thực hiện hủy hóa đơn theo POS-12.
+        </div>
+    }
+    @if (ViewData["CanCancelInvoice"] is true)
+    {
+        <section class="panel" aria-labelledby="cancelInvoiceTitle">
+            <h2 id="cancelInvoiceTitle">Hủy hóa đơn đã thanh toán</h2>
+            <p>
+                Chỉ Admin được thực hiện. Hệ thống sẽ hoàn tồn, thu hồi điểm còn khả dụng,
+                giải phóng lượt khuyến mãi và ghi nhận khoản hoàn tiền mặt trong cùng giao dịch.
+            </p>
+            <form method="post" action="/Invoices/@Model.InvoiceId/cancel" id="cancelInvoiceForm">
+                @Html.AntiForgeryToken()
+                <label for="cancelReason">Lý do hủy (bắt buộc)</label>
+                <textarea id="cancelReason" name="reason" maxlength="255" required
+                          rows="3" style="width:100%;max-width:640px"></textarea>
+                <button type="submit" class="receipt-btn receipt-btn-primary">
+                    Hủy hóa đơn
+                </button>
+            </form>
+        </section>
+    }
     <p class="receipt-print-status" id="reprintStatus" role="status" hidden></p>
+    @if (Model.CancellationRefund is not null)
+    {
+        <section class="panel" aria-labelledby="cancelRefundTitle">
+            <h2 id="cancelRefundTitle">Thông tin hoàn tiền POS-12</h2>
+            <p>Tiền mặt hoàn: <strong>@Money(Model.CancellationRefund.Amount)</strong></p>
+            <p>Phương thức: @Model.CancellationRefund.Method</p>
+            <p>Điểm đã thu hồi: @Model.CancellationRefund.PointsReversed · Điểm chưa thu hồi: @Model.CancellationRefund.PointsNotReversed</p>
+            <p>Người thực hiện: @Model.CancellationRefund.Actor · @Model.CancellationRefund.At.ToString("dd/MM/yyyy HH:mm")</p>
+            <p>Lý do: @Model.CancellationRefund.Reason</p>
+        </section>
+    }
     <div class="receipt-details-grid">
         <div class="receipt-wrapper"><partial name="_ReceiptPaper" model="Model" /></div>
         <section class="panel receipt-related" aria-labelledby="returnsTitle">
@@ -54,6 +106,11 @@
 </div>
 @section Scripts {
     <script>
+        document.getElementById('cancelInvoiceForm')?.addEventListener('submit', function (event) {
+            if (!window.confirm('Bạn chắc chắn muốn hủy toàn bộ hóa đơn này? Thao tác không thể hoàn tác.')) {
+                event.preventDefault();
+            }
+        });
         document.getElementById('reprintInvoice').addEventListener('click', function () {
             const status = document.getElementById('reprintStatus');
             try { window.print(); }

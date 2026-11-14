@@ -1,0 +1,415 @@
+{
+  "sdk": "10.0.401",
+  "provider": "MySql.EntityFrameworkCore 10.0.12",
+  "server": "MySQL 8.4.13, independent Docker, 127.0.0.1:33308",
+  "codeCommit": "a85b4ae48997f272963a9b7785d3f7a9fb894b5b",
+  "runs": [
+    {
+      "suite": "all",
+      "codeCommit": "a85b4ae48997f272963a9b7785d3f7a9fb894b5b",
+      "command": "dotnet test ConvenienceStoreManagement.slnx --no-restore --no-build --logger \"trx;LogFileName=all.trx\" --results-directory tmp/TestResults",
+      "trxSha256": "17dc4647c878506aef7b5f67a09242a10e6ee00fc1da2b182c98630701a4f969",
+      "outcome": "Failed",
+      "counters": {
+        "total": 371,
+        "executed": 371,
+        "passed": 370,
+        "failed": 1,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "groups": {
+        "mysql": {
+          "Passed": 167
+        },
+        "databaseFree": {
+          "Passed": 203,
+          "Failed": 1
+        }
+      },
+      "classResults": {
+        "ConvenienceStore.Web.Tests.PosHeldOrderTests": {
+          "Passed": 15
+        },
+        "ConvenienceStore.Web.Tests.HaTang.DanhMucConcurrencyMetadataTests": {
+          "Passed": 2
+        },
+        "ConvenienceStore.Web.Tests.Returns.InvoiceLookupHttpTests": {
+          "Passed": 14
+        },
+        "ConvenienceStore.Web.Tests.Inventory.TichHopDichVuKhoTests": {
+          "Passed": 4
+        },
+        "ConvenienceStore.Web.Tests.Auth.QuyenVaTokenTests": {
+          "Passed": 19
+        },
+        "ConvenienceStore.Web.Tests.PromotionManagementTests": {
+          "Passed": 51
+        },
+        "ConvenienceStore.Web.Tests.Auth.KhoiTaoAdminDauTienTests": {
+          "Passed": 15
+        },
+        "ConvenienceStore.Web.Tests.Auth.DichVuTaiKhoanQuanTriTests": {
+          "Passed": 15
+        },
+        "ConvenienceStore.Web.Tests.Auth.DichVuTaiKhoanTests": {
+          "Passed": 18
+        },
+        "ConvenienceStore.Web.Tests.Returns.InvoiceLookupServiceTests": {
+          "Passed": 29
+        },
+        "ConvenienceStore.Web.Tests.Inventory.HaTangTestKhoTests": {
+          "Passed": 9
+        },
+        "ConvenienceStore.Web.Tests.Auth.DichVuXacThucTests": {
+          "Passed": 26
+        },
+        "ConvenienceStore.Web.Tests.Inventory.DichVuKhoTests": {
+          "Passed": 21
+        },
+        "ConvenienceStore.Web.Tests.PromotionServiceTests": {
+          "Passed": 15
+        },
+        "ConvenienceStore.Web.Tests.PosInvoiceStoreTests": {
+          "Passed": 2
+        },
+        "ConvenienceStore.Web.Tests.HaTang.DanhMucConcurrencyTests": {
+          "Passed": 15
+        },
+        "ConvenienceStore.Web.Tests.Returns.InvoiceLookupMySqlTests": {
+          "Passed": 7
+        },
+        "ConvenienceStore.Web.Tests.PosInvoiceDetailsTests": {
+          "Passed": 21
+        },
+        "ConvenienceStore.Web.Tests.PosPromotionCalculatorTests": {
+          "Passed": 8
+        },
+        "ConvenienceStore.Web.Tests.HaTang.SchemaMappingTests": {
+          "Passed": 3
+        },
+        "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests": {
+          "Passed": 15
+        },
+        "ConvenienceStore.Web.Tests.PosHeldOrderRenderTests": {
+          "Passed": 2
+        },
+        "ConvenienceStore.Web.Tests.OperationalReportsServiceTests": {
+          "Passed": 5,
+          "Failed": 1
+        },
+        "ConvenienceStore.Web.Tests.Inventory.TinhToanKhoTests": {
+          "Passed": 7
+        },
+        "ConvenienceStore.Web.Tests.DashboardServiceTests": {
+          "Passed": 8
+        },
+        "ConvenienceStore.Web.Tests.CustomerRulesTests": {
+          "Passed": 15
+        },
+        "ConvenienceStore.Web.Tests.CustomerDatabaseTests": {
+          "Passed": 4
+        },
+        "ConvenienceStore.Web.Tests.ReportExcelExporterTests": {
+          "Passed": 1
+        },
+        "ConvenienceStore.Web.Tests.PosInvoiceReceiptRenderTests": {
+          "Passed": 3
+        },
+        "ConvenienceStore.Web.Tests.PosPromotionDatabaseTests": {
+          "Passed": 1
+        }
+      },
+      "failures": [
+        {
+          "name": "ConvenienceStore.Web.Tests.OperationalReportsServiceTests.ProductAndCategoryReports_AllocateInvoiceDeductionsProportionally",
+          "outcome": "Failed",
+          "message": "Assert.Contains() Failure: Filter not matched in collection\r\nCollection: [ReportTableRow { Key = product:1, Cells = System.String[] }, ReportTableRow { Key = product:2, Cells = System.String[] }, ReportTableRow { Key = total, Cells = System.String[] }]"
+        }
+      ]
+    },
+    {
+      "suite": "schema",
+      "codeCommit": "a85b4ae48997f272963a9b7785d3f7a9fb894b5b",
+      "command": "dotnet test ConvenienceStoreManagement.slnx --no-restore --no-build --filter FullyQualifiedName~SchemaStructureTests --logger \"trx;LogFileName=schema.trx\" --results-directory tmp/TestResults",
+      "trxSha256": "21ebb1699d4d8396dc034dd89de639eaf59dbdfc3c8a975bd2e3c18fe835e10d",
+      "outcome": "Completed",
+      "counters": {
+        "total": 15,
+        "executed": 15,
+        "passed": 15,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "groups": {
+        "mysql": {
+          "Passed": 15
+        }
+      },
+      "classResults": {
+        "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests": {
+          "Passed": 15
+        }
+      },
+      "failures": []
+    },
+    {
+      "suite": "mapping",
+      "codeCommit": "a85b4ae48997f272963a9b7785d3f7a9fb894b5b",
+      "command": "dotnet test ConvenienceStoreManagement.slnx --no-restore --no-build --filter FullyQualifiedName~SchemaMappingTests --logger \"trx;LogFileName=mapping.trx\" --results-directory tmp/TestResults",
+      "trxSha256": "ea576aa3f46e3c52ef27030d5bde415117c691b22d106020527e04b2f1081b7a",
+      "outcome": "Completed",
+      "counters": {
+        "total": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "groups": {
+        "databaseFree": {
+          "Passed": 3
+        }
+      },
+      "classResults": {
+        "ConvenienceStore.Web.Tests.HaTang.SchemaMappingTests": {
+          "Passed": 3
+        }
+      },
+      "failures": []
+    },
+    {
+      "suite": "mysql",
+      "codeCommit": "a85b4ae48997f272963a9b7785d3f7a9fb894b5b",
+      "command": "dotnet test ConvenienceStoreManagement.slnx --no-restore --no-build --filter 'FullyQualifiedName~SchemaStructureTests|FullyQualifiedName~DanhMucConcurrencyTests|FullyQualifiedName~Auth.DichVu|FullyQualifiedName~Auth.KhoiTao|FullyQualifiedName~Inventory.DichVuKhoTests|FullyQualifiedName~Inventory.HaTangTestKhoTests|FullyQualifiedName~Inventory.TichHopDichVuKhoTests|FullyQualifiedName~CustomerDatabaseTests|FullyQualifiedName~PosHeldOrderTests|FullyQualifiedName~PosInvoiceStoreTests|FullyQualifiedName~PosPromotionDatabaseTests|FullyQualifiedName~InvoiceLookupMySqlTests' --logger \"trx;LogFileName=mysql.trx\" --results-directory tmp/TestResults",
+      "trxSha256": "4092bfc9ce3613b5528e4950f64019f73f463ce70191402a41fc8fb3eaab4be9",
+      "outcome": "Completed",
+      "counters": {
+        "total": 167,
+        "executed": 167,
+        "passed": 167,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "groups": {
+        "mysql": {
+          "Passed": 167
+        }
+      },
+      "classResults": {
+        "ConvenienceStore.Web.Tests.Returns.InvoiceLookupMySqlTests": {
+          "Passed": 7
+        },
+        "ConvenienceStore.Web.Tests.Inventory.DichVuKhoTests": {
+          "Passed": 21
+        },
+        "ConvenienceStore.Web.Tests.CustomerDatabaseTests": {
+          "Passed": 4
+        },
+        "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests": {
+          "Passed": 15
+        },
+        "ConvenienceStore.Web.Tests.HaTang.DanhMucConcurrencyTests": {
+          "Passed": 15
+        },
+        "ConvenienceStore.Web.Tests.Auth.KhoiTaoAdminDauTienTests": {
+          "Passed": 15
+        },
+        "ConvenienceStore.Web.Tests.Auth.DichVuXacThucTests": {
+          "Passed": 26
+        },
+        "ConvenienceStore.Web.Tests.Auth.DichVuTaiKhoanTests": {
+          "Passed": 18
+        },
+        "ConvenienceStore.Web.Tests.Inventory.HaTangTestKhoTests": {
+          "Passed": 9
+        },
+        "ConvenienceStore.Web.Tests.PosHeldOrderTests": {
+          "Passed": 15
+        },
+        "ConvenienceStore.Web.Tests.Inventory.TichHopDichVuKhoTests": {
+          "Passed": 4
+        },
+        "ConvenienceStore.Web.Tests.Auth.DichVuTaiKhoanQuanTriTests": {
+          "Passed": 15
+        },
+        "ConvenienceStore.Web.Tests.PosInvoiceStoreTests": {
+          "Passed": 2
+        },
+        "ConvenienceStore.Web.Tests.PosPromotionDatabaseTests": {
+          "Passed": 1
+        }
+      },
+      "failures": []
+    },
+    {
+      "suite": "concurrency",
+      "codeCommit": "a85b4ae48997f272963a9b7785d3f7a9fb894b5b",
+      "command": "dotnet test ConvenienceStoreManagement.slnx --no-restore --no-build --filter FullyQualifiedName~DanhMucConcurrency --logger \"trx;LogFileName=concurrency.trx\" --results-directory tmp/TestResults",
+      "trxSha256": "2bdb5abe5593e938dd1bef7219250622424d0aa249d7c23b9900c521d61f6882",
+      "outcome": "Completed",
+      "counters": {
+        "total": 17,
+        "executed": 17,
+        "passed": 17,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "groups": {
+        "mysql": {
+          "Passed": 15
+        },
+        "databaseFree": {
+          "Passed": 2
+        }
+      },
+      "classResults": {
+        "ConvenienceStore.Web.Tests.HaTang.DanhMucConcurrencyTests": {
+          "Passed": 15
+        },
+        "ConvenienceStore.Web.Tests.HaTang.DanhMucConcurrencyMetadataTests": {
+          "Passed": 2
+        }
+      },
+      "failures": []
+    },
+    {
+      "suite": "smoke",
+      "codeCommit": "a85b4ae48997f272963a9b7785d3f7a9fb894b5b",
+      "command": "dotnet test ConvenienceStoreManagement.slnx --no-restore --no-build --filter 'FullyQualifiedName~Auth.DichVuXacThucTests|FullyQualifiedName~PosInvoiceStoreTests|FullyQualifiedName~Inventory.TichHopDichVuKhoTests' --logger \"trx;LogFileName=smoke.trx\" --results-directory tmp/TestResults",
+      "trxSha256": "0736bb0e202a5c54d321499079cd218d1e241a3af5f46cdc803dca445a46199d",
+      "outcome": "Completed",
+      "counters": {
+        "total": 32,
+        "executed": 32,
+        "passed": 32,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "groups": {
+        "mysql": {
+          "Passed": 32
+        }
+      },
+      "classResults": {
+        "ConvenienceStore.Web.Tests.Inventory.TichHopDichVuKhoTests": {
+          "Passed": 4
+        },
+        "ConvenienceStore.Web.Tests.Auth.DichVuXacThucTests": {
+          "Passed": 26
+        },
+        "ConvenienceStore.Web.Tests.PosInvoiceStoreTests": {
+          "Passed": 2
+        }
+      },
+      "failures": []
+    },
+    {
+      "suite": "baseline-reports",
+      "codeCommit": "7e501094807b8bf20413900ff4f13e5d334a156a",
+      "command": "dotnet test ConvenienceStoreManagement.slnx --no-restore --filter 'FullyQualifiedName~OperationalReportsServiceTests.ProductAndCategoryReports_AllocateInvoiceDeductionsProportionally' --logger \"trx;LogFileName=baseline-reports.trx\" --results-directory tmp/TestResults",
+      "trxSha256": "b93df4955da422365a459af9e700a38de9f624812dfe8861e3ad07b68a02af34",
+      "outcome": "Failed",
+      "counters": {
+        "total": 1,
+        "executed": 1,
+        "passed": 0,
+        "failed": 1,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "groups": {
+        "databaseFree": {
+          "Failed": 1
+        }
+      },
+      "classResults": {
+        "ConvenienceStore.Web.Tests.OperationalReportsServiceTests": {
+          "Failed": 1
+        }
+      },
+      "failures": [
+        {
+          "name": "ConvenienceStore.Web.Tests.OperationalReportsServiceTests.ProductAndCategoryReports_AllocateInvoiceDeductionsProportionally",
+          "outcome": "Failed",
+          "message": "Assert.Contains() Failure: Filter not matched in collection\r\nCollection: [ReportTableRow { Key = product:1, Cells = System.String[] }, ReportTableRow { Key = product:2, Cells = System.String[] }, ReportTableRow { Key = total, Cells = System.String[] }]"
+        }
+      ]
+    }
+  ]
+}

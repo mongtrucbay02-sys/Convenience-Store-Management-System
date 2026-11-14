@@ -1,0 +1,371 @@
+{
+  "serverVersion": "8.4.13",
+  "mappedTableColumns": 281,
+  "inspected": 281,
+  "typeMismatches": [],
+  "nullabilityMismatches": [],
+  "defaultRepresentations": [
+    {
+      "key": "bo_dem_chung_tu.ky",
+      "model": "\u0027\u0027",
+      "database": "",
+      "extra": ""
+    },
+    {
+      "key": "bo_dem_chung_tu.so_cuoi",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "chinh_sach_doi_tra.so_ngay_doi_tra",
+      "model": "\u00277\u0027",
+      "database": "7",
+      "extra": ""
+    },
+    {
+      "key": "chinh_sach_doi_tra.nguong_tien_can_duyet",
+      "model": "\u0027500000\u0027",
+      "database": "500000",
+      "extra": ""
+    },
+    {
+      "key": "chuong_trinh_khuyen_mai.chi_thanh_vien",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "chuong_trinh_khuyen_mai.trang_thai",
+      "model": "\u0027NHAP\u0027",
+      "database": "NHAP",
+      "extra": ""
+    },
+    {
+      "key": "chuong_trinh_khuyen_mai.phien_ban",
+      "model": "\u00271\u0027",
+      "database": "1",
+      "extra": ""
+    },
+    {
+      "key": "ct_gio_hang.giam_don_vi",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "ct_hoa_don.giam_don_vi",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "ct_phieu_doi_tra.ngoai_le",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "danh_muc.khong_doi_tra",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "danh_muc.trang_thai",
+      "model": "\u0027HOAT_DONG\u0027",
+      "database": "HOAT_DONG",
+      "extra": ""
+    },
+    {
+      "key": "danh_muc.phien_ban",
+      "model": "\u00271\u0027",
+      "database": "1",
+      "extra": ""
+    },
+    {
+      "key": "gio_hang.trang_thai",
+      "model": "\u0027DANG_BAN\u0027",
+      "database": "DANG_BAN",
+      "extra": ""
+    },
+    {
+      "key": "gio_hang.phien_ban",
+      "model": "\u00271\u0027",
+      "database": "1",
+      "extra": ""
+    },
+    {
+      "key": "hoa_don.tong_giam",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "hoa_don.tien_tru_hang_doi",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "hoa_don.diem_cong",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "hoa_don.trang_thai",
+      "model": "\u0027DA_THANH_TOAN\u0027",
+      "database": "DA_THANH_TOAN",
+      "extra": ""
+    },
+    {
+      "key": "khach_hang.diem_hien_co",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "khach_hang.trang_thai",
+      "model": "\u0027HOAT_DONG\u0027",
+      "database": "HOAT_DONG",
+      "extra": ""
+    },
+    {
+      "key": "khach_hang.phien_ban",
+      "model": "\u00271\u0027",
+      "database": "1",
+      "extra": ""
+    },
+    {
+      "key": "nha_cung_cap.trang_thai",
+      "model": "\u0027HOAT_DONG\u0027",
+      "database": "HOAT_DONG",
+      "extra": ""
+    },
+    {
+      "key": "nha_cung_cap.phien_ban",
+      "model": "\u00271\u0027",
+      "database": "1",
+      "extra": ""
+    },
+    {
+      "key": "phieu_doi_tra.can_duyet_qua_han",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "phieu_doi_tra.can_duyet_danh_muc",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "phieu_doi_tra.can_duyet_vuot_nguong",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "phieu_doi_tra.tien_hoan",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "phieu_doi_tra.tien_thu_them",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "phieu_doi_tra.diem_thu_hoi",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "phieu_kiem_ke.trang_thai",
+      "model": "\u0027NHAP\u0027",
+      "database": "NHAP",
+      "extra": ""
+    },
+    {
+      "key": "phieu_kiem_ke.phien_ban",
+      "model": "\u00271\u0027",
+      "database": "1",
+      "extra": ""
+    },
+    {
+      "key": "phieu_nhap.trang_thai",
+      "model": "\u0027NHAP\u0027",
+      "database": "NHAP",
+      "extra": ""
+    },
+    {
+      "key": "phieu_nhap.tong_tien",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "phieu_nhap.phien_ban",
+      "model": "\u00271\u0027",
+      "database": "1",
+      "extra": ""
+    },
+    {
+      "key": "phieu_xuat_huy.trang_thai",
+      "model": "\u0027NHAP\u0027",
+      "database": "NHAP",
+      "extra": ""
+    },
+    {
+      "key": "phieu_xuat_huy.phien_ban",
+      "model": "\u00271\u0027",
+      "database": "1",
+      "extra": ""
+    },
+    {
+      "key": "quy_tac_tich_diem.so_tien_mot_diem",
+      "model": "\u002710000\u0027",
+      "database": "10000",
+      "extra": ""
+    },
+    {
+      "key": "quy_tac_tich_diem.dang_bat",
+      "model": "\u00271\u0027",
+      "database": "1",
+      "extra": ""
+    },
+    {
+      "key": "san_pham.trang_thai",
+      "model": "\u0027DANG_KINH_DOANH\u0027",
+      "database": "DANG_KINH_DOANH",
+      "extra": ""
+    },
+    {
+      "key": "san_pham.phien_ban",
+      "model": "\u00271\u0027",
+      "database": "1",
+      "extra": ""
+    },
+    {
+      "key": "tai_khoan.trang_thai",
+      "model": "\u0027HOAT_DONG\u0027",
+      "database": "HOAT_DONG",
+      "extra": ""
+    },
+    {
+      "key": "tai_khoan.bat_buoc_doi_mk",
+      "model": "\u00271\u0027",
+      "database": "1",
+      "extra": ""
+    },
+    {
+      "key": "tai_khoan.so_lan_sai",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "tai_khoan.phien_ban",
+      "model": "\u00271\u0027",
+      "database": "1",
+      "extra": ""
+    },
+    {
+      "key": "ton_kho.so_luong_ton",
+      "model": null,
+      "database": "0",
+      "extra": ""
+    },
+    {
+      "key": "ton_kho.gia_von_binh_quan",
+      "model": null,
+      "database": "0.00",
+      "extra": ""
+    },
+    {
+      "key": "ton_kho.nguong_toi_thieu",
+      "model": "\u00275\u0027",
+      "database": "5",
+      "extra": ""
+    }
+  ],
+  "computedColumns": [
+    {
+      "key": "ct_hoa_don.thanh_tien",
+      "Generated": "Never",
+      "expression": "(\u0060so_luong\u0060 * (\u0060don_gia\u0060 - \u0060giam_don_vi\u0060))"
+    },
+    {
+      "key": "ct_phieu_doi_tra.thanh_tien",
+      "Generated": "Never",
+      "expression": "(\u0060so_luong\u0060 * \u0060don_gia_thuc_tra\u0060)"
+    },
+    {
+      "key": "ct_phieu_doi_tra.gia_tri_huy",
+      "Generated": "Never",
+      "expression": "if((\u0060cach_xu_ly\u0060 = _utf8mb4\\\u0027HUY\\\u0027),(\u0060so_luong\u0060 * \u0060gia_von\u0060),0)"
+    },
+    {
+      "key": "ct_phieu_nhap.thanh_tien",
+      "Generated": "Never",
+      "expression": "(\u0060so_luong\u0060 * \u0060gia_nhap\u0060)"
+    },
+    {
+      "key": "gio_hang.dang_ban_cua_thu_ngan",
+      "Generated": "Never",
+      "expression": "if((\u0060trang_thai\u0060 = _utf8mb4\\\u0027DANG_BAN\\\u0027),\u0060thu_ngan_id\u0060,NULL)"
+    }
+  ],
+  "computedColumnInsertProbe": {
+    "outcome": "failed",
+    "mysqlError": 3105,
+    "Message": "The value specified for generated column \u0027thanh_tien\u0027 in table \u0027ct_phieu_nhap\u0027 is not allowed."
+  },
+  "tokens": [
+    {
+      "table": "chuong_trinh_khuyen_mai",
+      "IsConcurrencyToken": true
+    },
+    {
+      "table": "danh_muc",
+      "IsConcurrencyToken": true
+    },
+    {
+      "table": "gio_hang",
+      "IsConcurrencyToken": false
+    },
+    {
+      "table": "khach_hang",
+      "IsConcurrencyToken": false
+    },
+    {
+      "table": "nha_cung_cap",
+      "IsConcurrencyToken": false
+    },
+    {
+      "table": "phieu_kiem_ke",
+      "IsConcurrencyToken": false
+    },
+    {
+      "table": "phieu_nhap",
+      "IsConcurrencyToken": false
+    },
+    {
+      "table": "phieu_xuat_huy",
+      "IsConcurrencyToken": false
+    },
+    {
+      "table": "san_pham",
+      "IsConcurrencyToken": false
+    },
+    {
+      "table": "tai_khoan",
+      "IsConcurrencyToken": false
+    }
+  ]
+}

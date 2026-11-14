@@ -289,7 +289,9 @@ public partial class CuaHangDbContext : DbContext
             entity.Property(e => e.TenSanPham)
                 .HasMaxLength(200)
                 .HasColumnName("ten_san_pham");
-            entity.Property(e => e.ThanhTien).HasColumnName("thanh_tien");
+            entity.Property(e => e.ThanhTien)
+                .HasComputedColumnSql("so_luong * (don_gia - giam_don_vi)", stored: true)
+                .HasColumnName("thanh_tien");
 
             entity.HasOne(d => d.HoaDon).WithMany(p => p.CtHoaDons)
                 .HasForeignKey(d => d.HoaDonId)
@@ -360,6 +362,7 @@ public partial class CuaHangDbContext : DbContext
                 .HasColumnName("ghi_chu_ly_do");
             entity.Property(e => e.GiaTriHuy)
                 .HasPrecision(17)
+                .HasComputedColumnSql("IF(cach_xu_ly = 'HUY', so_luong * gia_von, 0)", stored: true)
                 .HasColumnName("gia_tri_huy");
             entity.Property(e => e.GiaVon)
                 .HasPrecision(15)
@@ -370,7 +373,9 @@ public partial class CuaHangDbContext : DbContext
                 .HasColumnName("ly_do");
             entity.Property(e => e.NgoaiLe).HasColumnName("ngoai_le");
             entity.Property(e => e.SoLuong).HasColumnName("so_luong");
-            entity.Property(e => e.ThanhTien).HasColumnName("thanh_tien");
+            entity.Property(e => e.ThanhTien)
+                .HasComputedColumnSql("so_luong * don_gia_thuc_tra", stored: true)
+                .HasColumnName("thanh_tien");
             entity.Property(e => e.TinhTrang)
                 .HasMaxLength(255)
                 .HasColumnName("tinh_trang");
@@ -410,7 +415,9 @@ public partial class CuaHangDbContext : DbContext
             entity.Property(e => e.TenSanPham)
                 .HasMaxLength(200)
                 .HasColumnName("ten_san_pham");
-            entity.Property(e => e.ThanhTien).HasColumnName("thanh_tien");
+            entity.Property(e => e.ThanhTien)
+                .HasComputedColumnSql("so_luong * gia_nhap", stored: true)
+                .HasColumnName("thanh_tien");
 
             entity.HasOne(d => d.PhieuNhap).WithMany(p => p.CtPhieuNhaps)
                 .HasForeignKey(d => d.PhieuNhapId)
@@ -505,7 +512,9 @@ public partial class CuaHangDbContext : DbContext
             entity.HasIndex(e => e.DangBanCuaThuNgan, "uq_gio_dang_ban").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.DangBanCuaThuNgan).HasColumnName("dang_ban_cua_thu_ngan");
+            entity.Property(e => e.DangBanCuaThuNgan)
+                .HasComputedColumnSql("IF(trang_thai = 'DANG_BAN', thu_ngan_id, NULL)", stored: true)
+                .HasColumnName("dang_ban_cua_thu_ngan");
             entity.Property(e => e.GhiChuTamGiu)
                 .HasMaxLength(100)
                 .HasColumnName("ghi_chu_tam_giu");

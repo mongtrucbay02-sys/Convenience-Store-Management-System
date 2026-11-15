@@ -22,6 +22,8 @@ public static class DangKyModuleProducts
             return new DiskProductImageStore(Path.Combine(env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot"), "uploads", "products"));
         });
         services.AddScoped<ProductImageService>();
+        services.AddScoped<IProductEditRepository, EfProductEditRepository>();
+        services.AddScoped<ProductEditService>();
         return services;
     }
 }

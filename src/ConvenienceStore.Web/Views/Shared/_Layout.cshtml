@@ -55,6 +55,10 @@
 
                     <!-- MENU BÊN TRÁI -->
                     <ul class="navbar-nav me-auto">
+                        @if (User.HasClaim("quyen", "SAN_PHAM_XEM"))
+                        {
+                            <li class="nav-item"><a class="nav-link" href="/Categories">Danh mục</a></li>
+                        }
 
                         <li class="nav-item">
                             <a class="nav-link"

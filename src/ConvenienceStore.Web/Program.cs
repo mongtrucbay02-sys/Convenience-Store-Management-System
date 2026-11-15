@@ -1,3 +1,4 @@
+using ConvenienceStore.Web.Modules.Products;
 
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Auth;
@@ -137,6 +138,7 @@ builder.Services.AddModuleAuth();
 
 // Quản lý tồn kho
 builder.Services.AddModuleInventory();
+builder.Services.AddModuleProducts();
 
 // Đổi trả
 builder.Services.AddModuleReturns();

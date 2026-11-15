@@ -18,3 +18,13 @@ Name is trimmed, required, maximum 100 characters. Description is trimmed, optio
 Razor: `/Categories`, `/Categories/Create`, `/Categories/{id}/Edit`. AD alone receives create/edit links. Form POSTs require MVC antiforgery; validation and conflict errors are rendered with encoded values. Browser E2E has not been executed.
 
 Pending business approval: SP-07 product-count scope and hidden-category visibility. Current management listing behavior is preserved. No API integration or acceptance on develop is claimed by local verification.
+
+## GET /api/v1/products — SP-01
+
+Permission: AD, NK, TN (`SanPhamXem`). Returns `items,total,page,size`. Each item contains `id,ma,tenSanPham,danhMucId,danhMuc:{id,ten},donViTinh,giaBan,tonKho,giaVon,trangThai,phienBan`. `giaVon` is null for NK/TN; TN can only retrieve DANG_KINH_DOANH products. No role query/header can override session permissions.
+
+Parameters: `page` (positive, default 1, offset within Int32), `size` (positive, default 20, capped at 100), `keyword` (up to 200, literal case/accent-insensitive substring of code/name), `danhMucId` (positive), `trangThai` (runtime product enum), `giaBanTu`/`giaBanDen` (inclusive, 0..UInt32.MaxValue, ordered), `sort` (default tenSanPham).
+
+Sort supports `ma,tenSanPham,giaBan,trangThai,ngayTao`; prefix `-` for descending, comma-separated unique fields, always followed by ID as a stable tie-breaker. Unknown filter/sort, invalid enum, impossible offset or invalid numeric range → 422. Malformed numeric binding → 400. `%`, `_` and `!` in keywords remain literal characters, not pattern syntax. Values are parameterized. An empty result is 200 with an empty items array. Effective price comes from the existing MySQL view and excludes future/cancelled history; stock/cost are read in one batch through IDichVuKho.
+
+Razor management screen: `/Products`, with matching query parameters, escaped output, preserved filters in pagination links and an explicit empty/error state. Category suggestions are bounded to 100; the linked category list supplies IDs for other categories. Navbar visibility follows SanPhamXem. HTTP/Razor coverage is separate from browser E2E (NOT RUN).

@@ -2,6 +2,7 @@
 @model PagedResultDto<ProductListItemDto>
 @{ Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Sản phẩm"; var query = ViewData["Query"] as ProductListQuery ?? new(); }
 <h1>Sản phẩm</h1>
+@if(User.HasClaim("quyen", "SAN_PHAM_SUA")){<a href="/Products/Create">Thêm sản phẩm</a>}
 <form method="get" action="/Products" class="mb-3">
     <label>Từ khóa <input name="keyword" value="@query.Keyword" maxlength="200" /></label>
     <label>Danh mục <input name="danhMucId" list="product-categories" type="number" min="1" value="@query.DanhMucId" /></label>

@@ -40,3 +40,17 @@ Permission AD/NK/TN, with the same TN active-only restriction applied to direct 
 Parameters: `page=1`, `size=20` (positive, max 100), `daLenLich=true`. Stable order: effective date descending, then ID descending. `daLenLich=false` returns all price history and requires AD; other actors receive 403. Invalid pagination/unknown filter → 422; invalid numeric/bool binding → 400; missing/TN-invisible product → 404. Returns the common paged envelope. All reads are authenticated/no-store and never mutate state.
 
 Razor details: `/Products/{id}`, reached from a product-name link on the management list. `/Products/{id}/Prices?page=1&size=20&daLenLich=true` provides previous/next navigation for all scheduled prices; `daLenLich=false` is AD-only history. Encodes names/descriptions, validates image URLs, shows an explicit missing/error state, and restricts cost/history sections to AD. Browser E2E NOT RUN.
+
+## POST /api/v1/products — SP-03 (standalone verified; A1 blocked)
+
+AD/NK (`SanPhamSua`), real session plus XSRF. Body: `{ma?,tenSanPham,danhMucId,donViTinh,giaBan,nguongToiThieu=5,moTa?}`. Code optional/generated, trimmed, max 20 and unique under the current database collation. Name required/max 200, active category required, unit required/max 20, price integral VND >0 and divisible by 100 within UInt32, threshold integer >=0, description optional/max 1000. Validation reports all invalid fields with 422; malformed numeric JSON → 400. Duplicate code → 409 `TRUNG_MA_SAN_PHAM`. TN → 403. Unknown stock/cost/status/owner/ID/history fields cannot be written through this DTO.
+
+201 + `Location: /api/v1/products/{id}` and the role-filtered SP-02 response. One transaction inserts the product, initial price effective at database NOW and zero stock/cost through IDichVuKho. Initial version 1, active product, threshold default 5. Shared category lock keeps active selection consistent with concurrent category changes. No transaction-dependent history or stock survives rollback. NK initial-price permission cannot change an existing product's price.
+
+Razor `/Products/Create` posts multipart with MVC antiforgery and field/binding validation. Optional `Anh` is validated before inserts. `_ProductFields.cshtml` is shared by the standard/compact (`?compact=true`) form; **NH-04 host/adding the new product into its draft row is absent and remains BLOCKED**. A passing standalone form is not evidence that A1 works. No completion/acceptance claim for #58.
+
+## POST /api/v1/products/{id}/image — SP-03/SP-04
+
+AD/NK plus XSRF. Multipart fields `image` (JPG/PNG, <=2 MiB) and `phienBan` (current positive version). MIME/header/trailer recognition, bounded reads and generated GUID filenames; original filename is never used. This does not perform full pixel decoding. The endpoint caps the total request at 3 MiB. A successful atomic version predicate updates only image URL/version and returns the SP-02 response (200). Invalid image/version → 422; missing product → 404; stale/concurrent version → 409. Image update cannot set price/stock or overwrite another metadata edit silently.
+
+Uploaded files live under the existing static web root `/uploads/products/` and are ignored by Git. Exact newly-created files are removed on known pre-write conflicts; old/shared files are preserved. Unknown database commit outcomes preserve the candidate file to avoid removing a potentially committed image. Orphan-media cleanup is an operational task. No credentials or binaries from builds are tracked.

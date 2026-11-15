@@ -14,6 +14,14 @@ public static class DangKyModuleProducts
         services.AddScoped<ProductReadService>();
         services.AddScoped<IProductDetailRepository, EfProductDetailRepository>();
         services.AddScoped<ProductDetailService>();
+        services.AddScoped<IProductCreationRepository, EfProductCreationRepository>();
+        services.AddScoped<ProductCreationService>();
+        services.AddScoped<IProductImageRepository, EfProductImageRepository>();
+        services.AddScoped<IProductImageStore>(sp => {
+            var env = sp.GetRequiredService<IWebHostEnvironment>();
+            return new DiskProductImageStore(Path.Combine(env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot"), "uploads", "products"));
+        });
+        services.AddScoped<ProductImageService>();
         return services;
     }
 }

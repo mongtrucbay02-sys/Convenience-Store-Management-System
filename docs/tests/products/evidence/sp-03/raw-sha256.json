@@ -1,0 +1,23 @@
+{
+  "artifacts/sp-module/sp-03/build.log": "37680d8264ce5dd4ea825101caf20d44217d3ec6e59f202f1653e74b10b092b5",
+  "artifacts/sp-module/sp-03/core-build.log": "3ed88fc27ae80c10b107c1c15ce36a0c5259f8db9fde2900d71de10afc5f0d61",
+  "artifacts/sp-module/sp-03/core.log": "efb31a518580d17d6a9a2046754007cf60d2a709bea57a20dc75165cf3a0b19a",
+  "artifacts/sp-module/sp-03/core.trx": "68fcd25d90962b8a8aed81f69506db6bb8590a6ddd1cad0eb59054abd91f439f",
+  "artifacts/sp-module/sp-03/discovery.log": "395460437f0f98380dc076afe88a6d6e7491adff73393d5f61916c4c174e734d",
+  "artifacts/sp-module/sp-03/full.log": "73d6c2bcad7af30498069129a92eec633e9f59ef0529e395afccf142e03360e2",
+  "artifacts/sp-module/sp-03/full.trx": "3abae4f74e92eb98777497ca9f386cac2885228e492720beff5b38f7f60e15ac",
+  "artifacts/sp-module/sp-03/http.log": "89d071f78566f9b5eec7d2247645872fe8de898251cb31183ed596b63f7dc7a8",
+  "artifacts/sp-module/sp-03/http.trx": "f11f6141403582c5ee3f6e1af10abf2f910f6378c7ed2e0c15b85eefaa49ee4c",
+  "artifacts/sp-module/sp-03/image-red-build.log": "9412457a987ed867c833def2316ffdcea4eeb2ad1594bb6256503e7534909e96",
+  "artifacts/sp-module/sp-03/image-red.log": "e1783e82de207ddea427d44b73b4432692d6ff5aa43f1eb9188c8b3863065c92",
+  "artifacts/sp-module/sp-03/image-red.trx": "b5258a487fac529ba62f0c0c924598b25567657b36f08094cc7c433b21657afe",
+  "artifacts/sp-module/sp-03/mysql.log": "0ceba38fcfb57005fb52bf7c39ba2b7838683ba939963c22880543ef7572a875",
+  "artifacts/sp-module/sp-03/mysql.trx": "86326197aa7b10d3d9a730d6636deae97d3924e0fef69610fdab7f13dedcbee7",
+  "artifacts/sp-module/sp-03/red-build.log": "22eb9f6bdabd74ae42e5c63dd2de9f9efc33bf2a04b2b97b554e89101a1cc742",
+  "artifacts/sp-module/sp-03/red.log": "224d3c62de68d317fd29051c2075af500a2c14e435fdc4b80f3b9af9e72f0e5b",
+  "artifacts/sp-module/sp-03/red.trx": "3ad87e9173527fbfdeba69737ebbcbf5b06bf8d71108ff5e19191d010b8a5b82",
+  "artifacts/sp-module/sp-03/regression.log": "f8af0eefd5df4f44f07392fde5b6d5847d5c87df00eb8fcf20fe22bcbbc94dac",
+  "artifacts/sp-module/sp-03/regression.trx": "e4e7d03d6c43313214314fd88594ab5e1284c7a65fc4529e7af340e4e451ff4e",
+  "artifacts/sp-module/sp-03/unit.log": "9a26ba4a8dd58f77e5895033f8138c5f2d9422f5ecccc57d4323443daf32a4ec",
+  "artifacts/sp-module/sp-03/unit.trx": "826e433b0daa9fd0715f3f495b22d549210fef86540160e4c9f4eeb312094395"
+}

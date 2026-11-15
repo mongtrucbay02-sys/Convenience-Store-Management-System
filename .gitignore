@@ -486,3 +486,6 @@ appsettings.Local.json
 appsettings.*.local.json
 .env.*
 !.env.example
+
+# User-uploaded product media; never source-controlled.
+src/ConvenienceStore.Web/wwwroot/uploads/products/

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ConvenienceStore.Web.Controllers;
 
-[Authorize(Policy = MaQuyen.BanHang)]
+[Authorize(Roles = "AD,TN")]
 public sealed class PosController : Controller
 {
     private readonly PosHeldOrderService _heldOrders;

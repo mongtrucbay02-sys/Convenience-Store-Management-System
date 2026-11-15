@@ -1,6 +1,7 @@
 
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Auth;
+using ConvenienceStore.Web.Modules.Auth.Security;
 using ConvenienceStore.Web.Modules.Auth.Services;
 using ConvenienceStore.Web.Modules.Inventory;
 using ConvenienceStore.Web.Modules.Products.Services;
@@ -20,16 +21,46 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ConvenienceStore.Web.Modules.Customers.CustomerService>();
+
+builder.Services.AddScoped<
+    ConvenienceStore.Web.Modules.Customers.CustomerService>();
+
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddScoped<IDashboardDataSource, MySqlDashboardDataSource>();
-builder.Services.AddScoped<IDashboardService, DashboardService>();
-builder.Services.AddScoped<IOperationalReportDataSource, MySqlTransactionalReportsDataSource>();
-builder.Services.AddScoped<ITransactionalReportsDataSource, MySqlTransactionalReportsDataSource>();
-builder.Services.AddScoped<IOperationalReportsService, OperationalReportsService>();
-builder.Services.AddScoped<IPromotionDataSource, MySqlPromotionDataSource>();
-builder.Services.AddScoped<IProductLookup, MySqlProductLookup>();
-builder.Services.AddScoped<IPromotionService, PromotionService>();
+
+// Dashboard
+builder.Services.AddScoped<
+    IDashboardDataSource,
+    MySqlDashboardDataSource>();
+
+builder.Services.AddScoped<
+    IDashboardService,
+    DashboardService>();
+
+// Báo cáo
+builder.Services.AddScoped<
+    IOperationalReportDataSource,
+    MySqlTransactionalReportsDataSource>();
+
+builder.Services.AddScoped<
+    ITransactionalReportsDataSource,
+    MySqlTransactionalReportsDataSource>();
+
+builder.Services.AddScoped<
+    IOperationalReportsService,
+    OperationalReportsService>();
+
+// Khuyến mãi
+builder.Services.AddScoped<
+    IPromotionDataSource,
+    MySqlPromotionDataSource>();
+
+builder.Services.AddScoped<
+    IProductLookup,
+    MySqlProductLookup>();
+
+builder.Services.AddScoped<
+    IPromotionService,
+    PromotionService>();
 
 // ==========================================
 // 2. KẾT NỐI MYSQL
@@ -53,7 +84,7 @@ builder.Services.AddDbContext<CuaHangDbContext>(options =>
 });
 
 // ==========================================
-// 3. SERVICE POS-01, POS-05, POS-07
+// 3. SERVICE POS-01, POS-02, POS-05, POS-07, POS-09
 // ==========================================
 
 // POS-01: Danh mục và sản phẩm
@@ -71,6 +102,7 @@ builder.Services.AddScoped<PosCheckoutService>();
 
 // POS-07: Đọc và in hóa đơn
 builder.Services.AddScoped<PosInvoiceService>();
+builder.Services.AddScoped<PosInvoiceCancellationService>();
 
 // POS-07: Store lưu đơn hàng
 builder.Services.AddScoped<
@@ -83,14 +115,15 @@ builder.Services.AddScoped<
     MySqlPosInvoiceStore>();
 
 // ==========================================
-// 4. SERVICE POS-10
+// 4. SERVICE POS-10, POS-11
 // ==========================================
 
-// Service tra cứu danh sách hóa đơn
+// POS-10: Tra cứu danh sách hóa đơn
 builder.Services.AddScoped<PosInvoiceListService>();
 
-// Store đọc danh sách hóa đơn
-builder.Services.AddScoped<IPosInvoiceListStore, MySqlPosInvoiceListStore>();
+builder.Services.AddScoped<
+    IPosInvoiceListStore,
+    MySqlPosInvoiceListStore>();
 
 // ==========================================
 // 5. MODULE CỦA NHÓM
@@ -99,31 +132,68 @@ builder.Services.AddScoped<IPosInvoiceListStore, MySqlPosInvoiceListStore>();
 // Xử lý lỗi API
 builder.Services.AddXuLyLoiApi();
 
-// AUTH: đăng nhập và phân quyền
+// AUTH: Đăng nhập và phân quyền
 builder.Services.AddModuleAuth();
 
 // Quản lý tồn kho
 builder.Services.AddModuleInventory();
+
+// Đổi trả
 builder.Services.AddModuleReturns();
 
 // ==========================================
-// 6. PHÂN QUYỀN POS-10
+// 6. PHÂN QUYỀN
 // ==========================================
 
-// Dùng claim quyền do module AUTH cấp khi đăng nhập.
 builder.Services.AddAuthorization(options =>
 {
+    // Quyền Admin theo cấu hình AUTH hiện tại
     options.AddPolicy(
         AuthorizationPolicies.AdminOnly,
-        policy => policy.RequireRole(AuthorizationPolicies.AdminRole));
+        policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireRole(
+                AuthorizationPolicies.AdminRole);
+        });
+
+    // POS: Admin hoặc tài khoản có quyền BAN_HANG
+    options.AddPolicy(
+        MaQuyen.BanHang,
+        policy =>
+        {
+            policy.RequireAuthenticatedUser();
+
+            policy.RequireAssertion(context =>
+                context.User.IsInRole(
+                    AuthorizationPolicies.AdminRole)
+                ||
+                context.User.HasClaim(
+                    ThongTinXacThuc.ClaimQuyen,
+                    MaQuyen.BanHang));
+        });
+
+    // POS-10, POS-11: Xem hóa đơn
     options.AddPolicy(
         PosInvoiceAccess.PolicyXem,
         policy =>
         {
             policy.RequireAuthenticatedUser();
 
-            // BR-POS-11: quyền xem tất cả hoặc xem của mình.
-            policy.RequireAssertion(context => PosInvoiceAccess.CoQuyenXem(context.User));
+            policy.RequireAssertion(context =>
+                PosInvoiceAccess.CoQuyenXem(
+                    context.User));
+        });
+
+    // POS-12: Chỉ Admin được hủy hóa đơn đã thanh toán
+    options.AddPolicy(
+        MaQuyen.HoaDonHuy,
+        policy =>
+        {
+            policy.RequireAuthenticatedUser();
+
+            policy.RequireRole(
+                AuthorizationPolicies.AdminRole);
         });
 });
 
@@ -160,6 +230,7 @@ app.UseXuLyLoiApi();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseAuthentication();
@@ -188,4 +259,3 @@ app.MapControllers();
 // ==========================================
 
 app.Run();
-

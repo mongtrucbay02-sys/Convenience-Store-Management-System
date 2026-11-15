@@ -27,7 +27,7 @@ else if(Model.Items.Count == 0){<p data-empty="products">Không tìm thấy sả
 else
 {
 <table class="table"><thead><tr><th>Mã</th><th>Tên</th><th>Danh mục</th><th>Đơn vị</th><th>Giá bán</th><th>Tồn kho</th><th>Trạng thái</th>@if(User.IsInRole("AD")){<th data-cost>Giá vốn</th>}</tr></thead>
-<tbody>@foreach(var p in Model.Items){<tr><td>@p.Ma</td><td>@p.TenSanPham</td><td>@p.DanhMuc.Ten</td><td>@p.DonViTinh</td><td>@p.GiaBan</td><td>@p.TonKho</td><td>@p.TrangThai</td>@if(User.IsInRole("AD")){<td data-cost>@p.GiaVon</td>}</tr>}</tbody></table>
+<tbody>@foreach(var p in Model.Items){<tr><td>@p.Ma</td><td><a href="/Products/@p.Id">@p.TenSanPham</a></td><td>@p.DanhMuc.Ten</td><td>@p.DonViTinh</td><td>@p.GiaBan</td><td>@p.TonKho</td><td>@p.TrangThai</td>@if(User.IsInRole("AD")){<td data-cost>@p.GiaVon</td>}</tr>}</tbody></table>
 }
 <p>Trang @Model.Page · Tổng @Model.Total sản phẩm</p>
 @functions {

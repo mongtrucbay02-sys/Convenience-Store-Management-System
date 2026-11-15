@@ -28,3 +28,15 @@ Parameters: `page` (positive, default 1, offset within Int32), `size` (positive,
 Sort supports `ma,tenSanPham,giaBan,trangThai,ngayTao`; prefix `-` for descending, comma-separated unique fields, always followed by ID as a stable tie-breaker. Unknown filter/sort, invalid enum, impossible offset or invalid numeric range → 422. Malformed numeric binding → 400. `%`, `_` and `!` in keywords remain literal characters, not pattern syntax. Values are parameterized. An empty result is 200 with an empty items array. Effective price comes from the existing MySQL view and excludes future/cancelled history; stock/cost are read in one batch through IDichVuKho.
 
 Razor management screen: `/Products`, with matching query parameters, escaped output, preserved filters in pagination links and an explicit empty/error state. Category suggestions are bounded to 100; the linked category list supplies IDs for other categories. Navbar visibility follows SanPhamXem. HTTP/Razor coverage is separate from browser E2E (NOT RUN).
+
+## GET /api/v1/products/{id} — SP-02
+
+Permission AD/NK/TN, with the same TN active-only restriction applied to direct IDs. Returns the SP-01 item fields plus `anhUrl,moTa,nguongToiThieu,ngayCapNhat,giaDaLenLich,lichSuGia`. Both price collections are paged envelopes (initial page 1, size 20); `lichSuGia` is null outside AD. `giaVon` is null outside AD. Unsafe image schemes are replaced with null. Dates include +07:00.
+
+`giaDaLenLich` contains uncancelled history strictly after database NOW; current price is the latest uncancelled effective entry at/before NOW. AD history includes cancelled rows. Each price has `id,giaBan,hieuLucTu,nguoiTaoId,ngayTao,huyLuc,nguoiHuyId`; audit fields are null outside AD. Missing or TN-invisible resource → 404, message `Sản phẩm không còn tồn tại`.
+
+## GET /api/v1/products/{id}/prices — SP-02
+
+Parameters: `page=1`, `size=20` (positive, max 100), `daLenLich=true`. Stable order: effective date descending, then ID descending. `daLenLich=false` returns all price history and requires AD; other actors receive 403. Invalid pagination/unknown filter → 422; invalid numeric/bool binding → 400; missing/TN-invisible product → 404. Returns the common paged envelope. All reads are authenticated/no-store and never mutate state.
+
+Razor details: `/Products/{id}`, reached from a product-name link on the management list. `/Products/{id}/Prices?page=1&size=20&daLenLich=true` provides previous/next navigation for all scheduled prices; `daLenLich=false` is AD-only history. Encodes names/descriptions, validates image URLs, shows an explicit missing/error state, and restricts cost/history sections to AD. Browser E2E NOT RUN.

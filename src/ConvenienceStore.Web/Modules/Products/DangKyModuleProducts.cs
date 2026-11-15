@@ -12,6 +12,8 @@ public static class DangKyModuleProducts
         services.AddScoped<CategoryMutationService>();
         services.AddScoped<IProductReadRepository, EfProductReadRepository>();
         services.AddScoped<ProductReadService>();
+        services.AddScoped<IProductDetailRepository, EfProductDetailRepository>();
+        services.AddScoped<ProductDetailService>();
         return services;
     }
 }

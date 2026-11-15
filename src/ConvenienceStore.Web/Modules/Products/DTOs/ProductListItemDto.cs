@@ -2,7 +2,7 @@ namespace ConvenienceStore.Web.Modules.Products.DTOs;
 
 public sealed record ProductCategoryDto(uint Id, string Ten);
 
-public sealed record ProductListItemDto
+public record ProductListItemDto
 {
     public uint Id { get; init; }
     public required string Ma { get; init; }

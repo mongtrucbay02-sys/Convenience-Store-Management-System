@@ -8,6 +8,8 @@ public static class DangKyModuleProducts
     {
         services.AddScoped<ICategoryReadRepository, EfCategoryReadRepository>();
         services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<ICategoryMutationRepository, EfCategoryMutationRepository>();
+        services.AddScoped<CategoryMutationService>();
         return services;
     }
 }

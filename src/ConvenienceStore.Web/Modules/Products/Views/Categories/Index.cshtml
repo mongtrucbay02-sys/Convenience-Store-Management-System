@@ -2,6 +2,7 @@
 @using ConvenienceStore.Web.Modules.Auth.Security
 @{ Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Danh mục"; }
 <h1>Danh mục</h1>
+@if(User.HasClaim("quyen","SAN_PHAM_GIA_DANH_MUC")){<a class="btn btn-primary" href="/Categories/Create">Thêm danh mục</a>}
 @if (ViewData["ListError"] is string error)
 {
     <p role="alert" class="alert alert-danger" data-list-error>@error</p>
@@ -29,7 +30,7 @@ else
         <tbody>
             @foreach (var category in Model.Items)
             {
-                <tr><td>@category.Ten</td><td>@category.SoSanPham</td><td>@(category.TrangThai == "DA_AN" ? "Đã ẩn" : "Hoạt động")</td></tr>
+                <tr><td>@category.Ten @if(User.HasClaim("quyen","SAN_PHAM_GIA_DANH_MUC")){<a href="/Categories/@category.Id/Edit">Sửa</a>}</td><td>@category.SoSanPham</td><td>@(category.TrangThai == "DA_AN" ? "Đã ẩn" : "Hoạt động")</td></tr>
             }
         </tbody></table>
     }

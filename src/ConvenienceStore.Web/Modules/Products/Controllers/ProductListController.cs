@@ -10,6 +10,7 @@ namespace ConvenienceStore.Web.Modules.Products.Controllers;
 [Authorize(Policy = MaQuyen.SanPhamXem)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [ApiController, Route("api/v1/products")]
+[Tags("SP")]
 public sealed class ProductListController(ProductReadService service) : ControllerBase
 {
     /// <summary>SP-01 Management product list, search and filters.</summary>

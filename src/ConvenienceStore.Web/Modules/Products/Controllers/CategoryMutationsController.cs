@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ConvenienceStore.Web.Modules.Products.Controllers;
 
 [ApiController,Route("api/v1/categories")]
+[Tags("SP")]
 [Authorize(Policy=MaQuyen.SanPhamGiaDanhMuc)]
 [ResponseCache(NoStore=true,Location=ResponseCacheLocation.None)]
 public sealed class CategoryMutationsController(CategoryMutationService service):ControllerBase

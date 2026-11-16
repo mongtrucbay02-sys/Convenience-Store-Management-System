@@ -2,6 +2,8 @@
 
 All endpoints use the existing session cookie, permission policies and common error envelope (`code`, `message`, `details`, `traceId`). Unsafe API methods require `X-XSRF-TOKEN` matching that session. Responses must not be cached.
 
+All Products API controllers carry the `SP` tag. Legacy MVC bookmark `/Products/Products/Index` is GET-only, enforces SanPhamXem and forced-password restrictions, and redirects authorized AD/NK/TN users to `/Products`. It no longer depends on the obsolete welcome service. Runtime inventory tests validate all controller dependencies, unique attribute route/method pairs, API-document coverage, permission policies, scoped DI and the single runtime DbContext/category token.
+
 ## Categories — SP-07/SP-08
 
 | Method | Route | Permission | Request / response |
@@ -18,6 +20,8 @@ Name is trimmed, required, maximum 100 characters. Description is trimmed, optio
 Razor: `/Categories`, `/Categories/Create`, `/Categories/{id}/Edit`. AD alone receives create/edit links. Form POSTs require MVC antiforgery; validation and conflict errors are rendered with encoded values. Browser E2E has not been executed.
 
 Pending business approval: SP-07 product-count scope and hidden-category visibility. Current management listing behavior is preserved. No API integration or acceptance on develop is claimed by local verification.
+
+The preserved SP-07 list contract returns 400 for malformed/nonpositive/out-of-range pagination and caps size at100. SP-08/09 semantic mutation validation uses422; no category-list status behavior was rewritten merely to unify tests.
 
 ## GET /api/v1/products — SP-01
 

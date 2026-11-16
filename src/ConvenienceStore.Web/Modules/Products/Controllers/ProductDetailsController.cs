@@ -10,6 +10,7 @@ namespace ConvenienceStore.Web.Modules.Products.Controllers;
 [Authorize(Policy = MaQuyen.SanPhamXem)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [ApiController, Route("api/v1/products/{id}")]
+[Tags("SP")]
 public sealed class ProductDetailsController(ProductDetailService service) : ControllerBase
 {
     /// <summary>SP-02 Product details; cost/history restricted to AD.</summary>

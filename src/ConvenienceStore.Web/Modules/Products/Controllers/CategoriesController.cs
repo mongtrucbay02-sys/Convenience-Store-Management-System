@@ -10,6 +10,7 @@ namespace ConvenienceStore.Web.Modules.Products.Controllers;
 [Authorize(Policy = MaQuyen.SanPhamXem)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [ApiController]
+[Tags("SP")]
 [Route("api/v1/categories")]
 public sealed class CategoriesController : ControllerBase
 {

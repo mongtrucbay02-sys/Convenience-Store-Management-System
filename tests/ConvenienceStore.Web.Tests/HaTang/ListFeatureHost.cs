@@ -32,6 +32,8 @@ public static class ListFeatureHost
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
+        // Match Program.cs, including the legacy module landing route.
+        app.MapControllerRoute("areas", "{area:exists}/{controller=Home}/{action=Index}/{id?}");
         app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
         await app.StartAsync();
         return app;

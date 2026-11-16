@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ConvenienceStore.Web.Modules.Products.Controllers;
 
 [ApiController, Route("api/v1/products/{id}/prices")]
+[Tags("SP")]
 [Authorize(Policy = MaQuyen.SanPhamGiaDanhMuc)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed class ProductPricingController(ProductPricingService service) : ControllerBase

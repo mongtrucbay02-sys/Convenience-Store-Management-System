@@ -82,3 +82,20 @@ Cancellation: `{phienBan}`. Only an uncancelled row belonging to that product wi
 The shared current-price contract is the existing `v_gia_ban_hien_hanh`: uncancelled history at/before NOW, latest effective timestamp, then greatest ID. Both EF Products readers and `MySqlPosCatalog.FindAsync/SearchAsync` use it. SP-05 fixes those catalog read sessions to +07:00 to match EF; RED evidence reproduced a 10100 versus 10000 discrepancy before the fix. Existing cart `don_gia` snapshots remain unchanged; new catalog lookups see the new effective price. Existing POS cart/checkout/auth business code is otherwise unchanged.
 
 Razor `/Products/{id}/Price`: AD current price/cost/history, immediate/future form with explicit Vietnamese local time and below-cost confirmation. `/Products/{id}/Prices/{priceId}/Cancel` is a read-only confirmation GET followed by antiforgery POST; repeated/stale submissions show a reload link. Scheduled-price lists link to this confirmation, including later pages. Browser E2E NOT RUN.
+
+## SP-06 — product lifecycle
+
+| Method | Route | Permission | Success |
+|---|---|---|---|
+| GET | `/api/v1/products/{id}/lifecycle` | AD / SanPhamGiaDanhMuc | 200 preview |
+| POST | `/api/v1/products/{id}/discontinue` | AD + XSRF | 200 preview with new state/version |
+| POST | `/api/v1/products/{id}/reactivate` | AD + XSRF | 200 preview with new state/version |
+| DELETE | `/api/v1/products/{id}` | AD + XSRF | 204, unused product only |
+
+Command: `{phienBan,xacNhan,xacNhanTonKho=false}`. Version must be current and positive; `xacNhan=true` explicitly confirms after reading preview. Discontinuation with stock >0 additionally needs `xacNhanTonKho=true`; otherwise 409 CAN_XAC_NHAN_CON_TON. Reactivation does not need that extra stock acknowledgement. E2 held/draft warnings are reported, without inventing another veto/acknowledgement rule.
+
+Preview: `{id,tenSanPham,trangThai,phienBan,tonKho,donTamGiu,phieuNhapNhap,coThamChieu,danhMucTrangThai,coDuLieuTonKho}`. Missing stock data is flagged and writes require reconciliation. Reference guard covers ledger, invoice, receipt, count, disposal, cart and promotion associations. Referenced or positive-stock products cannot be physically deleted; 409 explains discontinuation as the alternative. Only a never-referenced zero-stock product's own price configuration/stock row can be removed, atomically with its product row. No cascade removes external snapshots. Uploaded media is preserved for separate orphan cleanup.
+
+400 malformed body; 401/403 session/permission/XSRF; 404 missing product; 422 missing confirmation/version; 409 stale version, already-target state, stock/reference guard or reconciliation conflict. Status changes increment version once; repeated requests do not toggle state or increment again. Stock/cost, existing held/draft lines and invoice snapshots stay unchanged. Reads never change product state. Check preview before mutations; counts are rechecked while locked and returned on successful status changes.
+
+Razor `/Products/{id}/Discontinue`, `/Reactivate`, `/Delete` are confirmation GETs and antiforgery POSTs, with encoded product data, warning counts, stock checkbox where required and a reload link. Buttons are AD-only. POS respects both product and category status. The existing active list filter (`trangThai=DANG_KINH_DOANH`) supplies new-selection consumers. Actual new-receipt UI/API selection/submission is NOT RUN because Purchasing/NH-04 is absent; the provider filter and draft-table warnings are verified separately. Browser E2E NOT RUN.

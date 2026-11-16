@@ -12,6 +12,14 @@
         <div class="return-line">
             <strong>@line.Name</strong><p>@line.Quantity × @line.UnitPaid.ToString("N0") đ = @((line.Quantity * line.UnitPaid).ToString("N0")) đ</p>
             <p>@(line.Handling == "NHAP_LAI" ? "Nhập lại kho" : "Hủy, không nhập kho") · @line.Condition</p>
+            @if (line.Discontinued && line.Handling == "NHAP_LAI")
+            {
+                <p class="return-warning" role="status">E1 — Sản phẩm đã ngừng kinh doanh. Hệ thống vẫn cho phép nhập lại kho.</p>
+            }
+            @if (line.Handling == "HUY")
+            {
+                <p>Giá trị hàng hủy: <strong>@line.ScrapValue.ToString("N0") đ</strong></p>
+            }
             @if (line.Exception)
             {
                 <p class="return-warning">Ngoại lệ — cần quản lý duyệt.</p>
@@ -21,12 +29,12 @@
     <h2>Tiền hoàn: @preview.Refund.ToString("N0") đ</h2>
     @if (preview.PointsBlocked)
     {
-        <p>Hóa đơn có điểm tích lũy. Hệ thống sẽ thu hồi điểm tương ứng với giá trị hàng thực trả khi hoàn tất phiếu; số dư điểm không bị âm.</p>
+        <p class="return-warning">Hóa đơn có điểm tích lũy. Chưa có tích hợp KH-06 để tính và thu hồi điểm. Phiếu hợp lệ chưa thể hoàn tất.</p>
     }
     else
     {
 
-        <p>Không có điểm cần thu hồi.</p>
+        <p>Điểm thu hồi: 0.</p>
     }
     @if (preview.NeedsApproval)
     {
@@ -59,11 +67,11 @@
             <input type="hidden" name="Request.Lines[@i].Condition" value="@line.Condition" />
             <input type="hidden" name="Request.Lines[@i].Handling" value="@line.Handling" />
         }
-        @if (!preview.NeedsApproval)
+        @if (!preview.NeedsApproval && !preview.PointsBlocked)
         {
             <label><input type="checkbox" name="Request.CashConfirmed" value="true" required /> Xác nhận hoàn tiền mặt khi phiếu hoàn tất</label>
         }
-        <button type="submit">@(preview.NeedsApproval ? "Gửi chờ duyệt" : "Hoàn tất phiếu trả")</button>
+        <button type="submit" disabled="@(preview.PointsBlocked && !preview.NeedsApproval)">@(preview.NeedsApproval ? "Gửi chờ duyệt" : "Hoàn tất phiếu trả")</button>
         <a asp-controller="ReturnOrders" asp-action="New" asp-route-invoiceId="@preview.InvoiceId">Quay lại chọn hàng</a>
     </form>
 </div>

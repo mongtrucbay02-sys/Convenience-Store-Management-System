@@ -1,0 +1,34 @@
+@model ConvenienceStore.Web.Data.Entities.PhieuXuatHuy
+@using ConvenienceStore.Web.Modules.Auth.Security
+@{
+    ViewData["Title"] = "Phiếu xuất hủy";
+    var showCost = User.IsInRole(BangQuyen.Admin);
+}
+<h1>Xuất hủy @Model.MaPhieu</h1>
+<p>@Model.TrangThai · Người lập: @Model.NguoiLap.HoTen · @Model.LyDoTuChoi</p>
+@if (TempData["Loi"] is string error) { <p class="alert alert-danger">@error</p> }
+<table class="table">
+    <thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Lý do</th><th>Ghi chú</th>@if (showCost) { <th>Giá trị hủy</th> }</tr></thead>
+    <tbody>
+    @foreach (var line in Model.CtXuatHuys)
+    {
+        var cost = line.GiaVonLucDuyet ?? line.SanPham.TonKho?.GiaVonBinhQuan;
+        <tr><td>@line.SanPham.TenSanPham</td><td>@line.SoLuong</td><td>@line.LyDo</td><td>@line.GhiChuLyDo</td>@if (showCost) { <td>@((line.SoLuong * cost)?.ToString("N2"))</td> }</tr>
+    }
+    </tbody>
+</table>
+@if (Model.TrangThai == "NHAP" && User.HasClaim("quyen", MaQuyen.KiemKeXuatHuyLap))
+{
+    <form asp-action="SubmitDisposal" asp-route-id="@Model.Id" method="post">
+        <button class="btn btn-primary">Gửi duyệt</button>
+    </form>
+}
+@if (Model.TrangThai == "CHO_DUYET" && User.HasClaim("quyen", MaQuyen.KiemKeXuatHuyDuyet))
+{
+    <form asp-action="ReviewDisposal" asp-route-id="@Model.Id" method="post">
+        <button class="btn btn-primary" name="approve" value="true">Duyệt và giảm tồn</button>
+        <label>Lý do từ chối <input name="reason" maxlength="255"></label>
+        <button class="btn btn-outline-danger" name="approve" value="false">Từ chối</button>
+    </form>
+}
+<p class="mt-3"><a asp-action="Index">Về chứng từ kho</a></p>

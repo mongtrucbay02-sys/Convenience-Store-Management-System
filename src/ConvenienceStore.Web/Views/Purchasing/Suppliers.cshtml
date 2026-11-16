@@ -1,0 +1,48 @@
+@model IReadOnlyList<ConvenienceStore.Web.Modules.Purchasing.SupplierListRow>
+@using ConvenienceStore.Web.Modules.Auth.Security
+@{
+    ViewData["Title"] = "Nhà cung cấp";
+    var pageNumber = (int)ViewBag.Page;
+    var status = (string?)ViewBag.Status;
+}
+<h1>Nhà cung cấp</h1>
+@if (TempData["ThongBao"] is string notice) { <p class="alert alert-success">@notice</p> }
+<a class="btn btn-primary mb-3" asp-action="Edit">Thêm nhà cung cấp</a>
+<form method="get" class="d-flex gap-2 mb-3">
+    <input name="q" value="@ViewBag.Term" aria-label="Tìm nhà cung cấp" placeholder="Tên, mã hoặc số điện thoại">
+    <select name="status" aria-label="Trạng thái">
+        <option value="">Tất cả trạng thái</option>
+        <option value="HOAT_DONG" selected="@(status == "HOAT_DONG")">Hoạt động</option>
+        <option value="NGUNG_HOP_TAC" selected="@(status == "NGUNG_HOP_TAC")">Ngừng hợp tác</option>
+    </select>
+    <button type="submit" class="btn btn-outline-primary">Tìm</button>
+</form>
+@if (Model.Count == 0) { <p>Không tìm thấy nhà cung cấp.</p> }
+else
+{
+    <div class="table-responsive"><table class="table">
+        <thead><tr><th>Mã và tên</th><th>Liên hệ</th><th>Địa chỉ</th><th>Trạng thái</th><th>Nhập gần nhất</th><th>Thao tác</th></tr></thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            var row = item.Supplier;
+            <tr>
+                <td>@row.Ma · @row.Ten</td><td>@row.NguoiLienHe @row.SoDienThoai</td><td>@row.DiaChi</td><td>@row.TrangThai</td>
+                <td>@item.LastReceipt?.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@row.Id">Sửa</a>
+                    @if (User.HasClaim("quyen", MaQuyen.NhaCungCapNgung))
+                    {
+                        <form asp-action="Stop" asp-route-id="@row.Id" method="post" class="d-inline" onsubmit="return confirm('Xác nhận thao tác với nhà cung cấp này?')">
+                            @if (row.TrangThai == "HOAT_DONG") { <button class="btn btn-sm btn-outline-warning" name="delete" value="false">Ngừng hợp tác</button> }
+                            <button class="btn btn-sm btn-outline-danger" name="delete" value="true">Xóa nếu chưa có phiếu</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table></div>
+}
+@if (pageNumber > 1) { <a asp-action="Index" asp-route-q="@ViewBag.Term" asp-route-status="@status" asp-route-page="@(pageNumber - 1)">Trang trước</a> }
+@if (ViewBag.HasNext) { <a asp-action="Index" asp-route-q="@ViewBag.Term" asp-route-status="@status" asp-route-page="@(pageNumber + 1)">Trang sau</a> }

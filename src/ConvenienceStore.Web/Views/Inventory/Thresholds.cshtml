@@ -1,0 +1,21 @@
+@model IReadOnlyList<ConvenienceStore.Web.Modules.Inventory.Controllers.StockAlertRow>
+@using ConvenienceStore.Web.Data.Entities
+@{
+    ViewData["Title"] = "Thiết lập ngưỡng tồn";
+    var categories = (IReadOnlyList<DanhMuc>)ViewBag.Categories;
+}
+<h1>Thiết lập ngưỡng tồn</h1>
+@if (TempData["Loi"] is string error) { <p class="alert alert-danger">@error</p> }
+@if (TempData["ThongBao"] is string notice) { <p class="alert alert-success">@notice</p> }
+<form asp-action="SaveThresholds" method="post" class="vstack gap-2">
+    <p>Chọn một danh mục hoặc chọn các sản phẩm. Ngưỡng 0 tắt cảnh báo.</p>
+    <label>Danh mục<select name="categoryId" class="form-select">
+        <option value="">Không chọn danh mục</option>
+        @foreach (var category in categories) { <option value="@category.Id">@category.Ten</option> }
+    </select></label>
+    <label>Sản phẩm<select name="productIds" class="form-select" multiple size="6">
+        @foreach (var item in Model) { <option value="@item.Id">@item.Code · @item.Name (ngưỡng @item.Threshold)</option> }
+    </select></label>
+    <label>Ngưỡng mới <input name="threshold" type="number" min="0" required></label>
+    <div><button class="btn btn-primary">Lưu ngưỡng</button> <a asp-action="Index">Quay lại</a></div>
+</form>

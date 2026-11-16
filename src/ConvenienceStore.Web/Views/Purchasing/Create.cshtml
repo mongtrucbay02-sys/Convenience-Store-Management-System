@@ -1,0 +1,134 @@
+@model ConvenienceStore.Web.Modules.Purchasing.PurchaseReceiptInput
+@using ConvenienceStore.Web.Data.Entities
+@using ConvenienceStore.Web.Modules.Auth.Security
+@{
+    var id = (uint?)ViewBag.ReceiptId;
+    ViewData["Title"] = id is null ? "Lập phiếu nhập" : "Sửa phiếu nhập nháp";
+    var suppliers = (IReadOnlyList<NhaCungCap>)ViewBag.Suppliers;
+    var products = (IReadOnlyList<SanPham>)ViewBag.Products;
+    var categories = (IReadOnlyList<DanhMuc>)ViewBag.Categories;
+}
+<h1>@ViewData["Title"]</h1>
+<form asp-action="@(id.HasValue ? "Edit" : "Create")" asp-route-id="@id" method="post">
+    <input asp-for="Version" type="hidden">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <label asp-for="SupplierId" class="form-label">Nhà cung cấp</label>
+    <select asp-for="SupplierId" class="form-select mb-3" required>
+        <option value="">Chọn nhà cung cấp</option>
+        @foreach (var supplier in suppliers) { <option value="@supplier.Id">@supplier.Ten</option> }
+    </select>
+    <label asp-for="SupplierDocument" class="form-label">Số chứng từ nhà cung cấp</label>
+    <input asp-for="SupplierDocument" class="form-control mb-3" maxlength="50">
+    <div id="purchase-lines" data-last-price-url="@Url.Action("LastPrice")">
+    @for (var i = 0; i < Math.Max(Model.Lines.Count, 1); i++)
+    {
+        var line = Model.Lines.ElementAtOrDefault(i);
+        <div class="row g-2 mb-2" data-purchase-line>
+            <label class="col-md-6">Sản phẩm
+                <select name="Lines[@i].ProductId" class="form-select" data-purchase-product required>
+                    <option value="">Chọn sản phẩm</option>
+                    @foreach (var product in products) { <option value="@product.Id" selected="@(product.Id == line?.ProductId)">@product.Ma · @product.TenSanPham</option> }
+                </select>
+            </label>
+            <label class="col-md-3">Số lượng<input class="form-control" name="Lines[@i].Quantity" value="@line?.Quantity" type="number" min="1" required></label>
+            <label class="col-md-3">Giá nhập (đ)<input class="form-control" name="Lines[@i].UnitCost" value="@line?.UnitCost" type="number" min="0" data-purchase-price required></label>
+        </div>
+    }
+    </div>
+    <button id="add-purchase-line" type="button" class="btn btn-outline-secondary">Thêm dòng</button>
+    <button id="remove-purchase-line" type="button" class="btn btn-outline-secondary">Bỏ dòng cuối</button>
+    @if (User.HasClaim("quyen", MaQuyen.SanPhamSua))
+    {
+        <button id="open-quick-product" type="button" class="btn btn-outline-primary">Thêm sản phẩm mới</button>
+    }
+    <button type="submit" class="btn btn-primary">Lưu phiếu nháp</button>
+    <a asp-action="Index" class="btn btn-link">Quay lại</a>
+</form>
+@if (User.HasClaim("quyen", MaQuyen.SanPhamSua))
+{
+    <dialog id="quick-product" aria-label="Thêm sản phẩm mới" class="rounded border-0 shadow p-4">
+        <form asp-action="QuickCreate" method="post" class="vstack gap-2">
+            <h2>Thêm sản phẩm mới</h2>
+            <p id="quick-product-error" role="alert" class="text-danger"></p>
+            <label>Tên sản phẩm<input name="Name" class="form-control" required maxlength="200"></label>
+            <label>Danh mục<select name="CategoryId" class="form-select" required>
+                <option value="">Chọn danh mục</option>
+                @foreach (var category in categories) { <option value="@category.Id">@category.Ten</option> }
+            </select></label>
+            <label>Đơn vị tính<input name="Unit" class="form-control" required maxlength="20"></label>
+            <label>Giá bán (đ)<input name="SalePrice" class="form-control" type="number" min="100" step="100" required></label>
+            <div><button type="submit" class="btn btn-primary">Lưu và thêm vào phiếu</button>
+                <button type="button" id="close-quick-product" class="btn btn-outline-secondary">Đóng</button></div>
+        </form>
+    </dialog>
+}
+<script>
+    const lines = document.getElementById('purchase-lines');
+    lines.addEventListener('change', async ({ target }) => {
+        if (!target.matches('[data-purchase-product]') || !target.value) return;
+        const productId = target.value;
+        const priceInput = target.closest('[data-purchase-line]').querySelector('[data-purchase-price]');
+        if (priceInput.value) return;
+        try {
+            const response = await fetch(lines.dataset.lastPriceUrl + '?productId=' + encodeURIComponent(productId));
+            if (!response.ok) return;
+            const { price } = await response.json();
+            if (target.value === productId && !priceInput.value && price !== null) priceInput.value = price;
+        } catch {
+            // Người dùng vẫn có thể nhập giá bằng tay.
+        }
+    });
+    document.getElementById('add-purchase-line').addEventListener('click', () => {
+        const index = lines.children.length;
+        if (index >= 100) return;
+        const row = lines.firstElementChild.cloneNode(true);
+        row.querySelectorAll('[name]').forEach(field => {
+            field.name = field.name.replace(/\[\d+\]/, '[' + index + ']');
+            field.value = '';
+        });
+        lines.append(row);
+        row.querySelector('select').focus();
+    });
+    document.getElementById('remove-purchase-line').addEventListener('click', () => {
+        if (lines.children.length > 1) lines.lastElementChild.remove();
+    });
+    const dialog = document.getElementById('quick-product');
+    if (dialog) {
+        const form = dialog.querySelector('form');
+        const error = document.getElementById('quick-product-error');
+        const submit = form.querySelector('[type=submit]');
+        document.getElementById('open-quick-product').addEventListener('click', () => dialog.showModal());
+        document.getElementById('close-quick-product').addEventListener('click', () => dialog.close());
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            let target = Array.from(lines.querySelectorAll('[data-purchase-product]')).find(select => !select.value);
+            if (!target && lines.children.length >= 100) {
+                error.textContent = 'Phiếu đã đủ 100 dòng.';
+                return;
+            }
+            error.textContent = '';
+            submit.disabled = true;
+            try {
+                const response = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+                const product = await response.json();
+                if (!response.ok) {
+                    error.textContent = product.message ?? 'Lưu sản phẩm thất bại.';
+                    return;
+                }
+                if (!target) {
+                    document.getElementById('add-purchase-line').click();
+                    target = lines.lastElementChild.querySelector('[data-purchase-product]');
+                }
+                lines.querySelectorAll('[data-purchase-product]').forEach(select => select.add(new Option(product.text, product.id)));
+                target.value = product.id;
+                form.reset();
+                dialog.close();
+                target.focus();
+            } catch {
+                error.textContent = 'Không đọc được phản hồi. Tải lại danh sách sản phẩm trước khi thử lại.';
+            } finally {
+                submit.disabled = false;
+            }
+        });
+    }
+</script>

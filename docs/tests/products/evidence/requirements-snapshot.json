@@ -1,0 +1,662 @@
+{
+  "issues": [
+    {
+      "issue": {
+        "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/56",
+        "title": "[SP-01] Xem, tìm kiếm, lọc danh sách sản phẩm",
+        "issue_number": 56,
+        "body": "**Người phụ trách:** #2 Phan Hải Yến (Developer – Hàng vào kho)\n\n**SP-01. Xem, tìm kiếm, lọc danh sách sản phẩm** · module Sản phẩm và danh mục · ưu tiên **Must**\n\n- **Lý do xếp Must** (Bảng MoSCoW 13/10): Màn hình nền của module; cần cho demo tuần 4\n- **Actor:** AD, TN, NK\n- **Mô tả:** Tra cứu sản phẩm theo tên, mã, danh mục, trạng thái.\n- **Tiền điều kiện:** Đã đăng nhập.\n- **Hậu điều kiện:** Danh sách sản phẩm phù hợp được hiển thị.\n- **Quan hệ:** Được mở rộng bởi SP-02.\n\n**Luồng chính**\n1. Mở \"Sản phẩm\".\n2. Hiển thị bảng: mã, tên, danh mục, đơn vị tính, giá bán, tồn kho, trạng thái; có phân trang.\n3. Nhập từ khóa hoặc chọn bộ lọc (danh mục, trạng thái, khoảng giá) và cách sắp xếp.\n4. Trả kết quả phù hợp.\n\n**Luồng thay thế**\n- A1. Thu ngân chỉ thấy sản phẩm đang kinh doanh, không thấy giá vốn.\n\n**Ngoại lệ**\n- E1. Không có kết quả: \"Không tìm thấy sản phẩm\".\n\n**Quy tắc nghiệp vụ**\n- BR-SP-01: Tìm kiếm không phân biệt hoa thường và không phân biệt dấu (\"sua\" tìm ra \"Sữa\").\n- BR-SP-02: Giá vốn chỉ hiển thị cho AD.\n\n**Phụ thuộc và lưu ý trong tuần 4**\n- Cột tồn kho đọc từ dữ liệu tồn của dịch vụ kho (#1); thống nhất tên bảng/trường với #1.\n\n_Nguồn: Đặc tả Use Case bản 13/10/2026, mục đặc tả SP-01. Nhánh gợi ý: `feature/sp-01`; ghi `Closes #<số issue>` trong PR._\n\n**Tiêu chí xong** (Kế hoạch v3, mục 1.4):\n- [ ] Làm đủ luồng chính\n- [ ] Làm luồng thay thế A1\n- [ ] Xử lý ngoại lệ E1\n- [ ] Tuân thủ BR-SP-01, BR-SP-02\n- [ ] Kiểm tra quyền ở máy chủ theo actor: AD, TN, NK\n- [ ] Nếu đổi cấu trúc CSDL: có tệp migration trong PR, #1 đã duyệt\n- [ ] PR được review (người review: #3 Hoài), CI đạt\n- [ ] #4 test đạt theo test case\n- [ ] Chạy được trên staging\n- [ ] Cập nhật SRS nếu lệch đặc tả\n\n_Mã: T4-11 · Kế hoạch 9 tuần v3_",
+        "state": "open",
+        "user": {
+          "login": "zlatanofficial111-netizen",
+          "name": "zlatanofficial111-netizen",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/237690537?v=4",
+          "id": 237690537
+        },
+        "assignees": [
+          {
+            "login": "phanyen06ym-ien",
+            "name": "phanyen06ym-ien",
+            "email": null,
+            "avatar_url": "https://avatars.githubusercontent.com/u/232926377?v=4",
+            "id": 232926377
+          }
+        ],
+        "labels": [
+          {
+            "name": "code",
+            "color": "1d76db",
+            "description": ""
+          },
+          {
+            "name": "Must",
+            "color": "B60205",
+            "description": "MoSCoW: Must"
+          },
+          {
+            "name": "SP",
+            "color": "bfdadc",
+            "description": ""
+          }
+        ],
+        "milestone": 2,
+        "state_reason": null,
+        "comments": 0,
+        "created_at": "2026-10-14T02:58:24Z",
+        "updated_at": "2026-10-14T04:33:12Z",
+        "closed_at": null,
+        "display_url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/56",
+        "display_title": "[SP-01] Xem, tìm kiếm, lọc danh sách sản phẩm"
+      },
+      "comments": []
+    },
+    {
+      "issue": {
+        "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/57",
+        "title": "[SP-02] Xem chi tiết sản phẩm",
+        "issue_number": 57,
+        "body": "**Người phụ trách:** #2 Phan Hải Yến (Developer – Hàng vào kho)\n\n**SP-02. Xem chi tiết sản phẩm** · module Sản phẩm và danh mục · ưu tiên **Should**\n\n- **Lý do xếp Should** (Bảng MoSCoW 13/10): Danh sách đã hiện hầu hết thông tin; lịch sử giá (PA-SP-04.B) hiển thị tại đây\n- **Actor:** AD, TN, NK\n- **Mô tả:** Xem đầy đủ thông tin một sản phẩm.\n- **Tiền điều kiện:** Đang ở SP-01.\n- **Hậu điều kiện:** Thông tin chi tiết được hiển thị.\n- **Quan hệ:** «extend» SP-01.\n- **Phương án đã chọn:** PA-SP-04.B (lưu lịch sử giá, đặt được giá có hiệu lực trong tương lai)\n\n**Luồng chính**\n1. Chọn một sản phẩm trong danh sách.\n2. Hiển thị: mã, tên, danh mục, đơn vị tính, giá bán đang hiệu lực, giá đã lên lịch (nếu có), tồn hiện tại, ngưỡng tồn tối thiểu, ảnh, mô tả, trạng thái; với AD thêm giá vốn và lịch sử giá.\n\n**Ngoại lệ**\n- E1. Sản phẩm vừa bị xóa: \"Sản phẩm không còn tồn tại\".\n\n_Nguồn: Đặc tả Use Case bản 13/10/2026, mục đặc tả SP-02. Nhánh gợi ý: `feature/sp-02`; ghi `Closes #<số issue>` trong PR._\n\n**Tiêu chí xong** (Kế hoạch v3, mục 1.4):\n- [ ] Làm đủ luồng chính\n- [ ] Xử lý ngoại lệ E1\n- [ ] Kiểm tra quyền ở máy chủ theo actor: AD, TN, NK\n- [ ] Nếu đổi cấu trúc CSDL: có tệp migration trong PR, #1 đã duyệt\n- [ ] PR được review (người review: #3 Hoài), CI đạt\n- [ ] #4 test đạt theo test case\n- [ ] Chạy được trên staging\n- [ ] Cập nhật SRS nếu lệch đặc tả\n\n_Mã: T4-12 · Kế hoạch 9 tuần v3_",
+        "state": "open",
+        "user": {
+          "login": "zlatanofficial111-netizen",
+          "name": "zlatanofficial111-netizen",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/237690537?v=4",
+          "id": 237690537
+        },
+        "assignees": [
+          {
+            "login": "phanyen06ym-ien",
+            "name": "phanyen06ym-ien",
+            "email": null,
+            "avatar_url": "https://avatars.githubusercontent.com/u/232926377?v=4",
+            "id": 232926377
+          }
+        ],
+        "labels": [
+          {
+            "name": "code",
+            "color": "1d76db",
+            "description": ""
+          },
+          {
+            "name": "Should",
+            "color": "D93F0B",
+            "description": "MoSCoW: Should"
+          },
+          {
+            "name": "SP",
+            "color": "bfdadc",
+            "description": ""
+          }
+        ],
+        "milestone": 2,
+        "state_reason": null,
+        "comments": 0,
+        "created_at": "2026-10-14T02:58:30Z",
+        "updated_at": "2026-10-14T04:34:06Z",
+        "closed_at": null,
+        "display_url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/57",
+        "display_title": "[SP-02] Xem chi tiết sản phẩm"
+      },
+      "comments": []
+    },
+    {
+      "issue": {
+        "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/58",
+        "title": "[SP-03] Thêm sản phẩm",
+        "issue_number": 58,
+        "body": "**Người phụ trách:** #2 Phan Hải Yến (Developer – Hàng vào kho)\n\n**SP-03. Thêm sản phẩm** · module Sản phẩm và danh mục · ưu tiên **Must**\n\n- **Lý do xếp Must** (Bảng MoSCoW 13/10): Không có sản phẩm thì không nhập hàng, không bán được\n- **Actor:** AD, NK\n- **Mô tả:** Khai báo sản phẩm mới vào danh mục hàng hóa.\n- **Tiền điều kiện:** Có ít nhất một danh mục đang hoạt động.\n- **Hậu điều kiện:** Sản phẩm mới được lưu với tồn kho = 0 và một bản ghi giá bán đầu tiên.\n- **Phương án đã chọn:** PA-SP-02.B (Admin và Nhân viên kho được thêm/sửa sản phẩm, NK không đổi giá); PA-SP-03.A (mỗi sản phẩm một đơn vị tính); PA-SP-05.A (không làm nhập Excel); PA-NH-04.B (thêm sản phẩm mới ngay từ phiếu nhập (form rút gọn)); PA-POS-07.A (giá bán đã gồm thuế GTGT)\n\n**Luồng chính**\n1. Bấm \"Thêm sản phẩm\".\n2. Nhập mã (hoặc để hệ thống tự sinh), tên, danh mục, đơn vị tính (một đơn vị), giá bán ban đầu, ngưỡng tồn tối thiểu (mặc định 5), ảnh, mô tả.\n3. Kiểm tra trường bắt buộc, mã không trùng, giá bán > 0 và là bội số của 100 đồng.\n4. Lưu sản phẩm, ghi bản ghi giá đầu tiên có hiệu lực ngay, báo thành công.\n\n**Luồng thay thế**\n- A1. Được gọi từ phiếu nhập (PA-NH-04.B): form rút gọn; lưu xong thì thêm ngay vào dòng phiếu nhập đang lập.\n\n**Ngoại lệ**\n- E1. Mã sản phẩm đã tồn tại: báo lỗi.\n- E2. Giá bán không hợp lệ hoặc thiếu trường: báo lỗi tại trường.\n- E3. Ảnh không phải JPG/PNG hoặc lớn hơn 2 MB: báo lỗi.\n\n**Quy tắc nghiệp vụ**\n- BR-SP-03: Mã sản phẩm duy nhất, không đổi sau khi đã có giao dịch.\n- BR-SP-04: Tồn kho không nhập tay; chỉ đổi qua nhập hàng, bán hàng, kiểm kê, xuất hủy, đổi trả.\n- BR-SP-05: Giá bán là số nguyên VND, bội số của 100 đồng, đã gồm thuế GTGT.\n- BR-SP-10: Nhân viên kho chỉ nhập giá bán ban đầu; đổi giá sau đó chỉ AD làm qua SP-05.\n\n**Phụ thuộc và lưu ý trong tuần 4**\n- A1 dùng ở NH-04 (tuần 5): viết form để dùng lại được ở phiếu nhập.\n\n_Nguồn: Đặc tả Use Case bản 13/10/2026, mục đặc tả SP-03. Nhánh gợi ý: `feature/sp-03`; ghi `Closes #<số issue>` trong PR._\n\n**Tiêu chí xong** (Kế hoạch v3, mục 1.4):\n- [ ] Làm đủ luồng chính\n- [ ] Làm luồng thay thế A1\n- [ ] Xử lý ngoại lệ E1, E2, E3\n- [ ] Tuân thủ BR-SP-03, BR-SP-04, BR-SP-05, BR-SP-10\n- [ ] Kiểm tra quyền ở máy chủ theo actor: AD, NK\n- [ ] Nếu đổi cấu trúc CSDL: có tệp migration trong PR, #1 đã duyệt\n- [ ] PR được review (người review: #3 Hoài), CI đạt\n- [ ] #4 test đạt theo test case\n- [ ] Chạy được trên staging\n- [ ] Cập nhật SRS nếu lệch đặc tả\n\n_Mã: T4-13 · Kế hoạch 9 tuần v3_",
+        "state": "open",
+        "user": {
+          "login": "zlatanofficial111-netizen",
+          "name": "zlatanofficial111-netizen",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/237690537?v=4",
+          "id": 237690537
+        },
+        "assignees": [
+          {
+            "login": "phanyen06ym-ien",
+            "name": "phanyen06ym-ien",
+            "email": null,
+            "avatar_url": "https://avatars.githubusercontent.com/u/232926377?v=4",
+            "id": 232926377
+          }
+        ],
+        "labels": [
+          {
+            "name": "code",
+            "color": "1d76db",
+            "description": ""
+          },
+          {
+            "name": "Must",
+            "color": "B60205",
+            "description": "MoSCoW: Must"
+          },
+          {
+            "name": "SP",
+            "color": "bfdadc",
+            "description": ""
+          }
+        ],
+        "milestone": 2,
+        "state_reason": null,
+        "comments": 0,
+        "created_at": "2026-10-14T02:58:35Z",
+        "updated_at": "2026-10-14T04:34:50Z",
+        "closed_at": null,
+        "display_url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/58",
+        "display_title": "[SP-03] Thêm sản phẩm"
+      },
+      "comments": []
+    },
+    {
+      "issue": {
+        "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/59",
+        "title": "[SP-04] Sửa thông tin sản phẩm",
+        "issue_number": 59,
+        "body": "**Người phụ trách:** #2 Phan Hải Yến (Developer – Hàng vào kho)\n\n**SP-04. Sửa thông tin sản phẩm** · module Sản phẩm và danh mục · ưu tiên **Must**\n\n- **Lý do xếp Must** (Bảng MoSCoW 13/10): Cần để sửa sai sót thông tin sản phẩm; giá bán không sửa ở đây mà qua SP-05\n- **Actor:** AD, NK\n- **Mô tả:** Sửa tên, danh mục, đơn vị, ảnh, mô tả, ngưỡng tồn (không gồm giá bán).\n- **Tiền điều kiện:** Sản phẩm tồn tại.\n- **Hậu điều kiện:** Thông tin mới được lưu; hóa đơn cũ không bị ảnh hưởng.\n- **Phương án đã chọn:** PA-SP-02.B (Admin và Nhân viên kho được thêm/sửa sản phẩm, NK không đổi giá)\n\n**Luồng chính**\n1. Mở chi tiết sản phẩm, bấm \"Sửa\".\n2. Sửa thông tin, bấm \"Lưu\".\n3. Kiểm tra và lưu.\n\n**Ngoại lệ**\n- E1. Hai người cùng sửa: người lưu sau nhận cảnh báo dữ liệu đã thay đổi và phải tải lại.\n- E2. Đổi đơn vị tính khi sản phẩm đã có tồn: từ chối (BR-SP-06).\n\n**Quy tắc nghiệp vụ**\n- BR-SP-06: Không đổi đơn vị tính của sản phẩm đã có tồn hoặc giao dịch.\n- BR-SP-07: Hóa đơn và phiếu đã lập lưu bản sao tên và giá tại thời điểm giao dịch.\n\n**Phụ thuộc và lưu ý trong tuần 4**\n- E1 cần cơ chế phát hiện sửa đồng thời (ví dụ cột phiên bản hoặc thời điểm cập nhật).\n\n_Nguồn: Đặc tả Use Case bản 13/10/2026, mục đặc tả SP-04. Nhánh gợi ý: `feature/sp-04`; ghi `Closes #<số issue>` trong PR._\n\n**Tiêu chí xong** (Kế hoạch v3, mục 1.4):\n- [ ] Làm đủ luồng chính\n- [ ] Xử lý ngoại lệ E1, E2\n- [ ] Tuân thủ BR-SP-06, BR-SP-07\n- [ ] Kiểm tra quyền ở máy chủ theo actor: AD, NK\n- [ ] Nếu đổi cấu trúc CSDL: có tệp migration trong PR, #1 đã duyệt\n- [ ] PR được review (người review: #3 Hoài), CI đạt\n- [ ] #4 test đạt theo test case\n- [ ] Chạy được trên staging\n- [ ] Cập nhật SRS nếu lệch đặc tả\n\n_Mã: T4-14 · Kế hoạch 9 tuần v3_",
+        "state": "open",
+        "user": {
+          "login": "zlatanofficial111-netizen",
+          "name": "zlatanofficial111-netizen",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/237690537?v=4",
+          "id": 237690537
+        },
+        "assignees": [
+          {
+            "login": "phanyen06ym-ien",
+            "name": "phanyen06ym-ien",
+            "email": null,
+            "avatar_url": "https://avatars.githubusercontent.com/u/232926377?v=4",
+            "id": 232926377
+          }
+        ],
+        "labels": [
+          {
+            "name": "code",
+            "color": "1d76db",
+            "description": ""
+          },
+          {
+            "name": "Must",
+            "color": "B60205",
+            "description": "MoSCoW: Must"
+          },
+          {
+            "name": "SP",
+            "color": "bfdadc",
+            "description": ""
+          }
+        ],
+        "milestone": 2,
+        "state_reason": null,
+        "comments": 0,
+        "created_at": "2026-10-14T02:58:40Z",
+        "updated_at": "2026-10-14T04:35:14Z",
+        "closed_at": null,
+        "display_url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/59",
+        "display_title": "[SP-04] Sửa thông tin sản phẩm"
+      },
+      "comments": []
+    },
+    {
+      "issue": {
+        "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/60",
+        "title": "[SP-05] Cập nhật giá bán",
+        "issue_number": 60,
+        "body": "**Người phụ trách:** #2 Phan Hải Yến (Developer – Hàng vào kho)\n\n**SP-05. Cập nhật giá bán** · module Sản phẩm và danh mục · ưu tiên **Must**\n\n- **Lý do xếp Must** (Bảng MoSCoW 13/10): Cách duy nhất để đổi giá bán vì SP-04 không gồm giá; mỗi lần đổi lưu lịch sử giá (PA-SP-04.B)\n- **Actor:** Admin/Quản lý\n- **Mô tả:** Thay đổi giá bán của sản phẩm.\n- **Tiền điều kiện:** Sản phẩm đang kinh doanh.\n- **Hậu điều kiện:** Giá mới được ghi vào lịch sử giá và áp dụng cho các đơn tạo từ thời điểm hiệu lực.\n- **Phương án đã chọn:** PA-SP-04.B (lưu lịch sử giá, đặt được giá có hiệu lực trong tương lai)\n\n**Luồng chính**\n1. Chọn sản phẩm, bấm \"Đổi giá\".\n2. Hiển thị giá đang hiệu lực, giá vốn để tham khảo, lịch sử giá.\n3. Nhập giá mới và thời điểm hiệu lực (mặc định ngay bây giờ, có thể chọn thời điểm tương lai).\n4. Kiểm tra và lưu thành một bản ghi lịch sử giá mới.\n\n**Luồng thay thế**\n- A1. Giá mới thấp hơn giá vốn: cảnh báo và yêu cầu xác nhận lại.\n- A2. Hủy một mức giá đã lên lịch nhưng chưa đến thời điểm hiệu lực.\n\n**Ngoại lệ**\n- E1. Giá ≤ 0, không phải số hoặc không là bội số của 100 đồng: báo lỗi.\n- E2. Thời điểm hiệu lực ở quá khứ: báo lỗi.\n\n**Quy tắc nghiệp vụ**\n- BR-SP-08: Đơn đang bán giữ giá lúc thêm vào giỏ.\n- BR-SP-11: Giá đang hiệu lực là bản ghi có thời điểm hiệu lực gần nhất và không sau hiện tại; xác định khi truy vấn, không cần tác vụ chạy theo lịch.\n\n**Phụ thuộc và lưu ý trong tuần 4**\n- Hàm \"lấy giá đang hiệu lực\" sẽ được POS-01 (#3) dùng: viết thành hàm dùng chung và báo #3.\n\n_Nguồn: Đặc tả Use Case bản 13/10/2026, mục đặc tả SP-05. Nhánh gợi ý: `feature/sp-05`; ghi `Closes #<số issue>` trong PR._\n\n**Tiêu chí xong** (Kế hoạch v3, mục 1.4):\n- [ ] Làm đủ luồng chính\n- [ ] Làm luồng thay thế A1, A2\n- [ ] Xử lý ngoại lệ E1, E2\n- [ ] Tuân thủ BR-SP-08, BR-SP-11\n- [ ] Kiểm tra quyền ở máy chủ theo actor: Admin/Quản lý\n- [ ] Nếu đổi cấu trúc CSDL: có tệp migration trong PR, #1 đã duyệt\n- [ ] PR được review (người review: #3 Hoài), CI đạt\n- [ ] #4 test đạt theo test case\n- [ ] Chạy được trên staging\n- [ ] Cập nhật SRS nếu lệch đặc tả\n\n_Mã: T4-15 · Kế hoạch 9 tuần v3_",
+        "state": "open",
+        "user": {
+          "login": "zlatanofficial111-netizen",
+          "name": "zlatanofficial111-netizen",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/237690537?v=4",
+          "id": 237690537
+        },
+        "assignees": [
+          {
+            "login": "phanyen06ym-ien",
+            "name": "phanyen06ym-ien",
+            "email": null,
+            "avatar_url": "https://avatars.githubusercontent.com/u/232926377?v=4",
+            "id": 232926377
+          }
+        ],
+        "labels": [
+          {
+            "name": "code",
+            "color": "1d76db",
+            "description": ""
+          },
+          {
+            "name": "Must",
+            "color": "B60205",
+            "description": "MoSCoW: Must"
+          },
+          {
+            "name": "SP",
+            "color": "bfdadc",
+            "description": ""
+          }
+        ],
+        "milestone": 2,
+        "state_reason": null,
+        "comments": 0,
+        "created_at": "2026-10-14T02:58:46Z",
+        "updated_at": "2026-10-14T04:35:27Z",
+        "closed_at": null,
+        "display_url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/60",
+        "display_title": "[SP-05] Cập nhật giá bán"
+      },
+      "comments": []
+    },
+    {
+      "issue": {
+        "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/61",
+        "title": "[SP-06] Ngừng kinh doanh/xóa sản phẩm",
+        "issue_number": 61,
+        "body": "**Người phụ trách:** #2 Phan Hải Yến (Developer – Hàng vào kho)\n\n**SP-06. Ngừng kinh doanh/xóa sản phẩm** · module Sản phẩm và danh mục · ưu tiên **Should**\n\n- **Lý do xếp Should** (Bảng MoSCoW 13/10): Chỉ là đổi trạng thái hoặc xóa khi chưa có giao dịch (PA-SP-01.B); không chặn luồng bán\n- **Actor:** Admin/Quản lý\n- **Mô tả:** Loại sản phẩm khỏi danh sách bán.\n- **Tiền điều kiện:** Sản phẩm tồn tại.\n- **Hậu điều kiện:** Sản phẩm không còn xuất hiện ở POS và phiếu nhập mới.\n- **Phương án đã chọn:** PA-SP-01.B (chưa có giao dịch thì xóa hẳn, có rồi thì ngừng kinh doanh)\n\n**Luồng chính**\n1. Chọn sản phẩm, bấm \"Ngừng kinh doanh\" hoặc \"Xóa\".\n2. Hiển thị tồn hiện tại và hỏi xác nhận.\n3. Xác nhận: chuyển trạng thái \"Ngừng kinh doanh\", hoặc xóa hẳn nếu chưa phát sinh giao dịch.\n\n**Luồng thay thế**\n- A1. Mở bán lại sản phẩm đã ngừng kinh doanh.\n\n**Ngoại lệ**\n- E1. Còn tồn > 0: cảnh báo, yêu cầu xác nhận thêm.\n- E2. Sản phẩm nằm trong đơn tạm giữ hoặc phiếu nhập nháp: cảnh báo.\n- E3. Đã có giao dịch mà chọn xóa: từ chối xóa hẳn, đề nghị ngừng kinh doanh.\n\n**Phụ thuộc và lưu ý trong tuần 4**\n- E2 cần bảng đơn tạm giữ (POS-08, tuần 6) và phiếu nhập (NH-04, tuần 5): viết hàm kiểm tra để bổ sung khi các bảng đó có.\n\n_Nguồn: Đặc tả Use Case bản 13/10/2026, mục đặc tả SP-06. Nhánh gợi ý: `feature/sp-06`; ghi `Closes #<số issue>` trong PR._\n\n**Tiêu chí xong** (Kế hoạch v3, mục 1.4):\n- [ ] Làm đủ luồng chính\n- [ ] Làm luồng thay thế A1\n- [ ] Xử lý ngoại lệ E1, E2, E3\n- [ ] Kiểm tra quyền ở máy chủ theo actor: Admin/Quản lý\n- [ ] Nếu đổi cấu trúc CSDL: có tệp migration trong PR, #1 đã duyệt\n- [ ] PR được review (người review: #3 Hoài), CI đạt\n- [ ] #4 test đạt theo test case\n- [ ] Chạy được trên staging\n- [ ] Cập nhật SRS nếu lệch đặc tả\n\n_Mã: T4-16 · Kế hoạch 9 tuần v3_",
+        "state": "open",
+        "user": {
+          "login": "zlatanofficial111-netizen",
+          "name": "zlatanofficial111-netizen",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/237690537?v=4",
+          "id": 237690537
+        },
+        "assignees": [
+          {
+            "login": "phanyen06ym-ien",
+            "name": "phanyen06ym-ien",
+            "email": null,
+            "avatar_url": "https://avatars.githubusercontent.com/u/232926377?v=4",
+            "id": 232926377
+          }
+        ],
+        "labels": [
+          {
+            "name": "code",
+            "color": "1d76db",
+            "description": ""
+          },
+          {
+            "name": "Should",
+            "color": "D93F0B",
+            "description": "MoSCoW: Should"
+          },
+          {
+            "name": "SP",
+            "color": "bfdadc",
+            "description": ""
+          }
+        ],
+        "milestone": 2,
+        "state_reason": null,
+        "comments": 0,
+        "created_at": "2026-10-14T02:58:52Z",
+        "updated_at": "2026-10-14T04:35:52Z",
+        "closed_at": null,
+        "display_url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/61",
+        "display_title": "[SP-06] Ngừng kinh doanh/xóa sản phẩm"
+      },
+      "comments": []
+    },
+    {
+      "issue": {
+        "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/62",
+        "title": "[SP-07] Xem danh sách danh mục",
+        "issue_number": 62,
+        "body": "**Người phụ trách:** #2 Phan Hải Yến (Developer – Hàng vào kho)\n\n**SP-07. Xem danh sách danh mục** · module Sản phẩm và danh mục · ưu tiên **Must**\n\n- **Lý do xếp Must** (Bảng MoSCoW 13/10): Sản phẩm phải thuộc danh mục; POS cũng lọc theo danh mục\n- **Actor:** AD, TN, NK\n- **Mô tả:** Xem các nhóm hàng (đồ uống, bánh kẹo, đồ dùng cá nhân...).\n- **Tiền điều kiện:** Đã đăng nhập.\n- **Hậu điều kiện:** Danh sách danh mục kèm số sản phẩm được hiển thị.\n\n**Luồng chính**\n1. Mở \"Danh mục\" (hoặc bộ lọc danh mục ở POS).\n2. Hiển thị tên danh mục, số sản phẩm, trạng thái.\n\n**Ngoại lệ**\n- E1. Chưa có danh mục: hiển thị hướng dẫn tạo danh mục (chỉ với AD).\n\n**Quy tắc nghiệp vụ**\n- BR-SP-09: Danh mục một cấp (không có danh mục con).\n\n**Phụ thuộc và lưu ý trong tuần 4**\n- POS-01 (#3) dùng danh sách này làm bộ lọc ở màn hình bán hàng.\n\n_Nguồn: Đặc tả Use Case bản 13/10/2026, mục đặc tả SP-07. Nhánh gợi ý: `feature/sp-07`; ghi `Closes #<số issue>` trong PR._\n\n**Tiêu chí xong** (Kế hoạch v3, mục 1.4):\n- [ ] Làm đủ luồng chính\n- [ ] Xử lý ngoại lệ E1\n- [ ] Tuân thủ BR-SP-09\n- [ ] Kiểm tra quyền ở máy chủ theo actor: AD, TN, NK\n- [ ] Nếu đổi cấu trúc CSDL: có tệp migration trong PR, #1 đã duyệt\n- [ ] PR được review (người review: #3 Hoài), CI đạt\n- [ ] #4 test đạt theo test case\n- [ ] Chạy được trên staging\n- [ ] Cập nhật SRS nếu lệch đặc tả\n\n_Mã: T4-17 · Kế hoạch 9 tuần v3_",
+        "state": "open",
+        "user": {
+          "login": "zlatanofficial111-netizen",
+          "name": "zlatanofficial111-netizen",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/237690537?v=4",
+          "id": 237690537
+        },
+        "assignees": [
+          {
+            "login": "phanyen06ym-ien",
+            "name": "phanyen06ym-ien",
+            "email": null,
+            "avatar_url": "https://avatars.githubusercontent.com/u/232926377?v=4",
+            "id": 232926377
+          }
+        ],
+        "labels": [
+          {
+            "name": "code",
+            "color": "1d76db",
+            "description": ""
+          },
+          {
+            "name": "Must",
+            "color": "B60205",
+            "description": "MoSCoW: Must"
+          },
+          {
+            "name": "SP",
+            "color": "bfdadc",
+            "description": ""
+          }
+        ],
+        "milestone": 2,
+        "state_reason": null,
+        "comments": 1,
+        "created_at": "2026-10-14T02:58:59Z",
+        "updated_at": "2026-10-17T03:07:14Z",
+        "closed_at": null,
+        "display_url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/62",
+        "display_title": "[SP-07] Xem danh sách danh mục"
+      },
+      "comments": [
+        {
+          "body": "**SP-07 – Implementation progress & pending decisions**\n\nĐã hoàn thành bước chuẩn bị trên nhánh `feature/sp-07-category-list`:\n\n- Tạo `CategoryListItemDto`, `PagedResultDto`, `CategoryListQuery` và `ICategoryService`.\n- Đối chiếu response SP-07 với API Contract tại PR #81 và ERD tại PR #73.\n- Chuẩn bị tài liệu test case `docs/tests/sp-07-test-cases.md`.\n- Xác nhận `dotnet build` thành công.\n\n**Các điểm cần Lead xác nhận:**\n\n1. **`phienBan`:** API Contract có trường này nhưng ERD `categories` chưa có cột tương ứng. Có cần bổ sung cơ chế version/concurrency không?\n2. **`soSanPham`:** Đếm toàn bộ sản phẩm thuộc danh mục hay chỉ sản phẩm đang kinh doanh?\n3. **Trạng thái danh mục:** AD, TN, NK có được xem danh mục bị ẩn/ngừng hoạt động không?\n4. **Pagination:** Quy tắc xử lý `page <= 0`, `size <= 0` là trả HTTP 400 hay áp dụng giá trị mặc định?\n5. **Backend Foundation:** Xác nhận kiến trúc, database provider/schema và thời điểm tích hợp PR #74.\n\n**Phạm vi hiện tại:** Chưa tạo Entity, migration, Controller hoặc Service implementation; chưa thay đổi `Program.cs`, database hay cấu hình xác thực.\n\n**Dependencies:** #4, #76, PR #73, PR #74, PR #81.\n\nĐề nghị Lead xác nhận các quyết định trên trước khi triển khai truy vấn dữ liệu thật cho SP-07.",
+          "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/62#issuecomment-6228857522"
+        }
+      ]
+    },
+    {
+      "issue": {
+        "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/63",
+        "title": "[SP-08] Thêm/sửa danh mục",
+        "issue_number": 63,
+        "body": "**Người phụ trách:** #2 Phan Hải Yến (Developer – Hàng vào kho)\n\n**SP-08. Thêm/sửa danh mục** · module Sản phẩm và danh mục · ưu tiên **Must**\n\n- **Lý do xếp Must** (Bảng MoSCoW 13/10): Phải tạo được danh mục trước khi thêm sản phẩm\n- **Actor:** Admin/Quản lý\n- **Mô tả:** Tạo mới hoặc đổi tên, mô tả danh mục.\n- **Tiền điều kiện:** Đăng nhập với quyền quản lý danh mục.\n- **Hậu điều kiện:** Danh mục được lưu.\n- **Phương án đã chọn:** PA-DT-01.C (danh mục có cờ \"không đổi trả\")\n\n**Luồng chính**\n1. Bấm \"Thêm danh mục\" hoặc \"Sửa\".\n2. Nhập tên, mô tả và cờ \"không đổi trả\" (ví dụ đồ ăn tươi, thuốc lá).\n3. Kiểm tra tên không trùng và lưu.\n\n**Ngoại lệ**\n- E1. Tên danh mục đã tồn tại: báo lỗi.\n\n**Phụ thuộc và lưu ý trong tuần 4**\n- Cờ \"không đổi trả\" được module Đổi trả (#3, tuần 6–8) dùng: thống nhất tên trường với #3.\n\n_Nguồn: Đặc tả Use Case bản 13/10/2026, mục đặc tả SP-08. Nhánh gợi ý: `feature/sp-08`; ghi `Closes #<số issue>` trong PR._\n\n**Tiêu chí xong** (Kế hoạch v3, mục 1.4):\n- [ ] Làm đủ luồng chính\n- [ ] Xử lý ngoại lệ E1\n- [ ] Kiểm tra quyền ở máy chủ theo actor: Admin/Quản lý\n- [ ] Nếu đổi cấu trúc CSDL: có tệp migration trong PR, #1 đã duyệt\n- [ ] PR được review (người review: #3 Hoài), CI đạt\n- [ ] #4 test đạt theo test case\n- [ ] Chạy được trên staging\n- [ ] Cập nhật SRS nếu lệch đặc tả\n\n_Mã: T4-18 · Kế hoạch 9 tuần v3_",
+        "state": "open",
+        "user": {
+          "login": "zlatanofficial111-netizen",
+          "name": "zlatanofficial111-netizen",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/237690537?v=4",
+          "id": 237690537
+        },
+        "assignees": [
+          {
+            "login": "phanyen06ym-ien",
+            "name": "phanyen06ym-ien",
+            "email": null,
+            "avatar_url": "https://avatars.githubusercontent.com/u/232926377?v=4",
+            "id": 232926377
+          }
+        ],
+        "labels": [
+          {
+            "name": "code",
+            "color": "1d76db",
+            "description": ""
+          },
+          {
+            "name": "Must",
+            "color": "B60205",
+            "description": "MoSCoW: Must"
+          },
+          {
+            "name": "SP",
+            "color": "bfdadc",
+            "description": ""
+          }
+        ],
+        "milestone": 2,
+        "state_reason": null,
+        "comments": 1,
+        "created_at": "2026-10-14T02:59:04Z",
+        "updated_at": "2026-11-01T22:12:02Z",
+        "closed_at": null,
+        "display_url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/63",
+        "display_title": "[SP-08] Thêm/sửa danh mục"
+      },
+      "comments": [
+        {
+          "body": "**[CẦN QUYẾT ĐỊNH — SP-08 / #63]** @zlatanofficial111-netizen\n\n**Bối cảnh:** phần service/repository và kiểm thử thêm/sửa danh mục đã ở Draft PR #196. Chưa có endpoint ghi. PR này xếp trên #169 → #168 → `main`; trong khi AUTH và `docs/api/API_CONVENTIONS.md` hiện có ở `develop` (ví dụ `BangQuyen.Admin = \"AD\"`, `MaQuyen.SanPhamGiaDanhMuc`, cookie phiên và `X-XSRF-TOKEN`). Nhánh hiện tại chỉ có policy `AdminOnly` dùng chuỗi `Admin` và chưa đăng ký authentication.\n\n**Tác động:** Nếu mở POST/PUT trên stack hiện tại, không thể chứng minh quyền Admin/Quản lý và hợp đồng lỗi/XSRF ở máy chủ; CI/HTTP test trên `develop` cũng chưa phản ánh stack schema này. Dữ liệu danh mục vẫn được service bảo vệ tên trùng và `PhienBan`, nhưng chức năng HTTP chưa hoàn thành.\n\n**Phương án:** (A) Tích hợp PR #168/#169 với nền AUTH trên `develop`, giải quyết xung đột được review, rồi dùng policy `SAN_PHAM_GIA_DANH_MUC` và hợp đồng lỗi/XSRF đã thống nhất; ưu điểm thống nhất bảo mật, nhược điểm cần điều phối base/schema. (B) Giữ Draft service/repository chờ thứ tự tích hợp do nhóm chốt; ưu điểm không mở endpoint thiếu bảo vệ, nhược điểm chưa demo được luồng ghi qua HTTP. Không đề xuất tự tạo policy/role mới trên nhánh cũ.\n\n**Đề xuất và quyết định cần xác nhận:** chọn nhánh đích và thứ tự tích hợp schema–SP-07–AUTH, xác nhận policy `SAN_PHAM_GIA_DANH_MUC` cho SP-08 và hợp đồng endpoint/lỗi trước khi tôi thêm HTTP. Đồng thời xác nhận `KhongDoiTra` là tên trường chia sẻ với module Đổi trả. Chỉ cổng HTTP của #63 đang chờ; service/repository, test và review Draft PR #196 có thể tiếp tục. Comment này không được xem là phê duyệt.",
+          "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/63#issuecomment-6564637621"
+        }
+      ]
+    },
+    {
+      "issue": {
+        "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/64",
+        "title": "[SP-09] Xóa/ẩn danh mục",
+        "issue_number": 64,
+        "body": "**Người phụ trách:** #2 Phan Hải Yến (Developer – Hàng vào kho)\n\n**SP-09. Xóa/ẩn danh mục** · module Sản phẩm và danh mục · ưu tiên **Could**\n\n- **Lý do xếp Could** (Bảng MoSCoW 13/10): Hiếm dùng; danh mục còn sản phẩm thì cũng không xóa được\n- **Actor:** Admin/Quản lý\n- **Mô tả:** Xóa danh mục rỗng hoặc ẩn danh mục không còn dùng.\n- **Tiền điều kiện:** Danh mục tồn tại.\n- **Hậu điều kiện:** Danh mục bị xóa hoặc ẩn.\n- **Phương án đã chọn:** PA-SP-01.B (chưa có giao dịch thì xóa hẳn, có rồi thì ngừng kinh doanh)\n\n**Luồng chính**\n1. Chọn danh mục, bấm \"Xóa\".\n2. Kiểm tra danh mục không còn sản phẩm; xóa sau khi AD xác nhận.\n\n**Luồng thay thế**\n- A1. Danh mục còn sản phẩm: đề nghị chuyển sản phẩm sang danh mục khác hoặc chỉ ẩn danh mục.\n\n**Ngoại lệ**\n- E1. Còn sản phẩm đang kinh doanh mà vẫn chọn xóa: từ chối.\n\n_Thứ tự làm: Could: làm cuối tuần_\n\n_Nguồn: Đặc tả Use Case bản 13/10/2026, mục đặc tả SP-09. Nhánh gợi ý: `feature/sp-09`; ghi `Closes #<số issue>` trong PR._\n\n**Tiêu chí xong** (Kế hoạch v3, mục 1.4):\n- [ ] Làm đủ luồng chính\n- [ ] Làm luồng thay thế A1\n- [ ] Xử lý ngoại lệ E1\n- [ ] Kiểm tra quyền ở máy chủ theo actor: Admin/Quản lý\n- [ ] Nếu đổi cấu trúc CSDL: có tệp migration trong PR, #1 đã duyệt\n- [ ] PR được review (người review: #3 Hoài), CI đạt\n- [ ] #4 test đạt theo test case\n- [ ] Chạy được trên staging\n- [ ] Cập nhật SRS nếu lệch đặc tả\n\n_Mã: T4-19 · Kế hoạch 9 tuần v3_",
+        "state": "open",
+        "user": {
+          "login": "zlatanofficial111-netizen",
+          "name": "zlatanofficial111-netizen",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/237690537?v=4",
+          "id": 237690537
+        },
+        "assignees": [
+          {
+            "login": "phanyen06ym-ien",
+            "name": "phanyen06ym-ien",
+            "email": null,
+            "avatar_url": "https://avatars.githubusercontent.com/u/232926377?v=4",
+            "id": 232926377
+          }
+        ],
+        "labels": [
+          {
+            "name": "code",
+            "color": "1d76db",
+            "description": ""
+          },
+          {
+            "name": "Could",
+            "color": "FEF2C0",
+            "description": "MoSCoW: Could"
+          },
+          {
+            "name": "SP",
+            "color": "bfdadc",
+            "description": ""
+          }
+        ],
+        "milestone": 2,
+        "state_reason": null,
+        "comments": 1,
+        "created_at": "2026-10-14T02:59:09Z",
+        "updated_at": "2026-11-02T04:14:04Z",
+        "closed_at": null,
+        "display_url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/64",
+        "display_title": "[SP-09] Xóa/ẩn danh mục"
+      },
+      "comments": [
+        {
+          "body": "**[CẦN QUYẾT ĐỊNH — SP-09 / #64]** @zlatanofficial111-netizen\n\nDraft PR #202 đã có xóa danh mục rỗng, từ chối khi còn sản phẩm và đổi trạng thái sang `DA_AN`, không cascade. Issue #64 cho phép ẩn khi còn sản phẩm, còn PR #169 SP-07 hiện trả cả danh mục chưa lọc trạng thái. Nếu SP-07 lọc `DA_AN` ở mọi trường hợp, sản phẩm lịch sử vẫn tham chiếu danh mục nhưng người dùng có thể không tra cứu được tên; nếu không lọc, danh mục ẩn vẫn xuất hiện trong lựa chọn tạo/sửa.\n\n**Tác động:** hợp đồng GET, màn hình chọn danh mục, dữ liệu lịch sử và test HTTP khác nhau. Phương án A: chỉ loại `DA_AN` khỏi danh sách chọn mới, vẫn trả tên trong chi tiết/lịch sử (bảo toàn tra cứu); cần tách truy vấn/flag. Phương án B: trả mọi danh mục với trạng thái và để client lọc, ít truy vấn hơn nhưng cần bảo đảm mọi client tuân thủ. Đề xuất A sau khi hợp đồng API được nhóm thống nhất.\n\nXin xác nhận hành vi hiển thị/chọn danh mục ẩn, có cho phép mở lại hay không, và endpoint/role theo AUTH `develop` trước khi mở HTTP. Luồng chuyển sản phẩm sang danh mục khác trong A1 cũng cần xác nhận phạm vi. Phần service/repository và unit test tiếp tục được review; chưa xem comment này là phê duyệt.",
+          "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/64#issuecomment-6568887285"
+        }
+      ]
+    }
+  ],
+  "prs": [
+    {
+      "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/169",
+      "number": 169,
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "title": "[SP-07] Implement Category List API with Unit & MySQL Integration Tests",
+      "body": "<html>\n<body>\n<!--StartFragment--><h2 data-pm-slice=\"1 1 []\"><span>1. Tổng quan (Summary)</span></h2><p><span>Triển khai chức năng </span><strong><span>SP-07 — API Danh sách danh mục sản phẩm</span></strong><span> cho hệ thống quản lý cửa hàng tiện lợi (Convenience Store Management System).</span></p><p><strong><span>API Endpoint:</span></strong><span> </span><code dir=\"ltr\"><span>GET /api/v1/categories</span></code></p><p><span>Pull Request này cung cấp chức năng lấy danh sách danh mục sản phẩm có phân trang, thống kê số lượng sản phẩm thuộc từng danh mục, kiểm tra tính hợp lệ của tham số đầu vào, cùng bộ kiểm thử tự động và tài liệu bằng chứng thực thi.</span></p><h2><span>2. Nội dung triển khai (Changes)</span></h2><ul data-spread=\"false\"><li><p><span>Bổ sung </span><code dir=\"ltr\"><span>CategoriesController</span></code><span> và cấu hình định tuyến cho API Controller.</span></p></li><li><p><span>Xây dựng các DTO phục vụ danh sách danh mục và hợp đồng truy vấn phân trang.</span></p></li><li><p><span>Triển khai </span><code dir=\"ltr\"><span>CategoryService</span></code><span> và interface tương ứng.</span></p></li><li><p><span>Triển khai </span><code dir=\"ltr\"><span>EfCategoryReadRepository</span></code><span> sử dụng Entity Framework Core.</span></p></li><li><p><span>Đăng ký Dependency Injection cho Service và Repository trong </span><code dir=\"ltr\"><span>Program.cs</span></code><span>.</span></p></li><li><p><span>Bổ sung Unit Test và Repository Integration Test.</span></p></li><li><p><span>Xây dựng tài liệu test case, báo cáo kết quả kiểm thử và các file bằng chứng đã được rà soát thông tin nhạy cảm.</span></p></li></ul><h2><span>3. Kết quả kiểm thử (Verification)</span></h2>\nNhóm kiểm thử | Kết quả\n-- | --\nUnit Test — Controller và Service | 10/10 PASS\nIntegration Test — EF Core và MySQL | 8/8 PASS\nKiểm thử HTTP thủ công | 4/4 PASS\nBiên dịch ứng dụng (Build) | PASS\nXác minh rollback dữ liệu kiểm thử | PASS\n\n<p><strong><span>Tổng số bài kiểm thử tự động: 18/18 PASS.</span></strong></p><p><span>Các Integration Test được thực hiện trên môi trường MySQL Docker cục bộ, sử dụng cơ sở dữ liệu độc lập </span><code dir=\"ltr\"><span>sp07_repository_tests</span></code><span> và cơ chế transaction rollback.</span></p><p><span>Sau khi thực thi, các bảng dữ liệu được kiểm tra đều không còn bản ghi thử nghiệm.</span></p><p><span>Trong quá trình kiểm thử SP-07, không thực hiện thao tác thay đổi dữ liệu hoặc cấu trúc trên cơ sở dữ liệu Aiven.</span></p><h2><span>4. Tài liệu và bằng chứng kiểm thử (Evidence)</span></h2><ul data-spread=\"false\"><li><p><code dir=\"ltr\"><span>docs/tests/sp-07-test-cases.md</span></code><span> — Tài liệu các trường hợp kiểm thử.</span></p></li><li><p><code dir=\"ltr\"><span>docs/tests/sp-07-test-execution-report.md</span></code><span> — Báo cáo kết quả thực thi kiểm thử.</span></p></li><li><p><code dir=\"ltr\"><span>docs/tests/evidence/sp-07/unit-tests.txt</span></code><span> — Log Unit Test.</span></p></li><li><p><code dir=\"ltr\"><span>docs/tests/evidence/sp-07/integration-tests.txt</span></code><span> — Log Integration Test.</span></p></li><li><p><code dir=\"ltr\"><span>docs/tests/evidence/sp-07/database-rollback.txt</span></code><span> — Bằng chứng xác minh trạng thái dữ liệu sau rollback.</span></p></li></ul><h2><span>5. Các vấn đề cần review (Review Notes)</span></h2><ul data-spread=\"false\"><li><p><span>Repository hiện tại thực hiện thống kê số lượng sản phẩm mà chưa lọc theo trạng thái kinh doanh của sản phẩm.</span></p></li><li><p><span>Repository hiện tại trả về danh mục mà chưa lọc theo trạng thái của danh mục.</span></p></li><li><p><span>Hai hành vi trên cần được xác nhận theo quy tắc nghiệp vụ chính thức; việc các bài test PASS không đồng nghĩa với việc quy tắc nghiệp vụ đã được phê duyệt.</span></p></li><li><p><span>Chưa triển khai HTTP End-to-End Test tự động. Các kịch bản HTTP hiện tại được kiểm thử thủ công.</span></p></li></ul><h2><span>6. Phụ thuộc giữa các Pull Request (Dependency)</span></h2><p><span>Đây là </span><strong><span>Stacked Pull Request</span></strong><span>, được xây dựng dựa trên nhánh:</span></p><p><code dir=\"ltr\"><span>feature/db-codefirst-remaining-schema</span></code></p><p><strong><span>Phụ thuộc:</span></strong><span> PR #168 (Code First Schema) cần được tích hợp trước khi merge SP-07 vào nhánh </span><code dir=\"ltr\"><span>main</span></code><span>.</span></p><p><span>Thông tin nhánh:</span></p><ul data-spread=\"false\"><li><p><strong><span>Base:</span></strong><span> </span><code dir=\"ltr\"><span>feature/db-codefirst-remaining-schema</span></code></p></li><li><p><strong><span>Compare:</span></strong><span> </span><code dir=\"ltr\"><span>integration/sp-07-codefirst</span></code></p></li><li><p><strong><span>Commit SP-07:</span></strong><span> </span><code dir=\"ltr\"><span>f6834ab</span></code></p></li></ul><h2><span>7. Checklist review và nghiệm thu</span></h2><h3><span>Đã hoàn thành</span></h3><ul data-spread=\"false\"><li data-task-list-item=\"true\" data-checked=\"true\"><span class=\"task-list-item-checkbox\" contenteditable=\"false\"><input type=\"checkbox\" checked=\"checked\" tabindex=\"-1\"></span><div class=\"task-list-item-content\"><p><span>Phạm vi thay đổi được giới hạn trong chức năng SP-07.</span></p></div></li><li data-task-list-item=\"true\" data-checked=\"true\"><span class=\"task-list-item-checkbox\" contenteditable=\"false\"><input type=\"checkbox\" checked=\"checked\" tabindex=\"-1\"></span><div class=\"task-list-item-content\"><p><span>Unit Test đạt 10/10 PASS.</span></p></div></li><li data-task-list-item=\"true\" data-checked=\"true\"><span class=\"task-list-item-checkbox\" contenteditable=\"false\"><input type=\"checkbox\" checked=\"checked\" tabindex=\"-1\"></span><div class=\"task-list-item-content\"><p><span>Repository Integration Test đạt 8/8 PASS.</span></p></div></li><li data-task-list-item=\"true\" data-checked=\"true\"><span class=\"task-list-item-checkbox\" contenteditable=\"false\"><input type=\"checkbox\" checked=\"checked\" tabindex=\"-1\"></span><div class=\"task-list-item-content\"><p><span>Kiểm thử HTTP thủ công đạt 4/4 PASS.</span></p></div></li><li data-task-list-item=\"true\" data-checked=\"true\"><span class=\"task-list-item-checkbox\" contenteditable=\"false\"><input type=\"checkbox\" checked=\"checked\" tabindex=\"-1\"></span><div class=\"task-list-item-content\"><p><span>Có tài liệu test case và báo cáo thực thi.</span></p></div></li><li data-task-list-item=\"true\" data-checked=\"true\"><span class=\"task-list-item-checkbox\" contenteditable=\"false\"><input type=\"checkbox\" checked=\"checked\" tabindex=\"-1\"></span><div class=\"task-list-item-content\"><p><span>Có bằng chứng kiểm thử và xác minh rollback.</span></p></div></li><li data-task-list-item=\"true\" data-checked=\"true\"><span class=\"task-list-item-checkbox\" contenteditable=\"false\"><input type=\"checkbox\" checked=\"checked\" tabindex=\"-1\"></span><div class=\"task-list-item-content\"><p><span>Không phát hiện thông tin xác thực nhạy cảm theo các mẫu kiểm tra đã thực hiện.</span></p></div></li></ul><h3><span>Cần hoàn thành trước khi merge</span></h3><ul data-spread=\"false\"><li data-task-list-item=\"true\" data-checked=\"false\"><span class=\"task-list-item-checkbox\" contenteditable=\"false\"><input type=\"checkbox\" tabindex=\"-1\"></span><div class=\"task-list-item-content\"><p><span>Thực hiện independent code review.</span></p></div></li><li data-task-list-item=\"true\" data-checked=\"false\"><span class=\"task-list-item-checkbox\" contenteditable=\"false\"><input type=\"checkbox\" tabindex=\"-1\"></span><div class=\"task-list-item-content\"><p><span>Xác nhận quy tắc nghiệp vụ về lọc danh mục theo trạng thái.</span></p></div></li><li data-task-list-item=\"true\" data-checked=\"false\"><span class=\"task-list-item-checkbox\" contenteditable=\"false\"><input type=\"checkbox\" tabindex=\"-1\"></span><div class=\"task-list-item-content\"><p><span>Xác nhận quy tắc thống kê sản phẩm theo trạng thái kinh doanh.</span></p></div></li><li data-task-list-item=\"true\" data-checked=\"false\"><span class=\"task-list-item-checkbox\" contenteditable=\"false\"><input type=\"checkbox\" tabindex=\"-1\"></span><div class=\"task-list-item-content\"><p><span>Giải quyết phụ thuộc với PR #168 — Code First Schema.</span></p></div></li><li data-task-list-item=\"true\" data-checked=\"false\"><span class=\"task-list-item-checkbox\" contenteditable=\"false\"><input type=\"checkbox\" tabindex=\"-1\"></span><div class=\"task-list-item-content\"><p><span>Được reviewer phê duyệt merge.</span></p></div></li></ul><h2><span>8. Kết luận</span></h2><p><span>Chức năng </span><strong><span>SP-07 — Danh sách danh mục sản phẩm</span></strong><span> đã hoàn thành triển khai và đạt các bài kiểm thử trong phạm vi hiện tại, gồm </span><strong><span>18/18 bài kiểm thử tự động PASS</span></strong><span> và </span><strong><span>4/4 kịch bản HTTP thủ công PASS</span></strong><span>.</span></p><p><span>Pull Request đủ điều kiện để chuyển sang giai đoạn </span><strong><span>Code Review</span></strong><span>, nhưng chưa đủ điều kiện merge vào </span><code dir=\"ltr\"><span>main</span></code><span> cho đến khi hoàn thành các mục review còn mở và giải quyết phụ thuộc với PR #168.</span></p><!--EndFragment-->\n</body>\n</html>",
+      "base": "feature/db-codefirst-remaining-schema",
+      "base_sha": "d03a30c51cd5fb4543653041841a403ff8707ef4",
+      "head": "integration/sp-07-codefirst",
+      "head_sha": "f6834abf79770ceb4dce8317b2f48fd98c927373",
+      "merge_commit_sha": "0c2fb776b83417cf6dcab1315a30b01096cdd094",
+      "created_at": "2026-10-30T15:49:53Z",
+      "updated_at": "2026-11-10T00:39:51Z",
+      "merged_at": "2026-11-10T00:39:48Z",
+      "closed_at": "2026-11-10T00:39:48Z",
+      "diff_evidence": {
+        "ignoredRawSnapshot": "artifacts/sp-module/requirements-snapshot.raw.json",
+        "diffSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+      }
+    },
+    {
+      "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/196",
+      "number": 196,
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "title": "[SP-08] Nghiệp vụ thêm và sửa danh mục (Draft)",
+      "body": "## Mục tiêu và Issue\nRefs #63. Xây dựng phần nghiệp vụ thêm/sửa danh mục trên SP-07, chờ hợp đồng xác thực và phân quyền trước khi mở HTTP.\n\n## Phạm vi và luồng nghiệp vụ\n- DTO và service kiểm tra tên bắt buộc, giới hạn theo cột đã ánh xạ, chuẩn hóa khoảng trắng và truyền cờ `KhongDoiTra`.\n- EF repository tạo/sửa, phát hiện tên trùng, không tìm thấy và xung đột `PhienBan`; giữ nguyên dữ liệu khi từ chối.\n- Đăng ký service/repository trong DI. Không thêm endpoint ghi hoặc migration.\n\n## API, CSDL và phụ thuộc\n- Chưa thay đổi API công khai. Cần xác nhận AUTH, ánh xạ Admin/Quản lý và hợp đồng lỗi HTTP trước khi mở endpoint.\n- Không thay đổi schema; dùng `DanhMuc` và migrations từ PR #168.\n- Base: `integration/sp-07-codefirst` (PR #169), phụ thuộc PR #168. Head: `feature/sp-08-category-create-update`, SHA `1ff4da8ee4088a5f8d5a2a95754fa6b1f70ae4bf`.\n\n## Kiểm thử thực tế\n- Windows, .NET SDK 10.0.401: `dotnet restore` thành công; `dotnet build ConvenienceStoreManagement.slnx --no-restore` PASS, 0 warning/0 error.\n- `dotnet test ... --no-build --filter FullyQualifiedName~CategoryMutationServiceTests`: 5/5 PASS, 0 FAIL/SKIP.\n- `dotnet test ... --no-build --filter FullyQualifiedName!~Integration`: 23/23 PASS, 0 FAIL/SKIP.\n- Repository MySQL: 1/1 PASS trên SHA trước đó `68ca1fc` trong Phase A3 ngày 02/11/2026, database riêng `sp08_repository_tests`, rollback đã xác minh; chưa chạy lại trên SHA hiện tại sau thay đổi DI.\n- Lần build đầu ở worktree mới thất bại NETSDK1004 vì chưa restore; restore rồi build lại PASS. Không có lỗi source được chứng minh.\n- Evidence lịch sử và báo cáo A3 ở nhánh `docs/feature-stack-qa`; chưa nằm trong diff PR này.\n\n## Giới hạn và quyết định mở\n- HTTP authorization, role mapping, test HTTP, CI, review độc lập và staging chưa được xác minh. PR giữ Draft; chưa đề nghị merge.\n- Tên trường cờ không đổi trả cần đối chiếu với module Đổi trả theo #63.\n\n## Checklist reviewer\n- [ ] Đối chiếu quy tắc tên trùng, `PhienBan`, xử lý DbUpdateException với schema MySQL.\n- [ ] Xác nhận tên cờ dùng chung và AUTH/role mapping.\n- [ ] Chạy CI, integration trên SHA hiện tại và review độc lập.\n- [ ] Xác nhận thứ tự tích hợp PR #168 → #169 → PR này.",
+      "base": "feature/db-codefirst-remaining-schema",
+      "base_sha": "0c2fb776b83417cf6dcab1315a30b01096cdd094",
+      "head": "feature/sp-08-category-create-update",
+      "head_sha": "02f9db0333d6050ad5f0b306614ba3959170c0f5",
+      "merge_commit_sha": "2554bf1d58f8abaf0b8569f7355f5f30193e88c0",
+      "created_at": "2026-11-01T22:10:46Z",
+      "updated_at": "2026-11-10T00:46:13Z",
+      "merged_at": "2026-11-10T00:46:11Z",
+      "closed_at": "2026-11-10T00:46:11Z",
+      "diff_evidence": {
+        "ignoredRawSnapshot": "artifacts/sp-module/requirements-snapshot.raw.json",
+        "diffSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+      }
+    },
+    {
+      "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/202",
+      "number": 202,
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "title": "[SP-09] Xóa danh mục rỗng và ẩn danh mục có tham chiếu (Draft)",
+      "body": "## Mục tiêu / Issue\nRefs #64. Triển khai phần service/repository xóa danh mục không còn sản phẩm và ẩn danh mục, chờ AUTH trước HTTP.\n\n## Phạm vi\n- Từ chối xóa khi còn bất kỳ tham chiếu sản phẩm; không cascade. Bắt DbUpdateException nếu phát sinh tham chiếu đồng thời.\n- `PhienBan` giúp báo xung đột; kiểm tra ID và phiên bản; ẩn bằng trạng thái schema `DA_AN` và giữ nguyên dữ liệu sản phẩm.\n- Đăng ký service/repository trong DI; không thêm endpoint, migration hoặc thay đổi schema. Luồng chuyển sản phẩm sang danh mục khác chưa triển khai.\n\n## Nhánh, phụ thuộc và test\n- Head `feature/sp-09-category-delete-hide`, SHA `a036c38cbc6d9233d99f8c58493c8b97016af613`; base `feature/sp-08-category-create-update` (PR #196), tiếp theo PR #169 → #168.\n- Build trên HEAD PASS 0 warning/error. Focused `CategoryRemovalServiceTests`: 3/3 PASS, regression `FullyQualifiedName!~Integration`: 26/26 PASS, 0 FAIL/SKIP.\n- Phase A3 trước đồng bộ DI: hai repository MySQL methods 2/2 PASS trên `ffd08a1`, database `sp09_repository_tests`, rollback được xác minh. Chưa chạy lại trên HEAD này; không dùng bằng chứng cũ làm kết quả mới.\n- Diff PR gồm 7 file SP-09. Việc đồng bộ ancestry SP-08 đã tạo một cherry-pick tương đương và merge commit trong lịch sử nhánh; nội dung DI SP-08 không nằm trong diff cuối cùng so với base. Reviewer kiểm tra commit history.\n\n## Cổng còn mở\n- Cần xác nhận hành vi hiển thị/chọn danh mục sau khi ẩn, hợp đồng AUTH Admin/Quản lý và XSRF/lỗi API trước endpoint. HTTP/CI/staging/review độc lập chưa xác minh; PR giữ Draft.\n\n## Checklist reviewer\n- [ ] Kiểm tra FK và race giữa xóa danh mục với thêm sản phẩm.\n- [ ] Xác nhận chính sách ẩn và chuyển sản phẩm theo #64.\n- [ ] Chạy CI và MySQL regression trên HEAD hiện tại.\n- [ ] Xác nhận đúng thứ tự tích hợp #168 → #169 → #196 → PR này.",
+      "base": "feature/sp-08-category-create-update",
+      "base_sha": "1ff4da8ee4088a5f8d5a2a95754fa6b1f70ae4bf",
+      "head": "feature/sp-09-category-delete-hide",
+      "head_sha": "a036c38cbc6d9233d99f8c58493c8b97016af613",
+      "merge_commit_sha": "02f9db0333d6050ad5f0b306614ba3959170c0f5",
+      "created_at": "2026-11-02T04:13:31Z",
+      "updated_at": "2026-11-10T00:45:55Z",
+      "merged_at": "2026-11-10T00:45:53Z",
+      "closed_at": "2026-11-10T00:45:53Z",
+      "diff_evidence": {
+        "ignoredRawSnapshot": "artifacts/sp-module/requirements-snapshot.raw.json",
+        "diffSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+      }
+    },
+    {
+      "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/204",
+      "number": 204,
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "title": "[DB] Optimistic concurrency cho DanhMuc",
+      "body": "## Mục tiêu\nRefs #168, #196. Bổ sung vertical slice optimistic concurrency cho `DanhMuc` trên `CuaHangDbContext`, theo finding của #1.\n\n## Thay đổi\n- Đánh dấu `DanhMuc.PhienBan` là EF concurrency token.\n- Tăng version đúng một lần cho entity DanhMuc Modified trong cả SaveChanges đồng bộ và bất đồng bộ, dựa trên OriginalValues để retry sau conflict không tăng lặp.\n- Không tăng với Added/Unchanged; không đổi schema/migration.\n- Thêm MySQL integration cases: tăng version khi sửa và đọc lại bằng context mới; không tăng khi không đổi; stale update hai context gây DbUpdateConcurrencyException; retry sau conflict không làm version trong entity tăng thêm.\n\n## Kiểm thử thực tế tại HEAD\n- Commit HEAD: `e25356c`.\n- `dotnet build .\\ConvenienceStoreManagement.slnx --no-restore`: PASS, exit 0, 0 warning/error.\n- Unit regression DB-free (`TinhToanKhoTests|QuyenVaTokenTests|PosInvoiceDetailsTests`): 47/47 PASS, 0 FAIL/SKIP.\n- `git diff --check`: PASS.\n- DanhMuc MySQL integration tests: NOT RUN. Fixture `CsdlMySqlTam` nhận connection string tùy ý, có quyền CREATE/DROP DATABASE và không xác minh host/environment. Aiven là SHARED_DB_PROTECTED, không được dùng. Cần MySQL test server độc lập được #4 xác nhận.\n- Unit tests trên không xác minh hành vi MySQL/EF relational concurrency.\n\n## Review\n@zlatanofficial111-netizen đã được request review về phạm vi mapping, SaveChanges increment/retry và tác động tích hợp. PR giữ Draft; không merge.\n\n## Giới hạn\nChỉ áp dụng DanhMuc; các entity PhienBan khác không đổi.",
+      "base": "develop",
+      "base_sha": "2cc1cf604c9d9c35d33d2691559e8ecc5d7c3ac7",
+      "head": "feature/db-concurrency-unified-context",
+      "head_sha": "e25356ceffc7dd1dc36e0e83441ea9a134c15479",
+      "merge_commit_sha": "bd4b7b57f151b5774cae41035ed653e0fedbd50d",
+      "created_at": "2026-11-02T05:27:27Z",
+      "updated_at": "2026-11-02T13:08:40Z",
+      "merged_at": "2026-11-02T13:08:37Z",
+      "closed_at": "2026-11-02T13:08:37Z",
+      "diff_evidence": {
+        "ignoredRawSnapshot": "artifacts/sp-module/requirements-snapshot.raw.json",
+        "diffSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+      }
+    },
+    {
+      "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/207",
+      "number": 207,
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "title": "[DB][Fix] Enforce DanhMuc optimistic concurrency",
+      "body": "## Summary\n- Mark `DanhMuc.PhienBan` as an EF Core concurrency token in the existing `CuaHangDbContext`.\n- Keep the sync and async version increment logic introduced by #204.\n- Add a database-free EF metadata test and MySQL integration cases for initial version, synchronous save, stale update, and reload/retry.\n- No physical schema change, migration, second DbContext, or change to the Promotions mapping.\n\n## Root cause\n#204 incremented `DanhMuc.PhienBan`, but the concurrency token was placed on `ChuongTrinhKhuyenMai.PhienBan`. EF therefore did not compare the original `DanhMuc` version on update. This change addresses the database review in #168 without porting its `ApplicationDbContext` or migration history.\n\n## Tests at commit `6d8ebd93414f246ed0313292f3c63f5d146672dc`\n- `dotnet restore .\\ConvenienceStoreManagement.slnx`: **PASS**.\n- `dotnet build .\\ConvenienceStoreManagement.slnx --no-restore`: **PASS**, 0 warnings/errors.\n- Metadata and database-free AUTH/POS/KHO regression: **49/49 PASS**, 0 skipped.\n- `git diff --check` and staged diff check: **PASS**.\n- `dotnet ef migrations has-pending-model-changes --context CuaHangDbContext`: **PASS**; EF reported no pending model changes. No migration was created.\n- MySQL integration: **6/6 PASS**, 0 failed, 0 skipped, trên MySQL Docker 8.4.13 độc lập (`127.0.0.1:33307`). Kết quả TRX đã kiểm tra: total/executed/passed = 6/6/6; failed/notExecuted = 0/0; outcome = Completed.\n- Báo cáo nghiệm thu đã commit: [`docs/tests/pr-207-danh-muc-concurrency.md`](docs/tests/pr-207-danh-muc-concurrency.md) tại commit `5e718a3` (đường dẫn tương đối trong repo).\n- TRX: `tmp/pr207-evidence/pr207-mysql.trx` (**chỉ có ở máy local, chưa đính kèm lên GitHub**).\n- CI: **PENDING**.\n\n## Limitations\n- Stale update và reload/retry đã được xác minh trên MySQL Docker 8.4.13; không suy rộng sang toàn bộ môi trường triển khai.\n- Independent approval is pending. This Draft PR is **READY FOR REVIEW**, not ready to merge.\n- The preexisting Promotions token remains untouched; any review of its behavior is separate.\n\n## Reviewer checklist\n- [ ] Check the `DanhMuc.PhienBan` mapping.\n- [ ] Check sync and async version increment, including original/current version on conflict.\n- [ ] Check that Promotions behavior is unchanged.\n- [x] Run MySQL integration on a confirmed independent test server (6/6 PASS, Docker MySQL 8.4.13).\n- [ ] Confirm CI PASS.\n- [ ] Obtain independent approval.\n\nRefs #204 and review #168.",
+      "base": "develop",
+      "base_sha": "bd4b7b57f151b5774cae41035ed653e0fedbd50d",
+      "head": "fix/db-category-concurrency-token",
+      "head_sha": "5e718a3211ecbe310d5074a1ecbeb0610cd3d2da",
+      "merge_commit_sha": "7e501094807b8bf20413900ff4f13e5d334a156a",
+      "created_at": "2026-11-02T16:11:55Z",
+      "updated_at": "2026-11-10T02:47:33Z",
+      "merged_at": "2026-11-10T02:47:30Z",
+      "closed_at": "2026-11-10T02:47:30Z",
+      "diff_evidence": {
+        "ignoredRawSnapshot": "artifacts/sp-module/requirements-snapshot.raw.json",
+        "diffSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+      }
+    },
+    {
+      "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/219",
+      "number": 219,
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "title": "[CSDL] Hợp nhất có chọn lọc lược đồ PR #168 vào CuaHangDbContext",
+      "body": "## Mục tiêu\nTái sử dụng có chọn lọc phần còn thiếu của PR #168 trên `develop`, giữ `CuaHangDbContext` là context vận hành duy nhất. Liên quan: [PR #168](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/168), [PR #130](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/130), #204 và #207.\n\n**Kết luận tại thời điểm báo cáo: CHƯA ĐỦ ĐIỀU KIỆN NGHIỆM THU TOÀN BỘ #168. Giữ PR ở trạng thái bản nháp; chưa đề nghị hợp nhất.** Các số liệu sau là bằng chứng lịch sử của SHA đã nêu, không phải kết quả kiểm thử lại sau PR #220.\n\n## Phạm vi và phần tái sử dụng\n- Kiểm kê 144 file của #168 tại HEAD `2554bf1d58f8abaf0b8569f7355f5f30193e88c0`: 0 file giữ nguyên, 6 đóng góp được điều chỉnh, 138 file bỏ qua hoặc hoãn.\n- Chuyển `SchemaStructureTests` sang bộ dữ liệu thử nghiệm riêng được tạo bằng `CuaHangDbContext`/`InitialCreate`; kiểm tra 28 bảng và bảng lịch sử, 3 khung nhìn, 10 trigger, 53 ràng buộc CHECK, khóa chính/ngoại, chỉ mục, UNIQUE và 281 cột.\n- Điều chỉnh cơ chế bảo vệ thuộc tính nghiệp vụ của `DanhMuc`, giữ cơ chế token đồng thời và tăng phiên bản theo `OriginalValues` từ #204/#207 cho cả đồng bộ/bất đồng bộ. Thay đổi chỉ riêng phiên bản không thể tự đặt phiên bản; cập nhật thực thể tách rời vẫn tăng đúng một lần.\n- Thêm kiểm thử siêu dữ liệu/migration, 9 trường hợp hồi quy đồng thời, công cụ kiểm toán lược đồ và tài liệu về quyền sở hữu lược đồ, khởi tạo, phụ thuộc, bằng chứng.\n\nPhạm vi thay đổi: 13 file; chỉ một file mã vận hành được sửa (`CuaHangDbContext`, thêm 9 dòng và thay 1 dòng); không thay lược đồ, entity, DI, gói phụ thuộc hay migration.\n\n## Nội dung không nhập và lý do\n- Không nhập `ApplicationDbContext`, 28 entity/cấu hình trùng lặp và 23 migration cùng các file thiết kế/bản chụp: `develop` đã có lược đồ SQL nền và các luồng AUTH/POS/KHO.\n- Không chuyển các chức năng SP-07/08/09, controller, DTO, repository từ nhánh nguồn vào PR CSDL.\n- Không sử dụng kết quả đạt trong quá khứ trên Aiven làm bằng chứng cho HEAD hiện tại; không mặc định có 23 migration/2 trigger ở runtime mới.\n- Không áp dụng tăng phiên bản/token chung cho các entity khác trước khi rà soát đường ghi và hợp đồng nghiệp vụ.\n\n## Phụ thuộc và tác động\n- #197 (theo kiểm kê trước: HEAD `359756abbd0b7d30d0cbeb0cac9fb5f5d2fda15b`) phụ thuộc `ApplicationDbContext`/`NhaCungCaps`, còn chứa NH-02/NH-03. Có thể chuyển riêng phần tra cứu NH-01 chỉ đọc sang `Data.Entities`; cần xử lý đồng thời `NhaCungCap` trước khi thêm thao tác sửa/ngừng sử dụng.\n- #201 (theo kiểm kê trước: HEAD `b97558b0343b151b63f4eb782c24acee186a8a5e`) phụ thuộc `ApplicationDbContext`/`PhieuNhaps`. `NgayNhap` ở nguồn là `DateOnly`, khác `DateTime` ánh xạ kiểu ngày ở runtime. Cần chuyển bộ lọc, phép chiếu và kiểm tra MySQL/DTO/AUTH riêng.\n- #168 còn liên quan #169/#196; cần đối chiếu các chức năng để lại, không tự sửa hoặc hợp nhất chúng trong PR này.\n- Quyền sở hữu DDL: `InitialCreate` → `SchemaV1`; SQL tham chiếu `docs/db/schema_v1.sql`. Khung nhìn/trigger/CHECK do SQL trong migration hiện có quản lý, không tạo lịch sử migration song song.\n\n## Kiểm thử đã ghi nhận\nSHA mã và kiểm thử: `a85b4ae48997f272963a9b7785d3f7a9fb894b5b`. HEAD `024f55c04510bb21592c925026e0f8e22e4e59d7` chỉ thêm báo cáo/JSON, không sửa mã và test đã chạy.\n\nMôi trường: Windows, .NET SDK 10.0.401, Oracle MySql.EntityFrameworkCore 10.0.12, MySQL Docker 8.4.13 riêng, `127.0.0.1:33308`, CSDL ngẫu nhiên cho mỗi bộ thử nghiệm.\n\n| Hạng mục | Kết quả |\n|---|---|\n| Khôi phục gói phụ thuộc | Đạt |\n| Biên dịch | Đạt, 0 cảnh báo/lỗi |\n| Toàn bộ kiểm thử | **370 đạt / 1 lỗi / 0 bỏ qua** |\n| Hồi quy AUTH/POS/KHO | 47/47 đạt |\n| Kiểm thử cấu trúc lược đồ | 15/15 đạt |\n| Kiểm thử ánh xạ lược đồ | 3/3 đạt |\n| Tích hợp MySQL | 167/167 đạt |\n| Kiểm thử đồng thời | 17/17 đạt (15 MySQL + 2 siêu dữ liệu) |\n| Kiểm thử nhanh dịch vụ/CSDL AUTH/POS/KHO | 32/32 đạt |\n| CI tại HEAD khi báo cáo | Chưa chạy; không có trạng thái hoặc luồng công việc |\n| Kiểm thử HTTP/trình duyệt đầu-cuối | Chưa xác minh |\n| Aiven/MySQL 9.7.2/môi trường sản xuất | Chưa xác minh |\n\nCác nhóm kiểm thử có thể trùng nhau, không cộng tổng. Lỗi toàn bộ bộ thử nghiệm thuộc `OperationalReportsServiceTests.ProductAndCategoryReports_AllocateInvoiceDeductionsProportionally`; cũng xuất hiện trên `develop` sạch. Phần Reports không thay đổi trong PR.\n\n## Rủi ro và điều kiện còn thiếu\n1. **B1:** Năm cột MySQL sinh tự động từng có `ValueGenerated.Never`; đã có [PR #220](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/220) sửa riêng. **Cần xác nhận #220 được duyệt, hợp nhất và kiểm thử lại #219**, không tự coi B1 đã đóng trên nhánh này.\n2. **B2:** Tám bảng có `PhienBan` chưa được đánh dấu là token đồng thời của EF. Không thể kết luận mọi đường ghi đều thiếu bảo vệ; cần chủ sở hữu module kiểm tra SQL và EF.\n3. **B3:** Kiểm thử Reports thất bại từ nhánh nền; cần sửa hoặc có quyết định nghiệm thu riêng.\n4. Chưa kiểm chứng đầy đủ hành vi từng VIEW/TRIGGER/CHECK và mọi giao dịch cạnh tranh; 48 khác biệt biểu diễn giá trị mặc định cần rà soát.\n5. CI và phê duyệt độc lập còn thiếu tại thời điểm báo cáo.\n\n## Bằng chứng và cách chạy lại\n- [Kiểm kê từng file](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/blob/integration/pr168-db-schema-consolidation/docs/database/pr168-consolidation/inventory.md)\n- [Kiến trúc, quyền sở hữu, phụ thuộc và hoàn tác](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/blob/integration/pr168-db-schema-consolidation/docs/database/pr168-consolidation/README.md)\n- [Báo cáo kiểm thử và giới hạn](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/blob/integration/pr168-db-schema-consolidation/docs/tests/pr168-consolidation-verification.md)\n- [Số liệu và mã băm SHA-256 của bằng chứng](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/blob/integration/pr168-db-schema-consolidation/docs/tests/evidence/pr168/test-results.json)\n- [Kiểm toán cột và lỗi 3105](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/blob/integration/pr168-db-schema-consolidation/docs/tests/evidence/pr168/column-audit.json)\n\nFile TRX/log gốc lưu cục bộ, chưa tải lên. `ConnectionStrings__CuaHangTest` phải trỏ tới máy chủ MySQL thử nghiệm riêng có quyền CREATE/DROP DATABASE; không dùng Aiven chia sẻ hoặc môi trường sản xuất. Không có thông tin xác thực trong phần thay đổi.\n\n## Hoàn tác\nCó thể hoàn tác commit mã, kiểm thử và tài liệu bằng PR thông thường. Không chạy hạ cấp CSDL vì không có migration mới. Hoàn tác cơ chế bảo vệ thuộc tính sẽ khôi phục hành vi thay đổi riêng phiên bản trước đó.\n\n## Danh sách nghiệm thu\n- [x] Một `CuaHangDbContext` vận hành; không có migration trùng.\n- [x] Quyền sở hữu lược đồ rõ ràng; không sửa dữ liệu sản xuất.\n- [x] Bảo toàn cơ chế đồng thời #204/#207 và kiểm thử hồi quy.\n- [x] Biên dịch, kiểm thử hồi quy liên quan và tích hợp MySQL đạt.\n- [x] Tài liệu khớp kết quả đã chạy; phạm vi thay đổi giới hạn.\n- [ ] Xử lý hoặc ghi nhận quyết định đối với lỗi Reports.\n- [ ] Đồng bộ bản sửa #220 và rà soát B2/các đóng góp còn hoãn của #168.\n- [ ] CI và rà soát độc lập.\n- [ ] Chỉ xem xét đóng #168 sau khi PR tích hợp đã được hợp nhất và người rà soát xác nhận không còn nội dung cần chuyển.\n\nĐề xuất người rà soát: `zlatanofficial111-netizen` (CSDL/kiến trúc), `mongtrucbay02-sys` (bảo trì), chủ sở hữu AUTH/POS/KHO và QA. Chưa tự động yêu cầu rà soát.",
+      "base": "develop",
+      "base_sha": "7e501094807b8bf20413900ff4f13e5d334a156a",
+      "head": "integration/pr168-db-schema-consolidation",
+      "head_sha": "024f55c04510bb21592c925026e0f8e22e4e59d7",
+      "merge_commit_sha": "391416a3be382f6816a1b6f56dd920eb1612c4c7",
+      "created_at": "2026-11-13T19:35:02Z",
+      "updated_at": "2026-11-14T18:40:31Z",
+      "merged_at": "2026-11-14T18:40:29Z",
+      "closed_at": "2026-11-14T18:40:29Z",
+      "diff_evidence": {
+        "ignoredRawSnapshot": "artifacts/sp-module/requirements-snapshot.raw.json",
+        "diffSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+      }
+    },
+    {
+      "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/220",
+      "number": 220,
+      "state": "closed",
+      "merged": true,
+      "draft": false,
+      "title": "sửa lỗi(cơ sở dữ liệu): ánh xạ đúng các cột MySQL được sinh tự động trong EF Core",
+      "body": "## Nguyên nhân gốc\nNăm cột MySQL được sinh tự động và lưu trữ (STORED generated columns) trước đây bị ánh xạ thành thuộc tính EF thông thường trong `CuaHangDbContext`. Vì vậy EF coi chúng là `ValueGenerated=Never`, cho phép ghi khi lưu và đưa giá trị vào lệnh ghi, dẫn tới lỗi MySQL **3105**.\n\n## Thay đổi\nCấu hình biểu thức tính toán sẵn có trong `CuaHangDbContext` bằng `HasComputedColumnSql(..., stored: true)` và cập nhật bản chụp mô hình EF hiện tại. Không thay đổi biểu thức SQL, lược đồ bảng, migration lịch sử, kiến trúc DbContext, cơ chế đồng thời hoặc module không liên quan.\n\n| Bảng | Thuộc tính | Biểu thức sinh giá trị hiện có |\n|---|---|---|\n| `ct_phieu_nhap` | `CtPhieuNhap.ThanhTien` | `so_luong * gia_nhap` |\n| `ct_hoa_don` | `CtHoaDon.ThanhTien` | `so_luong * (don_gia - giam_don_vi)` |\n| `ct_phieu_doi_tra` | `CtPhieuDoiTra.ThanhTien` | `so_luong * don_gia_thuc_tra` |\n| `ct_phieu_doi_tra` | `CtPhieuDoiTra.GiaTriHuy` | `IF(cach_xu_ly = 'HUY', so_luong * gia_von, 0)` |\n| `gio_hang` | `GioHang.DangBanCuaThuNgan` | `IF(trang_thai = 'DANG_BAN', thu_ngan_id, NULL)` |\n\n## Siêu dữ liệu EF\n- Trước: `ValueGenerated=Never`, `BeforeSaveBehavior=Save`, `AfterSaveBehavior=Save`; chưa khai báo SQL tính toán.\n- Sau: `ValueGenerated=OnAddOrUpdate`, `BeforeSaveBehavior=Ignore`, `AfterSaveBehavior=Ignore`; khai báo đúng SQL và thuộc tính lưu trữ.\n\nEF không còn gửi giá trị cho cột được sinh tự động; MySQL chịu trách nhiệm tính giá trị.\n\n## Bằng chứng kiểm thử\nMySQL 8.4.13 chạy trong container cục bộ tạm thời, sử dụng CSDL thử nghiệm riêng tạo qua migration:\n- Kiểm thử metadata và hồi quy thêm/cập nhật/tải lại: **6/6 đạt**.\n- Toàn bộ kiểm thử trên nhánh sửa lỗi: **349 đạt / 1 lỗi** (350 trường hợp).\n- Kiểm thử đồng thời: **6/6 đạt**.\n- Kiểm thử nhanh AUTH/POS/KHO: **47/47 đạt**.\n- Kiểm thử cấu trúc và ánh xạ CSDL của PR #219: **18/18 đạt**.\n- Biên dịch: **đạt**, 0 cảnh báo, 0 lỗi.\n\nKiểm thử Reports tại `OperationalReportsServiceTests.cs:78` vẫn thất bại. Lỗi cũng xuất hiện trên `develop` sạch (**343 đạt / 1 lỗi**) và PR #219 sạch (**370 đạt / 1 lỗi**); PR này không thay đổi Reports.\n\nDDL cố ý cấm cập nhật các dòng `ct_hoa_don` và `ct_phieu_doi_tra` theo BR-POS-07/BR-DT-03. Kiểm thử xác nhận thêm dữ liệu bằng EF và giá trị do CSDL tính cho các dòng bất biến. Cập nhật đầu vào và tải lại được kiểm chứng trên `ct_phieu_nhap` và `gio_hang`; kiểm thử metadata xác nhận EF bỏ qua thuộc tính được sinh khi cập nhật ở cả năm cột. Không bỏ qua hoặc sửa các trigger bảo vệ tính bất biến.\n\n## Đánh giá hồi quy và vấn đề còn lại\nCác thao tác ghi MySQL được kiểm tra không còn gặp lỗi 3105. Biểu thức lược đồ và trigger không thay đổi. Lỗi Reports có sẵn nằm ngoài phạm vi PR.\n\n**Đề nghị người rà soát CSDL xác nhận năm ánh xạ tính toán và bản chụp mô hình EF trước khi hợp nhất.**",
+      "base": "develop",
+      "base_sha": "7e501094807b8bf20413900ff4f13e5d334a156a",
+      "head": "fix/db-generated-columns-3105",
+      "head_sha": "d3604f8f97080c083fb3e0aee9807a010c948a9c",
+      "merge_commit_sha": "b8586b8ec1c8a0231becad93862325f6dddffa8e",
+      "created_at": "2026-11-14T12:03:03Z",
+      "updated_at": "2026-11-14T18:40:43Z",
+      "merged_at": "2026-11-14T18:40:40Z",
+      "closed_at": "2026-11-14T18:40:41Z",
+      "diff_evidence": {
+        "ignoredRawSnapshot": "artifacts/sp-module/requirements-snapshot.raw.json",
+        "diffSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+      }
+    },
+    {
+      "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/168",
+      "number": 168,
+      "state": "closed",
+      "merged": false,
+      "draft": false,
+      "title": "[CSDL] Hoàn thiện lược đồ Code First, migration và kiểm thử tích hợp cơ sở dữ liệu",
+      "body": "## Tổng quan\nHoàn thiện cơ sở dữ liệu theo phương pháp Entity Framework Core Code First và bổ sung kiểm thử tích hợp cấu trúc MySQL cho hệ thống quản lý cửa hàng tiện lợi.\n\n## Thay đổi chính\n- Hoàn thiện cấu trúc cơ sở dữ liệu theo phiên bản nền Code First tại thời điểm thực hiện.\n- Xác minh 28 bảng nghiệp vụ, 3 khung nhìn (VIEW) và 2 trigger theo kết quả kiểm thử lịch sử của PR.\n- Xác minh 23 migration, mới nhất là `20261027004309_DatabaseViewsAndStockCardTriggers`.\n- Bổ sung `SchemaStructureTests.cs`: 10 phương thức kiểm thử, tương ứng 12 trường hợp.\n- Bổ sung tài liệu tiếng Việt: `docs/tests/README.md`, `docs/tests/test-plan.md`, `docs/tests/database-test-cases.md`, `docs/tests/test-report.md`.\n\n## Kết quả kiểm thử đã ghi nhận trong PR\n| Hạng mục | Kết quả |\n|---|---|\n| Biên dịch toàn bộ giải pháp .NET 10 | Đạt |\n| Kiểm thử đơn vị | 8/8 đạt |\n| Kiểm thử tích hợp cấu trúc CSDL | 12/12 đạt |\n| Kiểm thử thất bại tại lần nghiệm thu được ghi nhận | 0 |\n| Kiểm thử bị bỏ qua tại lần nghiệm thu được ghi nhận | 0 |\n\nMôi trường ghi nhận: .NET 10, EF Core 10.0.13, xUnit 2.9.3, Aiven MySQL 8.4.\n\nCommit kiểm thử: `12d2f3e`. Commit bổ sung kiểm thử và tài liệu: `d03a30c`.\n\n## Bằng chứng\n- Báo cáo tại `docs/tests/test-report.md`.\n- File kết quả TRX cục bộ từng ghi nhận 12/12 kiểm thử tích hợp CSDL đạt.\n- Không đưa thông tin xác thực MySQL vào repository.\n\n## Giới hạn\n- Kiểm thử được mô tả chủ yếu xác minh cấu trúc CSDL và truy vấn VIEW chỉ đọc.\n- Chưa kiểm chứng đầy đủ hành vi nghiệp vụ của VIEW, TRIGGER, khóa ngoại, UNIQUE, CHECK và giao dịch đồng thời.\n- Kiểm thử có thay đổi dữ liệu phải sử dụng CSDL thử nghiệm riêng.\n- **Lưu ý hiện tại:** Đây là PR triển khai Code First song song, không phải hướng tích hợp trực tiếp vào `develop`. Xem [PR #219](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/219) để biết phần đã chọn lọc và [PR #220](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/220) để biết bản sửa ánh xạ cột sinh tự động. Số liệu kiểm thử trên đây là bằng chứng lịch sử, không phải kết quả kiểm thử lại tại HEAD hiện tại.\n\n## Danh sách kiểm tra trước khi duyệt\n- [ ] Xác nhận biên dịch thành công.\n- [ ] Đối chiếu kết quả kiểm thử đơn vị 8/8.\n- [ ] Đối chiếu kết quả kiểm thử cấu trúc CSDL 12/12.\n- [ ] Xác nhận tài liệu kiểm thử và báo cáo đã cập nhật.\n- [ ] Không có mật khẩu hoặc chuỗi kết nối chứa bí mật trong commit.\n- [ ] Người rà soát kiểm tra thay đổi lược đồ và migration.\n- [ ] Người rà soát kiểm tra tính chính xác của trường hợp kiểm thử và bằng chứng.\n- [ ] Kiểm tra phạm vi file thay đổi trước khi quyết định tích hợp.\n\nĐề nghị nhóm phụ trách máy chủ, cơ sở dữ liệu và QA rà soát độc lập. **Không hợp nhất trực tiếp PR này** trước khi hoàn tất đối chiếu các đóng góp còn lại với #219.",
+      "base": "main",
+      "base_sha": "aed862d6097501338e67889fddfe720bec1b83bb",
+      "head": "feature/db-codefirst-remaining-schema",
+      "head_sha": "2554bf1d58f8abaf0b8569f7355f5f30193e88c0",
+      "merge_commit_sha": "9ce38ece26cbb228e1b135fbf58769a88acd4267",
+      "created_at": "2026-10-30T12:21:37Z",
+      "updated_at": "2026-11-15T12:33:26Z",
+      "merged_at": null,
+      "closed_at": "2026-11-15T12:33:26Z",
+      "diff_evidence": {
+        "ignoredRawSnapshot": "artifacts/sp-module/requirements-snapshot.raw.json",
+        "diffSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+      }
+    }
+  ],
+  "fullSrsAvailability": "Repository contains SRS v1.2 change list; Drive searches for SRS and use-case specification returned presentation scripts only. Exact issue use cases and canonical schema/API conventions are the available authoritative sources.",
+  "evidencePolicy": {
+    "rawSnapshotSha256": "fdd09a5709a6a854068227f487c7f9afa08a220a9b1b364615ce056d008bb8d8",
+    "note": "Exact issue requirements/comments retained. PR diffs are ignored local evidence, not tracked connection configuration. PR source refs and diff hashes remain available.",
+    "redactedJsonPaths": []
+  }
+}

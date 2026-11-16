@@ -1,0 +1,646 @@
+{
+  "testedCodeHead": "06f70abceb7a9991537b98bcda6eb8219bf46edc",
+  "baselineDevelop": "babfe1edae507e5d94a95c422a76ffa344a23c00",
+  "baselineExecutionSha": "86fa91117f1233ddc31e8c8f9af07176cce05a89",
+  "currentDevelop": "a024757b73e696b5f4285f070c642db0c3a467cd",
+  "baselineCounters": {
+    "total": 455,
+    "executed": 455,
+    "passed": 417,
+    "failed": 38,
+    "error": 0,
+    "timeout": 0,
+    "aborted": 0,
+    "inconclusive": 0,
+    "passedButRunAborted": 0,
+    "notRunnable": 0,
+    "notExecuted": 0,
+    "disconnected": 0,
+    "warning": 0,
+    "completed": 0,
+    "inProgress": 0,
+    "pending": 0
+  },
+  "fullCounters": {
+    "total": 682,
+    "executed": 682,
+    "passed": 644,
+    "failed": 38,
+    "error": 0,
+    "timeout": 0,
+    "aborted": 0,
+    "inconclusive": 0,
+    "passedButRunAborted": 0,
+    "notRunnable": 0,
+    "notExecuted": 0,
+    "disconnected": 0,
+    "warning": 0,
+    "completed": 0,
+    "inProgress": 0,
+    "pending": 0
+  },
+  "fullEvidence": "artifacts/sp-module/final/full.trx",
+  "fullTimes": {
+    "creation": "2026-11-16T13:56:34.4029512+07:00",
+    "queuing": "2026-11-16T13:56:34.4029520+07:00",
+    "start": "2026-11-16T13:56:31.8316870+07:00",
+    "finish": "2026-11-16T13:58:52.8582621+07:00"
+  },
+  "fullSha256": "4aab66754719b89fcfb3229c6f886a8babe149b74a0eb4c42f7e71989841225d",
+  "features": [
+    {
+      "code": "07",
+      "issue": 62,
+      "priority": "Must",
+      "status": "VERIFIED_LOCAL",
+      "counts": {
+        "unit": 16,
+        "http": 28,
+        "mysql": 1
+      },
+      "commit": {
+        "sha": "86fa91117f1233ddc31e8c8f9af07176cce05a89",
+        "subject": "feat(sp-07): complete category listing with automated tests"
+      },
+      "source": [
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/CategoriesController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/CategoryPagesController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DTOs/CategoryListItemDto.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DTOs/CategoryListQuery.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DTOs/PagedResultDto.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DangKyModuleProducts.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/CategoryService.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/EfCategoryReadRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/ICategoryReadRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/ICategoryService.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Categories/Index.cshtml",
+        "src/ConvenienceStore.Web/Program.cs",
+        "src/ConvenienceStore.Web/Views/Shared/_Layout.cshtml"
+      ],
+      "blockers": [],
+      "integrationGaps": []
+    },
+    {
+      "code": "08",
+      "issue": 63,
+      "priority": "Must",
+      "status": "VERIFIED_LOCAL",
+      "counts": {
+        "unit": 5,
+        "http": 13,
+        "mysql": 1
+      },
+      "commit": {
+        "sha": "1a9d32b9be469a97d29f350021a883738d6aff78",
+        "subject": "feat(sp-08): implement category create and update with tests"
+      },
+      "source": [
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/CategoryEditorController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/CategoryMutationsController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DTOs/CategoryMutationDtos.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DangKyModuleProducts.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Models/CategoryEditModel.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/CategoryMutationService.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/EfCategoryMutationRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/ICategoryMutationRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Categories/Edit.cshtml",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Categories/Index.cshtml"
+      ],
+      "blockers": [],
+      "integrationGaps": []
+    },
+    {
+      "code": "01",
+      "issue": 56,
+      "priority": "Must",
+      "status": "VERIFIED_LOCAL",
+      "counts": {
+        "unit": 14,
+        "http": 22,
+        "mysql": 1
+      },
+      "commit": {
+        "sha": "438c2c342e03e2a9c7600c6beb37d256c8a1206d",
+        "subject": "feat(sp-01): implement product listing and filtering"
+      },
+      "source": [
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductListController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductPagesController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DTOs/ProductListItemDto.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DTOs/ProductListQuery.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DangKyModuleProducts.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/EfProductReadRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/IProductReadRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/ProductReadService.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/Index.cshtml",
+        "src/ConvenienceStore.Web/Views/Shared/_Layout.cshtml"
+      ],
+      "blockers": [],
+      "integrationGaps": []
+    },
+    {
+      "code": "02",
+      "issue": 57,
+      "priority": "Should",
+      "status": "VERIFIED_LOCAL",
+      "counts": {
+        "unit": 9,
+        "http": 10,
+        "mysql": 1
+      },
+      "commit": {
+        "sha": "bac65e8a7bda0c47c077209b08d8f4f00cf473d4",
+        "subject": "feat(sp-02): implement product details and price history views"
+      },
+      "source": [
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductDetailsController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductDetailsPageController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductPricePagesController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DTOs/ProductDetailsDto.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DTOs/ProductListItemDto.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DangKyModuleProducts.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/EfProductDetailRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/IProductDetailRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/ProductDetailService.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/Details.cshtml",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/Index.cshtml",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/Prices.cshtml"
+      ],
+      "blockers": [],
+      "integrationGaps": []
+    },
+    {
+      "code": "03",
+      "issue": 58,
+      "priority": "Must",
+      "status": "BLOCKED",
+      "counts": {
+        "unit": 9,
+        "http": 22,
+        "mysql": 2
+      },
+      "commit": {
+        "sha": "5831f2aab04ca45c200166c1055c6bdfff3fcb29",
+        "subject": "wip(sp-03): preserve standalone creation; NH-04 flow blocked"
+      },
+      "source": [
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductCreationController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductCreationPageController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductImagesController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DTOs/ProductCreateDto.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DangKyModuleProducts.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Models/ProductCreateModel.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/EfProductCreationRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/IProductCreationRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/ProductCreationService.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/ProductImageService.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/ProductImages.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/Create.cshtml",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/Index.cshtml",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/_ProductFields.cshtml"
+      ],
+      "blockers": [
+        "A1 / PA-NH-04.B: no Purchasing/NH-04 module or draft-receipt UI exists on the chosen develop-based Products worktree. Shared compact fields exist, but adding the created product to the live draft cannot be executed or claimed."
+      ],
+      "integrationGaps": []
+    },
+    {
+      "code": "04",
+      "issue": 59,
+      "priority": "Must",
+      "status": "VERIFIED_LOCAL",
+      "counts": {
+        "unit": 5,
+        "http": 12,
+        "mysql": 3
+      },
+      "commit": {
+        "sha": "e910d262f8674310c1f4b1955f8fc0a87ce39239",
+        "subject": "feat(sp-04): implement product editing with concurrency checks"
+      },
+      "source": [
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductEditingController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductEditingPageController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DTOs/ProductEditDto.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DangKyModuleProducts.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Models/ProductEditModel.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/EfProductEditRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/IProductEditRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/ProductEditService.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/Details.cshtml",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/Edit.cshtml"
+      ],
+      "blockers": [],
+      "integrationGaps": []
+    },
+    {
+      "code": "05",
+      "issue": 60,
+      "priority": "Must",
+      "status": "VERIFIED_LOCAL",
+      "counts": {
+        "unit": 10,
+        "http": 16,
+        "mysql": 5
+      },
+      "commit": {
+        "sha": "628aed5c56017b16b693464406357fcdb9ce8d2e",
+        "subject": "feat(sp-05): implement price scheduling and history verification"
+      },
+      "source": [
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductPricingController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductPricingPageController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DTOs/ProductPricingDtos.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DangKyModuleProducts.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Models/ProductPriceModel.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/EfProductPricingRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/IProductPricingRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/ProductPricingService.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/CancelPrice.cshtml",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/Details.cshtml",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/Price.cshtml",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/Prices.cshtml",
+        "src/ConvenienceStore.Web/Services/Pos/MySqlPosCatalog.cs"
+      ],
+      "blockers": [],
+      "integrationGaps": []
+    },
+    {
+      "code": "06",
+      "issue": 61,
+      "priority": "Should",
+      "status": "VERIFIED_LOCAL",
+      "counts": {
+        "unit": 10,
+        "http": 12,
+        "mysql": 11
+      },
+      "commit": {
+        "sha": "27e4b7c45cffcf70bbbdf62ed1020a1fc42ae79b",
+        "subject": "feat(sp-06): implement guarded product lifecycle with tests"
+      },
+      "source": [
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductLifecycleController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductLifecyclePageController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DTOs/ProductLifecycleDtos.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DangKyModuleProducts.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/EfProductLifecycleRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/IProductLifecycleRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/ProductLifecycleService.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/Details.cshtml",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Management/Lifecycle.cshtml"
+      ],
+      "blockers": [],
+      "integrationGaps": [
+        "New Purchasing/NH-04 selection/submission workflow: consumer UI/API absent; provider active filter and SQL draft-warning checks passed, consumer flow NOT RUN."
+      ]
+    },
+    {
+      "code": "09",
+      "issue": 64,
+      "priority": "Could",
+      "status": "VERIFIED_LOCAL",
+      "counts": {
+        "unit": 5,
+        "http": 12,
+        "mysql": 7
+      },
+      "commit": {
+        "sha": "96e5af478d7209887c3349b5168b765e57b94c2d",
+        "subject": "feat(sp-09): implement category removal and hiding with tests"
+      },
+      "source": [
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/CategoryRemovalController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Controllers/CategoryRemovalPageController.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DTOs/CategoryRemovalResult.cs",
+        "src/ConvenienceStore.Web/Modules/Products/DangKyModuleProducts.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/CategoryRemovalService.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/EfCategoryRemovalRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Services/ICategoryRemovalRepository.cs",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Categories/Index.cshtml",
+        "src/ConvenienceStore.Web/Modules/Products/Views/Categories/Removal.cshtml"
+      ],
+      "blockers": [],
+      "integrationGaps": []
+    }
+  ],
+  "integrationTests": 10,
+  "moduleCounters": {
+    "Products / SP": {
+      "Passed": 272
+    },
+    "Auth": {
+      "Passed": 93
+    },
+    "Inventory / KHO": {
+      "Passed": 40,
+      "Failed": 1
+    },
+    "POS": {
+      "Passed": 50,
+      "Failed": 2
+    },
+    "Promotions": {
+      "Passed": 66
+    },
+    "Returns": {
+      "Passed": 59,
+      "Failed": 24
+    },
+    "Database": {
+      "Passed": 30,
+      "Failed": 11
+    },
+    "Customers": {
+      "Passed": 19
+    },
+    "Reports": {
+      "Passed": 15
+    }
+  },
+  "newFailures": [],
+  "removedBaselineCases": [],
+  "fixedBaseline": [],
+  "changedBaselineCauses": [],
+  "reportRegression": [
+    {
+      "name": "ConvenienceStore.Web.Tests.OperationalReportsServiceTests.ProductAndCategoryReports_AllocateInvoiceDeductionsProportionally",
+      "cls": "ConvenienceStore.Web.Tests.OperationalReportsServiceTests",
+      "method": "ProductAndCategoryReports_AllocateInvoiceDeductionsProportionally",
+      "outcome": "Passed",
+      "message": null
+    }
+  ],
+  "prs": [
+    {
+      "number": 169,
+      "base": "feature/db-codefirst-remaining-schema",
+      "baseSha": "d03a30c51cd5fb4543653041841a403ff8707ef4",
+      "headSha": "f6834abf79770ceb4dce8317b2f48fd98c927373",
+      "merged": true,
+      "mergeSha": "0c2fb776b83417cf6dcab1315a30b01096cdd094",
+      "ancestorOfCurrentDevelop": false
+    },
+    {
+      "number": 196,
+      "base": "feature/db-codefirst-remaining-schema",
+      "baseSha": "0c2fb776b83417cf6dcab1315a30b01096cdd094",
+      "headSha": "02f9db0333d6050ad5f0b306614ba3959170c0f5",
+      "merged": true,
+      "mergeSha": "2554bf1d58f8abaf0b8569f7355f5f30193e88c0",
+      "ancestorOfCurrentDevelop": false
+    },
+    {
+      "number": 202,
+      "base": "feature/sp-08-category-create-update",
+      "baseSha": "1ff4da8ee4088a5f8d5a2a95754fa6b1f70ae4bf",
+      "headSha": "a036c38cbc6d9233d99f8c58493c8b97016af613",
+      "merged": true,
+      "mergeSha": "02f9db0333d6050ad5f0b306614ba3959170c0f5",
+      "ancestorOfCurrentDevelop": false
+    },
+    {
+      "number": 204,
+      "base": "develop",
+      "baseSha": "2cc1cf604c9d9c35d33d2691559e8ecc5d7c3ac7",
+      "headSha": "e25356ceffc7dd1dc36e0e83441ea9a134c15479",
+      "merged": true,
+      "mergeSha": "bd4b7b57f151b5774cae41035ed653e0fedbd50d",
+      "ancestorOfCurrentDevelop": true
+    },
+    {
+      "number": 207,
+      "base": "develop",
+      "baseSha": "bd4b7b57f151b5774cae41035ed653e0fedbd50d",
+      "headSha": "5e718a3211ecbe310d5074a1ecbeb0610cd3d2da",
+      "merged": true,
+      "mergeSha": "7e501094807b8bf20413900ff4f13e5d334a156a",
+      "ancestorOfCurrentDevelop": true
+    },
+    {
+      "number": 219,
+      "base": "develop",
+      "baseSha": "7e501094807b8bf20413900ff4f13e5d334a156a",
+      "headSha": "024f55c04510bb21592c925026e0f8e22e4e59d7",
+      "merged": true,
+      "mergeSha": "391416a3be382f6816a1b6f56dd920eb1612c4c7",
+      "ancestorOfCurrentDevelop": true
+    },
+    {
+      "number": 220,
+      "base": "develop",
+      "baseSha": "7e501094807b8bf20413900ff4f13e5d334a156a",
+      "headSha": "d3604f8f97080c083fb3e0aee9807a010c948a9c",
+      "merged": true,
+      "mergeSha": "b8586b8ec1c8a0231becad93862325f6dddffa8e",
+      "ancestorOfCurrentDevelop": true
+    },
+    {
+      "number": 168,
+      "base": "main",
+      "baseSha": "aed862d6097501338e67889fddfe720bec1b83bb",
+      "headSha": "2554bf1d58f8abaf0b8569f7355f5f30193e88c0",
+      "merged": false,
+      "mergeSha": "9ce38ece26cbb228e1b135fbf58769a88acd4267",
+      "ancestorOfCurrentDevelop": null
+    }
+  ],
+  "overall": "FAIL",
+  "browserE2E": "NOT RUN",
+  "gates": {
+    "full": {
+      "total": 682,
+      "executed": 682,
+      "passed": 644,
+      "failed": 38,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "http": {
+      "total": 157,
+      "executed": 157,
+      "passed": 157,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "integration-green": {
+      "total": 10,
+      "executed": 10,
+      "passed": 10,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "inventory": {
+      "total": 41,
+      "executed": 41,
+      "passed": 40,
+      "failed": 1,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "mysql": {
+      "total": 32,
+      "executed": 32,
+      "passed": 32,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "pos": {
+      "total": 75,
+      "executed": 75,
+      "passed": 73,
+      "failed": 2,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "security": {
+      "total": 204,
+      "executed": 204,
+      "passed": 202,
+      "failed": 2,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "unit": {
+      "total": 83,
+      "executed": 83,
+      "passed": 83,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    }
+  },
+  "latestTargetVerification": {
+    "status": "BLOCKED",
+    "targetSha": "a024757b73e696b5f4285f070c642db0c3a467cd",
+    "sourceHead": "06f70abceb7a9991537b98bcda6eb8219bf46edc",
+    "worktree": "C:\\Users\\Admin\\yen-sp-target-verification-20261116",
+    "restore": "PASS after sandbox network retry",
+    "build": "FAIL: six CS8300 compiler errors in committed target source",
+    "markers": [
+      {
+        "line": 22,
+        "text": "<<<<<<< HEAD"
+      },
+      {
+        "line": 28,
+        "text": "======="
+      },
+      {
+        "line": 31,
+        "text": ">>>>>>> origin/develop"
+      },
+      {
+        "line": 307,
+        "text": "<<<<<<< HEAD"
+      },
+      {
+        "line": 309,
+        "text": "======="
+      },
+      {
+        "line": 390,
+        "text": ">>>>>>> origin/develop"
+      }
+    ],
+    "sourceFile": "src/ConvenienceStore.Web/Modules/Returns/Services/ReturnOrderService.cs",
+    "committedSourceSha256": "08df3a6cedbdfc2604b0aa7beed4375df038273fc5457aa9401092b4a6f57e24",
+    "cleanTarget": true,
+    "patchSha256": "dc350c698bb5c18a3aff211a5411f753323f878dcdb3f5b679c009a26c0bb774",
+    "patchApplyCheck": "PASS; text compatibility only",
+    "sourceOverlap": [],
+    "patchApplied": false,
+    "discovery": "NOT RUN: build failed",
+    "targetBaselineTests": "NOT RUN: build failed",
+    "targetCandidateTests": "NOT RUN: target build blocked",
+    "candidateRegression": "UNKNOWN; no runtime compatibility claim",
+    "environmentFailures": [
+      "Initial sandbox NuGet socket denied; escalated restore PASS",
+      "Initial sandbox obj access denied; escalated build isolated six committed-source errors"
+    ],
+    "remediation": "Returns owner must resolve committed conflict markers in target; no out-of-scope source changed"
+  }
+}

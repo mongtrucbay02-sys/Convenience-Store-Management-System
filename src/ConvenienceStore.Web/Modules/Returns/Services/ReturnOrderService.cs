@@ -1,4 +1,4 @@
-
+﻿
 using System.Data;
 using System.Globalization;
 using System.Security.Claims;
@@ -19,16 +19,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConvenienceStore.Web.Modules.Returns.Services;
 
-<<<<<<< HEAD
 public sealed class ReturnOrderService(
     CuaHangDbContext db,
     IDichVuKho stock,
     IReturnPointsGateway points,
-    TimeProvider time)
-=======
-public sealed class ReturnOrderService(CuaHangDbContext db, IDichVuKho stock,
-    IReturnPointsGateway points, TimeProvider time, ReturnRefundService? refunds = null)
->>>>>>> origin/develop
+    TimeProvider time,
+    ReturnRefundService? refunds = null)
 {
     private sealed record Header(
         long Id,
@@ -304,90 +300,7 @@ public sealed class ReturnOrderService(CuaHangDbContext db, IDichVuKho stock,
 
         foreach (var l in selected)
         {
-<<<<<<< HEAD
             if (!Reasons.Contains(l.Reason ?? ""))
-=======
-            if (!Reasons.Contains(l.Reason ?? "")) throw LoiNghiepVu.DuLieuKhongHopLe("reason", "Chọn lý do trả hàng hợp lệ.");
-            if (!Handlings.Contains(l.Handling ?? "")) throw LoiNghiepVu.DuLieuKhongHopLe("handling", "Chọn nhập lại kho hoặc hủy.");
-            if (string.IsNullOrWhiteSpace(l.Condition) || l.Condition.Length > 255)
-                throw LoiNghiepVu.DuLieuKhongHopLe("condition", "Nhập tình trạng hàng, tối đa 255 ký tự.");
-            if (l.Note?.Length > 255 || (l.Reason == "KHAC" && string.IsNullOrWhiteSpace(l.Note)))
-                throw LoiNghiepVu.DuLieuKhongHopLe("note", "Lý do khác cần ghi chú, tối đa 255 ký tự.");
-        }
-        var h = await Invoice(request.InvoiceId, ct); var original = await Lines(h.Id, ct); var now = Now;
-        var policy = await db.DocMotDongAsync("""
-            SELECT id,so_ngay_doi_tra,nguong_tien_can_duyet FROM chinh_sach_doi_tra
-            WHERE hieu_luc_tu<=@now ORDER BY hieu_luc_tu DESC,id DESC LIMIT 1 FOR SHARE
-            """, r => new Policy(r.SoNguyen(0), r.SoNguyen(1), r.SoNguyenDai(2)), ct, ("@now", now))
-            ?? throw Conflict("Chưa có chính sách đổi trả đang hiệu lực.");
-        bool expired = (now.Date - h.PurchasedAt.Date).TotalDays > policy.Days;
-        var result = new List<ReturnPreviewLine>(); long refund = 0;
-        foreach (var l in selected)
-        {
-            var saved = original.SingleOrDefault(x => x.Id == l.ProductId);
-            if (saved is null) throw LoiNghiepVu.DuLieuKhongHopLe("productId", "Sản phẩm không thuộc hóa đơn gốc.");
-            long remaining = Math.Max(0, (long)saved.Quantity - saved.Reserved);
-            if (l.Quantity > remaining) throw LoiNghiepVu.DuLieuKhongHopLe("quantity", $"{saved.Name}: chỉ còn {remaining} sản phẩm được trả.");
-            long paid = saved.Price - saved.Discount;
-            if (paid < 0) throw Conflict("Dòng hóa đơn có giá thực trả không hợp lệ.");
-            refund = checked(refund + paid * l.Quantity);
-            result.Add(new(saved.Id, saved.Name, l.Quantity, paid, l.Reason, l.Note?.Trim(), l.Condition.Trim(),
-                l.Handling, expired || saved.Forbidden, saved.Cost));
-        }
-        bool forbidden = result.Any(l => original.Single(o => o.Id == l.ProductId).Forbidden);
-        bool over = refund > policy.Threshold, needs = expired || forbidden || over;
-        // Fingerprint binds confirmation to server prices, policy, remaining quantities, actor and selected data.
-        string token = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(
-            new { actor, h.Id, h.Status, h.CustomerId, h.PointsEarned, policy, expired, original, result, refund }))));
-        return new(h, policy, original, new(h.Id, h.Code, refund, expired, forbidden, over, needs,
-            h.PointsEarned > 0 && refund > 0, token, result));
-    }
-    public async Task<ReturnPreview> PreviewAsync(ReturnOrderRequest request, ClaimsPrincipal user, CancellationToken ct = default)
-    {
-        int actor = await Actor(user, ct);
-        await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-        var draft = await Calculate(request, actor, ct); await tx.CommitAsync(ct); return draft.Preview;
-    }
-    public async Task<long> CreateAsync(ReturnOrderRequest request, ClaimsPrincipal user, CancellationToken ct = default)
-    {
-        int actor = await Actor(user, ct);
-        await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-        var draft = await Calculate(request, actor, ct); var preview = draft.Preview;
-        if (string.IsNullOrEmpty(request.ConfirmationToken) || request.ConfirmationToken != preview.ConfirmationToken)
-            throw Conflict("Điều kiện hoặc số lượng còn trả đã thay đổi. Vui lòng tính lại và xác nhận.");
-        if (!preview.NeedsApproval && !request.CashConfirmed)
-            throw LoiNghiepVu.DuLieuKhongHopLe("cashConfirmed", "Cần xác nhận hoàn tiền mặt cho khách.");
-        // Pending slips never execute stock/cash/points side effects.
-        if (!preview.NeedsApproval && preview.PointsBlocked && points is PendingKh06ReturnPointsGateway)
-            throw new LoiNghiepVu("CHUA_TICH_HOP_KH06", 409, "Hóa đơn có điểm tích lũy. Chưa thể hoàn tất vì chưa tích hợp KH-06; chưa hoàn tiền, chưa nhập kho.");
-        string period = Now.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
-        await db.ChayAsync("INSERT INTO bo_dem_chung_tu (tien_to,ky,so_cuoi) VALUES ('TH',@ky,1) ON DUPLICATE KEY UPDATE so_cuoi=so_cuoi+1", ct, ("@ky", period));
-        long serial = Convert.ToInt64(await db.DocMotGiaTriAsync("SELECT so_cuoi FROM bo_dem_chung_tu WHERE tien_to='TH' AND ky=@ky", ct, ("@ky", period)));
-        string code = $"TH-{period}-{serial:D3}";
-        if (code.Length > 20) throw Conflict("Đã vượt giới hạn mã phiếu trong ngày.");
-        await db.ChayAsync("""
-            INSERT INTO phieu_doi_tra (ma_phieu,loai,hoa_don_goc_id,khach_hang_id,chinh_sach_id,trang_thai,
-                can_duyet_qua_han,can_duyet_danh_muc,can_duyet_vuot_nguong,gia_tri_hang_tra,tien_hoan,
-                thu_ngan_id,hoan_tat_luc)
-            VALUES (@ma,'TRA_HANG',@hd,@kh,@cs,@tt,@qh,@dm,@vn,@tien,@tien,@tn,@done)
-            """, ct, ("@ma", code), ("@hd", draft.Invoice.Id), ("@kh", draft.Invoice.CustomerId), ("@cs", draft.Policy.Id),
-            ("@tt", preview.NeedsApproval ? "CHO_DUYET" : "HOAN_TAT"), ("@qh", preview.Expired), ("@dm", preview.Forbidden),
-            ("@vn", preview.OverThreshold), ("@tien", preview.Refund), ("@tn", actor), ("@done", preview.NeedsApproval ? null : Now));
-        long id = Convert.ToInt64(await db.DocMotGiaTriAsync("SELECT LAST_INSERT_ID()", ct));
-        foreach (var l in preview.Lines)
-            await db.ChayAsync("""
-                INSERT INTO ct_phieu_doi_tra (phieu_doi_tra_id,san_pham_id,hoa_don_id,so_luong,don_gia_thuc_tra,
-                    ly_do,ghi_chu_ly_do,tinh_trang,cach_xu_ly,ngoai_le,gia_von)
-                VALUES (@p,@sp,@hd,@sl,@gia,@ld,@gc,@tt,@xl,@nl,@gv)
-                """, ct, ("@p", id), ("@sp", l.ProductId), ("@hd", draft.Invoice.Id), ("@sl", l.Quantity), ("@gia", l.UnitPaid),
-                ("@ld", l.Reason), ("@gc", l.Note), ("@tt", l.Condition), ("@xl", l.Handling), ("@nl", l.Exception), ("@gv", l.Cost));
-        if (!preview.NeedsApproval)
-        {
-            var restock = preview.Lines.Where(l => l.Handling == "NHAP_LAI")
-                .Select(l => new DongBienDong(l.ProductId, SoLuong: l.Quantity, GiaVon: l.Cost)).ToList();
-            if (restock.Count > 0) await stock.GhiNhanBienDongAsync(new(LoaiBienDong.TRA_HANG, checked((int)id), code, actor, restock), ct);
-            if (preview.PointsBlocked)
->>>>>>> origin/develop
             {
                 throw LoiNghiepVu.DuLieuKhongHopLe(
                     "reason",
@@ -417,11 +330,6 @@ public sealed class ReturnOrderService(CuaHangDbContext db, IDichVuKho stock,
                     "note",
                     "Lý do khác cần ghi chú, tối đa 255 ký tự.");
             }
-
-            // DT-04: ghi nhận khoản chi tiền mặt trong cùng transaction với DT-02,
-            // tồn kho và KH-06. Thiếu quỹ hoặc lỗi ghi sổ sẽ rollback toàn bộ phiếu.
-            await (refunds ?? new ReturnRefundService(new CashLedgerService()))
-                .RefundAsync(db, id, actor, ct);
         }
 
         var h = await Invoice(request.InvoiceId, ct);
@@ -804,6 +712,9 @@ public sealed class ReturnOrderService(CuaHangDbContext db, IDichVuKho stock,
                     ("@d", recovered),
                     ("@id", id));
             }
+
+            await (refunds ?? new ReturnRefundService(new CashLedgerService()))
+                .RefundAsync(db, id, actor, ct);
         }
 
         await tx.CommitAsync(ct);

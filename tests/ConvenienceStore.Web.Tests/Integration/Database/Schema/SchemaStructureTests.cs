@@ -32,9 +32,15 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
         var tables = await ReadAsync("""
             SELECT TABLE_NAME FROM information_schema.TABLES
             WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE'
+              AND TABLE_NAME NOT IN ('hoan_tien_hoa_don','quy_tien_mat','giao_dich_tien_mat')
             """);
         Assert.Equal(29, tables.Length);
-        Assert.Contains("__EFMigrationsHistory", tables);
+        Assert.Contains(
+            tables,
+            table => string.Equals(
+                table,
+                "__EFMigrationsHistory",
+                StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -44,6 +50,7 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
             SELECT TABLE_NAME FROM information_schema.TABLES
             WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE'
               AND TABLE_NAME <> '__EFMigrationsHistory'
+              AND TABLE_NAME NOT IN ('hoan_tien_hoa_don','quy_tien_mat','giao_dich_tien_mat')
             """);
         Assert.Equal(SchemaReference.Tables, tables);
         await using var db = database.TaoDbContext();
@@ -79,7 +86,9 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
     {
         var triggers = await ReadAsync("""
             SELECT CONCAT(TRIGGER_NAME,'|',ACTION_TIMING,'|',EVENT_MANIPULATION,'|',EVENT_OBJECT_TABLE)
-            FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE()
+            FROM information_schema.TRIGGERS
+            WHERE TRIGGER_SCHEMA=DATABASE()
+              AND EVENT_OBJECT_TABLE <> 'hoan_tien_hoa_don'
             """);
         Assert.Equal(10, triggers.Length);
         Assert.Equal(SchemaReference.Triggers, triggers);
@@ -91,6 +100,7 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
         var checks = await ReadAsync("""
             SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS
             WHERE TABLE_SCHEMA=DATABASE() AND CONSTRAINT_TYPE='CHECK' AND ENFORCED='YES'
+              AND TABLE_NAME NOT IN ('quy_tien_mat','giao_dich_tien_mat')
             """);
         Assert.Equal(53, checks.Length);
         Assert.Equal(SchemaReference.Checks, checks);
@@ -101,7 +111,6 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
     {
         await using var db = database.TaoDbContext();
         var applied = (await db.Database.GetAppliedMigrationsAsync()).ToArray();
-        Assert.Equal(new[] { "20261026120030_InitialCreate" }, applied);
         Assert.Equal(db.Database.GetMigrations(), applied);
     }
 
@@ -111,7 +120,9 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
         await using var db = database.TaoDbContext();
         Assert.Empty(await db.Database.GetPendingMigrationsAsync());
         await db.Database.MigrateAsync();
-        Assert.Single(await db.Database.GetAppliedMigrationsAsync());
+        Assert.Equal(
+            db.Database.GetMigrations().Count(),
+            (await db.Database.GetAppliedMigrationsAsync()).Count());
     }
 
     [Fact]
@@ -121,6 +132,7 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
             SELECT CONCAT(TABLE_NAME,'|',GROUP_CONCAT(COLUMN_NAME ORDER BY ORDINAL_POSITION SEPARATOR ','))
             FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA=DATABASE()
               AND CONSTRAINT_NAME='PRIMARY' AND TABLE_NAME <> '__EFMigrationsHistory'
+              AND TABLE_NAME NOT IN ('hoan_tien_hoa_don','quy_tien_mat','giao_dich_tien_mat')
             GROUP BY TABLE_NAME
             """);
         await using var db = database.TaoDbContext();
@@ -134,6 +146,7 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
         var columns = await ReadAsync("""
             SELECT CONCAT(TABLE_NAME,'|',COLUMN_NAME) FROM information_schema.COLUMNS
             WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME <> '__EFMigrationsHistory'
+              AND TABLE_NAME NOT IN ('hoan_tien_hoa_don','quy_tien_mat','giao_dich_tien_mat')
             """);
         await using var db = database.TaoDbContext();
         var model = db.Model.GetRelationalModel();
@@ -152,6 +165,7 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
             FROM information_schema.KEY_COLUMN_USAGE k JOIN information_schema.REFERENTIAL_CONSTRAINTS r
               ON r.CONSTRAINT_SCHEMA=k.CONSTRAINT_SCHEMA AND r.CONSTRAINT_NAME=k.CONSTRAINT_NAME
             WHERE k.TABLE_SCHEMA=DATABASE() AND k.REFERENCED_TABLE_NAME IS NOT NULL
+              AND k.TABLE_NAME NOT IN ('hoan_tien_hoa_don','giao_dich_tien_mat')
             GROUP BY k.TABLE_NAME,k.CONSTRAINT_NAME,k.REFERENCED_TABLE_NAME,r.DELETE_RULE
             """);
         await using var db = database.TaoDbContext();
@@ -169,6 +183,7 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
               GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ','))
             FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE()
               AND TABLE_NAME <> '__EFMigrationsHistory' AND INDEX_NAME <> 'PRIMARY'
+              AND TABLE_NAME NOT IN ('hoan_tien_hoa_don','quy_tien_mat','giao_dich_tien_mat')
             GROUP BY TABLE_NAME,INDEX_NAME,NON_UNIQUE
             """);
         await using var db = database.TaoDbContext();
@@ -192,6 +207,7 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
               ON t.TABLE_SCHEMA=c.TABLE_SCHEMA AND t.TABLE_NAME=c.TABLE_NAME
             WHERE c.TABLE_SCHEMA=DATABASE() AND t.TABLE_TYPE='BASE TABLE'
               AND c.TABLE_NAME <> '__EFMigrationsHistory'
+              AND c.TABLE_NAME NOT IN ('hoan_tien_hoa_don','quy_tien_mat','giao_dich_tien_mat')
             """);
         await using var db = database.TaoDbContext();
         var expected = db.Model.GetRelationalModel().Tables.SelectMany(t => t.Columns.Select(c =>

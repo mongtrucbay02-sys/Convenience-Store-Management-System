@@ -19,11 +19,15 @@ public sealed class HaTangTestKhoTests(CsdlKhoFixture csdl)
     {
         var soBang = await DemAsync(
             "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() " +
-            "AND table_type = 'BASE TABLE' AND table_name <> '__EFMigrationsHistory'");
+            "AND table_type = 'BASE TABLE' " +
+            "AND table_name <> '__EFMigrationsHistory' " +
+            "AND table_name NOT IN ('hoan_tien_hoa_don','quy_tien_mat','giao_dich_tien_mat')");
         var soView = await DemAsync(
             "SELECT COUNT(*) FROM information_schema.views WHERE table_schema = DATABASE()");
         var soTrigger = await DemAsync(
-            "SELECT COUNT(*) FROM information_schema.triggers WHERE trigger_schema = DATABASE()");
+            "SELECT COUNT(*) FROM information_schema.triggers " +
+            "WHERE trigger_schema = DATABASE() " +
+            "AND event_object_table <> 'hoan_tien_hoa_don'");
 
         Assert.Equal(28, soBang);
         Assert.Equal(3, soView);

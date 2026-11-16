@@ -39,12 +39,11 @@ public sealed class PosHeldOrderService(
         {
             var user = http.HttpContext?.User;
 
-            bool isAdmin = user?.IsInRole("AD") == true;
             bool isCashier =
                 user?.IsInRole(BangQuyen.ThuNgan) == true;
 
             if (user?.Identity?.IsAuthenticated != true
-                || (!isAdmin && !isCashier)
+                || !isCashier
                 || user.DangPhaiDoiMatKhau()
                 || !int.TryParse(
                     user.FindFirstValue(ClaimTypes.NameIdentifier),
@@ -52,7 +51,7 @@ public sealed class PosHeldOrderService(
                 || id <= 0)
             {
                 throw new UnauthorizedAccessException(
-                    "Cần tài khoản Admin hoặc Thu ngân hợp lệ.");
+                    "Cần tài khoản thu ngân hợp lệ.");
             }
 
             return id;
@@ -78,7 +77,7 @@ public sealed class PosHeldOrderService(
         return await cmd.ExecuteScalarAsync();
     }
 
-    // Mở kết nối và transaction, kiểm tra tài khoản AD/TN.
+    // Mở kết nối và transaction, kiểm tra tài khoản thu ngân.
     private async Task<(
         MySqlConnection Connection,
         MySqlTransaction Transaction,
@@ -110,7 +109,7 @@ public sealed class PosHeldOrderService(
                     INNER JOIN vai_tro v
                         ON v.id = t.vai_tro_id
                     WHERE t.id = @t
-                      AND v.ma IN ('AD', 'TN')
+                      AND v.ma = 'TN'
                       AND t.trang_thai = 'HOAT_DONG'
                       AND t.bat_buoc_doi_mk = FALSE
                     FOR UPDATE
@@ -120,7 +119,7 @@ public sealed class PosHeldOrderService(
                 if (found is null || found is DBNull)
                 {
                     throw new UnauthorizedAccessException(
-                        "Tài khoản Admin hoặc Thu ngân không hợp lệ.");
+                        "Tài khoản thu ngân không hợp lệ.");
                 }
 
                 return (conn, tx, accountId);

@@ -24,6 +24,8 @@ public static class DangKyModuleProducts
         services.AddScoped<ProductImageService>();
         services.AddScoped<IProductEditRepository, EfProductEditRepository>();
         services.AddScoped<ProductEditService>();
+        services.AddScoped<IProductPricingRepository, EfProductPricingRepository>();
+        services.AddScoped<ProductPricingService>();
         return services;
     }
 }

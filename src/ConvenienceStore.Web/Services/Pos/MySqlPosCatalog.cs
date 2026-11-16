@@ -22,6 +22,19 @@ public sealed class MySqlPosCatalog
     public MySqlConnection CreateConnection()
         => new MySqlConnection(_connectionString);
 
+    // The shared current-price view uses NOW(). Match CuaHangDbContext's +07:00
+    // session so a just-effective price is visible to POS at the same instant.
+    private async Task<MySqlConnection> OpenPriceConnectionAsync()
+    {
+        var connection = CreateConnection();
+        try {
+            await connection.OpenAsync();
+            await using var command = new MySqlCommand(ConvenienceStore.Web.Data.GioVietNamInterceptor.CauLenhDatMuiGio, connection);
+            await command.ExecuteNonQueryAsync(); return connection;
+        }
+        catch { await connection.DisposeAsync(); throw; }
+    }
+
     public async Task<List<PosProduct>> SearchAsync(
         string? keyword, int? categoryId = null)
     {
@@ -56,8 +69,7 @@ public sealed class MySqlPosCatalog
 
         var products = new List<PosProduct>();
 
-        await using var connection = CreateConnection();
-        await connection.OpenAsync();
+        await using var connection = await OpenPriceConnectionAsync();
 
         await using var command =
             new MySqlCommand(sql, connection);
@@ -94,8 +106,7 @@ public sealed class MySqlPosCatalog
             ORDER BY ten;
             """;
         var categories = new List<PosCategory>();
-        await using var connection = CreateConnection();
-        await connection.OpenAsync();
+        await using var connection = await OpenPriceConnectionAsync();
         await using var command = new MySqlCommand(sql, connection);
         await using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
@@ -124,8 +135,7 @@ public sealed class MySqlPosCatalog
               AND dm.trang_thai = 'HOAT_DONG'
             LIMIT 1;
             """;
-        await using var connection = CreateConnection();
-        await connection.OpenAsync();
+        await using var connection = await OpenPriceConnectionAsync();
         await using var command = new MySqlCommand(sql, connection);
         command.Parameters.AddWithValue("@productId", productId);
         await using var reader = await command.ExecuteReaderAsync();

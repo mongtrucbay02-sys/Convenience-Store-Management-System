@@ -64,3 +64,21 @@ Malformed binding → 400; invalid fields/category → 422; missing product → 
 Metadata/version/image URL and threshold use one MySQL transaction. Lock order follows the shared stock writer; the explicit version predicate protects SanPham without modifying EF token configuration or migration history. Price/history/quantity/cost are preserved. Category existence is enforced; hidden-category reassignment policy remains pending business clarification, with no new hidden-state rule introduced here.
 
 Razor `/Products/{id}/Edit`: AD/NK links from details, antiforgery, bounded category suggestions, optional validated `Anh`, current hidden `PhienBan`, field errors and a reload link on conflict. Metadata plus optional image URL commit as one version change. Browser E2E NOT RUN.
+
+## SP-05 — selling price history and scheduling
+
+| Method | Route | Permission | Success |
+|---|---|---|---|
+| POST | `/api/v1/products/{id}/prices` | AD / SanPhamGiaDanhMuc + XSRF | 201, Location to the new history row |
+| GET | `/api/v1/products/{id}/prices/{priceId}` | AD | 200, history row plus current product version |
+| POST | `/api/v1/products/{id}/prices/{priceId}/cancel` | AD + XSRF | 200, cancelled row plus product version |
+
+Create: `{giaBan,hieuLucTu?,phienBan,xacNhanDuoiGiaVon=false}`. Integral positive VND, multiple of100, up to UInt32; VAT included. Missing/null/blank time means database NOW. Explicit time is ISO 8601 with `Z` or numeric offset, converted to +07:00 at existing DATETIME second precision; no timestamp in the past. Use null for immediate changes rather than sending a client-clock approximation of NOW. No invented mandatory change reason or scheduled task.
+
+Cancellation: `{phienBan}`. Only an uncancelled row belonging to that product with effective time strictly after database NOW can be cancelled. Both operations require an active product/current version, hold stock then product locks, and change history plus product version in one transaction. Cancellation preserves price/effective date/creator and sets both cancellation time and authenticated actor. Both return `{id,sanPhamId,giaBan,hieuLucTu,nguoiTaoId,ngayTao,huyLuc,nguoiHuyId,phienBan}`, dates with +07:00.
+
+400: malformed money/body. 401/403: session/permission/XSRF. 404: missing product/price or wrong parent-price pairing. 422: invalid price/time/version. 409: stale/concurrent version, inactive product, already-cancelled/effective row, missing stock requiring reconciliation, or `CAN_XAC_NHAN_GIA_DUOI_VON`. The latter exposes current cost only to AD and requires explicitly setting `xacNhanDuoiGiaVon=true` before retry; it does not write history or increment version. Double submissions with the old version cannot append twice.
+
+The shared current-price contract is the existing `v_gia_ban_hien_hanh`: uncancelled history at/before NOW, latest effective timestamp, then greatest ID. Both EF Products readers and `MySqlPosCatalog.FindAsync/SearchAsync` use it. SP-05 fixes those catalog read sessions to +07:00 to match EF; RED evidence reproduced a 10100 versus 10000 discrepancy before the fix. Existing cart `don_gia` snapshots remain unchanged; new catalog lookups see the new effective price. Existing POS cart/checkout/auth business code is otherwise unchanged.
+
+Razor `/Products/{id}/Price`: AD current price/cost/history, immediate/future form with explicit Vietnamese local time and below-cost confirmation. `/Products/{id}/Prices/{priceId}/Cancel` is a read-only confirmation GET followed by antiforgery POST; repeated/stale submissions show a reload link. Scheduled-price lists link to this confirmation, including later pages. Browser E2E NOT RUN.

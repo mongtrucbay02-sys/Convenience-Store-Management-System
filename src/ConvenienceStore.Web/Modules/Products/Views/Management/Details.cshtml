@@ -6,6 +6,7 @@ else
 {
 <h1>@Model.TenSanPham</h1>
 @if(User.HasClaim("quyen", "SAN_PHAM_SUA")){<a href="/Products/@Model.Id/Edit">Sửa thông tin</a>}
+@if(User.HasClaim("quyen", "SAN_PHAM_GIA_DANH_MUC") && Model.TrangThai == "DANG_KINH_DOANH"){<a href="/Products/@Model.Id/Price">Đổi giá</a>}
 <dl><dt>Mã</dt><dd>@Model.Ma</dd><dt>Danh mục</dt><dd>@Model.DanhMuc.Ten</dd><dt>Đơn vị</dt><dd>@Model.DonViTinh</dd>
 <dt>Giá bán hiện tại</dt><dd>@Model.GiaBan</dd><dt>Tồn kho</dt><dd>@Model.TonKho</dd><dt>Ngưỡng tối thiểu</dt><dd>@Model.NguongToiThieu</dd>
 <dt>Trạng thái</dt><dd>@Model.TrangThai</dd><dt>Mô tả</dt><dd>@Model.MoTa</dd><dt>Cập nhật</dt><dd>@Model.NgayCapNhat</dd>

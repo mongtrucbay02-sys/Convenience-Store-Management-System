@@ -1,0 +1,21 @@
+{
+  "artifacts/sp-module/sp-05/build.log": "f197578909c5663a6b2201ad6fe455a631c2410c4db0f6b67cdd05406b93fcc6",
+  "artifacts/sp-module/sp-05/core-build.log": "e08611adbf1182e9b0683924b8a3a39ea65c73abb850a0432e26903e0e35a345",
+  "artifacts/sp-module/sp-05/core.log": "12106d706a0c9bce595c1467f89da088e869a19a31a5742ffc0164630ae97f42",
+  "artifacts/sp-module/sp-05/core.trx": "95f7d4839e20700998a21776389b906d6314039773aa1668cac981a6c3cfb20b",
+  "artifacts/sp-module/sp-05/core2-build.log": "235bdeab8585451ad5f8778b07567433fbaade1669ca92fdf70a33edb8b89e38",
+  "artifacts/sp-module/sp-05/discovery.log": "e0d5ef56f16adb32751936d6462249b2105da2d3f4a19ee46f15a828730c0ccc",
+  "artifacts/sp-module/sp-05/full.log": "7eb042e47b7edf6a859dd42d974089eb6e6e5d78d3a7c64ca0fd6d4b6de9f70e",
+  "artifacts/sp-module/sp-05/full.trx": "31359988b97dd2ad01ed9138285373214fee81ca78ec76b12cb8c6b1f7d6fb4d",
+  "artifacts/sp-module/sp-05/http.log": "a2ed0aa6ca6d713f566fed31bf22b0e86d79caf642b4d7ff4448f969e340c885",
+  "artifacts/sp-module/sp-05/http.trx": "d85a5eaa739df7e63d289579a7d6b5f74e0dd9a7d7886a3c09491abbd6fd798f",
+  "artifacts/sp-module/sp-05/mysql.log": "616565c2b07c16f550deb4ba31d084381c1ee1c9737ddcf4b46f2eca717bd9dd",
+  "artifacts/sp-module/sp-05/mysql.trx": "fab21463a60fd4a95937586872f4168b901ff5db4cae29a8ee8a087e161c9050",
+  "artifacts/sp-module/sp-05/red-build.log": "f4237eddbec105c6a5101d69a3904477ca17d4207d52f047e09aec6d4c387720",
+  "artifacts/sp-module/sp-05/red.log": "b1876616622c220dd62edcfb2480ad45ea463cfc694b29ed37d301f9c56e4417",
+  "artifacts/sp-module/sp-05/red.trx": "4dffb8dcd5e0f7f09028f168b092c5a50ca0c82fd410e0493cb86ea319c42273",
+  "artifacts/sp-module/sp-05/regression.log": "d032a44c208ab7b2aebcae825bbe35f96e7b0eaccedd80bdf8bff82e82507490",
+  "artifacts/sp-module/sp-05/regression.trx": "92c979b9ac006468b32d520bc7aae1fcfc3eee77f29bfd5a0784a51712071a03",
+  "artifacts/sp-module/sp-05/unit.log": "8496c7c1d21fefa0b7b96112cc881280abb808d2a9a73f8fbfa47a45dc6a6821",
+  "artifacts/sp-module/sp-05/unit.trx": "95635f2fae38feb78c0592ce7f0aae0882ff4d6db9fd13c19b0cd8f12d0d8986"
+}

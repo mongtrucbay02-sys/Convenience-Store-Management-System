@@ -7,7 +7,7 @@ else if(Model.Items.Count == 0){<p>Không có giá ở trang này</p>}
 else
 {
 <table class="table"><thead><tr><th>Giá</th><th>Hiệu lực từ</th>@if(User.IsInRole("AD")){<th>Hủy lúc</th><th>Người tạo</th>}</tr></thead>
-<tbody>@foreach(var p in Model.Items){<tr><td>@p.GiaBan</td><td>@p.HieuLucTu</td>@if(User.IsInRole("AD")){<td>@p.HuyLuc</td><td>@p.NguoiTaoId</td>}</tr>}</tbody></table>
+<tbody>@foreach(var p in Model.Items){<tr><td>@p.GiaBan</td><td>@p.HieuLucTu</td>@if(User.IsInRole("AD")){<td>@p.HuyLuc</td><td>@p.NguoiTaoId @if(scheduled){<a href="/Products/@id/Prices/@p.Id/Cancel">Hủy giá đã lên lịch</a>}</td>}</tr>}</tbody></table>
 }
 <p>Trang @Model.Page · Tổng @Model.Total giá</p>
 @if(Model.Page > 1){<a rel="prev" href="/Products/@id/Prices?daLenLich=@scheduled.ToString().ToLowerInvariant()&amp;size=@Model.Size&amp;page=@(Model.Page-1)">Trước</a>}

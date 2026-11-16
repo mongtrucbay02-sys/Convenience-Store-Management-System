@@ -99,3 +99,19 @@ Preview: `{id,tenSanPham,trangThai,phienBan,tonKho,donTamGiu,phieuNhapNhap,coTha
 400 malformed body; 401/403 session/permission/XSRF; 404 missing product; 422 missing confirmation/version; 409 stale version, already-target state, stock/reference guard or reconciliation conflict. Status changes increment version once; repeated requests do not toggle state or increment again. Stock/cost, existing held/draft lines and invoice snapshots stay unchanged. Reads never change product state. Check preview before mutations; counts are rechecked while locked and returned on successful status changes.
 
 Razor `/Products/{id}/Discontinue`, `/Reactivate`, `/Delete` are confirmation GETs and antiforgery POSTs, with encoded product data, warning counts, stock checkbox where required and a reload link. Buttons are AD-only. POS respects both product and category status. The existing active list filter (`trangThai=DANG_KINH_DOANH`) supplies new-selection consumers. Actual new-receipt UI/API selection/submission is NOT RUN because Purchasing/NH-04 is absent; the provider filter and draft-table warnings are verified separately. Browser E2E NOT RUN.
+
+## SP-09 — remove or hide category
+
+| Method | Route | Permission | Success |
+|---|---|---|---|
+| GET | `/api/v1/categories/{id}/removal` | AD / SanPhamGiaDanhMuc | 200 preview |
+| DELETE | `/api/v1/categories/{id}` | AD + XSRF | 204, empty and unreferenced only |
+| POST | `/api/v1/categories/{id}/hide` | AD + XSRF | 200 preview with current state/version |
+
+Command `{phienBan,xacNhan}` requires a positive current version and explicit confirmation. Preview contains `{id,ten,trangThai,phienBan,soSanPham,soSanPhamDangKinhDoanh,coPhieuKiemKe}`. Here total product count is a FK-safety/reference count, independent of the unresolved SP-07 display-count policy.
+
+400 malformed binding; 401/403 session/permission/XSRF; 404 missing category; 422 invalid ID/version or missing confirmation; 409 stale version or DANH_MUC_DANG_SU_DUNG. Any product, including inactive products, or a category-scoped inventory document prevents physical deletion. The error offers existing SP-04 per-product moves (`chuyenSanPhamUrl`) or hiding. No cascade removes products/documents. Parent locking plus restrictive FK protects concurrent new references; unexpected database errors propagate to the common safe error handler, not a false reference result.
+
+Hiding changes only category status to DA_AN through the existing CuaHangDbContext token/increment hook. A first change increments version once. Repeating hide with the current hidden version is an idempotent 200 without another increment, preserving PR #202 behavior; the old version remains 409. Products and historical names/prices remain intact. POS's existing active-category filter excludes the hidden category/products.
+
+Razor `/Categories/{id}/Delete` and `/Categories/{id}/Hide` have read-only previews then antiforgery POST confirmation. Referenced-category UI links to the current product list for individual SP-04 moves, or to hide confirmation. AD alone receives action links. Bulk move and category restore are not introduced without an approved requirement. **Pending business approval:** hidden-category management visibility/selection and SP-07 display count; comments #62/#64 were refreshed on November16 and remain unresolved. Existing management GET behavior is retained. Browser E2E NOT RUN.

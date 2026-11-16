@@ -30,7 +30,7 @@ else
         <tbody>
             @foreach (var category in Model.Items)
             {
-                <tr><td>@category.Ten @if(User.HasClaim("quyen","SAN_PHAM_GIA_DANH_MUC")){<a href="/Categories/@category.Id/Edit">Sửa</a>}</td><td>@category.SoSanPham</td><td>@(category.TrangThai == "DA_AN" ? "Đã ẩn" : "Hoạt động")</td></tr>
+                <tr><td>@category.Ten @if(User.HasClaim("quyen","SAN_PHAM_GIA_DANH_MUC")){<a href="/Categories/@category.Id/Edit">Sửa</a><a href="/Categories/@category.Id/Delete">Xóa</a>@if(category.TrangThai != "DA_AN"){<a href="/Categories/@category.Id/Hide">Ẩn</a>}}</td><td>@category.SoSanPham</td><td>@(category.TrangThai == "DA_AN" ? "Đã ẩn" : "Hoạt động")</td></tr>
             }
         </tbody></table>
     }

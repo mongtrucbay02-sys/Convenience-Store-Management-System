@@ -176,7 +176,9 @@ public sealed class PromotionService : IPromotionService
         };
 
         if (!await _dataSource.UpdateAsync(updated, cancellationToken)) return NotFound();
-        return PromotionResult<PromotionDto>.Ok(ToDto(updated, now));
+        // Return the persisted shape (some storage schemas may not support optional display metadata).
+        var persisted = await _dataSource.GetByIdAsync(id, cancellationToken) ?? updated;
+        return PromotionResult<PromotionDto>.Ok(ToDto(persisted, now));
     }
 
     // ---------------- KM-04 ----------------
@@ -184,6 +186,13 @@ public sealed class PromotionService : IPromotionService
     public async Task<PromotionResult<PromotionDto>> ChangeStatusAsync(
         long id, PromotionTargetStatus target, CancellationToken cancellationToken)
     {
+        if (!Enum.IsDefined(typeof(PromotionTargetStatus), target))
+        {
+            var errors = new Errors();
+            errors.Add("targetStatus", "Trạng thái đích không hợp lệ.");
+            return ValidationFail(errors);
+        }
+
         var record = await _dataSource.GetByIdAsync(id, cancellationToken);
         if (record is null) return NotFound();
 
@@ -254,6 +263,8 @@ public sealed class PromotionService : IPromotionService
         else if (name.Length > 200) errors.Add("name", "Tên tối đa 200 ký tự.");
 
         if (d.Type is null) errors.Add("discountType", "Chọn loại giảm.");
+        else if (!Enum.IsDefined(typeof(DiscountType), d.Type.Value))
+            errors.Add("discountType", "Loại giảm không hợp lệ.");
 
         // E1
         if (d.Value is null || d.Value < 1) errors.Add("discountValue", "Giá trị phải lớn hơn 0.");
@@ -355,3 +366,4 @@ public sealed class PromotionService : IPromotionService
     private static DateTimeOffset StartOfDay(DateOnly d) =>
         new(d.ToDateTime(TimeOnly.MinValue), VietnamOffset);
 }
+

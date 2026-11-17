@@ -24,13 +24,14 @@ builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions
 builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddScoped<IDashboardDataSource, SampleDashboardDataSource>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IDashboardDataSource, MySqlDashboardDataSource>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
-// Lưu trong bộ nhớ cho đến khi bảng khuyến mãi được duyệt (#1); dữ liệu mất khi khởi động lại.
-builder.Services.AddSingleton<IPromotionDataSource>(sp =>
-    new InMemoryPromotionDataSource(
-        SamplePromotions.Create(sp.GetRequiredService<TimeProvider>().GetUtcNow())));
-builder.Services.AddSingleton<IProductLookup, SampleProductLookup>();
+builder.Services.AddScoped<IOperationalReportDataSource, MySqlTransactionalReportsDataSource>();
+builder.Services.AddScoped<ITransactionalReportsDataSource, MySqlTransactionalReportsDataSource>();
+builder.Services.AddScoped<IOperationalReportsService, OperationalReportsService>();
+builder.Services.AddScoped<IPromotionDataSource, MySqlPromotionDataSource>();
+builder.Services.AddScoped<IProductLookup, MySqlProductLookup>();
 builder.Services.AddScoped<IPromotionService, PromotionService>();
 builder.Services.AddAuthorization(options =>
     options.AddPolicy(
@@ -73,3 +74,4 @@ app.MapControllerRoute(
 
 
 app.Run();
+

@@ -3,7 +3,7 @@ info:
   title: Convenience Store Management System – API Báo cáo, Khách hàng, Khuyến mãi
   version: 0.1.0-draft
   description: |
-    Hợp đồng API cho BC-01 → BC-03, KH-01 → KH-08, KM-01 → KM-06 và hai điểm giao với POS
+    Hợp đồng API cho BC-01 → BC-08, KH-01 → KH-08, KM-01 → KM-06 và hai điểm giao với POS
     (POS-03 tra cứu/gắn khách, POS-04 áp khuyến mãi). Issue #21, người soạn: #5.
 
     **Trạng thái: bản nháp chờ review.** Quy ước chung chưa được chốt ở issue #4 (route prefix,
@@ -26,7 +26,7 @@ servers:
     description: Base path tạm, chờ issue #4
 tags:
   - name: Reports
-    description: BC-01, BC-02, BC-03 (chỉ AD)
+    description: BC-01 → BC-08 (chỉ AD)
   - name: Customers
     description: KH-01 → KH-05, KH-08 và POS-03
   - name: Loyalty settings
@@ -105,6 +105,63 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RevenueByProductReport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/purchases:
+    get:
+      tags: [Reports]
+      operationId: getPurchasesReport
+      summary: BC-07 Báo cáo nhập hàng
+      description: |
+        Chỉ AD. Chỉ tính phiếu đã nhập kho trong khoảng thời gian theo UTC+7.
+        Giá trị = số lượng × giá nhập lưu trên dòng phiếu; giá nhập trung bình là bình quân gia quyền.
+        E1/E2 trả 400, E3 trả response với rows rỗng và thông báo không có dữ liệu.
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - name: supplierId
+          in: query
+          schema: { type: integer, format: int32 }
+        - name: productId
+          in: query
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Tổng hợp phiếu nhập theo sản phẩm; biểu đồ giá trị theo nhà cung cấp
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OperationalReportResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/gross-profit:
+    get:
+      tags: [Reports]
+      operationId: getGrossProfitReport
+      summary: BC-08 Báo cáo lợi nhuận gộp
+      description: |
+        Chỉ AD. Chỉ hóa đơn đã thanh toán; doanh thu theo ngày thanh toán và hoàn trả theo ngày trả (UTC+7).
+        Giá vốn dùng unitCostSnapshot trên dòng hóa đơn, trừ giá vốn hàng trả nhập lại kho.
+        Giá trị xuất hủy và hàng trả bị hủy bằng 0 cho đến khi KHO-08/DT cung cấp dữ liệu.
+        E1/E2 trả 400, E3 trả response với rows rỗng và thông báo không có dữ liệu.
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - name: categoryId
+          in: query
+          schema: { type: integer, format: int32 }
+        - name: productId
+          in: query
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Chỉ số lợi nhuận, bảng theo ngày và biểu đồ đường doanh thu/lợi nhuận
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OperationalReportResponse' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
@@ -845,6 +902,60 @@ components:
       properties:
         from: { type: string, format: date }
         to: { type: string, format: date }
+    OperationalReportResponse:
+      type: object
+      required: [code, title, range, metrics, columns, rows, chart, query]
+      properties:
+        code: { type: string, enum: [BC-07, BC-08] }
+        title: { type: string }
+        range:
+          allOf:
+            - $ref: '#/components/schemas/ReportRange'
+            - type: object
+              properties:
+                period: { type: string }
+                groupBy: { type: string, enum: [day, week, month] }
+        metrics:
+          type: array
+          items:
+            type: object
+            required: [label, value, format]
+            properties:
+              label: { type: string }
+              value: { type: integer, format: int64 }
+              format: { type: string, enum: [currency, number, percent] }
+        columns:
+          type: array
+          items: { type: string }
+        rows:
+          type: array
+          items:
+            type: object
+            required: [key, cells]
+            properties:
+              key: { type: string, description: "Khóa dòng để mở drill-down; total không mở chi tiết." }
+              cells:
+                type: array
+                items: { type: string }
+        chart:
+          type: array
+          items:
+            type: object
+            required: [label, value]
+            properties:
+              label: { type: string }
+              value: { type: integer, format: int64, description: "BC-07 giá trị nhập; BC-08 doanh thu thuần." }
+              secondaryValue: { type: integer, format: int64, nullable: true, description: "BC-08 lợi nhuận gộp." }
+        message: { type: string, nullable: true }
+        query:
+          type: object
+          properties:
+            period: { type: string }
+            from: { type: string, format: date, nullable: true }
+            to: { type: string, format: date, nullable: true }
+            supplierId: { type: integer, format: int32, nullable: true }
+            categoryId: { type: integer, format: int32, nullable: true }
+            productId: { type: integer, format: int64, nullable: true }
     RevenueByTimeReport:
       type: object
       required: [range, groupBy, rows, totals]

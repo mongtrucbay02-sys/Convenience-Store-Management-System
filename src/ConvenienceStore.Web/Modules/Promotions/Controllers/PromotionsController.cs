@@ -28,6 +28,12 @@ public class PromotionsController : Controller
         int page = 1,
         CancellationToken cancellationToken = default)
     {
+        if (from.HasValue && to.HasValue && from.Value > to.Value)
+        {
+            TempData["Error"] = "Ngày bắt đầu không được sau ngày kết thúc.";
+            return RedirectToAction(nameof(Index));
+        }
+
         var isAdmin = User.IsInRole(PromotionRoles.Admin);
         var result = await _promotionService.ListAsync(
             new PromotionQuery(status, from, to, page, 20), isAdmin, cancellationToken);

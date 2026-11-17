@@ -1,0 +1,268 @@
+[
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.CancelledInvoiceIsRejected",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "CancelledInvoiceIsRejected",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.PointsFailureAfterRestockRollsBackSlipAndStockTogether",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "PointsFailureAfterRestockRollsBackSlipAndStockTogether",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests.DB08_NoPendingMigrations_AndReapplyingIsIdempotent",
+    "cls": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests",
+    "method": "DB08_NoPendingMigrations_AndReapplyingIsIdempotent",
+    "outcome": "Failed",
+    "message": "Assert.Single() Failure: The collection contained 2 items\r\nCollection: [\"20261026120030_InitialCreate\", \"20261112160000_Pos12CancelInvoice\"]"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.PendingReservesQuantity_RejectedReleasesIt_WithoutRestocking",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "PendingReservesQuantity_RejectedReleasesIt_WithoutRestocking",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.StaleConfirmationAndDoubleSubmitCannotCreateDuplicateReturn",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "StaleConfirmationAndDoubleSubmitCannotCreateDuplicateReturn",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.CompletesRefund_RestocksAtOriginalCost_AndPrintsImmutableSnapshot",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "CompletesRefund_RestocksAtOriginalCost_AndPrintsImmutableSnapshot",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.ExactlyThresholdAndLastCalendarDay_CompleteWithoutApproval",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "ExactlyThresholdAndLastCalendarDay_CompleteWithoutApproval",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.PosHeldOrderTests.FakeCashierClaimCannotUseAdminDatabaseAccount",
+    "cls": "ConvenienceStore.Web.Tests.PosHeldOrderTests",
+    "method": "FakeCashierClaimCannotUseAdminDatabaseAccount",
+    "outcome": "Failed",
+    "message": "Assert.Throws() Failure: No exception was thrown\r\nExpected: typeof(System.UnauthorizedAccessException)"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests.DB12_UniqueKeysAndIndexesMatchRuntimeModel",
+    "cls": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests",
+    "method": "DB12_UniqueKeysAndIndexesMatchRuntimeModel",
+    "outcome": "Failed",
+    "message": "Assert.Equal() Failure: Collections differ\r\n                                                                                                                              ↓ (pos 27)\r\nExpected: OrderedIterator<string, string> [···, \"hoa_don|uq_hoa_don_gio|0|gio_hang_id\", \"hoa_don|uq_hoa_don_ma|0|ma_hoa_don\", \"khach_hang|fk_kh_nguoi_tao|1|nguoi_tao_id\", \"khach_hang|idx_khach_hang_ten|1|ho_ten\", \"khach_hang|uq_khach_hang_sdt|0|so_dien_thoai\", ···]\r\nActual:   string[]                        [···, \"hoa_don|uq_hoa_don_gio|0|gio_hang_id\", \"hoa_don|uq_hoa_don_ma|0|ma_hoa_don\", \"hoan_tien_hoa_don|fk_hoan_tien_actor|1|nguoi_thuc_\"···, \"hoan_tien_hoa_don|idx_hoan_tien_tg|1|thoi_diem\", \"hoan_tien_hoa_don|uq_hoan_tien_hd|0|hoa_don_id\", ···]\r\n                                                                                                                              ↑ (pos 27)"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.InvalidLinesAreRejectedWithoutWrites(invalid: \"other-note\")",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "InvalidLinesAreRejectedWithoutWrites",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.CompletedDetailsCannotBeEditedOrDeleted",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "CompletedDetailsCannotBeEditedOrDeleted",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.InsufficientCashFund_E1_RollsBackReturnAndStock",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "InsufficientCashFund_E1_RollsBackReturnAndStock",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests.DB07_AppliedMigrationsMatchRuntimeLineage",
+    "cls": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests",
+    "method": "DB07_AppliedMigrationsMatchRuntimeLineage",
+    "outcome": "Failed",
+    "message": "Assert.Equal() Failure: Collections differ\r\nExpected: [\"20261026120030_InitialCreate\"]\r\nActual:   [\"20261026120030_InitialCreate\", \"20261112160000_Pos12CancelInvoice\"]\r\n                                           ↑ (pos 1)"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests.DB02_TableIdentitiesMatchReferenceAndRuntimeModel",
+    "cls": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests",
+    "method": "DB02_TableIdentitiesMatchReferenceAndRuntimeModel",
+    "outcome": "Failed",
+    "message": "Assert.Equal() Failure: Collections differ\r\n                                       ↓ (pos 12)\r\nExpected: [···, \"gio_hang\", \"hoa_don\", \"khach_hang\", \"khuyen_mai_san_pham\", \"lich_su_diem\", ···]\r\nActual:   [···, \"gio_hang\", \"hoa_don\", \"hoan_tien_hoa_don\", \"khach_hang\", \"khuyen_mai_san_pham\", ···]\r\n                                       ↑ (pos 12)"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests.DB13_ColumnTypesPrecisionAndNullabilityMatchRuntimeModel",
+    "cls": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests",
+    "method": "DB13_ColumnTypesPrecisionAndNullabilityMatchRuntimeModel",
+    "outcome": "Failed",
+    "message": "Assert.Equal() Failure: Collections differ\r\n                                                                                                                                                      ↓ (pos 114)\r\nExpected: OrderedIterator<string, string> [···, \"hoa_don|tong_tien_hang|bigint unsigned|NO\", \"hoa_don|trang_thai|enum('da_thanh_toan','da_huy')|\"···, \"khach_hang|diem_hien_co|int unsigned|NO\", \"khach_hang|email|varchar(100)|YES\", \"khach_hang|gioi_tinh|enum('nam','nu','khac')|YES\", ···]\r\nActual:   string[]                        [···, \"hoa_don|tong_tien_hang|bigint unsigned|NO\", \"hoa_don|trang_thai|enum('da_thanh_toan','da_huy')|\"···, \"hoan_tien_hoa_don|diem_chua_thu_hoi|int unsigned|N\"···, \"hoan_tien_hoa_don|diem_da_thu_hoi|int unsigned|NO\", \"hoan_tien_hoa_don|hoa_don_id|int unsigned|NO\", ···]\r\n                                                                                                                                                      ↑ (pos 114)"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Inventory.HaTangTestKhoTests.Migration_TaoDu28Bang_3View_10Trigger",
+    "cls": "ConvenienceStore.Web.Tests.Inventory.HaTangTestKhoTests",
+    "method": "Migration_TaoDu28Bang_3View_10Trigger",
+    "outcome": "Failed",
+    "message": "Assert.Equal() Failure: Values differ\r\nExpected: 28\r\nActual:   29"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.HaTang.SchemaMappingTests.ExistingMigrationOwnsAllReferenceDdl_IncludingChecksViewsAndTriggers",
+    "cls": "ConvenienceStore.Web.Tests.HaTang.SchemaMappingTests",
+    "method": "ExistingMigrationOwnsAllReferenceDdl_IncludingChecksViewsAndTriggers",
+    "outcome": "Failed",
+    "message": "Assert.Equal() Failure: Collections differ\r\nExpected: string[]                  [\"20261026120030_InitialCreate\"]\r\nActual:   KeyList<string, TypeInfo> [\"20261026120030_InitialCreate\", \"20261112160000_Pos12CancelInvoice\"]\r\n                                                                     ↑ (pos 1)"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.DestroyedReturn_DoesNotIncreaseStock_AndCannotOverRefund",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "DestroyedReturn_DoesNotIncreaseStock_AndCannotOverRefund",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.InvalidLinesAreRejectedWithoutWrites(invalid: \"handling\")",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "InvalidLinesAreRejectedWithoutWrites",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.InvalidLinesAreRejectedWithoutWrites(invalid: \"reason\")",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "InvalidLinesAreRejectedWithoutWrites",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests.DB09_AllPrimaryKeysMatchRuntimeModel",
+    "cls": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests",
+    "method": "DB09_AllPrimaryKeysMatchRuntimeModel",
+    "outcome": "Failed",
+    "message": "Assert.Equal() Failure: Collections differ\r\n                                                                             ↓ (pos 12)\r\nExpected: OrderedIterator<string, string> [···, \"gio_hang|id\", \"hoa_don|id\", \"khach_hang|id\", \"khuyen_mai_san_pham|chuong_trinh_id,san_pham_id\", \"lich_su_diem|id\", ···]\r\nActual:   string[]                        [···, \"gio_hang|id\", \"hoa_don|id\", \"hoan_tien_hoa_don|id\", \"khach_hang|id\", \"khuyen_mai_san_pham|chuong_trinh_id,san_pham_id\", ···]\r\n                                                                             ↑ (pos 12)"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.InvalidLinesAreRejectedWithoutWrites(invalid: \"condition\")",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "InvalidLinesAreRejectedWithoutWrites",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.MissingStockRollsBackWholeReturn",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "MissingStockRollsBackWholeReturn",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.ExceptionsAndOverThreshold_CreatePendingWithoutEffects(age: 1, forbidden: False, price: 500100)",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "ExceptionsAndOverThreshold_CreatePendingWithoutEffects",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests.DB10_AllMappedColumnNamesMatchDatabase",
+    "cls": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests",
+    "method": "DB10_AllMappedColumnNamesMatchDatabase",
+    "outcome": "Failed",
+    "message": "Assert.Equal() Failure: Collections differ\r\n                                                                                                ↓ (pos 114)\r\nExpected: OrderedIterator<string, string> [···, \"hoa_don|tong_tien_hang\", \"hoa_don|trang_thai\", \"khach_hang|diem_hien_co\", \"khach_hang|email\", \"khach_hang|gioi_tinh\", ···]\r\nActual:   string[]                        [···, \"hoa_don|tong_tien_hang\", \"hoa_don|trang_thai\", \"hoan_tien_hoa_don|diem_chua_thu_hoi\", \"hoan_tien_hoa_don|diem_da_thu_hoi\", \"hoan_tien_hoa_don|hoa_don_id\", ···]\r\n                                                                                                ↑ (pos 114)"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.CompletedReturn_RecordsOneCashOutMovementAndReducesFund",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "CompletedReturn_RecordsOneCashOutMovementAndReducesFund",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.MissingKh06BlocksMemberCompletionWithoutPartialRefundOrStock",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "MissingKh06BlocksMemberCompletionWithoutPartialRefundOrStock",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.ExceptionsAndOverThreshold_CreatePendingWithoutEffects(age: 8, forbidden: False, price: 25000)",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "ExceptionsAndOverThreshold_CreatePendingWithoutEffects",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.RefundUsesSavedDiscountEvenWhenPromotionExpired",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "RefundUsesSavedDiscountEvenWhenPromotionExpired",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.InvalidLinesAreRejectedWithoutWrites(invalid: \"quantity\")",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "InvalidLinesAreRejectedWithoutWrites",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests.DB05_AllTenTriggerNamesTargetsTimingsAndEventsMatchReference",
+    "cls": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests",
+    "method": "DB05_AllTenTriggerNamesTargetsTimingsAndEventsMatchReference",
+    "outcome": "Failed",
+    "message": "Assert.Equal() Failure: Values differ\r\nExpected: 10\r\nActual:   12"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.PosHeldOrderTests.RequiresCashierAndPasswordChanged(role: \"AD\", changePassword: False)",
+    "cls": "ConvenienceStore.Web.Tests.PosHeldOrderTests",
+    "method": "RequiresCashierAndPasswordChanged",
+    "outcome": "Failed",
+    "message": "Assert.Throws() Failure: No exception was thrown\r\nExpected: typeof(System.UnauthorizedAccessException)"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.InvalidLinesAreRejectedWithoutWrites(invalid: \"duplicate\")",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "InvalidLinesAreRejectedWithoutWrites",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.ConcurrentReturnsCannotExceedPurchasedQuantity",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "ConcurrentReturnsCannotExceedPurchasedQuantity",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests.DB01_Has28BusinessTablesPlusEfHistory",
+    "cls": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests",
+    "method": "DB01_Has28BusinessTablesPlusEfHistory",
+    "outcome": "Failed",
+    "message": "Assert.Equal() Failure: Values differ\r\nExpected: 29\r\nActual:   30"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests.ExceptionsAndOverThreshold_CreatePendingWithoutEffects(age: 1, forbidden: True, price: 25000)",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderMySqlTests",
+    "method": "ExceptionsAndOverThreshold_CreatePendingWithoutEffects",
+    "outcome": "Failed",
+    "message": "MySql.Data.MySqlClient.MySqlException : Table 'cuahang_test_7c48d5de.quy_tien_mat' doesn't exist"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests.DB11_ForeignKeysAndDeleteRulesMatchRuntimeModel",
+    "cls": "ConvenienceStore.Web.Tests.Integration.Database.Schema.SchemaStructureTests",
+    "method": "DB11_ForeignKeysAndDeleteRulesMatchRuntimeModel",
+    "outcome": "Failed",
+    "message": "Assert.Equal() Failure: Collections differ\r\n                                                                                                                                  ↓ (pos 23)\r\nExpected: [···, \"hoa_don|fk_hd_nguoi_huy|nguoi_huy_id|tai_khoan|id|\"···, \"hoa_don|fk_hd_thu_ngan|thu_ngan_id|tai_khoan|id|NO\"···, \"khach_hang|fk_kh_nguoi_tao|nguoi_tao_id|tai_khoan|\"···, \"khuyen_mai_san_pham|fk_kmsp_ct|chuong_trinh_id|chu\"···, \"khuyen_mai_san_pham|fk_kmsp_sp|san_pham_id|san_pha\"···, ···]\r\nActual:   [···, \"hoa_don|fk_hd_nguoi_huy|nguoi_huy_id|tai_khoan|id|\"···, \"hoa_don|fk_hd_thu_ngan|thu_ngan_id|tai_khoan|id|NO\"···, \"hoan_tien_hoa_don|fk_hoan_tien_actor|nguoi_thuc_hi\"···, \"hoan_tien_hoa_don|fk_hoan_tien_hd|hoa_don_id|hoa_d\"···, \"khach_hang|fk_kh_nguoi_tao|nguoi_tao_id|tai_khoan|\"···, ···]\r\n                                                                                                                                  ↑ (pos 23)"
+  },
+  {
+    "name": "ConvenienceStore.Web.Tests.Returns.ReturnOrderHttpTests.ApiPreviewCreateAndReceipt_UsesServerAmountsAndNoStore",
+    "cls": "ConvenienceStore.Web.Tests.Returns.ReturnOrderHttpTests",
+    "method": "ApiPreviewCreateAndReceipt_UsesServerAmountsAndNoStore",
+    "outcome": "Failed",
+    "message": "Assert.Equal() Failure: Values differ\r\nExpected: Created\r\nActual:   InternalServerError"
+  }
+]

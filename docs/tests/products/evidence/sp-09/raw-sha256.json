@@ -1,0 +1,20 @@
+{
+  "artifacts/sp-module/sp-09/build.log": "50990d12c53df1f5470ad63b361b62dd6572c6b3cf06623f2e4ea1d4e2d451a9",
+  "artifacts/sp-module/sp-09/core-build.log": "17bae6b019ae44563e24329c8b2cdbd82e6dc07bb804beb9454dd36767492ad3",
+  "artifacts/sp-module/sp-09/core.log": "d280db6293ecd3060ee615b495a8e01f4f07d0ead323fbc314e2791bdaf71460",
+  "artifacts/sp-module/sp-09/core.trx": "fd16cea73c93dbe087a992d7ce92e99ee6a92358e9440a70393efdf60d2232a3",
+  "artifacts/sp-module/sp-09/discovery.log": "fa84256f0a6164b4b4cb7cdd8d3942ab07d74b9c471e5d6de0dc3cb1d0624fc4",
+  "artifacts/sp-module/sp-09/full.log": "93284c74c76d6ec7e056af60b1395139647092e6568ed5e29e528f1238d51e8c",
+  "artifacts/sp-module/sp-09/full.trx": "2e2b82505bf6b6cf104c6b9ba41c566dbafe1023d2fac3688e821c0f98af86a9",
+  "artifacts/sp-module/sp-09/http.log": "6a6635b413d2a7b564f1a6fa7d9a10647ac243839ebd48f0c322c85ad7a57f9d",
+  "artifacts/sp-module/sp-09/http.trx": "b03bb5350e3fa1001096ad62b814354b0444bd33f4a1e165e8c44e1bdae2fb09",
+  "artifacts/sp-module/sp-09/mysql.log": "024fcbaf3fe31587d90bef91472b9714ca260a4db5376e262f5e45bf58eca803",
+  "artifacts/sp-module/sp-09/mysql.trx": "96211699ceae32b9b130264d346ea85a0ad6db78951508a55e2a01bc852d187b",
+  "artifacts/sp-module/sp-09/red-build.log": "2b885eda5632cc26f7f94b26ab516dea1036acbd1ceaf2b17e32e8e43a7eaf1b",
+  "artifacts/sp-module/sp-09/red.log": "222cac3c0370c99e31f826a1bf0c197249626d3eab2cdf49ff22449b1bebc309",
+  "artifacts/sp-module/sp-09/red.trx": "0b81acffc5f0e0ee28b040299b08be0e7624235ad8a850252332d06287699aa8",
+  "artifacts/sp-module/sp-09/regression.log": "78ce152ac8e1a89841078f6063e14a55d519e35309294393f9454e510b5007df",
+  "artifacts/sp-module/sp-09/regression.trx": "728a7ceb9ecf4f254aa3b67cb493f0b3cf6448eb96fe002f0c72136b47eaf754",
+  "artifacts/sp-module/sp-09/unit.log": "de90a4cb5cc6056dafcb1d5d27c57dd3841b564e55e04df13f4a0ba8e0a32171",
+  "artifacts/sp-module/sp-09/unit.trx": "665000e3e5eec0ac76bc7fc2acc687785f38bbee23fd13f8be33c695be0f3ed0"
+}

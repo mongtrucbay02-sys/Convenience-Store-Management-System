@@ -1,0 +1,12 @@
+{
+  "sourceManifestFiles": 449,
+  "discoveryCount": 682,
+  "productCases": 272,
+  "disjointGateCounts": {
+    "unit": 83,
+    "http": 157,
+    "mysql": 32
+  },
+  "brokenLinks": [],
+  "potentialPasswordAssignments": []
+}

@@ -1,0 +1,19 @@
+@using ConvenienceStore.Web.Modules.Products.DTOs
+@model CategoryRemovalPreviewDto
+@{Layout = "~/Views/Shared/_Layout.cshtml"; var hide = (bool)ViewData["Hide"]!; var command = (CategoryRemovalCommand)ViewData["Command"]!; var operation = hide ? "Hide" : "Delete"; ViewData["Title"] = hide ? "Ẩn danh mục" : "Xóa danh mục";}
+<h1>@ViewData["Title"]: @Model.Ten</h1><p>Trạng thái: @Model.TrangThai · Sản phẩm tham chiếu: @Model.SoSanPham · Đang kinh doanh: @Model.SoSanPhamDangKinhDoanh</p>
+@if(Model.CoPhieuKiemKe){<p role="alert">Danh mục có tham chiếu phiếu kiểm kê. Giữ lại dữ liệu lịch sử.</p>}
+@Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
+@if(!hide && (Model.SoSanPham > 0 || Model.CoPhieuKiemKe))
+{
+<p role="alert">Danh mục còn tham chiếu nên không thể xóa. Có thể chuyển sản phẩm hoặc ẩn danh mục.</p>
+@if(Model.SoSanPham > 0){<a href="/Products?danhMucId=@Model.Id">Chuyển sản phẩm (mở danh sách, sửa từng sản phẩm)</a>}
+<a href="/Categories/@Model.Id/Hide">Ẩn danh mục</a>
+}
+else
+{
+@if(hide){<p>Các sản phẩm và chứng từ vẫn tham chiếu danh mục. Bộ lọc danh mục POS chỉ trả danh mục hoạt động.</p>}
+<form method="post" action="/Categories/@Model.Id/@operation">@Html.AntiForgeryToken()<input name="PhienBan" type="hidden" value="@command.PhienBan" />
+<label><input name="XacNhan" type="checkbox" value="true" checked="@command.XacNhan" required />Tôi xác nhận thao tác</label><button type="submit">@ViewData["Title"]</button></form>
+}
+<a href="/Categories/@Model.Id/@operation">Tải lại dữ liệu</a><a href="/Categories">Quay lại</a>

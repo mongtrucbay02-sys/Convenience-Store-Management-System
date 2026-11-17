@@ -1,0 +1,282 @@
+{
+  "sourceSha": "86fa91117f1233ddc31e8c8f9af07176cce05a89",
+  "baselineSha": "babfe1edae507e5d94a95c422a76ffa344a23c00",
+  "status": "VERIFIED_LOCAL",
+  "pendingBusinessApproval": [
+    "All versus active product count",
+    "Roles allowed to view hidden categories"
+  ],
+  "browserE2E": "NOT RUN",
+  "cases": [
+    {
+      "id": "SP-07-HTTP-001",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.InvalidQueryHasCommonErrorContract(query: \"page=-1\")",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-002",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryServiceTests.InvalidPaginationDoesNotCallRepository(page: 1, size: 0)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-003",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/Categories\", actor: \"REVOKED\", status: 401)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-004",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.EmptyPageOffersCreationGuidanceOnlyToAdmin(role: \"TN\", guidance: False)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-005",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/api/v1/categories\", actor: \"AD\", status: 200)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-006",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/api/v1/categories\", actor: \"FORCED\", status: 403)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-007",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoriesControllerTests.EmptyCategories_ReturnsEmptyPagedResult",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-008",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoriesControllerTests.ValidQuery_ReturnsOkWithCategories",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-009",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/Categories\", actor: \"EXPIRED\", status: 401)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-010",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoriesControllerTests.ValidQuery_ForwardsQueryAndCancellationToken",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-011",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/Categories\", actor: \"FORGED\", status: 401)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-012",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryServiceTests.NullQueryDoesNotCallRepository",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-013",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryServiceTests.InvalidPaginationDoesNotCallRepository(page: -1, size: 20)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-014",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/api/v1/categories\", actor: \"EXPIRED\", status: 401)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-015",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/Categories\", actor: \"FORCED\", status: 403)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-016",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/api/v1/categories\", actor: \"REVOKED\", status: 401)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-017",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoriesControllerTests.SizeOver100_ForwardsNormalizedSizeToService",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-018",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/Categories\", actor: \"TN\", status: 200)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-019",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryServiceTests.GetCategories_ReturnsRepositoryResult",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-020",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/api/v1/categories\", actor: null, status: 401)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-021",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.InvalidQueryHasCommonErrorContract(query: \"page=abc\")",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-022",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoriesControllerTests.SizeZero_ReturnsBadRequestWithoutCallingService",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-023",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/api/v1/categories\", actor: \"TN\", status: 200)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-024",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryServiceTests.InvalidPaginationDoesNotCallRepository(page: 0, size: 20)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-025",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoriesControllerTests.PageZero_ReturnsBadRequestWithoutCallingService",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-026",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoriesControllerTests.SizeOver100_NormalizedSizeIs100",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-027",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/api/v1/categories\", actor: \"FORGED\", status: 401)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-028",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryServiceTests.InvalidPaginationDoesNotCallRepository(page: 2147483647, size: 100)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-029",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/Categories\", actor: \"AD\", status: 200)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-030",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.InvalidQueryHasCommonErrorContract(query: \"size=0\")",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-031",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/Categories\", actor: null, status: 401)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-032",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.EmptyPageOffersCreationGuidanceOnlyToAdmin(role: \"AD\", guidance: True)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-033",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryServiceTests.InvalidPaginationDoesNotCallRepository(page: 1, size: -1)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-034",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryServiceTests.GetCategories_ForwardsCancellationToken",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-035",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.EmptyPageOffersCreationGuidanceOnlyToAdmin(role: \"NK\", guidance: False)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-036",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/Categories\", actor: \"NK\", status: 200)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-MYSQL-037",
+      "level": "MYSQL",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryMySqlTests.StablePagesCountAllAssignedProductsAndDoNotTrackEntities",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-038",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/api/v1/categories\", actor: \"NK\", status: 200)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-039",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.ReadFailureShowsRetryWithoutLeakingDetails",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-040",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.PopulatedPageAndApiAgreeAndEncodeUntrustedCategoryNames",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-041",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.InvalidQueryHasCommonErrorContract(query: \"page=2147483647&size=100\")",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-042",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.InvalidQueryHasCommonErrorContract(query: \"page=0\")",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-043",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/Categories\", actor: \"LOCKED\", status: 401)",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-UNIT-044",
+      "level": "UNIT",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryServiceTests.GetCategories_ForwardsQueryToRepository",
+      "outcome": "Passed"
+    },
+    {
+      "id": "SP-07-HTTP-045",
+      "level": "HTTP",
+      "name": "ConvenienceStore.Web.Tests.Modules.Products.CategoryHttpFeatureTests.BothSurfacesUseRealSessions(path: \"/api/v1/categories\", actor: \"LOCKED\", status: 401)",
+      "outcome": "Passed"
+    }
+  ]
+}

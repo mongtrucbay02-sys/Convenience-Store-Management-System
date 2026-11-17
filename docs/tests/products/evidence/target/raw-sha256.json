@@ -1,0 +1,12 @@
+{
+  "artifacts/sp-module/target-baseline/build-escalated-exit.txt": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04",
+  "artifacts/sp-module/target-baseline/build-escalated.log": "da894e1b0b12853afece505785d2dab0f283adaa8833fd092dfb20e5cceb591d",
+  "artifacts/sp-module/target-baseline/build.log": "d5137a69918a6b61323d1c94e553b58d521c12bcb1116721d3905fb3802488a5",
+  "artifacts/sp-module/target-baseline/exit-codes.json": "c5e9482dd034c065bf76cbaf61434053f0a9b897f32f69e8fe0ebd843267b0be",
+  "artifacts/sp-module/target-baseline/patch-apply-check.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "artifacts/sp-module/target-baseline/provenance.json": "0f7b820cac7ebee6da671872638aefa296babaf61212e4fda03d3dc8b4f5e014",
+  "artifacts/sp-module/target-baseline/restore-escalated-exit.txt": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
+  "artifacts/sp-module/target-baseline/restore-escalated.log": "d2183472422adc3dd2e6373b35f1e950ea4e188ede5253d7970c7cc9482fcabe",
+  "artifacts/sp-module/target-baseline/restore-sandbox-failed.log": "b7cecd382666f632315a442c6e330fd3dcdad25f2a978bbfce2ff50b14b2e7ff",
+  "artifacts/sp-module/target-baseline/restore.log": "b7cecd382666f632315a442c6e330fd3dcdad25f2a978bbfce2ff50b14b2e7ff"
+}

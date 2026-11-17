@@ -1,0 +1,17 @@
+@model ConvenienceStore.Web.Modules.Products.Models.ProductEditModel
+@using ConvenienceStore.Web.Modules.Products.DTOs
+@{Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Sửa thông tin sản phẩm";}
+<h1>Sửa thông tin sản phẩm</h1>@Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
+<form method="post" action="/Products/@Model.Id/Edit" enctype="multipart/form-data">
+@Html.AntiForgeryToken()<input name="PhienBan" type="hidden" value="@Model.PhienBan" />
+<label>Tên sản phẩm<input name="TenSanPham" value="@Model.TenSanPham" maxlength="200" required /></label>@Html.ValidationMessage("tenSanPham")
+<label>Danh mục<input name="DanhMucId" type="number" min="1" list="edit-categories" value="@Model.DanhMucId" required /></label>@Html.ValidationMessage("danhMucId")
+<datalist id="edit-categories">@foreach(var c in ViewData["Categories"] as IReadOnlyList<CategoryListItemDto> ?? []){<option value="@c.Id">@c.Ten (@c.TrangThai)</option>}</datalist><a href="/Categories">Tra danh mục khác để nhập ID</a>
+<label>Đơn vị tính<input name="DonViTinh" value="@Model.DonViTinh" maxlength="20" required /></label>@Html.ValidationMessage("donViTinh")
+<p>Không đổi đơn vị tính khi đã có tồn hoặc giao dịch.</p>
+<label>Ngưỡng tối thiểu<input name="NguongToiThieu" type="number" min="0" value="@Model.NguongToiThieu" /></label>@Html.ValidationMessage("nguongToiThieu")
+<label>Mô tả<textarea name="MoTa" maxlength="1000">@Model.MoTa</textarea></label>@Html.ValidationMessage("moTa")
+<label>Đổi ảnh JPG/PNG tối đa 2 MB<input name="Anh" type="file" accept="image/png,image/jpeg" /></label>@Html.ValidationMessage("image")
+<p>Giá bán không sửa tại chức năng này. Tồn kho và giá vốn được bảo toàn.</p>
+<button type="submit">Lưu</button><a href="/Products/@Model.Id/Edit">Tải lại dữ liệu</a><a href="/Products/@Model.Id">Quay lại</a>
+</form>

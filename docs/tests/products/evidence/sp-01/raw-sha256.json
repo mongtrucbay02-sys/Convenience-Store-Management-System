@@ -1,0 +1,23 @@
+{
+  "artifacts/sp-module/sp-01/build.log": "4d197a2c7ec14c355f62dcedf837d64e92c2400b462c67dcc0c95efb1e8c1b98",
+  "artifacts/sp-module/sp-01/discovery.log": "a6998de03fb7f273db36e7851acf406547392fcbf9db4f66cb442fb7db27fe55",
+  "artifacts/sp-module/sp-01/full.log": "688cd0f06c555c1a2d0ffde9010d6119dfdd86330ba967b1c542c3843eafd5df",
+  "artifacts/sp-module/sp-01/full.trx": "6aa9d39fc9ee2abf58d2f95ef076fb917536e1af89abb2652a1eedc65ecc21f6",
+  "artifacts/sp-module/sp-01/http.log": "3e17cfba16df01c1f44e79f273fe1bb9c8c835c5bed721d2fafcd69e7a39bd87",
+  "artifacts/sp-module/sp-01/http.trx": "61df00d0920b03ee4c1eaaed8c4b45c5d3a3e9642ed288afe7cc726d96d9d72f",
+  "artifacts/sp-module/sp-01/mysql.log": "3ea9520eaf8cc9ae454398edbf8eca7a0cddd37f530f2acc3c4d8e9262fc9ebe",
+  "artifacts/sp-module/sp-01/mysql.trx": "370a9754e4040071e2567b47e8f7285c9a548ea267684226df35109e14f762a9",
+  "artifacts/sp-module/sp-01/red-build.log": "0df169d46b3fd43a9f17bd4d14faaa50cbaf6eb7b3bcde4f0bae1ae0a4c820f7",
+  "artifacts/sp-module/sp-01/red.log": "a1ca49f9ed1c71ad212e53cb9c682f3ced3bb0d2afc9622d5e76a318aff91045",
+  "artifacts/sp-module/sp-01/red.trx": "ac913dab2a4cb8f1d8ed0d55e321b25fd74061b27a8fb1201e22de9f6d11ba87",
+  "artifacts/sp-module/sp-01/red2-build.log": "c0169df94f10cf21c48b02e9f6467a9555be3b0cd5be2e3b80afa44b3eb4170e",
+  "artifacts/sp-module/sp-01/red2.log": "9410ec4be6e7585f55c5da66ba624d7da9c17a86ad8a5bafc33a27220660362a",
+  "artifacts/sp-module/sp-01/red2.trx": "f72a3b3ad5e66b9ba309c7f1e1b19b3b3deaf29977104d31482bc8e06f36701b",
+  "artifacts/sp-module/sp-01/regression.log": "4675d93812d468bc5f759e223b98cf37fbf23aa5c97fdd4980b49b6797e5ed9c",
+  "artifacts/sp-module/sp-01/regression.trx": "c921c45df3136a561e6a93d1722152795750244f24270b7381671ff505e92928",
+  "artifacts/sp-module/sp-01/ui-red-build.log": "3f561e4c5fe07ed40efb3b9773a3eea44ba2671c8acb6e803b983c7bca6677d9",
+  "artifacts/sp-module/sp-01/ui-red.log": "ec522b36983ba8712fce95258f4f467255df9f694c96099dcc5734c71d14c3af",
+  "artifacts/sp-module/sp-01/ui-red.trx": "fd52485f856b21c657f6eace87b1527763c14ec58871e6da31d336a9436807fb",
+  "artifacts/sp-module/sp-01/unit.log": "eddfa45f5435c5329c9dc6b45ed2cdb67c97b5020b203232fba1355aaf0d4521",
+  "artifacts/sp-module/sp-01/unit.trx": "0a46125d55c49872b053145d2ef79c5d42f6cd3b9bdfcf138e46e61ad9e88b12"
+}

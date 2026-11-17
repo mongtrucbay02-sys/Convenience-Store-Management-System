@@ -1,0 +1,8 @@
+@model ConvenienceStore.Web.Modules.Products.Models.ProductCreateModel
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Thêm sản phẩm"; }
+<h1>Thêm sản phẩm</h1>@Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
+<form method="post" action="/Products/Create" enctype="multipart/form-data">
+@Html.AntiForgeryToken()<input name="Compact" type="hidden" value="@Model.Compact.ToString().ToLowerInvariant()" />
+@await Html.PartialAsync("~/Modules/Products/Views/Management/_ProductFields.cshtml", Model)
+<button type="submit">Lưu sản phẩm</button><a href="/Products">Quay lại</a>
+</form>

@@ -26,11 +26,18 @@ public sealed class QuyenVaTokenTests
     [InlineData("TN", MaQuyen.BanHang, true)]
     [InlineData("AD", MaQuyen.BanHang, false)]
     [InlineData("NK", MaQuyen.PhieuNhapLap, true)]
-    [InlineData("AD", MaQuyen.PhieuNhapLap, false)]
+    [InlineData("AD", MaQuyen.PhieuNhapLap, true)]
     [InlineData("NK", MaQuyen.KiemKeXuatHuyDuyet, false)]
     [InlineData("TN", MaQuyen.TaiKhoanCaNhan, true)]
     public void BangQuyen_DungMaTranDacTa(string vaiTro, string quyen, bool coQuyen) =>
         Assert.Equal(coQuyen, BangQuyen.LayQuyen(vaiTro).Contains(quyen));
+
+    [Fact]
+    public void Admin_CoMoiQuyenCuaNhanVienKho()
+    {
+        var admin = BangQuyen.LayQuyen(BangQuyen.Admin);
+        Assert.Empty(BangQuyen.LayQuyen(BangQuyen.NhanVienKho).Except(admin));
+    }
 
     [Theory]
     [InlineData("AD", "DASHBOARD")]

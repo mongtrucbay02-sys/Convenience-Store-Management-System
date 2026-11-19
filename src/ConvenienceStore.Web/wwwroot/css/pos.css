@@ -1,4 +1,4 @@
-﻿.pos-head {
+.pos-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -54,12 +54,25 @@
     align-items: center;
     gap: 1rem;
     padding: .8rem;
-    border: 1px solid #e7edf5;
+    border: 1px solid #e5d8c3;
     border-radius: 9px
 }
 
+.pos-product-details {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.pos-product-image {
+    flex-shrink: 0;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #fff9ef;
+}
+
 .pos-price {
-    color: #2563eb;
+    color: #015d47;
     font-weight: 750
 }
 
@@ -87,7 +100,7 @@
 }
 
     .pos-total strong {
-        color: #2563eb
+        color: #015d47
     }
 
 .pos-pay {

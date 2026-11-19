@@ -11,6 +11,7 @@ namespace ConvenienceStore.Web.Models.Pos;
 
 public sealed class PosProduct
 {
+    public string? ImageUrl { get; set; }
     public int Id { get; set; }
     public string Code { get; set; } = "";
     public string Name { get; set; } = "";

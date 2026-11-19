@@ -1,4 +1,4 @@
-﻿@model ConvenienceStore.Web.Models.DashboardViewModel
+@model ConvenienceStore.Web.Models.DashboardViewModel
 
 @{
     Layout = "_AdminLayout";
@@ -15,11 +15,10 @@
         </p>
     </div>
 
-    <a class="primary"
-       asp-controller="Pos"
-       asp-action="Index">
-        Mở quầy bán hàng →
-    </a>
+    @if (User.IsInRole("TN"))
+    {
+        <a class="primary" asp-controller="Pos" asp-action="Index">Mở quầy bán hàng →</a>
+    }
 </section>
 
 <div class="cards">
@@ -57,19 +56,3 @@
     </article>
 
 </div>
-
-<section class="panel">
-    <h2>Truy cập nhanh</h2>
-
-    <div class="actions">
-        <a asp-controller="Pos"
-           asp-action="Index">
-            🛒 Bán hàng
-        </a>
-
-        <a asp-controller="Returns"
-           asp-action="Index">
-            ↺ Đổi trả
-        </a>
-    </div>
-</section>

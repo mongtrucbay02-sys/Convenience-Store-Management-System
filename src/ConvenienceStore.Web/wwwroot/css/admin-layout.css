@@ -1,12 +1,12 @@
-﻿* {
+* {
     box-sizing: border-box
 }
 
 body {
     margin: 0;
-    font-family: Segoe UI,Arial,sans-serif;
-    background: #f3f6fb;
-    color: #182638
+    font-family: Arial, Helvetica, sans-serif;
+    background: #fff5e4;
+    color: #063f31
 }
 
 .shell {
@@ -16,7 +16,7 @@ body {
 
 .sidebar {
     width: 250px;
-    background: #10243e;
+    background: #015d47;
     color: white;
     padding: 26px 17px;
     display: flex;
@@ -43,14 +43,14 @@ body {
 }
 
     .sidebar nav a {
-        color: #d8e4f3;
+        color: #fff5e4;
         text-decoration: none;
         padding: 14px;
         border-radius: 11px
     }
 
         .sidebar nav a:hover {
-            background: #234666;
+            background: #08775b;
             color: #fff
         }
 
@@ -69,7 +69,7 @@ body {
 
 .top {
     background: white;
-    border-bottom: 1px solid #e3e9f1;
+    border-bottom: 1px solid #e5d8c3;
     padding: 22px 34px;
     display: flex;
     justify-content: space-between;
@@ -78,15 +78,15 @@ body {
 }
 
     .top span {
-        color: #718096;
+        color: #53685c;
         font-size: 13px
     }
 
 .chip {
-    background: #e9f4ff;
+    background: #fff5e4;
     border-radius: 30px;
     padding: 8px 14px;
-    color: #1663aa !important;
+    color: #063f31 !important;
     font-size: 12px;
     white-space: nowrap
 }
@@ -97,7 +97,7 @@ body {
 }
 
 .hero {
-    background: linear-gradient(115deg,#164b85,#1b7ca8);
+    background: #fd550a;
     color: white;
     border-radius: 18px;
     padding: 32px;
@@ -125,7 +125,7 @@ body {
 
 .primary {
     background: white;
-    color: #145487;
+    color: #063f31;
     padding: 13px 18px;
     text-decoration: none;
     border-radius: 10px;
@@ -140,15 +140,15 @@ body {
 
 .stat, .panel {
     background: white;
-    border: 1px solid #e5eaf0;
+    border: 1px solid #e5d8c3;
     border-radius: 16px;
     padding: 24px;
-    box-shadow: 0 5px 18px #233d5b09
+    box-shadow: 0 5px 18px #063f310c
 }
 
     .stat span, .stat small {
         display: block;
-        color: #718096
+        color: #53685c
     }
 
     .stat strong {
@@ -173,8 +173,8 @@ body {
 }
 
     .actions a {
-        background: #edf5fc;
-        color: #15588e;
+        background: #eaf4eb;
+        color: #015d47;
         text-decoration: none;
         padding: 17px;
         border-radius: 10px
@@ -194,26 +194,26 @@ label {
     display: block;
     margin: 15px 0 8px;
     font-size: 13px;
-    color: #546477
+    color: #415b4f
 }
 
 input {
     width: 100%;
     padding: 14px;
-    border: 1px solid #d7e0e9;
+    border: 1px solid #bdcbbd;
     border-radius: 9px;
-    background: #f6f8fb;
+    background: #fffaf2;
     font-size: 14px
 }
 
 .muted, .empty {
-    color: #7a8798
+    color: #566c60
 }
 
 .empty {
     padding: 65px 10px;
     text-align: center;
-    border: 1px dashed #d5e0eb;
+    border: 1px dashed #cbd7ca;
     margin-top: 20px;
     border-radius: 12px
 }
@@ -225,7 +225,7 @@ input {
 }
 
 button {
-    background: #1b70ad;
+    background: #015d47;
     border: 0;
     border-radius: 9px;
     padding: 14px 20px;
@@ -243,8 +243,76 @@ button {
 
 footer {
     padding: 18px 34px;
-    color: #8a98a9;
+    color: #566c60;
     font-size: 12px
+}
+
+.smartmart-workspace {
+    --sm-green: #015d47;
+    --sm-dark: #063f31;
+    --sm-orange: #fd550a;
+    --sm-cream: #fff5e4;
+    --sm-line: #e5d8c3;
+    --bs-link-color: var(--sm-green);
+    --bs-link-hover-color: var(--sm-dark);
+}
+
+.smartmart-workspace :focus-visible {
+    outline: 3px solid #a53908;
+    outline-offset: 3px;
+}
+
+.skip-content { position: fixed; inset: 12px auto auto 12px; z-index: 10; }
+.sidebar { flex-shrink: 0; gap: 1.2rem; padding-block: 24px; }
+.sidebar .brand { display: flex; align-items: center; gap: 10px; letter-spacing: -.04em; }
+.brand-mark {
+    display: inline-grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--sm-orange);
+    color: var(--sm-dark);
+    font-size: .9rem;
+}
+
+.sidebar nav { gap: 4px; }
+.sidebar nav a, .sidebar summary { padding: 9px 12px; font-size: .9rem; font-weight: 650; }
+.sidebar summary { cursor: pointer; border-radius: 11px; color: var(--sm-cream); }
+.sidebar summary:hover { background: #08775b; }
+.sidebar-submenu { display: grid; margin: 4px 0 8px 14px; border-left: 1px solid #f9ebcd55; }
+.sidebar nav .sidebar-submenu a { font-size: .82rem; }
+.sidebar-account { margin-top: auto; padding: 12px; border-top: 1px solid #f9ebcd55; display: grid; gap: 8px; }
+.sidebar-account a { color: var(--sm-cream); font-size: .85rem; }
+.sidebar-account button { border: 1px solid #f9ebcd88; text-align: left; }
+.sidebar-account span:empty { display: none; }
+
+.top { background: var(--sm-orange); color: var(--sm-dark); }
+.top strong { font-size: clamp(1.15rem, 2.5vw, 1.65rem); letter-spacing: -.035em; }
+.hero { color: var(--sm-dark); }
+.hero h1, .content h1 { letter-spacing: -.04em; font-weight: 800; }
+.smartmart-workspace input[type="checkbox"],
+.smartmart-workspace input[type="radio"] { width: auto; }
+.smartmart-workspace .card { --bs-card-border-color: var(--sm-line); --bs-card-border-radius: 16px; }
+.smartmart-workspace .btn-primary {
+    --bs-btn-bg: var(--sm-green);
+    --bs-btn-border-color: var(--sm-green);
+    --bs-btn-hover-bg: var(--sm-dark);
+    --bs-btn-hover-border-color: var(--sm-dark);
+    --bs-btn-active-bg: var(--sm-dark);
+    --bs-btn-active-border-color: var(--sm-dark);
+}
+.smartmart-workspace .btn-outline-primary {
+    --bs-btn-color: var(--sm-green);
+    --bs-btn-border-color: var(--sm-green);
+    --bs-btn-hover-bg: var(--sm-green);
+    --bs-btn-hover-border-color: var(--sm-green);
+}
+.smartmart-workspace .nav-pills { --bs-nav-pills-link-active-bg: var(--sm-green); }
+.smartmart-workspace .table { --bs-table-color: var(--sm-dark); --bs-table-border-color: var(--sm-line); }
+.smartmart-workspace .form-control:focus, .smartmart-workspace .form-select:focus {
+    border-color: var(--sm-green);
+    box-shadow: 0 0 0 .2rem #015d4726;
 }
 
 @media(max-width:900px) {
@@ -300,4 +368,7 @@ footer {
     .searchline {
         display: block
     }
+
+    .sidebar-account { display: flex; flex-wrap: wrap; align-items: center; }
+    .sidebar-submenu { max-width: 260px; }
 }

@@ -1,8 +1,105 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@using ConvenienceStore.Web.Modules.Auth.Security
+@{
+    Layout = null;
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    var employeeLabel = signedIn ? "Vào vận hành" : "Đăng nhập";
+    var employeeUrl = signedIn ? Url.Action("Workspace", "Home", new { area = "" }) : "/login.html";
 }
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#fd550a">
+    <meta name="description" content="Khám phá đồ uống, đồ ăn nhẹ và hàng thiết yếu tại Smart Mart.">
+    <title>Smart Mart — Ghé nhanh, bùng vị</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght&#64;700;800;900&family=Be+Vietnam+Pro:wght&#64;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/storefront.css">
+</head>
+<body>
+    <a class="skip-link" href="#noi-dung">Đến nội dung</a>
+    <header class="site-header" id="trang-chu">
+        <div class="site-nav frame">
+            <a class="wordmark" href="#trang-chu" aria-label="Trang chủ Smart Mart">
+                <span class="wordmark-icon" aria-hidden="true">S</span><span>SMART<span class="wordmark-space">MART</span></span>
+            </a>
+            <nav class="nav-links" aria-label="Điều hướng chính">
+                <a href="#trang-chu" aria-current="page">Trang chủ</a>
+                <a href="#ke-hang">Kệ hàng</a>
+                <a href="#van-hanh">Dành cho nhân viên</a>
+            </nav>
+            <a class="pill pill-outline employee-link login-link" href="@employeeUrl">@employeeLabel <span aria-hidden="true">↗</span></a>
+        </div>
+    </header>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+    <main id="noi-dung">
+        <section class="campaign" aria-labelledby="campaign-title">
+            <div class="campaign-inner frame">
+                <div class="campaign-copy">
+                    <p class="eyebrow"><span></span> SMART MART · CỬA HÀNG TIỆN LỢI</p>
+                    <h1 id="campaign-title"><span>GHÉ NHANH.</span><em>BÙNG VỊ!</em></h1>
+                    <p>Món ngon, đồ uống mát và những thứ bạn cần cho một ngày bận rộn.</p>
+                    <a class="pill pill-green" href="#ke-hang">Khám phá kệ hàng <span aria-hidden="true">↘</span></a>
+                </div>
+                <div class="campaign-art" aria-hidden="true">
+                    <div class="campaign-disc"></div>
+                    <span class="flare flare-top">✦</span><span class="flare flare-bottom">✦</span>
+                    <img class="campaign-photo" src="/images/smartmart-hero.png" alt="" fetchpriority="high"
+                         onerror="this.onerror=null; this.src='/images/smartmart-test/sp08.png'; this.classList.add('campaign-product')">
+                    <span class="campaign-sticker">MÁT<br>ĐÃ!</span>
+                </div>
+            </div>
+        </section>
+        <div class="category-ribbon">
+            <div class="frame"><span>ĐỒ UỐNG</span><b aria-hidden="true">✦</b><span>ĂN NHẸ</span><b aria-hidden="true">✦</b><span>THIẾT YẾU</span></div>
+        </div>
+
+        <section class="shelf frame" id="ke-hang" aria-labelledby="shelf-title">
+            <div class="section-heading">
+                <div><p class="eyebrow"><span></span> KỆ HÀNG SMART MART</p><h2 id="shelf-title">Chọn món bạn thích</h2></div>
+                <div class="shelf-filters" role="group" aria-label="Lọc nhóm hàng">
+                    <button type="button" data-filter="all" aria-pressed="true">Tất cả</button>
+                    <button type="button" data-filter="drinks" aria-pressed="false">Đồ uống</button>
+                    <button type="button" data-filter="snacks" aria-pressed="false">Ăn nhẹ</button>
+                    <button type="button" data-filter="essentials" aria-pressed="false">Thiết yếu</button>
+                </div>
+            </div>
+            <div class="shelf-grid">
+                <article class="shelf-card" data-category="drinks">
+                    <div class="shelf-image orange-light"><img src="/images/smartmart-test/sp08.png" alt="Nước cam đóng chai" loading="lazy"></div>
+                    <div class="shelf-info"><div><span>Đồ uống</span><h3>Nước cam</h3></div><button type="button" class="shelf-detail" aria-label="Xem Nước cam" data-detail="Nước cam đóng chai, dùng lạnh.">↗</button></div>
+                </article>
+                <article class="shelf-card" data-category="drinks">
+                    <div class="shelf-image green-light"><img src="/images/smartmart-test/sp07.png" alt="Trà xanh matcha đóng lon" loading="lazy"></div>
+                    <div class="shelf-info"><div><span>Đồ uống</span><h3>Trà xanh matcha</h3></div><button type="button" class="shelf-detail" aria-label="Xem Trà xanh matcha" data-detail="Trà xanh matcha đóng lon, tiện mang theo.">↗</button></div>
+                </article>
+                <article class="shelf-card" data-category="snacks">
+                    <div class="shelf-image yellow-light"><img src="/images/smartmart-test/sp11.png" alt="Khoai tây chiên đóng gói" loading="lazy"></div>
+                    <div class="shelf-info"><div><span>Ăn nhẹ</span><h3>Khoai tây chiên</h3></div><button type="button" class="shelf-detail" aria-label="Xem Khoai tây chiên" data-detail="Khoai tây giòn, món ăn nhẹ cho giờ nghỉ.">↗</button></div>
+                </article>
+                <article class="shelf-card" data-category="essentials">
+                    <div class="shelf-image green-light"><img src="/images/smartmart-test/sp16.png" alt="Khăn giấy bỏ túi" loading="lazy"></div>
+                    <div class="shelf-info"><div><span>Thiết yếu</span><h3>Khăn giấy bỏ túi</h3></div><button type="button" class="shelf-detail" aria-label="Xem Khăn giấy bỏ túi" data-detail="Khăn giấy gói nhỏ cho nhu cầu hằng ngày.">↗</button></div>
+                </article>
+            </div>
+        </section>
+
+        <section class="staff-section" id="van-hanh">
+            <div class="frame staff-row">
+                <div><p class="eyebrow"><span></span> DÀNH CHO NHÂN VIÊN</p><h2>Vào quầy Smart Mart</h2><p>Đăng nhập để bán hàng, xem khách hàng và mở chức năng theo vai trò.</p></div>
+                <a class="pill pill-lime login-link" href="@employeeUrl">@employeeLabel <span aria-hidden="true">↗</span></a>
+            </div>
+        </section>
+    </main>
+    <footer class="frame site-footer"><strong>SMART MART</strong><a href="#trang-chu">Về đầu trang ↑</a></footer>
+
+    <dialog class="product-dialog" id="product-dialog" aria-labelledby="detail-title">
+        <h2 id="detail-title"></h2>
+        <p id="detail-description"></p>
+        <form method="dialog"><button class="pill pill-green">Đóng</button></form>
+    </dialog>
+    <script src="/js/storefront.js" defer></script>
+</body>
+</html>

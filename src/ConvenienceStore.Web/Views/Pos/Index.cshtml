@@ -43,8 +43,10 @@
             <p>@Model.Cart.CustomerName — @Model.Cart.CustomerPoints điểm</p>
             <form asp-controller="Customers" asp-action="Attach" method="post"><button>Gỡ khách khỏi đơn</button></form>
         }
-        <a asp-controller="Customers" asp-action="Index" asp-route-attachToCart="true">Tìm / gắn khách hàng</a>
-        <a asp-controller="Customers" asp-action="Create" asp-route-attachToCart="true">Thêm nhanh khách</a>
+        <nav class="smartmart-action-row mb-0" aria-label="Khách hàng tại quầy">
+            <a class="btn btn-outline-success btn-sm" asp-controller="Customers" asp-action="Index" asp-route-attachToCart="true">Tìm / gắn khách hàng</a>
+            <a class="btn btn-primary btn-sm" asp-controller="Customers" asp-action="Create" asp-route-attachToCart="true">Thêm nhanh khách</a>
+        </nav>
     </section>
     <partial name="_HeldOrders" model="Model" />
 
@@ -109,18 +111,23 @@
                 {
                     <article class="pos-product">
 
-                        <div>
-                            <strong>
-                                @product.Name
-                            </strong>
+                        <div class="pos-product-details">
+                            @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                            {
+                                <img class="pos-product-image" src="@product.ImageUrl" alt=""
+                                     width="72" height="72" loading="lazy" referrerpolicy="no-referrer" />
+                            }
+                            <div>
+                                <strong>@product.Name</strong>
 
-                            <div class="text-muted small">
-                                Mã: @product.Code
-                                · Còn lại: @product.Stock
-                            </div>
+                                <div class="text-muted small">
+                                    Mã: @product.Code
+                                    · Còn lại: @product.Stock
+                                </div>
 
-                            <div class="pos-price">
-                                @product.Price.ToString("N0") đ
+                                <div class="pos-price">
+                                    @product.Price.ToString("N0") đ
+                                </div>
                             </div>
                         </div>
 

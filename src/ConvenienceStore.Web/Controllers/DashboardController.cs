@@ -1,10 +1,13 @@
 ﻿
 using ConvenienceStore.Web.Models;
+using ConvenienceStore.Web.Modules.Auth.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 
 namespace ConvenienceStore.Web.Controllers;
 
+[Authorize(Roles = BangQuyen.Admin)]
 public class DashboardController : Controller
 {
     private readonly string _connectionString;

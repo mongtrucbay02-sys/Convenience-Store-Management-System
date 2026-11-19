@@ -43,6 +43,7 @@ public sealed class MySqlPosCatalog
                 sp.id,
                 sp.ma,
                 sp.ten_san_pham,
+                sp.anh_url,
                 g.gia_ban,
                 tk.so_luong_ton
             FROM san_pham sp
@@ -90,6 +91,7 @@ public sealed class MySqlPosCatalog
                 Id = Convert.ToInt32(reader["id"]),
                 Code = Convert.ToString(reader["ma"]) ?? "",
                 Name = Convert.ToString(reader["ten_san_pham"]) ?? "",
+                ImageUrl = reader["anh_url"] as string,
                 Price = Convert.ToInt64(reader["gia_ban"]),
                 Stock = Convert.ToInt32(reader["so_luong_ton"])
             });
@@ -124,7 +126,7 @@ public sealed class MySqlPosCatalog
     {
         if (productId <= 0) return null;
         const string sql = """
-            SELECT sp.id, sp.ma, sp.ten_san_pham,
+            SELECT sp.id, sp.ma, sp.ten_san_pham, sp.anh_url,
                    g.gia_ban, tk.so_luong_ton
             FROM san_pham sp
             INNER JOIN danh_muc dm ON dm.id = sp.danh_muc_id
@@ -145,6 +147,7 @@ public sealed class MySqlPosCatalog
             Id = Convert.ToInt32(reader["id"]),
             Code = Convert.ToString(reader["ma"]) ?? "",
             Name = Convert.ToString(reader["ten_san_pham"]) ?? "",
+            ImageUrl = reader["anh_url"] as string,
             Price = Convert.ToInt64(reader["gia_ban"]),
             Stock = Convert.ToInt32(reader["so_luong_ton"])
         };

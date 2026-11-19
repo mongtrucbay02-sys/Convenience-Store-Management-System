@@ -1,0 +1,24 @@
+@model ConvenienceStore.Web.Modules.Customers.Models.CustomerInput
+@{
+    var creating = ViewData["Id"] is null;
+    ViewData["Title"] = creating ? "Thêm khách hàng" : "Sửa khách hàng";
+    Layout = "_AdminLayout";
+}
+<h1>@ViewData["Title"]</h1>
+<form asp-action="Save" method="post" class="smartmart-customer-form">
+    <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+    <input type="hidden" name="id" value="@ViewData["Id"]" />
+    <input asp-for="Version" type="hidden" /><input asp-for="AttachToCart" type="hidden" />
+    <div class="row g-3">
+        <div class="col-md-6"><label class="form-label fw-bold" asp-for="Name">Họ tên *</label><input class="form-control" asp-for="Name" required maxlength="100" /></div>
+        <div class="col-md-6"><label class="form-label fw-bold" asp-for="Phone">Số điện thoại *</label><input class="form-control" asp-for="Phone" type="tel" inputmode="tel" required pattern="0[0-9]{9}" maxlength="10" /></div>
+        <div class="col-md-6"><label class="form-label" asp-for="Email">Email</label><input class="form-control" asp-for="Email" type="email" maxlength="100" /></div>
+        <div class="col-md-3"><label class="form-label" asp-for="BirthDate">Ngày sinh</label><input class="form-control" asp-for="BirthDate" type="date" /></div>
+        <div class="col-md-3"><label class="form-label" asp-for="Gender">Giới tính</label><select class="form-select" asp-for="Gender"><option value="">Không cung cấp</option><option value="NAM">Nam</option><option value="NU">Nữ</option><option value="KHAC">Khác</option></select></div>
+    </div>
+    <p class="text-muted mt-3 mb-0">Chỉ nhập thông tin khi khách hàng đồng ý cung cấp.</p>
+    <div class="smartmart-form-actions">
+        <button class="btn btn-primary" type="submit">@(creating ? "Thêm khách hàng" : "Lưu thay đổi")</button>
+        <a class="btn btn-outline-secondary" asp-action="Index" asp-route-attachToCart="@Model.AttachToCart">Quay lại</a>
+    </div>
+</form>

@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Data.Common;
 using System.Threading;
@@ -259,6 +259,26 @@ public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
                 "SELECT COUNT(*) FROM phieu_doi_tra " +
                 "WHERE hoa_don_goc_id=@hd",
                 ("@hd", invoice)));
+
+    [Fact]
+    public async Task MemberReturns_UpdateBalanceAndRecordEachRecovery()
+    {
+        var seed = await Setup(points: 5);
+        await using var db = fixture.TaoDbContext();
+        var service = Service(db, new ReturnPointsGateway());
+
+        foreach (int expectedBalance in new[] { 4, 3 })
+        {
+            long id = await Create(service, Request(seed, 2));
+            Assert.Equal(1, (await service.ReceiptAsync(id, User)).PointsRecovered);
+            Assert.Equal(expectedBalance, Convert.ToInt32(await fixture.DocMotGiaTriAsync(
+                "SELECT diem_hien_co FROM khach_hang WHERE id=@id", ("@id", seed.Customer))));
+            Assert.Equal(-1, Convert.ToInt32(await fixture.DocMotGiaTriAsync("""
+                SELECT so_diem FROM lich_su_diem
+                WHERE phieu_doi_tra_id=@id AND loai='THU_HOI_TRA_HANG'
+                """, ("@id", id))));
+        }
+    }
 
     [Fact]
     public async Task CompletesRefund_RestocksAtOriginalCost_AndPrintsImmutableSnapshot()
@@ -602,7 +622,7 @@ public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
 
         var preview = await service.PreviewAsync(request, User);
 
-        Assert.True(preview.PointsBlocked);
+        Assert.True(preview.RequiresPointsRecovery);
 
         request.ConfirmationToken = preview.ConfirmationToken;
 

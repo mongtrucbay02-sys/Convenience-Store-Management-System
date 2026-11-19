@@ -5,12 +5,14 @@ using ConvenienceStore.Web.Modules.Auth;
 using ConvenienceStore.Web.Modules.Auth.Security;
 using ConvenienceStore.Web.Modules.Auth.Services;
 using ConvenienceStore.Web.Modules.Inventory;
+using ConvenienceStore.Web.Modules.Purchasing;
 using ConvenienceStore.Web.Modules.Products.Services;
 using ConvenienceStore.Web.Modules.Promotions.Services;
 using ConvenienceStore.Web.Modules.Reports;
 using ConvenienceStore.Web.Modules.Reports.Services;
 using ConvenienceStore.Web.Modules.Returns;
 using ConvenienceStore.Web.Services.Pos;
+using ConvenienceStore.Web.Shared.Data;
 using ConvenienceStore.Web.Shared.Errors;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,11 +22,12 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. MVC VÀ WEB API
 // ==========================================
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews().AddRazorOptions(options =>
+    options.AreaViewLocationFormats.Insert(0, "/Modules/{2}/Views/{1}/{0}.cshtml"));
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<
-    ConvenienceStore.Web.Modules.Customers.CustomerService>();
+    ConvenienceStore.Web.Modules.Customers.Services.CustomerService>();
 
 builder.Services.AddSingleton(TimeProvider.System);
 
@@ -67,17 +70,18 @@ builder.Services.AddScoped<
 // 2. KẾT NỐI MYSQL
 // ==========================================
 
-var connectionString =
-    builder.Configuration.GetConnectionString("CuaHang");
+var connectionString = MySqlEnv.GetConnectionString(
+    builder.Environment.ContentRootPath, builder.Configuration);
 
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new InvalidOperationException(
         "Chưa cấu hình ConnectionStrings:CuaHang. " +
-        "Hãy thiết lập bằng User Secrets hoặc " +
-        "biến môi trường ConnectionStrings__CuaHang.");
+        "Hãy đặt ConnectionStrings__CuaHang trong file .env cạnh project " +
+        "ConvenienceStore.Web hoặc truyền qua biến môi trường.");
 }
 
+builder.Configuration["ConnectionStrings:CuaHang"] = connectionString;
 builder.Services.AddDbContext<CuaHangDbContext>(options =>
 {
     options.UseMySQL(connectionString)
@@ -139,6 +143,7 @@ builder.Services.AddModuleAuth();
 // Quản lý tồn kho
 builder.Services.AddModuleInventory();
 builder.Services.AddModuleProducts();
+builder.Services.AddScoped<PurchaseReceiptService>();
 
 // Đổi trả
 builder.Services.AddModuleReturns();

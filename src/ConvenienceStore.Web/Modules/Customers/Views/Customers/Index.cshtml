@@ -1,0 +1,56 @@
+@model List<ConvenienceStore.Web.Modules.Customers.Models.CustomerRow>
+@{ ViewData["Title"] = "Khách hàng"; Layout = "_AdminLayout"; var attach = ViewData["AttachToCart"] is true; }
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+    <h1 class="mb-0">Khách hàng</h1>
+    <a class="btn btn-primary" asp-action="Create" asp-route-attachToCart="@attach" asp-route-phone="@ViewData["Search"]">+ Thêm khách mới</a>
+</div>
+@if (TempData["Error"] is string error) { <p role="alert">@error</p> }
+@if (TempData["Success"] is string success) { <p role="status">@success</p> }
+<form method="get" class="smartmart-filter-row">
+    <input type="hidden" name="attachToCart" value="@attach.ToString().ToLowerInvariant()" />
+    <label class="flex-grow-1">Tên, số điện thoại hoặc mã <input class="form-control mt-1" name="search" value="@ViewData["Search"]" maxlength="100" /></label>
+    <button class="btn btn-outline-success" type="submit">Tìm kiếm</button>
+</form>
+<p>Hiển thị tối đa 100 khách phù hợp. Nhập từ khóa để thu hẹp kết quả.</p>
+@if (Model.Count == 0) { <p>Không tìm thấy khách hàng. Bạn có thể thêm khách mới.</p> }
+else
+{
+    <div class="table-responsive smartmart-data-table" role="region" aria-label="Danh sách khách hàng" tabindex="0">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr>
+                <th scope="col">Mã</th><th scope="col">Họ tên</th><th scope="col">Số điện thoại</th>
+                <th scope="col" class="text-end">Điểm</th><th scope="col" class="text-end">Tổng chi tiêu</th>
+                <th scope="col">Lần mua gần nhất</th><th scope="col">Thao tác</th>
+            </tr></thead>
+            <tbody>
+                @foreach (var row in Model)
+                {
+                    <tr>
+                        <td class="smartmart-number text-muted">#@row.Id</td>
+                        <th scope="row">@row.Name</th>
+                        <td class="smartmart-number">@row.Phone</td>
+                        <td class="text-end smartmart-number">@row.Points.ToString("N0")</td>
+                        <td class="text-end smartmart-number">@row.Spending.ToString("N0") đ</td>
+                        <td class="smartmart-number">@(row.LastPurchase?.ToString("dd/MM/yyyy HH:mm") ?? "—")</td>
+                        <td>
+                            <div class="smartmart-row-actions">
+                                @if (attach && User.IsInRole("TN"))
+                                {
+                                    <form asp-action="Attach" method="post"><input type="hidden" name="customerId" value="@row.Id" /><button class="btn btn-primary btn-sm" type="submit">Chọn khách</button></form>
+                                }
+                                <a class="btn btn-outline-success btn-sm" asp-action="Edit" asp-route-id="@row.Id">Sửa</a>
+                                <a class="btn btn-outline-secondary btn-sm" asp-action="History" asp-route-id="@row.Id">Lịch sử</a>
+                                @if (User.IsInRole("AD"))
+                                {
+                                    <form asp-action="Delete" method="post" onsubmit="return confirm('Xóa khách chưa có giao dịch, hoặc ẩn và xóa thông tin cá nhân nếu đã có giao dịch. Xác nhận?')">
+                                        <input type="hidden" name="id" value="@row.Id" /><button class="btn btn-outline-danger btn-sm" type="submit">Xóa / ẩn</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

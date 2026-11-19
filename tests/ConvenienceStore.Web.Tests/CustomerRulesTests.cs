@@ -1,7 +1,8 @@
+using ConvenienceStore.Web.Modules.Customers.Controllers;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using ConvenienceStore.Web.Controllers;
-using ConvenienceStore.Web.Modules.Customers;
+using ConvenienceStore.Web.Modules.Customers.Models;
+using ConvenienceStore.Web.Modules.Customers.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

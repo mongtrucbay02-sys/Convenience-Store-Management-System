@@ -58,7 +58,7 @@ public sealed record ReturnPreview(
     bool Forbidden,
     bool OverThreshold,
     bool NeedsApproval,
-    bool PointsBlocked,
+    bool RequiresPointsRecovery,
     string ConfirmationToken,
     IReadOnlyList<ReturnPreviewLine> Lines);
 

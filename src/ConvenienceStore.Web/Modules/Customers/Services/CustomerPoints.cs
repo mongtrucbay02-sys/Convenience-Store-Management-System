@@ -1,9 +1,10 @@
+using ConvenienceStore.Web.Modules.Customers.Models;
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Shared.Data;
 using ConvenienceStore.Web.Shared.Errors;
 using Microsoft.EntityFrameworkCore;
 
-namespace ConvenienceStore.Web.Modules.Customers;
+namespace ConvenienceStore.Web.Modules.Customers.Services;
 
 /// <summary>Shared append-only ledger for checkout, returns and invoice cancellation. Caller owns the transaction.</summary>
 public static class CustomerPoints

@@ -225,7 +225,7 @@ public sealed class MySqlPosCheckoutStore(
                 soTienMotDiem = quyTac?.SoTienMotDiem ?? 10000;
 
                 diemCong =
-                    ConvenienceStore.Web.Modules.Customers.CustomerRules
+                    ConvenienceStore.Web.Modules.Customers.Models.CustomerRules
                         .EarnedPoints(tongThanhToan, soTienMotDiem);
             }
         }
@@ -343,7 +343,7 @@ public sealed class MySqlPosCheckoutStore(
         // 10. Tích điểm khách hàng trong cùng transaction.
         if (khach is not null && diemCong > 0)
         {
-            await ConvenienceStore.Web.Modules.Customers.CustomerPoints
+            await ConvenienceStore.Web.Modules.Customers.Services.CustomerPoints
                 .ChangeAsync(
                     db,
                     checked((uint)gio.KhachHangId!.Value),

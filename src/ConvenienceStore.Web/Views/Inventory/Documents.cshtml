@@ -8,7 +8,7 @@
     var products = (IReadOnlyList<SanPham>)ViewBag.Products;
 }
 <h1>Chứng từ kho</h1>
-<p><a asp-controller="StockOverview" asp-action="Index">Tồn kho hiện tại</a></p>
+<p><a class="btn btn-outline-success" asp-controller="StockOverview" asp-action="Index">Tồn kho hiện tại</a></p>
 @if (TempData["Loi"] is string error) { <p class="alert alert-danger">@error</p> }
 <h2>Kiểm kê</h2>
 @if (User.HasClaim("quyen", MaQuyen.KiemKeXuatHuyLap))

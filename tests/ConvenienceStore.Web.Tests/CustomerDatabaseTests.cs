@@ -1,4 +1,5 @@
-using ConvenienceStore.Web.Modules.Customers;
+using ConvenienceStore.Web.Modules.Customers.Models;
+using ConvenienceStore.Web.Modules.Customers.Services;
 using ConvenienceStore.Web.Shared.Errors;
 using ConvenienceStore.Web.Tests.Inventory;
 using Microsoft.EntityFrameworkCore;

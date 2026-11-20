@@ -11,5 +11,5 @@
     <label>Địa chỉ<input asp-for="Address" class="form-control" maxlength="255"></label>
     <label>Mã số thuế<input asp-for="TaxId" class="form-control" maxlength="14"></label>
     <label>Ghi chú<textarea asp-for="Notes" class="form-control" maxlength="500"></textarea></label>
-    <div><button class="btn btn-primary">Lưu</button> <a asp-action="Index">Quay lại</a></div>
+    <div class="smartmart-form-actions"><button class="btn btn-primary" type="submit">@(Model.Id == 0 ? "Thêm nhà cung cấp" : "Lưu thay đổi")</button> <a class="btn btn-outline-secondary" asp-action="Index">Quay lại</a></div>
 </form>

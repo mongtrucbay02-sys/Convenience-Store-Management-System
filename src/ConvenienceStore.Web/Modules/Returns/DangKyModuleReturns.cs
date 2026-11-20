@@ -27,7 +27,7 @@ public static class DangKyModuleReturns
         services.AddScoped<ReturnOrderService>();
 
         // Đăng ký cổng tích hợp thu hồi điểm KH-06
-        services.TryAddScoped<IReturnPointsGateway, PendingKh06ReturnPointsGateway>();
+        services.TryAddScoped<IReturnPointsGateway, ReturnPointsGateway>();
 
         return services;
     }

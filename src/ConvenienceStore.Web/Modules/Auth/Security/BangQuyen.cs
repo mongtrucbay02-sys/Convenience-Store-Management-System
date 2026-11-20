@@ -12,8 +12,8 @@ public static class BangQuyen
         [
             MaQuyen.TaiKhoanCaNhan, MaQuyen.QuanTriTaiKhoan, MaQuyen.SanPhamXem, MaQuyen.SanPhamSua,
             MaQuyen.SanPhamGiaDanhMuc, MaQuyen.TonKhoXem, MaQuyen.TheKhoCanhBaoXem, MaQuyen.NguongTonSua,
-            MaQuyen.KiemKeXuatHuyDuyet, MaQuyen.NhaCungCapQuanLy, MaQuyen.NhaCungCapNgung,
-            MaQuyen.PhieuNhapXacNhan, MaQuyen.PhieuNhapXem, MaQuyen.NhapHangLichSuNcc,
+            MaQuyen.KiemKeXuatHuyLap, MaQuyen.KiemKeXuatHuyDuyet, MaQuyen.NhaCungCapQuanLy, MaQuyen.NhaCungCapNgung,
+            MaQuyen.PhieuNhapLap, MaQuyen.PhieuNhapXacNhan, MaQuyen.PhieuNhapXem, MaQuyen.NhapHangLichSuNcc,
             MaQuyen.HoaDonXemTatCa, MaQuyen.HoaDonHuy, MaQuyen.BaoCaoXem, MaQuyen.KhachHangQuanLy,
             MaQuyen.KhachHangQuanTri, MaQuyen.KhuyenMaiXem, MaQuyen.KhuyenMaiQuanLy, MaQuyen.DoiTraDuyetCauHinh,
         ],

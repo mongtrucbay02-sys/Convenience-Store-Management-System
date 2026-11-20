@@ -1,29 +1,46 @@
+using ConvenienceStore.Web.Modules.Customers.Models;
 using System.Data;
 using System.Data.Common;
 using ConvenienceStore.Web.Data;
+using ConvenienceStore.Web.Data.Entities;
 using ConvenienceStore.Web.Shared.Data;
 using ConvenienceStore.Web.Shared.Errors;
 using Microsoft.EntityFrameworkCore;
 
-namespace ConvenienceStore.Web.Modules.Customers;
+namespace ConvenienceStore.Web.Modules.Customers.Services;
 
 public sealed class CustomerService(CuaHangDbContext db)
 {
     public async Task<List<CustomerRow>> SearchAsync(string? search, bool admin, CancellationToken ct)
     {
         search = search?.Trim() ?? "";
-        var rows = await db.DocDanhSachAsync("""
-            SELECT k.id, k.ho_ten, k.so_dien_thoai, k.diem_hien_co,
-              COALESCE(h.tong, 0), h.lan_cuoi, k.phien_ban
-            FROM khach_hang k LEFT JOIN (
-              SELECT khach_hang_id, SUM(tong_thanh_toan) tong, MAX(thanh_toan_luc) lan_cuoi
-              FROM hoa_don WHERE trang_thai = 'DA_THANH_TOAN' GROUP BY khach_hang_id
-            ) h ON h.khach_hang_id = k.id
-            WHERE k.trang_thai = 'HOAT_DONG' AND
-              (@q = '' OR k.ho_ten LIKE @like OR k.so_dien_thoai LIKE @like OR CAST(k.id AS CHAR) = @q)
-            ORDER BY k.id DESC LIMIT 100
-            """, r => ReadRow(r, admin), ct, ("@q", search), ("@like", "%" + search + "%"));
-        return rows;
+        var query = db.KhachHangs.AsNoTracking().Where(customer => customer.TrangThai == "HOAT_DONG");
+        if (search.Length != 0)
+        {
+            var pattern = "%" + search + "%";
+            uint? code = uint.TryParse(search, out var parsed) && parsed.ToString() == search
+                ? parsed : null;
+            query = query.Where(customer => EF.Functions.Like(customer.HoTen!, pattern)
+                || EF.Functions.Like(customer.SoDienThoai!, pattern)
+                || customer.Id == code);
+        }
+
+        var rows = await query.OrderByDescending(customer => customer.Id).Take(100)
+            .Select(customer => new
+            {
+                customer.Id,
+                customer.HoTen,
+                customer.SoDienThoai,
+                customer.DiemHienCo,
+                Spending = customer.HoaDons.Where(invoice => invoice.TrangThai == "DA_THANH_TOAN")
+                    .Sum(invoice => (decimal)invoice.TongThanhToan),
+                LastPurchase = customer.HoaDons.Where(invoice => invoice.TrangThai == "DA_THANH_TOAN")
+                    .Max(invoice => (DateTime?)invoice.ThanhToanLuc),
+                customer.PhienBan
+            }).ToListAsync(ct);
+        return rows.Select(row => new CustomerRow(row.Id, row.HoTen!,
+            admin ? row.SoDienThoai! : CustomerRules.MaskPhone(row.SoDienThoai),
+            row.DiemHienCo, (ulong)row.Spending, row.LastPurchase, row.PhienBan)).ToList();
     }
 
     public async Task<CustomerInput> GetInputAsync(uint id, CancellationToken ct)
@@ -38,54 +55,71 @@ public sealed class CustomerService(CuaHangDbContext db)
     {
         Validate(input);
         await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-        if (id.HasValue) await LockAsync(id.Value, ct);
-        var duplicate = await db.DocMotGiaTriAsync("""
-            SELECT id FROM khach_hang WHERE so_dien_thoai = @phone AND (@id IS NULL OR id <> @id)
-            """, ct, ("@phone", input.Phone), ("@id", id));
-        if (duplicate != null)
+        KhachHang customer;
+        if (id is uint customerId)
+        {
+            await LockAsync(customerId, ct);
+            var tracked = db.KhachHangs.Local.SingleOrDefault(row => row.Id == customerId);
+            if (tracked is not null)
+                await db.Entry(tracked).ReloadAsync(ct);
+            customer = tracked ?? await db.KhachHangs.SingleAsync(row => row.Id == customerId, ct);
+            if (customer.PhienBan != input.Version)
+                throw LoiNghiepVu.XungDot(MaLoiChung.XungDotDuLieu, "Khách đã thay đổi. Hãy tải lại trước khi sửa.");
+        }
+        else
+        {
+            customer = new KhachHang { NguoiTaoId = checked((uint)actor), TrangThai = "HOAT_DONG" };
+        }
+        var duplicate = await db.KhachHangs.AsNoTracking()
+            .Where(customer => customer.SoDienThoai == input.Phone && customer.Id != id)
+            .Select(customer => (uint?)customer.Id)
+            .FirstOrDefaultAsync(ct);
+        if (duplicate.HasValue)
             throw LoiNghiepVu.XungDot(MaLoiChung.TrungDuLieu,
-                "Số điện thoại đã tồn tại. Hãy chọn khách đã có.", new { customerId = Convert.ToUInt32(duplicate) });
+                "Số điện thoại đã tồn tại. Hãy chọn khách đã có.", new { customerId = duplicate.Value });
+        customer.HoTen = input.Name.Trim();
+        customer.SoDienThoai = input.Phone;
+        customer.Email = string.IsNullOrWhiteSpace(input.Email) ? null : input.Email.Trim();
+        customer.NgaySinh = input.BirthDate?.Date;
+        customer.GioiTinh = string.IsNullOrEmpty(input.Gender) ? null : input.Gender;
+        if (id.HasValue)
+            customer.PhienBan++;
+        else
+            db.KhachHangs.Add(customer);
+
         try
         {
-            if (id.HasValue)
-            {
-                var changed = await db.ChayAsync("""
-                    UPDATE khach_hang SET ho_ten=@name, so_dien_thoai=@phone, email=@email,
-                    ngay_sinh=@birth, gioi_tinh=@gender, phien_ban=phien_ban+1
-                    WHERE id=@id AND phien_ban=@version AND trang_thai='HOAT_DONG'
-                    """, ct, Parameters(input, id, actor));
-                if (changed != 1) throw LoiNghiepVu.XungDot(MaLoiChung.XungDotDuLieu, "Khách đã thay đổi. Hãy tải lại trước khi sửa.");
-            }
-            else
-            {
-                await db.ChayAsync("""
-                    INSERT INTO khach_hang (ho_ten,so_dien_thoai,email,ngay_sinh,gioi_tinh,nguoi_tao_id)
-                    VALUES (@name,@phone,@email,@birth,@gender,@actor)
-                    """, ct, Parameters(input, null, actor));
-                id = Convert.ToUInt32(await db.DocMotGiaTriAsync("SELECT LAST_INSERT_ID()", ct));
-            }
+            await db.SaveChangesAsync(ct);
         }
-        catch (DbException ex) when (TruyVanCsdl.LaLoiTrungKhoa(ex, "uq_khach_hang_sdt"))
+        catch (DbUpdateException ex) when (ex.InnerException is DbException error
+            && TruyVanCsdl.LaLoiTrungKhoa(error, "uq_khach_hang_sdt"))
         {
+            db.Entry(customer).State = EntityState.Detached;
             throw LoiNghiepVu.XungDot(MaLoiChung.TrungDuLieu, "Số điện thoại đã tồn tại. Hãy tìm lại khách.");
         }
         await tx.CommitAsync(ct);
-        return id!.Value;
+        return customer.Id;
     }
 
     public async Task<CustomerHistory> HistoryAsync(uint id, bool admin, CancellationToken ct)
     {
         var input = await GetInputAsync(id, ct);
-        var invoices = await db.DocDanhSachAsync("""
-            SELECT id,ma_hoa_don,thanh_toan_luc,tong_thanh_toan,diem_cong
-            FROM hoa_don WHERE khach_hang_id=@id ORDER BY thanh_toan_luc DESC,id DESC
-            """, r => new CustomerInvoice(Convert.ToUInt32(r[0]), r.GetString(1), r.GetDateTime(2),
-                Convert.ToUInt64(r[3]), Convert.ToUInt32(r[4])), ct, ("@id", id));
-        var points = await db.DocDanhSachAsync("""
-            SELECT id,loai,so_diem,diem_sau,ly_do,thoi_diem FROM lich_su_diem
-            WHERE khach_hang_id=@id ORDER BY thoi_diem DESC,id DESC
-            """, r => new CustomerPoint(Convert.ToUInt64(r[0]), r.GetString(1), Convert.ToInt32(r[2]),
-                Convert.ToUInt32(r[3]), r.IsDBNull(4) ? null : r.GetString(4), r.GetDateTime(5)), ct, ("@id", id));
+        var invoices = await db.HoaDons
+            .AsNoTracking()
+            .Where(invoice => invoice.KhachHangId == id)
+            .OrderByDescending(invoice => invoice.ThanhToanLuc)
+            .ThenByDescending(invoice => invoice.Id)
+            .Select(invoice => new CustomerInvoice(invoice.Id, invoice.MaHoaDon,
+                invoice.ThanhToanLuc, invoice.TongThanhToan, invoice.DiemCong))
+            .ToListAsync(ct);
+        var points = await db.LichSuDiems
+            .AsNoTracking()
+            .Where(entry => entry.KhachHangId == id)
+            .OrderByDescending(entry => entry.ThoiDiem)
+            .ThenByDescending(entry => entry.Id)
+            .Select(entry => new CustomerPoint(entry.Id, entry.Loai, entry.SoDiem,
+                entry.DiemSau, entry.LyDo, entry.ThoiDiem))
+            .ToListAsync(ct);
         var summary = await db.DocMotDongAsync("""
             SELECT COALESCE(SUM(tong_thanh_toan),0), MAX(thanh_toan_luc)
             FROM hoa_don WHERE khach_hang_id=@id AND trang_thai='DA_THANH_TOAN'
@@ -138,13 +172,6 @@ public sealed class CustomerService(CuaHangDbContext db)
         var value = await db.DocMotGiaTriAsync("SELECT diem_hien_co FROM khach_hang WHERE id=@id AND trang_thai='HOAT_DONG' FOR UPDATE", ct, ("@id", id));
         return value == null ? throw LoiNghiepVu.KhongTimThay("Không tìm thấy khách hàng.") : Convert.ToUInt32(value);
     }
-    private static CustomerRow ReadRow(DbDataReader r, bool admin) => new(Convert.ToUInt32(r[0]), r.GetString(1),
-        admin ? r.GetString(2) : CustomerRules.MaskPhone(r.GetString(2)), Convert.ToUInt32(r[3]),
-        Convert.ToUInt64(r[4]), r.IsDBNull(5) ? null : r.GetDateTime(5), Convert.ToUInt32(r[6]));
-    private static (string, object?)[] Parameters(CustomerInput i, uint? id, int actor) =>
-    [("@name", i.Name.Trim()), ("@phone", i.Phone), ("@email", string.IsNullOrWhiteSpace(i.Email) ? null : i.Email.Trim()),
-     ("@birth", i.BirthDate?.Date), ("@gender", string.IsNullOrEmpty(i.Gender) ? null : i.Gender),
-     ("@id", id), ("@version", i.Version), ("@actor", actor)];
     private static void Validate(CustomerInput input)
     {
         var results = new List<System.ComponentModel.DataAnnotations.ValidationResult>();

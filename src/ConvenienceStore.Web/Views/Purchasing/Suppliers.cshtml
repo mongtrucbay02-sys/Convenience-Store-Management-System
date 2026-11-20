@@ -8,9 +8,9 @@
 <h1>Nhà cung cấp</h1>
 @if (TempData["ThongBao"] is string notice) { <p class="alert alert-success">@notice</p> }
 <a class="btn btn-primary mb-3" asp-action="Edit">Thêm nhà cung cấp</a>
-<form method="get" class="d-flex gap-2 mb-3">
-    <input name="q" value="@ViewBag.Term" aria-label="Tìm nhà cung cấp" placeholder="Tên, mã hoặc số điện thoại">
-    <select name="status" aria-label="Trạng thái">
+<form method="get" class="smartmart-filter-row">
+    <input class="form-control" name="q" value="@ViewBag.Term" aria-label="Tìm nhà cung cấp" placeholder="Tên, mã hoặc số điện thoại">
+    <select class="form-select" name="status" aria-label="Trạng thái">
         <option value="">Tất cả trạng thái</option>
         <option value="HOAT_DONG" selected="@(status == "HOAT_DONG")">Hoạt động</option>
         <option value="NGUNG_HOP_TAC" selected="@(status == "NGUNG_HOP_TAC")">Ngừng hợp tác</option>
@@ -20,7 +20,7 @@
 @if (Model.Count == 0) { <p>Không tìm thấy nhà cung cấp.</p> }
 else
 {
-    <div class="table-responsive"><table class="table">
+    <div class="table-responsive smartmart-data-table" role="region" aria-label="Danh sách nhà cung cấp" tabindex="0"><table class="table table-hover align-middle mb-0">
         <thead><tr><th>Mã và tên</th><th>Liên hệ</th><th>Địa chỉ</th><th>Trạng thái</th><th>Nhập gần nhất</th><th>Thao tác</th></tr></thead>
         <tbody>
         @foreach (var item in Model)

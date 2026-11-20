@@ -6,16 +6,13 @@
     var status = (string?)ViewBag.Status;
 }
 <h1>Phiếu nhập</h1>
-@if (User.HasClaim("quyen", MaQuyen.NhaCungCapQuanLy))
-{
-    <p><a asp-controller="Suppliers" asp-action="Index">Nhà cung cấp</a></p>
-}
-<p><a asp-controller="StockOverview" asp-action="Index">Xem tồn kho</a></p>
-@if (User.HasClaim("quyen", MaQuyen.PhieuNhapLap))
-{
-    <a class="btn btn-primary mb-3" asp-action="Create">Lập phiếu nhập</a>
-}
-<form asp-action="Index" method="get" class="d-flex gap-2 mb-3">
+<nav class="smartmart-action-row" aria-label="Thao tác phiếu nhập">
+    @if (User.HasClaim("quyen", MaQuyen.PhieuNhapLap))
+    {
+        <a class="btn btn-primary" asp-action="Create">Lập phiếu nhập</a>
+    }
+</nav>
+<form asp-action="Index" method="get" class="smartmart-filter-row">
     <input class="form-control" name="q" value="@ViewBag.Term" placeholder="Mã phiếu hoặc nhà cung cấp" aria-label="Tìm phiếu nhập">
     <select class="form-select" name="status" aria-label="Trạng thái phiếu nhập">
         <option value="">Mọi trạng thái</option>
@@ -28,7 +25,8 @@
 @if (Model.Count == 0) { <p>Không tìm thấy phiếu nhập.</p> }
 else
 {
-    <table class="table">
+    <div class="table-responsive smartmart-data-table" role="region" aria-label="Danh sách phiếu nhập" tabindex="0">
+    <table class="table table-hover align-middle mb-0">
         <thead><tr><th>Mã phiếu</th><th>Nhà cung cấp</th><th>Ngày nhập</th><th>Trạng thái</th><th>Tổng tiền</th><th>Người lập</th></tr></thead>
         <tbody>
         @foreach (var row in Model)
@@ -37,6 +35,7 @@ else
         }
         </tbody>
     </table>
+    </div>
 }
 @if (pageNumber > 1) { <a asp-action="Index" asp-route-q="@ViewBag.Term" asp-route-status="@status" asp-route-page="@(pageNumber - 1)">Trang trước</a> }
 @if (ViewBag.HasNext) { <a asp-action="Index" asp-route-q="@ViewBag.Term" asp-route-status="@status" asp-route-page="@(pageNumber + 1)">Trang sau</a> }

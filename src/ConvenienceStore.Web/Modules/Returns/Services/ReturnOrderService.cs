@@ -1,4 +1,4 @@
-﻿
+
 using System.Data;
 using System.Globalization;
 using System.Security.Claims;
@@ -524,10 +524,6 @@ public sealed class ReturnOrderService(
                 "Cần xác nhận hoàn tiền mặt cho khách.");
         }
 
-        // Việc chưa tích hợp KH-06 được xử lý bởi implementation của
-        // IReturnPointsGateway. Nếu gateway chưa sẵn sàng, RecoverAsync
-        // phải ném lỗi nghiệp vụ; transaction hiện tại sẽ rollback toàn bộ.
-
         string period = Now.ToString(
             "yyyyMMdd",
             CultureInfo.InvariantCulture);
@@ -687,7 +683,7 @@ public sealed class ReturnOrderService(
             }
 
             // Giữ nguyên tích hợp thu hồi điểm KH-06.
-            if (preview.PointsBlocked)
+            if (preview.RequiresPointsRecovery)
             {
                 int recovered = await points.RecoverAsync(
                     db,

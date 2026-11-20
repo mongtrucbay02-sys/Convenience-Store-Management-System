@@ -1,13 +1,14 @@
-using ConvenienceStore.Web.Modules.Customers;
+using ConvenienceStore.Web.Modules.Customers.Models;
+using ConvenienceStore.Web.Modules.Customers.Services;
 using ConvenienceStore.Web.Modules.Auth.Security;
 using ConvenienceStore.Web.Services.Pos;
 using ConvenienceStore.Web.Shared.Errors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ConvenienceStore.Web.Controllers;
+namespace ConvenienceStore.Web.Modules.Customers.Controllers;
 
-[Authorize(Roles = "AD,TN")]
+[Authorize(Roles = CustomerRoles.AdminOrCashier)]
 public sealed class CustomersController(CustomerService customers, PosCartService cart) : Controller
 {
     [HttpGet]
@@ -15,26 +16,26 @@ public sealed class CustomersController(CustomerService customers, PosCartServic
     {
         ViewData["Search"] = search;
         ViewData["AttachToCart"] = attachToCart;
-        return View(await customers.SearchAsync(search, User.IsInRole("AD"), ct));
+        return View("~/Modules/Customers/Views/Customers/Index.cshtml", await customers.SearchAsync(search, User.IsInRole(CustomerRoles.Admin), ct));
     }
 
     [HttpGet]
     public IActionResult Create(bool attachToCart = false, string? phone = null) =>
-        View("Edit", new CustomerInput { Phone = phone ?? "", AttachToCart = attachToCart });
+        View("~/Modules/Customers/Views/Customers/Edit.cshtml", new CustomerInput { Phone = phone ?? "", AttachToCart = attachToCart });
 
     [HttpGet]
     public async Task<IActionResult> Edit(uint id, CancellationToken ct)
     {
         ViewData["Id"] = id;
-        return View(await customers.GetInputAsync(id, ct));
+        return View("~/Modules/Customers/Views/Customers/Edit.cshtml", await customers.GetInputAsync(id, ct));
     }
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Save(uint? id, CustomerInput input, CancellationToken ct)
     {
         ViewData["Id"] = id;
-        if (input.AttachToCart && !User.IsInRole("TN")) return Forbid();
-        if (!ModelState.IsValid) return View("Edit", input);
+        if (input.AttachToCart && !User.IsInRole(CustomerRoles.Cashier)) return Forbid();
+        if (!ModelState.IsValid) return View("~/Modules/Customers/Views/Customers/Edit.cshtml", input);
         try
         {
             // Creation and attachment are separate: if attachment fails, the saved customer is offered for selection.
@@ -59,11 +60,11 @@ public sealed class CustomersController(CustomerService customers, PosCartServic
                 return RedirectToAction(nameof(Index), new { search = input.Phone, attachToCart = input.AttachToCart });
             }
             ModelState.AddModelError("", ex.Message);
-            return View("Edit", input);
+            return View("~/Modules/Customers/Views/Customers/Edit.cshtml", input);
         }
     }
 
-    [Authorize(Roles = "TN"), HttpPost, ValidateAntiForgeryToken]
+    [Authorize(Roles = CustomerRoles.Cashier), HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Attach(int? customerId)
     {
         var error = await cart.SetCustomerAsync(customerId);
@@ -73,9 +74,9 @@ public sealed class CustomersController(CustomerService customers, PosCartServic
 
     [HttpGet]
     public async Task<IActionResult> History(uint id, CancellationToken ct) =>
-        View(await customers.HistoryAsync(id, User.IsInRole("AD"), ct));
+        View("~/Modules/Customers/Views/Customers/History.cshtml", await customers.HistoryAsync(id, User.IsInRole(CustomerRoles.Admin), ct));
 
-    [Authorize(Roles = "AD"), HttpPost, ValidateAntiForgeryToken]
+    [Authorize(Roles = CustomerRoles.Admin), HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(uint id, CancellationToken ct)
     {
         try { await customers.DeleteAsync(id, ct); TempData["Success"] = "Đã xóa/ẩn khách hàng và thông tin cá nhân."; }
@@ -83,7 +84,7 @@ public sealed class CustomersController(CustomerService customers, PosCartServic
         return RedirectToAction(nameof(Index));
     }
 
-    [Authorize(Roles = "AD"), HttpPost, ValidateAntiForgeryToken]
+    [Authorize(Roles = CustomerRoles.Admin), HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Adjust(uint id, PointAdjustment input, CancellationToken ct)
     {
         try

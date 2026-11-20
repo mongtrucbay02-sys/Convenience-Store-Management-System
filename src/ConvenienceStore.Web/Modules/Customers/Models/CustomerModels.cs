@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ConvenienceStore.Web.Modules.Customers;
+namespace ConvenienceStore.Web.Modules.Customers.Models;
 
 public sealed class CustomerInput
 {

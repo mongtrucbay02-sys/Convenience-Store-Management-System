@@ -1,8 +1,9 @@
-﻿
+
 using System.Data;
 using System.Security.Claims;
 using ConvenienceStore.Web.Data;
-using ConvenienceStore.Web.Modules.Customers;
+using ConvenienceStore.Web.Modules.Customers.Models;
+using ConvenienceStore.Web.Modules.Customers.Services;
 using ConvenienceStore.Web.Modules.Inventory.Models;
 using ConvenienceStore.Web.Modules.Inventory.Services;
 using ConvenienceStore.Web.Shared.Data;

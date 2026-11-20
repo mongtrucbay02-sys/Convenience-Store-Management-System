@@ -17,5 +17,8 @@
         @foreach (var item in Model) { <option value="@item.Id">@item.Code · @item.Name (ngưỡng @item.Threshold)</option> }
     </select></label>
     <label>Ngưỡng mới <input name="threshold" type="number" min="0" required></label>
-    <div><button class="btn btn-primary">Lưu ngưỡng</button> <a asp-action="Index">Quay lại</a></div>
+    <div class="smartmart-action-row">
+        <button class="btn btn-primary" type="submit">Lưu ngưỡng</button>
+        <partial name="~/Views/Inventory/_BackToStock.cshtml" />
+    </div>
 </form>

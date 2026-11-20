@@ -3,16 +3,16 @@
 .ret-or { padding-bottom: 14px; color: #64748b; }
 .ret-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
 .ret-actions button { cursor: pointer; font: inherit; white-space: nowrap; }
-.ret-actions a, .ret-pager a { color: #15588e; }
+.ret-actions a, .ret-pager a { color: #015d47; }
 .ret-alert { padding: 14px 18px; margin-top: 20px; border: 1px solid; border-radius: 12px; line-height: 1.6; }
 .ret-danger { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
 .ret-warning { background: #fffbeb; border-color: #fde68a; color: #854d0e; }
 .ret-result-count { margin: 24px 0 10px; }
 .ret-invoice summary { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; justify-content: space-between; cursor: pointer; padding: 4px 0; }
 .ret-invoice summary strong { font-size: 18px; }
-.ret-invoice summary::after { content: "Xem chi tiết ↓"; font-size: 13px; color: #15588e; }
+.ret-invoice summary::after { content: "Xem chi tiết ↓"; font-size: 13px; color: #015d47; }
 .ret-invoice[open] summary::after { content: "Thu gọn ↑"; }
-.ret-invoice summary:focus-visible, .ret-actions a:focus-visible, .ret-pager a:focus-visible { outline: 3px solid #1769aa; outline-offset: 5px; }
+.ret-invoice summary:focus-visible, .ret-actions a:focus-visible, .ret-pager a:focus-visible { outline: 3px solid #a53908; outline-offset: 5px; }
 .ret-summary-meta, .ret-table small, .ret-meta span, .ret-meta small { display: block; margin-top: 6px; color: #64748b; font-size: 13px; }
 .ret-badge { border-radius: 24px; padding: 7px 12px; font-size: 12px; font-weight: 700; }
 .ret-badge-danger { background: #ffe4e6; color: #9f1239; }
@@ -21,7 +21,7 @@
 .ret-meta strong { display: block; margin-top: 8px; }
 .ret-table-wrap { overflow-x: auto; margin: 20px 0; }
 .ret-table { border-collapse: collapse; width: 100%; min-width: 780px; text-align: left; }
-.ret-table th { background: #f1f5f9; color: #475569; font-size: 13px; }
+.ret-table th { background: #fff5e4; color: #475569; font-size: 13px; }
 .ret-table th, .ret-table td { padding: 14px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
 .ret-number { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ret-valid { color: #166534; }

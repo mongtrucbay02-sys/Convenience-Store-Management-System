@@ -1,4 +1,4 @@
-﻿/* POS-10: màn hình Hóa đơn. Các lớp hero, panel, eyebrow, empty, primary dùng chung từ admin-layout.css. */
+/* POS-10: màn hình Hóa đơn. Các lớp hero, panel, eyebrow, empty, primary dùng chung từ admin-layout.css. */
 
 .inv-filter {
     display: flex;
@@ -43,8 +43,8 @@
     height: 40px;
     padding: 0 16px;
     border-radius: 9px;
-    background: #e8eef8;
-    color: #1f3a63;
+    background: #eaf4eb;
+    color: #063f31;
     font-weight: 600;
     text-decoration: none;
 }
@@ -84,7 +84,7 @@
     .inv-table th {
         text-align: left;
         padding: 13px 16px;
-        background: #f3f6fb;
+        background: #fff5e4;
         color: #3a4b60;
         font-size: 13px;
         white-space: nowrap;
@@ -101,7 +101,7 @@
     }
 
     .inv-table tfoot td {
-        background: #f8fafd;
+        background: #fffaf2;
         border-top: 2px solid #dfe7f1;
     }
 
@@ -146,7 +146,7 @@
 }
 
     .inv-pager a {
-        color: #1f5fbf;
+        color: #015d47;
         text-decoration: none;
         font-weight: 600;
     }

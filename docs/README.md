@@ -63,9 +63,11 @@ docs/
 │       ├── document-template.md       Mẫu tài liệu
 │       └── meeting-minutes.md         Mẫu biên bản họp
 ├── 01-survey/                         Khảo sát hiện trạng (Giai đoạn 1 — bản GIẢ LẬP)
-│   ├── README-step-5.md               Hướng dẫn Bước 5
-│   ├── analysis/                      Problem Statement, bối cảnh, ma trận bằng chứng, bàn giao
-│   └── validation/                    Cổng duyệt Problem Statement
+│   ├── survey-scope.md · survey-plan.md · survey-questionnaire.md     Bước 1–2
+│   ├── survey-execution-record.md · evidence-register.md · evidence/  Bước 3
+│   ├── interviews/ · observations/    Mẫu + biên bản INT-001…003, OBS-001…003
+│   ├── analysis/                      Findings, As-is, Problem Analysis, Problem Statement, bàn giao
+│   └── validation/                    Xác minh findings, cổng duyệt Problem Statement
 ├── 02-product-definition/             Tầm nhìn, người dùng, phạm vi MVP
 ├── 03-requirements/                   SRS, Use Case, MoSCoW, NFR
 ├── 04-system-design/

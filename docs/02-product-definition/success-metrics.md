@@ -21,12 +21,16 @@
 | M-07 | Khả năng tra cứu giao dịch | Test tra cứu theo mã/ngày và bản sao hóa đơn không tạo giao dịch mới | Chưa có | Pass các case được duyệt | SC-SIM-05 |
 | M-08 | Đối soát doanh thu | So dữ liệu test đã chốt và các giao dịch đủ điều kiện | UNKNOWN | TBD | SC-SIM-04 |
 | M-09 | Dễ dùng trên thiết bị mục tiêu | Task walkthrough với vai trò được chấp thuận | UNKNOWN | TBD | N-SIM-08 |
-| M-10 | Requirement coverage của MVP | US/AC được liên kết với test và demo evidence | Chưa có | 100% AC **MVP đã phê duyệt có trạng thái** | Scope/03 |
+| M-10a | Độ phủ truy vết AC của MVP | Số AC MVP đã phê duyệt có trạng thái **và** bằng chứng kiểm thử liên kết / tổng AC MVP đã phê duyệt | Chưa có | 100% | Scope/03, 06 |
+| M-10b | Tỷ lệ AC đạt (PASS) | Số AC MVP đã phê duyệt có kết quả PASS trên bản build nghiệm thu / tổng AC MVP đã phê duyệt | Chưa có | TBD (đặt khi chốt kế hoạch nghiệm thu) | 06, 08 |
+| M-11 | Bán hàng trừ tồn nhất quán (D-01) | Test tích hợp: sau giao dịch hoàn tất, tồn giảm đúng số lượng bán và có một bản ghi biến động tương ứng; giao dịch chưa hoàn tất không làm đổi tồn | Chưa có | Pass các case được duyệt | scope.md D-01; SC-SIM-01 |
 
-`100%` trong M-03 và M-10 là **tiêu chí kiểm tra độ bao phủ/độ đúng trên tập test đã phê duyệt**, không khẳng định phần mềm đạt 100% ở môi trường thực.
+`100%` trong M-03 và M-10a là **tiêu chí kiểm tra độ bao phủ/độ đúng trên tập test đã phê duyệt**, không khẳng định phần mềm đạt 100% ở môi trường thực.
+
+**Phân biệt M-10a và M-10b:** M-10a chỉ đo khả năng truy vết (mỗi AC có trạng thái và bằng chứng); M-10b đo kết quả kiểm thử thực tế. **Nghiệm thu MVP dựa trên M-10b và M-11**, không dựa trên M-10a.
 
 ## 3. Đánh giá theo luồng mẫu
-1. **POS:** 2×12.000 + 9.000 = 33.000; 50.000−33.000=17.000, tra được mã giao dịch.
+1. **POS:** 2×12.000 + 9.000 = 33.000; 50.000−33.000=17.000, tra được mã giao dịch; tồn nước giảm 2 và snack giảm 1 sau khi giao dịch hoàn tất (D-01, M-11).
 2. **Receiving:** phiếu 12, thực nhận 10; thông tin chênh -2 được lưu; chỉ cập nhật tồn theo số đã xác nhận.
 3. **Inventory:** tồn 18, đếm 17; pending chưa thay đổi tồn; sau quyết định hợp lệ mới xử lý theo policy.
 4. **Security:** thu ngân không tự ý đổi giá/hủy hóa đơn đã trả, nếu policy cuối cùng xác nhận điều này.

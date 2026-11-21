@@ -10,7 +10,8 @@
 **Narrative đề xuất:** Khách mua hai chai nước và một gói snack. Một nhãn không quét được; thu ngân tìm theo tên, chọn đúng mặt hàng, kiểm số lượng và giá, sau đó tiếp tục thanh toán. Nếu sản phẩm không có trong danh mục hoặc bị ngừng bán, hệ thống cần báo rõ và không tự thêm hàng tùy ý.  
 **Dữ liệu minh họa từ diễn tập:** 2×12.000 + 9.000 = 33.000đ; khách đưa 50.000đ, trả 17.000đ. Không có bằng chứng giao dịch thực tế.  
 **Trace:** PS-02 → N-SIM-01 → FC-SIM-01, FC-SIM-04.  
-**Cần xác minh:** Cách xử lý hàng thiếu tồn, sản phẩm không xác định và điểm ghi giảm tồn.
+**Quyết định liên quan:** D-01 ([scope.md](scope.md)) — giao dịch hoàn tất trừ tồn chính thức (đề xuất nội bộ).  
+**Cần xác minh:** Cách xử lý hàng thiếu tồn và sản phẩm không xác định.
 
 ## SC-SIM-02 — Nhập hàng với chênh lệch giữa phiếu và thực nhận
 **Actor:** PP-03 + PP-01. **Goal:** Ghi rõ chênh lệch và chỉ cập nhật hàng đã được chấp thuận.  

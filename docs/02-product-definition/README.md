@@ -33,7 +33,8 @@ Xác định sản phẩm Smart Mart dành cho ai, giải quyết vấn đề n�
 - [ ] Có phỏng vấn/quan sát người dùng thật và bằng chứng được phép sử dụng.
 - [ ] Các As-is, Findings và Problem Statement thực được xác minh.
 - [ ] Có review Product Vision và xác nhận loại nhu cầu, ưu tiên, ranh giới MVP.
-- [ ] Làm rõ POS→Inventory, receive→Inventory, kiểm kê/approval và xác minh chuyển khoản.
+- [ ] Làm rõ POS→Inventory, receive→Inventory, kiểm kê/approval và xác minh chuyển khoản. *(POS/NH→Inventory: đã có đề xuất D-01 trong [scope.md](scope.md), chờ duyệt.)*
+- [ ] Các cổng `G2-01…05` trong [scope.md §5](scope.md) có người quyết định, ngày review và kết luận.
 - [ ] Đồng bộ scope với Issue/PR/implementation thực tế, có người chịu trách nhiệm phê duyệt.
 
 **Kết luận:** Đầy đủ để học tập và lập kế hoạch; chưa vượt cổng phê duyệt khách hàng thực tế.

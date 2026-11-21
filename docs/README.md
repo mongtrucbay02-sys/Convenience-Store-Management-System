@@ -131,7 +131,7 @@ Mỗi yêu cầu phải lần được theo cả hai chiều trên trục chính
 ```
 Khảo sát (01): INT/OBS → F-SIM (finding) → P-SIM (problem) → PS (problem statement) → N-SIM (need candidate)
   → Định nghĩa sản phẩm (02): FC-SIM (feature candidate) → SC-SIM (scenario) → MVP proposal (I0–I3)
-  → Yêu cầu / Use Case (UC-xx, mã chức năng SP-01, POS-03…)
+  → Yêu cầu (03): US (user story) → FR (functional requirement) → AC (acceptance criteria) · BR · NFR · UC-CAND
   → Thiết kế (bảng CSDL, endpoint API, màn hình) → Code (module trong src/) → Test case (TC-xx) → Nghiệm thu (UAT-xx)
 ```
 

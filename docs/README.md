@@ -62,7 +62,10 @@ docs/
 │   └── templates/
 │       ├── document-template.md       Mẫu tài liệu
 │       └── meeting-minutes.md         Mẫu biên bản họp
-├── 01-survey/                         Khảo sát hiện trạng
+├── 01-survey/                         Khảo sát hiện trạng (Giai đoạn 1 — bản GIẢ LẬP)
+│   ├── README-step-5.md               Hướng dẫn Bước 5
+│   ├── analysis/                      Problem Statement, bối cảnh, ma trận bằng chứng, bàn giao
+│   └── validation/                    Cổng duyệt Problem Statement
 ├── 02-product-definition/             Tầm nhìn, người dùng, phạm vi MVP
 ├── 03-requirements/                   SRS, Use Case, MoSCoW, NFR
 ├── 04-system-design/
@@ -124,7 +127,8 @@ Mỗi tài liệu Markdown mới mở đầu bằng khối thông tin (xem [mẫ
 Mỗi yêu cầu phải lần được theo cả hai chiều trên trục chính:
 
 ```
-Phát hiện khảo sát (KS-xx) → Yêu cầu / Use Case (UC-xx, mã chức năng SP-01, POS-03…)
+Khảo sát: INT/OBS → F (finding) → P (problem) → PS (problem statement) → N (need candidate)
+  → Yêu cầu / Use Case (UC-xx, mã chức năng SP-01, POS-03…)
   → Thiết kế (bảng CSDL, endpoint API, màn hình) → Code (module trong src/) → Test case (TC-xx) → Nghiệm thu (UAT-xx)
 ```
 

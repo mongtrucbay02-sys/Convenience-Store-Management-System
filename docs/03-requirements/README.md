@@ -23,6 +23,6 @@
 > Các tài liệu đánh dấu "đã có ngoài repo" được ghi nhận trong `04-system-design/database/product-purchase/design-notes.md` là đầu vào nhưng chưa nằm trong repository. Đưa chúng vào đây giúp các tài liệu thiết kế trích dẫn được trực tiếp.
 
 ## Tiêu chí hoàn thành
-- [ ] Mỗi yêu cầu có mã, mức ưu tiên và nguồn khảo sát (`KS-xx`).
+- [ ] Mỗi yêu cầu có mã, mức ưu tiên và nguồn khảo sát (`PS-xx` / `N-SIM-xx` ở `01-survey`).
 - [ ] Ma trận truy vết ở `00-project-management/traceability-matrix.md` có cột Yêu cầu đầy đủ.
 - [ ] Khi PR làm lệch đặc tả, cập nhật tài liệu trong thư mục này (theo checklist PR).

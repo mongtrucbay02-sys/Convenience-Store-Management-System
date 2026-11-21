@@ -5,7 +5,7 @@
 
 Mỗi dòng là một chức năng/yêu cầu. Điền đường dẫn tương đối tới tài liệu hoặc mã nguồn. Ô để trống nghĩa là chưa có — chính là việc còn thiếu cần làm.
 
-| Mã chức năng | Mô tả ngắn | Ưu tiên (MoSCoW) | Nguồn khảo sát (01) | Yêu cầu / UC (03) | Thiết kế (04) | Code (05 → `src/`) | Test (06 → `tests/`) | Nghiệm thu (08) | Trạng thái |
+| Mã chức năng | Mô tả ngắn | Ưu tiên (MoSCoW) | Nguồn khảo sát (01: PS / N-SIM) | Yêu cầu / UC (03) | Thiết kế (04) | Code (05 → `src/`) | Test (06 → `tests/`) | Nghiệm thu (08) | Trạng thái |
 |---|---|---|---|---|---|---|---|---|---|
 | SP-01…SP-09 | Sản phẩm / Danh mục | | | | `04-system-design/database/product-purchase/` | `src/ConvenienceStore.Web/Modules/Products/` | | | |
 | NH-01…NH-09 | Nhập hàng / Nhà cung cấp | | | | `04-system-design/database/product-purchase/` | | | | |

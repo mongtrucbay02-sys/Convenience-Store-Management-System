@@ -21,4 +21,4 @@ Xác nhận sản phẩm **đúng nhu cầu người dùng** — khép vòng v�
 
 ## Tiêu chí hoàn thành
 - [ ] Mỗi yêu cầu MVP có kết quả nghiệm thu, cập nhật vào cột Nghiệm thu của ma trận truy vết.
-- [ ] Đối chiếu lại với các phát hiện `KS-xx` ở `01`: vấn đề nào đã giải quyết, vấn đề nào chưa.
+- [ ] Đối chiếu lại với Problem Statement `PS-01…05` và câu hỏi xác minh `RV-01…08` ở `01-survey`: vấn đề nào đã giải quyết, vấn đề nào chưa.

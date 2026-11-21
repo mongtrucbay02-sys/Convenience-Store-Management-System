@@ -10,7 +10,7 @@
 
 ## 1. Bối cảnh vấn đề (Problem Context)
 
-Theo *tình huống phỏng vấn và quan sát mô phỏng* của Bước 3–4, cửa hàng thực hiện các nghiệp vụ bán hàng tại quầy, nhập hàng, kiểm kê tồn kho và đối soát cuối ngày với sự tham gia của ba vai trò. Một số hoạt động cần tra cứu, đối chiếu và xác nhận qua nhiều bước. Những công cụ được nhắc đến trong kịch bản gồm ứng dụng bán hàng tại quầy, chứng từ nhận hàng và bảng tính; hiện chưa kiểm tra được công cụ thực tế, cấu hình hay mức độ phổ biến ngoài đời. [Nguồn:](source-traceability-reference.md) [survey-findings](survey-findings.md), [as-is-sales](as-is-sales.md), [as-is-purchasing](as-is-purchasing.md), [as-is-inventory](as-is-inventory.md), [as-is-daily-close](as-is-daily-close.md).
+Theo *tình huống phỏng vấn và quan sát mô phỏng* của Bước 3–4, cửa hàng thực hiện các nghiệp vụ bán hàng tại quầy, nhập hàng, kiểm kê tồn kho và đối soát cuối ngày với sự tham gia của ba vai trò. Một số hoạt động cần tra cứu, đối chiếu và xác nhận qua nhiều bước. Những công cụ được nhắc đến trong kịch bản gồm ứng dụng bán hàng tại quầy, chứng từ nhận hàng và bảng tính; hiện chưa kiểm tra được công cụ thực tế, cấu hình hay mức độ phổ biến ngoài đời. [Nguồn:](source-traceability.md) [survey-findings](survey-findings.md), [as-is-sales](as-is-sales.md), [as-is-purchasing](as-is-purchasing.md), [as-is-inventory](as-is-inventory.md), [as-is-daily-close](as-is-daily-close.md).
 
 ## 2. Các vấn đề trọng tâm được gợi ra bởi mô phỏng
 

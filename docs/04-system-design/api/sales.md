@@ -436,7 +436,7 @@ paths:
           application/json:
             schema:
               type: object
-              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+              description: DTO cụ thể trong docs/04-system-design/api/sales.md hoặc returns.md
       operationId: tamGiuGio
       security:
       - cookieAuth: []
@@ -476,7 +476,7 @@ paths:
           application/json:
             schema:
               type: object
-              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+              description: DTO cụ thể trong docs/04-system-design/api/sales.md hoặc returns.md
       operationId: goiLaiGio
       security:
       - cookieAuth: []
@@ -664,7 +664,7 @@ paths:
           application/json:
             schema:
               type: object
-              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+              description: DTO cụ thể trong docs/04-system-design/api/sales.md hoặc returns.md
       operationId: huyHoaDon
       security:
       - cookieAuth: []
@@ -698,7 +698,7 @@ paths:
           application/json:
             schema:
               type: object
-              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+              description: DTO cụ thể trong docs/04-system-design/api/sales.md hoặc returns.md
       operationId: taoPhieuTra
       security:
       - cookieAuth: []
@@ -760,7 +760,7 @@ paths:
           application/json:
             schema:
               type: object
-              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+              description: DTO cụ thể trong docs/04-system-design/api/sales.md hoặc returns.md
       operationId: doiHang
       security:
       - cookieAuth: []
@@ -800,7 +800,7 @@ paths:
           application/json:
             schema:
               type: object
-              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+              description: DTO cụ thể trong docs/04-system-design/api/sales.md hoặc returns.md
       operationId: hoanTien
       security:
       - cookieAuth: []
@@ -840,7 +840,7 @@ paths:
           application/json:
             schema:
               type: object
-              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+              description: DTO cụ thể trong docs/04-system-design/api/sales.md hoặc returns.md
       operationId: xuLyTonHangTra
       security:
       - cookieAuth: []
@@ -881,7 +881,7 @@ paths:
           application/json:
             schema:
               type: object
-              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+              description: DTO cụ thể trong docs/04-system-design/api/sales.md hoặc returns.md
       operationId: duyetDoiTraNgoaiLe
       security:
       - cookieAuth: []
@@ -1003,7 +1003,7 @@ paths:
           application/json:
             schema:
               type: object
-              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+              description: DTO cụ thể trong docs/04-system-design/api/sales.md hoặc returns.md
       operationId: suaChinhSachDoiTra
       security:
       - cookieAuth: []

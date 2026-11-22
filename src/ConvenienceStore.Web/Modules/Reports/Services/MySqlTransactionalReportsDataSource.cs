@@ -25,7 +25,7 @@ public sealed class MySqlTransactionalReportsDataSource(CuaHangDbContext db)
             LEFT JOIN ton_kho k ON k.san_pham_id = p.id
             ORDER BY p.id
             """, reader => new ReportProductFact(Int64(reader, "product_id"), Text(reader, "product_name"),
-            Int32(reader, "category_id"), Text(reader, "category_name"), RoundedInt64(reader, "unit_cost"),
+            Int32(reader, "category_id"), Text(reader, "category_name"), Convert.ToDecimal(reader["unit_cost"], CultureInfo.InvariantCulture),
             Int32(reader, "reorder_point"), Int32(reader, "current_stock")), cancellationToken);
 
     public Task<IReadOnlyList<ReportCancelledOrderFact>> GetCancelledOrdersAsync(

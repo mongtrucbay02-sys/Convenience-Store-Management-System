@@ -16,6 +16,8 @@
     var actionName = Model.Code switch { "BC-02" => "Revenue", "BC-03" => "Products", "BC-04" => "Categories", "BC-05" => "Cashiers", "BC-06" => "Inventory", "BC-07" => "Purchases", _ => "GrossProfit" };
     var categories = ViewData["ReportCategories"] as Microsoft.AspNetCore.Mvc.Rendering.SelectListItem[];
     var suppliers = ViewData["ReportSuppliers"] as Microsoft.AspNetCore.Mvc.Rendering.SelectListItem[];
+    var customRange = string.Equals(Model.Query.Period, "custom", StringComparison.OrdinalIgnoreCase)
+        || Model.Range.Period == "custom";
 }
 
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
@@ -27,15 +29,15 @@
     <div class="row g-2 align-items-end">
         <div class="col-sm-6 col-lg-2"><label class="form-label" for="period">Khoảng thời gian</label>
             <select class="form-select" id="period" name="Period">
-                <option value="today" selected="@(Model.Query.Period == "today")">Hôm nay</option>
-                <option value="last7days" selected="@(Model.Query.Period == "last7days")">7 ngày</option>
-                <option value="thisMonth" selected="@(Model.Query.Period == "thisMonth")">Tháng này</option>
-                <option value="lastMonth" selected="@(Model.Query.Period == "lastMonth")">Tháng trước</option>
-                <option value="custom" selected="@(Model.Query.Period == "custom")">Tùy chọn</option>
+                <option value="today" selected="@(!customRange && Model.Query.Period == "today")">Hôm nay</option>
+                <option value="last7days" selected="@(!customRange && Model.Query.Period == "last7days")">7 ngày</option>
+                <option value="thisMonth" selected="@(!customRange && Model.Query.Period == "thisMonth")">Tháng này</option>
+                <option value="lastMonth" selected="@(!customRange && Model.Query.Period == "lastMonth")">Tháng trước</option>
+                <option value="custom" selected="@customRange">Tùy chọn</option>
             </select>
         </div>
-        <div class="col-sm-6 col-lg-2"><label class="form-label" for="from">Từ ngày</label><input class="form-control" id="from" type="date" name="From" value="@(Model.Query.From?.ToString("yyyy-MM-dd") ?? Model.Range.From.ToString("yyyy-MM-dd"))" /></div>
-        <div class="col-sm-6 col-lg-2"><label class="form-label" for="to">Đến ngày</label><input class="form-control" id="to" type="date" name="To" value="@(Model.Query.To?.ToString("yyyy-MM-dd") ?? Model.Range.To.ToString("yyyy-MM-dd"))" /></div>
+        <div class="col-sm-6 col-lg-2"><label class="form-label" for="from">Từ ngày</label><input class="form-control" id="from" type="date" name="From" disabled="@(!customRange)" value="@(Model.Query.From?.ToString("yyyy-MM-dd") ?? Model.Range.From.ToString("yyyy-MM-dd"))" /></div>
+        <div class="col-sm-6 col-lg-2"><label class="form-label" for="to">Đến ngày</label><input class="form-control" id="to" type="date" name="To" disabled="@(!customRange)" value="@(Model.Query.To?.ToString("yyyy-MM-dd") ?? Model.Range.To.ToString("yyyy-MM-dd"))" /></div>
         @if (Model.Code == "BC-02")
         {
             <div class="col-sm-6 col-lg-2"><label class="form-label" for="groupBy">Nhóm theo</label><select class="form-select" name="GroupBy" id="groupBy"><option value="day" selected="@(Model.Query.GroupBy == "day")">Ngày</option><option value="week" selected="@(Model.Query.GroupBy == "week")">Tuần</option><option value="month" selected="@(Model.Query.GroupBy == "month")">Tháng</option></select></div>
@@ -173,4 +175,16 @@
     @if (Model.Rows.Count == 0){<div class="text-muted py-3">Không có dữ liệu trong khoảng đã chọn</div>}
 </div></section>
 
-<p class="small text-muted mt-2 mb-0">Nguồn đang dùng: dữ liệu demo 60 ngày. Sẽ chuyển sang truy vấn giao dịch/thẻ kho khi schema NH/POS/KHO được tích hợp.</p>
+<p class="small text-muted mt-2 mb-0">Số liệu theo kỳ đã chọn (UTC+7). Doanh thu và giá vốn sử dụng dữ liệu giao dịch lưu tại thời điểm phát sinh.</p>
+
+@section Scripts {
+    <script>
+        (() => {
+            const period = document.getElementById('period');
+            const dates = [document.getElementById('from'), document.getElementById('to')];
+            const sync = () => dates.forEach(input => input.disabled = period.value !== 'custom');
+            period.addEventListener('change', sync);
+            sync();
+        })();
+    </script>
+}

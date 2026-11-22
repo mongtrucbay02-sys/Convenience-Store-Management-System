@@ -103,7 +103,7 @@ public sealed class MySqlPromotionDataSource(CuaHangDbContext db, IHttpContextAc
     {
         ["@id"]=r.Id,["@code"]=r.Code,["@name"]=r.Name,["@description"]=r.Description,
         ["@type"]=r.DiscountType==DiscountType.Percent?"PHAN_TRAM":"SO_TIEN",["@value"]=r.DiscountValue,
-        ["@max"]=r.MaxDiscountAmount ?? 0,["@start"]=DbDate(r.StartAt),["@end"]=DbDate(r.EndAt),
+        ["@max"]=r.MaxDiscountAmount,["@start"]=DbDate(r.StartAt),["@end"]=DbDate(r.EndAt),
         ["@members"]=r.MembersOnly,["@status"]=r.Status switch {PromotionStatus.Draft=>"NHAP",PromotionStatus.Active=>"DA_KICH_HOAT",PromotionStatus.Paused=>"TAM_DUNG",_=>"DA_KET_THUC"}
     };
     private static PromotionRecord ToRecord(PromotionRow r,IReadOnlyList<ProductRefDto> products)=>new(

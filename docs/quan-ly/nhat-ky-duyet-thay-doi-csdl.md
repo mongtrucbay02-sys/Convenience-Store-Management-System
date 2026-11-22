@@ -1,8 +1,29 @@
-# Nhật ký duyệt thay đổi CSDL (T6-R1, T7-R1)
+# Nhật ký duyệt thay đổi CSDL (T4-09, T5-R1, T6-R1, T7-R1)
 
 Theo Kế hoạch v3 mục 1.4: mọi thay đổi cấu trúc CSDL phải đi qua tệp migration trong pull request và được #1 duyệt; không ai sửa trực tiếp CSDL dùng chung. Migration nằm ở `src/ConvenienceStore.Web/Data/Migrations/`. CODEOWNERS trước đây ghi nhầm `/src/ConvenienceStore.Web/Migrations/` nên PR có migration không tự gán #1; PR này sửa lại đường dẫn.
 
 Nguồn chuẩn của cấu trúc CSDL: `docs/db/schema_v1.sql` (ERD v1, 18/10/2026) và migration `InitialCreate` trên `develop`, sinh bằng `CuaHangDbContext` (scaffold từ CSDL, ADR-001 mục 3.8). Thay đổi mới viết thành migration tiếp theo của `CuaHangDbContext`, không tạo DbContext thứ hai.
+
+## Lượt rà tuần 4 (19/10 → 25/10/2026) – ghi bổ sung ngày 22/11/2026 (#31, T4-09)
+
+Tuần 4 không có lượt rà nào được ghi lại đúng hạn. Bảng dưới đây rà lại theo lịch sử pull request.
+
+| PR | Tác giả | Nhánh đích | Thay đổi CSDL | Kết luận | Ghi chú |
+| --- | --- | --- | --- | --- | --- |
+| #129 [T4-27] POS-09 | #3 Hoài | `develop` | Tệp SQL rời `docs/database/migrations/20261025_pos09_cancelled_orders.sql` (tạo 25/10) | Không được rà trong tuần 4; rà ngày 02/11: **không duyệt** | Xem lượt rà 02/11. PR vẫn đang mở |
+
+Bảng task v3 (tệp Excel đính kèm issue #2, #118) không được cập nhật trong tuần 4. Bảng này không nằm trong repo; từ đây trạng thái task theo dõi bằng issue GitHub.
+
+## Lượt rà tuần 5 (26/10 → 01/11/2026) – ghi bổ sung ngày 22/11/2026 (#88, T5-R1)
+
+| PR | Tác giả | Nhánh đích | Thay đổi CSDL | Kết luận | Ghi chú |
+| --- | --- | --- | --- | --- | --- |
+| #131 [T3-11] Chuyển khung máy chủ sang MySQL 9.7.2 | #1 Thăng | `develop` (gộp 27/10) | `CuaHangDbContext`, migration `InitialCreate` và `SchemaV1`, `docs/db/schema_v1.sql` và các script kiểm thử | Gộp **không có người duyệt** | Người viết cũng là người duyệt CSDL, nên không có duyệt độc lập. Cấu trúc khớp ERD v1 (đối chiếu lại ở lượt 02/11 khi so với #168: 28 bảng, 3 view, 10 trigger, 53 CHECK) |
+| #132, #134, #135, #136, #137, #138 | #1 Thăng | `develop` (gộp 27/10) | Chứa lại nguyên các tệp CSDL của #131 (các PR xếp chồng), không thêm migration mới | Gộp **không có người duyệt** | Không đổi cấu trúc CSDL so với #131 |
+| #130 Code First baseline | #2 Yến | `main` | `ApplicationDbContext` riêng, 3 migration "SchemaProbe" | Không được rà trong tuần 5; rà ngày 02/11: **không duyệt** | Xem lượt rà 02/11 |
+| #168 Complete Code First Schema | #2 Yến | `main` | Như #130, đủ các bảng | Không được rà trong tuần 5; rà ngày 02/11: **không duyệt** | Xem lượt rà 02/11. PR vẫn đang mở |
+
+Kết luận tuần 5: các thay đổi CSDL đã gộp trong tuần đều do #1 viết và tự gộp, không có người duyệt thứ hai. Bảng task v3 không được cập nhật.
 
 ## Lượt rà 02/11/2026 (tuần 6)
 
@@ -19,7 +40,27 @@ Rà toàn bộ pull request đang mở có tệp migration, `.sql`, DbContext ho
 
 Kết quả: không có thay đổi CSDL nào được gộp mà chưa duyệt. Không có migration mới nào cần thêm vào `CuaHangDbContext` trong tuần 6. T-KHO-SV2 (#140) không đổi cấu trúc CSDL.
 
-## Mẫu ghi cho các lượt sau (T7-R1 và về sau)
+Bổ sung ngày 22/11/2026: lượt rà trên bỏ sót **#204** `[DB] Optimistic concurrency cho DanhMuc` (#2 Yến, sửa `CuaHangDbContext` và thêm test), tạo và gộp ngay trong ngày 02/11, không có người duyệt. Thay đổi chỉ cấu hình `IsConcurrencyToken()`, không đổi cấu trúc bảng.
+
+## Lượt rà tuần 7 (07/11 → 13/11/2026) – ghi bổ sung ngày 22/11/2026 (#172, T7-R1)
+
+| Ngày | PR | Tác giả | Thay đổi CSDL | Kết luận | Ghi chú |
+| --- | --- | --- | --- | --- | --- |
+| 10/11 | #207 `[DB,Fix] Enforce DanhMuc optimistic concurrency` | #2 Yến | `CuaHangDbContext` (token concurrency), test tích hợp | Gộp không có người duyệt; không đổi cấu trúc bảng | Bằng chứng test trong PR (6/6) chạy trên MySQL 8.4, chưa phải MySQL 9.7.2 như tiêu chí 5 |
+| 12/11 | #217 `feat(pos-12)` | #3 Hoài | Migration mới `20261112160000_Pos12CancelInvoice`: bảng `hoan_tien_hoa_don` và 2 trigger | Gộp 15/11, chỉ #5 duyệt, **chưa qua duyệt CSDL** | Đạt tiêu chí 1, 2 (có `Up()`/`Down()`, sinh cho `CuaHangDbContext`). **Chưa đạt tiêu chí 3**: bảng không có trong ERD v1, `docs/db/schema_v1.sql` không được cập nhật, không có issue "thay đổi yêu cầu" |
+
+## Bàn giao (14/11 → 22/11/2026)
+
+Ghi lại để trưởng nhóm mới (#5 Trung) tiếp tục rà.
+
+| Ngày | PR / commit | Tác giả | Thay đổi CSDL | Hiện trạng | Ghi chú |
+| --- | --- | --- | --- | --- | --- |
+| 14/11 | #219 Hợp nhất có chọn lọc lược đồ PR #168 | #2 Yến | `CuaHangDbContext`, test cấu trúc | Gộp 15/11, #5 duyệt | Chưa có lượt duyệt CSDL ghi nhận |
+| 14/11 | #220 Ánh xạ cột sinh tự động | #2 Yến | `CuaHangDbContextModelSnapshot.cs` | Gộp 15/11, #5 duyệt | Chưa có lượt duyệt CSDL ghi nhận |
+| 17/11 | Commit `ea4ecee` "fix: synchronize return cash ledger and tests" | #3 Hoài | Migration mới `20261112170000_CashLedger`: bảng `quy_tien_mat`, `giao_dich_tien_mat` | **Đẩy thẳng vào `develop`, không qua pull request** | Có `Up()`/`Down()`. **Chưa đạt tiêu chí 3**: bảng không có trong ERD v1, `schema_v1.sql` không được cập nhật, không có issue "thay đổi yêu cầu" |
+| — | #129, #168 | #3 Hoài, #2 Yến | Xem lượt rà 02/11 | Vẫn đang mở dù đã kết luận không duyệt | |
+
+## Mẫu ghi cho các lượt sau
 
 | Ngày | PR | Tác giả | Thay đổi CSDL | Kết luận | Ghi chú |
 | --- | --- | --- | --- | --- | --- |

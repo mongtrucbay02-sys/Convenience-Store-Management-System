@@ -9,6 +9,7 @@ Closes #
 
 ## Checklist
 - [ ] Đã tự chạy thử, build không lỗi
+- [ ] CI `SmartMart CI / Build and test` đạt trên GitHub (kết quả cục bộ chưa thay thế lượt CI)
 - [ ] Có test (hoặc đã báo #4)
 - [ ] Có thay đổi CSDL? Nếu có: đã kèm migration, chờ #1 duyệt
 - [ ] Có lệch đặc tả? Nếu có: đã cập nhật SRS trong `docs/03-requirements/`

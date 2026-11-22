@@ -16,11 +16,13 @@ Chứng minh hệ thống **làm đúng yêu cầu** ở `03` và **đúng thi�
 | `test-plan.md` | Chiến lược: unit / integration / API / UI, môi trường, tiêu chí đạt | Chưa có |
 | `test-cases/` | Test case thủ công theo module, mã `TC-<module>-xx`, liên kết mã chức năng | Chưa có |
 | `automated-tests.md` | Mô tả bộ test tự động trong `tests/ConvenienceStore.Web.Tests/` và cách chạy `dotnet test` | Chưa có |
-| `test-reports/` | Kết quả từng đợt kiểm thử (`YYYY-MM-DD-<dot>.md`) | Chưa có |
+| [`test-reports/`](test-reports/2026-11-22-integration-ui-e2e.md) | Kết quả từng đợt kiểm thử (`YYYY-MM-DD-<dot>.md`) | Có báo cáo tích hợp/UI ngày 22/11/2026, đang review |
 | `defects.md` | Danh sách lỗi (hoặc liên kết tới GitHub Issues gắn nhãn bug) | Chưa có |
 
 ## Bộ test tự động hiện có
 Nằm ở `tests/ConvenienceStore.Web.Tests/`: `DashboardServiceTests`, `OperationalReportsServiceTests`, `ReportExcelExporterTests` (BC), `PromotionServiceTests`, `PromotionManagementTests` (KM).
+
+Đợt tích hợp ngày 22/11 bổ sung `PosPageAuthorizationTests` và `ReportPromotionMySqlRegressionTests`. Toàn bộ project test tại commit `9632942` có **697/697 ca đạt** trên MySQL 8.4.13 riêng; xem [báo cáo và giới hạn kiểm chứng](test-reports/2026-11-22-integration-ui-e2e.md). Kết quả này không thay thế nghiệm thu toàn bộ MVP, CI hoặc staging.
 
 ## Tiêu chí hoàn thành
 - [ ] Mỗi mã chức năng MVP có ít nhất một test case.

@@ -41,7 +41,7 @@ public sealed class ProductsIntegrationHttpTests(CsdlMySqlTam database) : IClass
         await using var app = await ListFeatureHost.Start(database, s => { s.AddModuleProducts(); s.AddModuleInventory(); });
         using var client = await ListFeatureHost.Client(app, database, "AD"); Assert.Equal(200, (int)(await client.GetAsync("/api/v1/products")).StatusCode);
         var root = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, "../.."));
-        var documentation = await File.ReadAllTextAsync(Path.Combine(root, "docs/api/products.md"));
+        var documentation = await File.ReadAllTextAsync(Path.Combine(root, "docs/04-system-design/api/products.md"));
         var endpoints = ((IEndpointRouteBuilder)app).DataSources.SelectMany(x => x.Endpoints).OfType<RouteEndpoint>()
             .Select(x => new { Endpoint = x, Action = x.Metadata.GetMetadata<ControllerActionDescriptor>() })
             .Where(x => x.Action?.ControllerTypeInfo.Namespace?.EndsWith(".Modules.Products.Controllers") == true).ToArray();

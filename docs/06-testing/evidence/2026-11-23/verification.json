@@ -1,0 +1,122 @@
+{
+  "date": "2026-11-23",
+  "codeCommit": "dc89ec58fa7614941e393033ceb72b4a7a2592d6",
+  "status": "locally verified; GitHub Actions and design approval pending",
+  "configuration": "Release",
+  "platform": "Windows / native MySQL 8.4.13",
+  "build": {
+    "warnings": 0,
+    "errors": 0
+  },
+  "tests": {
+    "failed": 0,
+    "total": 700,
+    "skipped": 0,
+    "passed": 700
+  },
+  "migrationRegressionCases": [
+    {
+      "name": "ConvenienceStore.Web.Tests.Integration.Database.Schema.MigrationExtensionMySqlTests.CancellationRefundAuditRejectsUpdatesAndDeletes",
+      "outcome": "Passed"
+    },
+    {
+      "name": "ConvenienceStore.Web.Tests.Integration.Database.Schema.MigrationExtensionMySqlTests.LatestSchemaIncludesAllThreeExtensionTablesAndConstraints",
+      "outcome": "Passed"
+    },
+    {
+      "name": "ConvenienceStore.Web.Tests.Integration.Database.Schema.MigrationExtensionMySqlTests.ExtensionsCanBeRolledBackAndReappliedOnDisposableDatabase",
+      "outcome": "Passed"
+    }
+  ],
+  "workflowLint": "actionlint 1.7.12 PASS",
+  "trxGateCases": [
+    {
+      "exit": 0,
+      "expected": 0,
+      "case": "passed"
+    },
+    {
+      "exit": 1,
+      "expected": 1,
+      "case": "failed"
+    },
+    {
+      "exit": 1,
+      "expected": 1,
+      "case": "skipped"
+    },
+    {
+      "exit": 1,
+      "expected": 1,
+      "case": "empty"
+    }
+  ],
+  "githubRunVerified": false,
+  "sharedDatabaseModified": false,
+  "sourceHashes": [
+    {
+      "sha256": "ece77be32da51c6c994a0d23a20dc31c49f53c28875dbbbb17141f07718c5968",
+      "file": ".github/workflows/ci.yml"
+    },
+    {
+      "sha256": "5a18f8282a9e404e3d7908240721707e17795fb48480f5de368e0930f83a244e",
+      "file": "scripts/ci/verify-trx.ps1"
+    },
+    {
+      "sha256": "a6de6bd985c88ed5b246d98fd02987eed598bac31be0c39dc3314d0fa92696c7",
+      "file": "tests/ConvenienceStore.Web.Tests/Integration/Database/Schema/MigrationExtensionMySqlTests.cs"
+    },
+    {
+      "sha256": "d7d43291ca8139dbe59c572b23c771430e8fcd2ef1ef3d7a66aab177fff6b7a8",
+      "file": "src/ConvenienceStore.Web/Data/Migrations/20261112160000_Pos12CancelInvoice.cs"
+    },
+    {
+      "sha256": "b23415dbed822bcdd99163320a6c7acd48d546e94cf9018c9df8d4b71d6fec0e",
+      "file": "src/ConvenienceStore.Web/Data/Migrations/20261112170000_CashLedger.cs"
+    }
+  ],
+  "artifacts": [
+    {
+      "sha256": "713bf863795a6855cca738c2340f5fef290bbff373ed8d457d9865fb8478cc3b",
+      "bytes": 930,
+      "file": "build.log",
+      "storage": "local outputs/ci-schema-review-20261123"
+    },
+    {
+      "sha256": "3b07106aff5d58793dee4998ca696b592c7c270295f25d691fae76777ac60ba9",
+      "bytes": 683,
+      "file": "test.log",
+      "storage": "local outputs/ci-schema-review-20261123"
+    },
+    {
+      "sha256": "f1c16389ddacb8f1c428b4106ad35f3d9153b05679e74a8b6522a258942ed64d",
+      "bytes": 1108920,
+      "file": "test-results/tests.trx",
+      "storage": "local outputs/ci-schema-review-20261123"
+    },
+    {
+      "sha256": "44b911bae2b4982b19aa3a5b2466824a134c2527e3d5388e03850736cb488a8e",
+      "bytes": 25,
+      "file": "actionlint.log",
+      "storage": "local outputs/ci-schema-review-20261123"
+    },
+    {
+      "sha256": "db6f7ee36601acb372294b3736c904ff261a2108ae5d80abc967b40c1a3e66b9",
+      "bytes": 281,
+      "file": "trx-gate-cases.json",
+      "storage": "local outputs/ci-schema-review-20261123"
+    },
+    {
+      "sha256": "5de6a402c8c0e085e169deff76c513b76b6698261fc3e7f3fd793ab007337635",
+      "bytes": 123692,
+      "file": "runtime-schema.json",
+      "storage": "local outputs/ci-schema-review-20261123"
+    },
+    {
+      "sha256": "b1096a595a0269b8926e76959dde62bb264d3612d1586c868bf45de37b1f6089",
+      "bytes": 39435,
+      "file": "generated-migrations.sql",
+      "storage": "local outputs/ci-schema-review-20261123"
+    }
+  ]
+}

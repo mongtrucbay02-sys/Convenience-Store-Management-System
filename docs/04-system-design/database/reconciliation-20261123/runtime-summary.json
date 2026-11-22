@@ -1,0 +1,364 @@
+{
+  "date": "2026-11-23",
+  "sourceCommit": "dc89ec58fa7614941e393033ceb72b4a7a2592d6",
+  "status": "observed on disposable MySQL; awaiting design approval",
+  "mysql": "8.4.13",
+  "appliedMigrations": [
+    "20261026120030_InitialCreate",
+    "20261112160000_Pos12CancelInvoice",
+    "20261112170000_CashLedger"
+  ],
+  "counts": {
+    "businessColumns": 302,
+    "triggers": 12,
+    "foreignKeys": 61,
+    "checks": 56,
+    "views": 3,
+    "businessTables": 31,
+    "efMappedTables": 28
+  },
+  "businessTableNames": [
+    "bo_dem_chung_tu",
+    "chinh_sach_doi_tra",
+    "chuong_trinh_khuyen_mai",
+    "ct_gio_hang",
+    "ct_hoa_don",
+    "ct_kiem_ke",
+    "ct_phieu_doi_tra",
+    "ct_phieu_nhap",
+    "ct_xuat_huy",
+    "danh_muc",
+    "giao_dich_tien_mat",
+    "gio_hang",
+    "hoa_don",
+    "hoan_tien_hoa_don",
+    "khach_hang",
+    "khuyen_mai_san_pham",
+    "lich_su_diem",
+    "lich_su_gia",
+    "nha_cung_cap",
+    "phien_dang_nhap",
+    "phieu_doi_tra",
+    "phieu_kiem_ke",
+    "phieu_nhap",
+    "phieu_xuat_huy",
+    "quy_tac_tich_diem",
+    "quy_tien_mat",
+    "san_pham",
+    "tai_khoan",
+    "the_kho",
+    "ton_kho",
+    "vai_tro"
+  ],
+  "tablesNotMappedByEf": [
+    "giao_dich_tien_mat",
+    "hoan_tien_hoa_don",
+    "quy_tien_mat"
+  ],
+  "extensionColumns": [
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "bigint unsigned",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "auto_increment",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "COLUMN_NAME": "loai",
+      "COLUMN_TYPE": "enum('THU_BAN_HANG','CHI_HOAN_TRA')",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "COLUMN_NAME": "hoa_don_id",
+      "COLUMN_TYPE": "int unsigned",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "COLUMN_NAME": "phieu_doi_tra_id",
+      "COLUMN_TYPE": "int unsigned",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "COLUMN_NAME": "so_tien",
+      "COLUMN_TYPE": "bigint unsigned",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "COLUMN_NAME": "so_du_truoc",
+      "COLUMN_TYPE": "bigint unsigned",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "ORDINAL_POSITION": 6
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "COLUMN_NAME": "so_du_sau",
+      "COLUMN_TYPE": "bigint unsigned",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "ORDINAL_POSITION": 7
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "COLUMN_NAME": "nguoi_thuc_hien_id",
+      "COLUMN_TYPE": "int unsigned",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "ORDINAL_POSITION": 8
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "COLUMN_NAME": "thoi_diem",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+      "EXTRA": "DEFAULT_GENERATED",
+      "ORDINAL_POSITION": 9
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "bigint unsigned",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "auto_increment",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "COLUMN_NAME": "hoa_don_id",
+      "COLUMN_TYPE": "int unsigned",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "COLUMN_NAME": "so_tien_hoan",
+      "COLUMN_TYPE": "bigint unsigned",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "COLUMN_NAME": "phuong_thuc",
+      "COLUMN_TYPE": "enum('TIEN_MAT')",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "TIEN_MAT",
+      "EXTRA": "",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "COLUMN_NAME": "diem_da_thu_hoi",
+      "COLUMN_TYPE": "int unsigned",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "0",
+      "EXTRA": "",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "COLUMN_NAME": "diem_chua_thu_hoi",
+      "COLUMN_TYPE": "int unsigned",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "0",
+      "EXTRA": "",
+      "ORDINAL_POSITION": 6
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "COLUMN_NAME": "ly_do",
+      "COLUMN_TYPE": "varchar(255)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "ORDINAL_POSITION": 7
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "COLUMN_NAME": "nguoi_thuc_hien_id",
+      "COLUMN_TYPE": "int unsigned",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "ORDINAL_POSITION": 8
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "COLUMN_NAME": "thoi_diem",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+      "EXTRA": "DEFAULT_GENERATED",
+      "ORDINAL_POSITION": 9
+    },
+    {
+      "TABLE_NAME": "quy_tien_mat",
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "int unsigned",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "quy_tien_mat",
+      "COLUMN_NAME": "so_du",
+      "COLUMN_TYPE": "bigint unsigned",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "0",
+      "EXTRA": "",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "quy_tien_mat",
+      "COLUMN_NAME": "ngay_cap_nhat",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP",
+      "EXTRA": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP",
+      "ORDINAL_POSITION": 3
+    }
+  ],
+  "extensionConstraints": [
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "CONSTRAINT_NAME": "ck_gdtm_lien_ket",
+      "CONSTRAINT_TYPE": "CHECK"
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "CONSTRAINT_NAME": "ck_gdtm_so_tien",
+      "CONSTRAINT_TYPE": "CHECK"
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "CONSTRAINT_NAME": "fk_gdtm_actor",
+      "CONSTRAINT_TYPE": "FOREIGN KEY"
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "CONSTRAINT_NAME": "fk_gdtm_hoa_don",
+      "CONSTRAINT_TYPE": "FOREIGN KEY"
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "CONSTRAINT_NAME": "fk_gdtm_phieu",
+      "CONSTRAINT_TYPE": "FOREIGN KEY"
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "CONSTRAINT_NAME": "PRIMARY",
+      "CONSTRAINT_TYPE": "PRIMARY KEY"
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "CONSTRAINT_NAME": "fk_hoan_tien_actor",
+      "CONSTRAINT_TYPE": "FOREIGN KEY"
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "CONSTRAINT_NAME": "fk_hoan_tien_hd",
+      "CONSTRAINT_TYPE": "FOREIGN KEY"
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "CONSTRAINT_NAME": "PRIMARY",
+      "CONSTRAINT_TYPE": "PRIMARY KEY"
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "CONSTRAINT_NAME": "uq_hoan_tien_hd",
+      "CONSTRAINT_TYPE": "UNIQUE"
+    },
+    {
+      "TABLE_NAME": "quy_tien_mat",
+      "CONSTRAINT_NAME": "ck_quy_tien_mat_so_du",
+      "CONSTRAINT_TYPE": "CHECK"
+    },
+    {
+      "TABLE_NAME": "quy_tien_mat",
+      "CONSTRAINT_NAME": "PRIMARY",
+      "CONSTRAINT_TYPE": "PRIMARY KEY"
+    }
+  ],
+  "extensionRelations": [
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "COLUMN_NAME": "nguoi_thuc_hien_id",
+      "CONSTRAINT_NAME": "fk_gdtm_actor",
+      "REFERENCED_TABLE_NAME": "tai_khoan",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "COLUMN_NAME": "hoa_don_id",
+      "CONSTRAINT_NAME": "fk_gdtm_hoa_don",
+      "REFERENCED_TABLE_NAME": "hoa_don",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "giao_dich_tien_mat",
+      "COLUMN_NAME": "phieu_doi_tra_id",
+      "CONSTRAINT_NAME": "fk_gdtm_phieu",
+      "REFERENCED_TABLE_NAME": "phieu_doi_tra",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "COLUMN_NAME": "nguoi_thuc_hien_id",
+      "CONSTRAINT_NAME": "fk_hoan_tien_actor",
+      "REFERENCED_TABLE_NAME": "tai_khoan",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "hoan_tien_hoa_don",
+      "COLUMN_NAME": "hoa_don_id",
+      "CONSTRAINT_NAME": "fk_hoan_tien_hd",
+      "REFERENCED_TABLE_NAME": "hoa_don",
+      "REFERENCED_COLUMN_NAME": "id"
+    }
+  ],
+  "extensionTriggers": [
+    {
+      "TRIGGER_NAME": "trg_hoan_tien_hd_khong_sua",
+      "EVENT_OBJECT_TABLE": "hoan_tien_hoa_don",
+      "ACTION_TIMING": "BEFORE",
+      "EVENT_MANIPULATION": "UPDATE"
+    },
+    {
+      "TRIGGER_NAME": "trg_hoan_tien_hd_khong_xoa",
+      "EVENT_OBJECT_TABLE": "hoan_tien_hoa_don",
+      "ACTION_TIMING": "BEFORE",
+      "EVENT_MANIPULATION": "DELETE"
+    }
+  ],
+  "rawMetadataSha256": "5de6a402c8c0e085e169deff76c513b76b6698261fc3e7f3fd793ab007337635",
+  "generatedMigrationScriptSha256": "b1096a595a0269b8926e76959dde62bb264d3612d1586c868bf45de37b1f6089"
+}

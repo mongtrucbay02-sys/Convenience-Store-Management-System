@@ -32,3 +32,7 @@ Tiêu chí duyệt một migration:
 3. Khớp ERD v1 hoặc có issue "thay đổi yêu cầu" đã được #1 đồng ý; cập nhật `docs/db/schema_v1.sql` trong cùng PR.
 4. Không phá trigger và CHECK hiện có (chạy `docs/db/kiem_thu.sh`: 29/29 thao tác sai vẫn bị chặn).
 5. `dotnet test` đạt trên MySQL 9.7.2.
+
+## Bổ sung đối chiếu 23/11/2026 — chưa phải approval
+
+#5 Trung chuẩn bị [bộ đối chiếu migration/ERD/SRS](../04-system-design/database/reconciliation-20261123/README.md) cho `Pos12CancelInvoice` và `CashLedger`, gồm ERD vật lý bổ sung, từ điển, DDL tham chiếu và các quyết định còn mở. Không sửa migration lịch sử hoặc áp CSDL chung. Phiên bản MySQL có bằng chứng hiện tại là 8.4.13; workflow CI chọn nhánh 8.4, cần nhóm chốt lại ma trận phiên bản thay vì mặc định đã kiểm chứng 9.7.2. Mục này ghi nhận sản phẩm đối chiếu, **không xác nhận người phụ trách CSDL đã duyệt**.

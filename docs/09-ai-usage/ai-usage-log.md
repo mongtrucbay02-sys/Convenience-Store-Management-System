@@ -12,3 +12,9 @@
 | AI-TRUNG-003 | 2026-11-22 | Nguyễn Tiến Trung (#5) | 06, 09 | OpenAI Codex | Bổ sung báo cáo kiểm thử, bằng chứng và nhật ký cho hai lượt trên | `docs/06-testing/test-reports/2026-11-22-integration-ui-e2e.md`, `docs/06-testing/evidence/2026-11-22/`, README kiểm thử và nhật ký này | Tạo phần lớn | Chưa có người kiểm chứng độc lập | Đối chiếu TRX/log và hash mã đã kiểm thử; tài liệu ở trạng thái Đang review, không tự xác nhận người dùng hoặc nhóm đã nghiệm thu |
 
 Các mã `AI-TRUNG-*` dùng tiền tố riêng để tránh trùng số với các bản ghi AI của thành viên khác đang chờ tích hợp. Nhật ký này bổ sung những lượt có bằng chứng trong đợt hiện tại, chưa phải xác nhận đã truy hồi đầy đủ mọi lần dùng AI trước đây.
+
+## Bổ sung 23/11/2026
+
+| Mã | Ngày | Thành viên | Giai đoạn (00–10) | Công cụ | Mục đích | Sản phẩm bị ảnh hưởng (file/PR) | Mức độ | Người kiểm chứng | Ghi chú |
+|---|---|---|---|---|---|---|---|---|---|
+| AI-TRUNG-004 | 2026-11-23 | Nguyễn Tiến Trung (#5) | 03, 04, 05, 06, 09 | OpenAI Codex | Viết CI .NET/MySQL riêng; kiểm tra workflow/TRX; đối chiếu migration với ERD/SRS, chuẩn bị bản cập nhật chờ duyệt và test schema bổ sung | `.github/workflows/ci.yml`, `scripts/ci/verify-trx.ps1`, `MigrationExtensionMySqlTests.cs`, `docs/06-testing/ci-github-actions.md`, `docs/04-system-design/database/reconciliation-20261123/`, `docs/03-requirements/migration-srs-review-2026-11-23.md` | Tạo phần lớn workflow, test và tài liệu; đối chiếu code có sẵn | Chưa có người kiểm chứng độc lập | Kết quả cục bộ và giới hạn ghi trong báo cáo `docs/06-testing/test-reports/2026-11-23-ci-schema.md`; chưa xác nhận GitHub CI xanh hoặc CSDL được duyệt; không sửa migration lịch sử/ghi Aiven chung |

@@ -13,6 +13,8 @@ public partial class ChuongTrinhKhuyenMai
 
     public string? MoTa { get; set; }
 
+    public string? AnhUrl { get; set; }
+
     public string LoaiGiam { get; set; } = null!;
 
     public uint GiaTri { get; set; }

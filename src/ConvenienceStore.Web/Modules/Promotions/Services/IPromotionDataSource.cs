@@ -20,8 +20,8 @@ public sealed record PromotionRecord(
     string? ImageUrl = null);
 
 /// <summary>
-/// Nơi lưu khuyến mãi. Hiện là bản lưu trong bộ nhớ (chưa có bảng, chờ ERD/migration được duyệt ở #1,
-/// dữ liệu mất khi khởi động lại); thay bằng bản dùng CuaHangDbContext mà không phải đổi PromotionService.
+/// Hợp đồng lưu khuyến mãi. Runtime dùng MySqlPromotionDataSource và CuaHangDbContext;
+/// bản trong bộ nhớ chỉ dùng cho kiểm thử.
 /// </summary>
 public interface IPromotionDataSource
 {

@@ -18,6 +18,9 @@ public sealed class MigrationExtensionMySqlTests(CsdlMySqlTam database) : IClass
         Assert.Equal(5, await Count("SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_TYPE='FOREIGN KEY' AND TABLE_NAME IN ('hoan_tien_hoa_don','giao_dich_tien_mat')"));
         Assert.Equal(3, await Count("SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_TYPE='CHECK' AND TABLE_NAME IN ('quy_tien_mat','giao_dich_tien_mat')"));
         Assert.Equal(2, await Count("SELECT COUNT(*) FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND EVENT_OBJECT_TABLE='hoan_tien_hoa_don'"));
+        Assert.Equal(2, await Count("SELECT COUNT(*) FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND EVENT_OBJECT_TABLE='giao_dich_tien_mat'"));
+        Assert.Equal(2, await Count("SELECT COUNT(DISTINCT INDEX_NAME) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='giao_dich_tien_mat' AND INDEX_NAME IN ('uq_gdtm_loai_hoa_don','uq_gdtm_loai_phieu') AND NON_UNIQUE=0"));
+        Assert.Equal(1, await Count("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='chuong_trinh_khuyen_mai' AND COLUMN_NAME='anh_url' AND IS_NULLABLE='YES' AND CHARACTER_MAXIMUM_LENGTH=2048"));
     }
 
     [Fact]
@@ -41,7 +44,7 @@ public sealed class MigrationExtensionMySqlTests(CsdlMySqlTam database) : IClass
         {
             await migrator.MigrateAsync();
         }
-        Assert.Equal(3, (await context.Database.GetAppliedMigrationsAsync()).Count());
+        Assert.Equal(context.Database.GetMigrations().Count(), (await context.Database.GetAppliedMigrationsAsync()).Count());
         Assert.Equal(0, await Count("SELECT so_du FROM quy_tien_mat WHERE id=1"));
     }
 

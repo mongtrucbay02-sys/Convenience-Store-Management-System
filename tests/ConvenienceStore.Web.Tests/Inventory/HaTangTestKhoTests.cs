@@ -27,7 +27,7 @@ public sealed class HaTangTestKhoTests(CsdlKhoFixture csdl)
         var soTrigger = await DemAsync(
             "SELECT COUNT(*) FROM information_schema.triggers " +
             "WHERE trigger_schema = DATABASE() " +
-            "AND event_object_table <> 'hoan_tien_hoa_don'");
+            "AND event_object_table NOT IN ('hoan_tien_hoa_don','giao_dich_tien_mat')");
 
         Assert.Equal(28, soBang);
         Assert.Equal(3, soView);

@@ -21,6 +21,7 @@
 | [open-decisions.md](open-decisions.md) | Quyết định mở, gate và phụ thuộc |
 | [change-log.md](change-log.md) | Lịch sử bản thảo; không tự nhận đã review |
 | [migration-srs-review-2026-11-23.md](migration-srs-review-2026-11-23.md) | Đề xuất cập nhật SRS theo migration runtime; phân biệt bản nháp và phần thiếu cần nhóm duyệt |
+| [cash-promotion-change-proposal-20261123.md](cash-promotion-change-proposal-20261123.md) | CP-01–04: đồng bộ hủy/quỹ, chốt số dư và ảnh khuyến mãi; chờ duyệt |
 
 ## Đầu vào chính
 - [Product Vision](../02-product-definition/product-vision.md), [Feature Candidates](../02-product-definition/feature-candidates.md), [Scope D-01](../02-product-definition/scope.md), [Scenarios](../02-product-definition/scenarios.md), [Success Metrics](../02-product-definition/success-metrics.md).

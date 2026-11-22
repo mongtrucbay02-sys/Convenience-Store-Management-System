@@ -36,3 +36,5 @@ Tiêu chí duyệt một migration:
 ## Bổ sung đối chiếu 23/11/2026 — chưa phải approval
 
 #5 Trung chuẩn bị [bộ đối chiếu migration/ERD/SRS](../04-system-design/database/reconciliation-20261123/README.md) cho `Pos12CancelInvoice` và `CashLedger`, gồm ERD vật lý bổ sung, từ điển, DDL tham chiếu và các quyết định còn mở. Không sửa migration lịch sử hoặc áp CSDL chung. Phiên bản MySQL có bằng chứng hiện tại là 8.4.13; workflow CI chọn nhánh 8.4, cần nhóm chốt lại ma trận phiên bản thay vì mặc định đã kiểm chứng 9.7.2. Mục này ghi nhận sản phẩm đối chiếu, **không xác nhận người phụ trách CSDL đã duyệt**.
+
+Đợt sửa tiếp theo tại commit `ce06dff` đề xuất hai migration `CashLedgerReconciliation` và `PromotionImage`: [thiết kế và hướng dẫn nâng cấp](../04-system-design/database/cash-promotion-20261123.md), [đề xuất SRS](../03-requirements/cash-promotion-change-proposal-20261123.md), [kết quả kiểm thử](../06-testing/test-reports/2026-11-23-cash-promotion.md). **Đang chờ #1 duyệt theo #234**; chưa ghi Aiven chung hoặc cập nhật trạng thái Approved của schema/SRS.

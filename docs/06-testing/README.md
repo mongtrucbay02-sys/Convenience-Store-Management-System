@@ -27,6 +27,8 @@ Nằm ở `tests/ConvenienceStore.Web.Tests/`: `DashboardServiceTests`, `Operati
 
 Ngày 23/11, commit `dc89ec5` thêm CI/gate TRX và ba test migration mở rộng; **700/700 test Release đạt cục bộ**. Xem [báo cáo CI/schema](test-reports/2026-11-23-ci-schema.md); chưa xác nhận workflow đã chạy trên GitHub.
 
+Cùng ngày, commit `ce06dff` sửa đồng bộ hủy/quỹ, thêm chốt số dư, lưu ảnh KM và bảy test; **707/707 test, 41/41 kiểm tra HTTP đạt cục bộ**. Xem [báo cáo sửa quỹ/ảnh](test-reports/2026-11-23-cash-promotion.md). Điện thoại để sau; migration chưa được duyệt, CI GitHub/staging/review độc lập chưa xác nhận.
+
 ## Tiêu chí hoàn thành
 - [ ] Mỗi mã chức năng MVP có ít nhất một test case.
 - [ ] Mỗi API trong OpenAPI ở `04` được kiểm thử theo checklist trong tài liệu API.

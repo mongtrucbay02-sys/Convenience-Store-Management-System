@@ -1,28 +1,35 @@
-# 03 — Yêu cầu
+# 03 — Requirements Engineering · Smart Mart
 
-> **Trục chính:** 01 Khảo sát → 02 Định nghĩa sản phẩm → **03 Yêu cầu** → 04 Thiết kế → 05 Hiện thực → 06 Kiểm thử → 07 Triển khai → 08 Nghiệm thu
+> **Trục chính:** [01 Khảo sát](../01-survey/) → [02 Định nghĩa sản phẩm](../02-product-definition/) → **03 Yêu cầu** → [04 Thiết kế](../04-system-design/) → 05 Hiện thực → [06 Kiểm thử](../06-testing/) → 07 Triển khai → 08 Nghiệm thu · [Mục lục tài liệu](../README.md)
 
-## Mục đích
-Đặc tả **hệ thống phải làm được gì**: yêu cầu chức năng, phi chức năng, Use Case và quy tắc nghiệp vụ. Đây là căn cứ để thiết kế (`04`), viết test (`06`) và nghiệm thu (`08`).
+> **SIMULATED / INTERNAL DRAFT / NOT CUSTOMER-APPROVED.** Nguồn khảo sát Giai đoạn 1 là mô phỏng (S0); ưu tiên/MVP Giai đoạn 2 chưa được phê duyệt. Các yêu cầu dưới đây là **candidate specifications**, không phải xác nhận hệ thống đã triển khai hay đã PASS.
 
-## Đầu vào → Đầu ra
-- **Đầu vào:** `02-product-definition/scope.md`, `personas-and-roles.md`.
-- **Đầu ra cho `04`:** SRS và Use Case có mã chức năng (SP-01, POS-03, BC-12…), có mức ưu tiên MoSCoW.
+**Status:** DRAFT v0.1 · **Scope:** Một cửa hàng độc lập · **Source:** PR #227 (01), PR #228 HEAD `b7f66aa` (02) · **Owner/approval:** TBD.
 
-## Nội dung cần có
+## Đọc theo thứ tự
+| Tệp | Mục đích |
+|---|---|
+| [srs.md](srs.md) | SRS bản nháp, phạm vi và phân loại |
+| [functional-requirements.md](functional-requirements.md) | FR-01…FR-15, điều kiện và nguồn |
+| [user-stories.md](user-stories.md) | US-01…US-12, vai trò/giá trị |
+| [acceptance-criteria.md](acceptance-criteria.md) | AC theo Given–When–Then; cả positive/negative |
+| [business-rules.md](business-rules.md) | BR-01…BR-10, nhấn mạnh D-01 *proposed* |
+| [non-functional-requirements.md](non-functional-requirements.md) | NFR candidate, phép đo và TBD |
+| [use-cases/](use-cases/) | 4 luồng use case ứng viên; không thay thế bộ 81 UC v1.1 ngoài repo |
+| [requirements-traceability.md](requirements-traceability.md) | PS/N-SIM → FC → US/FR/AC → dự kiến test |
+| [moscow-priority.md](moscow-priority.md) | Ưu tiên *proposed*, chưa được ký duyệt |
+| [open-decisions.md](open-decisions.md) | Quyết định mở, gate và phụ thuộc |
+| [change-log.md](change-log.md) | Lịch sử bản thảo; không tự nhận đã review |
 
-| Tài liệu | Mô tả | Trạng thái |
-|---|---|---|
-| `srs.md` (hoặc `srs-v1.0.1.pdf`) | Đặc tả yêu cầu phần mềm của toàn hệ thống | **Đã có ngoài repo — cần đưa vào** |
-| `use-cases/` | Đặc tả Use Case theo module, ví dụ `use-cases/pos.md` | **Đã có ngoài repo (81 Use Case v1.1) — cần đưa vào** |
-| `moscow-priority.md` | Bảng ưu tiên MoSCoW cho từng mã chức năng | **Đã có ngoài repo — cần đưa vào** |
-| `non-functional-requirements.md` | Yêu cầu phi chức năng (SRS Chương 6): hiệu năng, bảo mật, múi giờ UTC+7… | **Đã có ngoài repo — cần đưa vào** |
-| `business-rules.md` | Quy tắc nghiệp vụ dùng chung (giá, tồn kho, đổi trả, khuyến mãi) | Chưa có |
-| `change-log.md` | Lịch sử thay đổi yêu cầu và ảnh hưởng tới `04`/`06` | Chưa có |
+## Đầu vào chính
+- [Product Vision](../02-product-definition/product-vision.md), [Feature Candidates](../02-product-definition/feature-candidates.md), [Scope D-01](../02-product-definition/scope.md), [Scenarios](../02-product-definition/scenarios.md), [Success Metrics](../02-product-definition/success-metrics.md).
+- [Problem Statement](../01-survey/analysis/problem-statement.md), [Handoff](../01-survey/analysis/transition-to-product-definition.md).
 
-> Các tài liệu đánh dấu "đã có ngoài repo" được ghi nhận trong `04-system-design/database/product-purchase/design-notes.md` là đầu vào nhưng chưa nằm trong repository. Đưa chúng vào đây giúp các tài liệu thiết kế trích dẫn được trực tiếp.
+## Quy tắc
+1. Các mã FR/US/AC/BR ở đây **không** được đồng nhất tự động với mã SP-01, POS-03… hoặc 81 Use Cases v1.1 từ bộ SRS bên ngoài.
+2. MVP *proposed* = I0 + I1 + I2; I3 sau MVP tối thiểu. D-01 chỉ là *đề xuất nội bộ*.
+3. Không khẳng định kết quả test, KPI thực tế, hiệu năng, luật thuế/hóa đơn hay ngân hàng khi chưa xác minh.
+4. KH/KM/DT là chức năng dự án có thể có nguồn độc lập; **không gán N-SIM giả**.
 
-## Tiêu chí hoàn thành
-- [ ] Mỗi yêu cầu có mã, mức ưu tiên và nguồn khảo sát (`PS-xx` / `N-SIM-xx` ở `01-survey`).
-- [ ] Ma trận truy vết ở `00-project-management/traceability-matrix.md` có cột Yêu cầu đầy đủ.
-- [ ] Khi PR làm lệch đặc tả, cập nhật tài liệu trong thư mục này (theo checklist PR).
+## Gate trước khi Approved
+- [ ] Nhóm xác nhận G2-01…05, chọn MVP và quyền duyệt; [ ] đối chiếu SRS v1.0.1, 81 UC v1.1, MoSCoW/NFR gốc được nêu là ngoài repo; [ ] review nguồn người dùng thật nếu trình bày như khảo sát thực; [ ] rà mã/trace; [ ] kiểm thử sau khi triển khai.

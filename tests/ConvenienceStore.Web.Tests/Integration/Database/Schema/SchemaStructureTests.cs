@@ -52,7 +52,7 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
               AND TABLE_NAME <> '__EFMigrationsHistory'
               AND TABLE_NAME NOT IN ('hoan_tien_hoa_don','quy_tien_mat','giao_dich_tien_mat')
             """);
-        Assert.Equal(SchemaReference.Tables, tables);
+        Assert.Equal(SchemaReference.BaselineTables, tables);
         await using var db = database.TaoDbContext();
         Assert.Equal(tables, db.Model.GetRelationalModel().Tables.Select(t => t.Name).Order());
     }
@@ -91,7 +91,7 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
               AND EVENT_OBJECT_TABLE <> 'hoan_tien_hoa_don'
             """);
         Assert.Equal(10, triggers.Length);
-        Assert.Equal(SchemaReference.Triggers, triggers);
+        Assert.Equal(SchemaReference.BaselineTriggers, triggers);
     }
 
     [Fact]

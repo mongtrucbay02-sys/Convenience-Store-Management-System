@@ -2,9 +2,12 @@
 
 > **Tài liệu phục vụ Issue RFC #273** (Thay đổi yêu cầu CSDL).  
 > **Tác giả:** Nguyễn Thị Thu Hoài (#3).  
-> **Người duyệt CSDL:** Phạm Gia Thăng (#1 - DB Lead).  
+> **Người duyệt CSDL:** cần ghi nhận approval trên PR trước khi merge.
 > **Migration liên quan:** `20261112160000_Pos12CancelInvoice.cs` (PR #217), `20261112170000_CashLedger.cs` (Commit `ea4ecee`).  
 > **Tệp DDL đi kèm:** `docs/db/schema_v1_delta_pos12_cashledger.sql`.
+
+> **Phân loại:** phần mở rộng có version của baseline ERD v1; không thay thế
+> 28 bảng/10 trigger của baseline và không liên quan tới bảng SQL rời của POS-09 cũ.
 
 ---
 
@@ -13,6 +16,8 @@
 Tài liệu này đặc tả chi tiết cấu trúc CSDL mở rộng được bổ sung trong Sprint tuần 7 nhằm đáp ứng:
 1. **POS-12 (Hủy hóa đơn đã thanh toán):** Cần bảng lưu vết lịch sử hoàn tiền bất biến (`hoan_tien_hoa_don`) bảo vệ bởi trigger ngăn sửa và xóa.
 2. **DT-04 / DT-05 (Đổi trả và hoàn tiền mặt):** Cần quản lý số dư tiền mặt tại quầy (`quy_tien_mat`) và ghi nhận lịch sử thu chi tiền mặt chi tiết (`giao_dich_tien_mat`) có đối soát dòng tiền và kiểm tra số dư không âm.
+
+Thay đổi này phải được liên kết với RFC/issue #273 và được DB Lead duyệt trên pull request. Việc có migration và tài liệu không tự thay thế approval hoặc quy trình merge.
 
 ---
 
@@ -118,4 +123,24 @@ Bắt buộc đúng ngữ cảnh: Nếu loại là `THU_BAN_HANG` thì `hoa_don_
 
 - **Không ảnh hưởng 28 bảng ERD v1:** Tất cả các bảng trên đều là bảng mở rộng độc lập, liên kết khóa ngoại với các bảng chính (`hoa_don`, `tai_khoan`, `phieu_doi_tra`).
 - **An toàn rollback:** Migration có phương thức `Down()` chuẩn để dọn dẹp sạch sẽ khi cần.
-- **Bộ test:** Tích hợp đầy đủ trong `PosInvoiceDetailsTests` và `ReturnOrderMySqlTests`. Toàn bộ 687 tests đều pass 100%.
+- **Bộ test:** Tích hợp trong `PosInvoiceDetailsTests` và `ReturnOrderMySqlTests`; kết quả chạy phải được đính kèm theo PR. Không ghi nhận số lượng test cố định trong đặc tả vì test suite thay đổi theo nhánh.
+
+## 5. Ánh xạ migration và rollback
+
+| Đối tượng | Migration | `Up()` | `Down()` |
+| :--- | :--- | :--- | :--- |
+| `hoan_tien_hoa_don` | `20261112160000_Pos12CancelInvoice` | Tạo bảng, khóa ngoại và unique key | Xóa bảng sau khi xóa trigger |
+| `trg_hoan_tien_hd_khong_sua` | `20261112160000_Pos12CancelInvoice` | Chặn `UPDATE` | `DROP TRIGGER` |
+| `trg_hoan_tien_hd_khong_xoa` | `20261112160000_Pos12CancelInvoice` | Chặn `DELETE` | `DROP TRIGGER` |
+| `quy_tien_mat` | `20261112170000_CashLedger` | Tạo bảng và seed `id = 1` | Xóa sau `giao_dich_tien_mat` |
+| `giao_dich_tien_mat` | `20261112170000_CashLedger` | Tạo bảng, CHECK, index và khóa ngoại | Xóa trước `quy_tien_mat` |
+
+Không sửa migration đã chạy. Mọi thay đổi tiếp theo phải tạo migration mới và cập nhật `schema_v1.sql` trong cùng pull request.
+
+## 6. Checklist trước khi merge
+
+- [ ] Issue/RFC #273 được liên kết với pull request.
+- [ ] `docs/db/schema_v1.sql` và DDL delta được cập nhật cùng migration.
+- [ ] DB Lead review và approve pull request.
+- [ ] Test schema, migration rollback và test nghiệp vụ được chạy; kết quả đính kèm.
+- [ ] Không tạo `pos_cancelled_orders` hoặc SQL rời cho POS-09.

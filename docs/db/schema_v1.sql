@@ -1,6 +1,7 @@
 -- =====================================================================
 -- CSDL Hệ thống quản lý cửa hàng tiện lợi - Nhóm 7
--- ERD v1 (18/10/2026) - toàn hệ thống, 28 bảng, 3 view, 10 trigger
+-- ERD v1 (18/10/2026) - baseline 28 bảng, 3 view, 10 trigger.
+-- Phần mở rộng được đề xuất và ghi nhận theo RFC #273: thêm 3 bảng và 2 trigger bất biến.
 --
 -- Hệ quản trị chuẩn: MySQL 9.7.2 (LTS). Chỉ dùng tính năng có ở cả MySQL 8.4
 -- để chạy được trên Aiven (Aiven hiện chỉ có 8.4). InnoDB, utf8mb4,
@@ -18,7 +19,8 @@
 --   6. Hóa đơn        gio_hang, ct_gio_hang, hoa_don, ct_hoa_don
 --   7. Đổi trả        chinh_sach_doi_tra, phieu_doi_tra, ct_phieu_doi_tra
 --   8. Điểm           lich_su_diem
---   9. View, trigger, dữ liệu khởi tạo
+--   9. Phần mở rộng RFC #273: hoàn tiền và quỹ tiền mặt
+--  10. View, trigger, dữ liệu khởi tạo
 --
 -- Trong dự án, bảng được tạo bằng EF Core migration. Tệp này là bản tham
 -- chiếu: migration sinh ra phải cho cùng cấu trúc. Trigger và view đưa vào
@@ -654,7 +656,68 @@ CREATE TABLE lich_su_diem (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ---------------------------------------------------------------------
--- 9a. VIEW (chỉ đọc). NOW() dùng múi giờ của phiên: kết nối phải đặt
+-- 9. MỞ RỘNG RFC #273: HOÀN TIỀN VÀ QUỸ TIỀN MẶT
+--     Các bảng này là phần mở rộng của baseline ERD v1, được tạo bằng
+--     migration 20261112160000_Pos12CancelInvoice và
+--     20261112170000_CashLedger. Không dùng cho POS-09 cũ.
+-- ---------------------------------------------------------------------
+
+-- POS-12: mỗi hóa đơn chỉ có một bản ghi hoàn tiền; dữ liệu chỉ được thêm.
+CREATE TABLE hoan_tien_hoa_don (
+  id                  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  hoa_don_id          INT UNSIGNED    NOT NULL,
+  so_tien_hoan        BIGINT UNSIGNED NOT NULL,
+  phuong_thuc         ENUM('TIEN_MAT') NOT NULL DEFAULT 'TIEN_MAT',
+  diem_da_thu_hoi     INT UNSIGNED    NOT NULL DEFAULT 0,
+  diem_chua_thu_hoi   INT UNSIGNED    NOT NULL DEFAULT 0,
+  ly_do               VARCHAR(255)    NOT NULL,
+  nguoi_thuc_hien_id  INT UNSIGNED    NOT NULL,
+  thoi_diem           DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_hoan_tien_hd (hoa_don_id),
+  KEY idx_hoan_tien_tg (thoi_diem),
+  CONSTRAINT fk_hoan_tien_hd FOREIGN KEY (hoa_don_id) REFERENCES hoa_don (id),
+  CONSTRAINT fk_hoan_tien_actor FOREIGN KEY (nguoi_thuc_hien_id) REFERENCES tai_khoan (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- DT-04/DT-05: quỹ tiền mặt hiện hành, id=1 là quỹ mặc định của cửa hàng.
+CREATE TABLE quy_tien_mat (
+  id              INT UNSIGNED NOT NULL,
+  so_du           BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  ngay_cap_nhat   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  CONSTRAINT ck_quy_tien_mat_so_du CHECK (so_du >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+INSERT INTO quy_tien_mat (id, so_du) VALUES (1, 0);
+
+-- DT-04/DT-05: sổ cái bất biến của các khoản thu bán hàng và chi hoàn trả.
+CREATE TABLE giao_dich_tien_mat (
+  id                  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  loai                ENUM('THU_BAN_HANG','CHI_HOAN_TRA') NOT NULL,
+  hoa_don_id          INT UNSIGNED NULL,
+  phieu_doi_tra_id    INT UNSIGNED NULL,
+  so_tien             BIGINT UNSIGNED NOT NULL,
+  so_du_truoc         BIGINT UNSIGNED NOT NULL,
+  so_du_sau           BIGINT UNSIGNED NOT NULL,
+  nguoi_thuc_hien_id  INT UNSIGNED NOT NULL,
+  thoi_diem           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_gdtm_hoa_don (hoa_don_id),
+  KEY idx_gdtm_phieu (phieu_doi_tra_id),
+  KEY idx_gdtm_actor (nguoi_thuc_hien_id),
+  CONSTRAINT ck_gdtm_so_tien CHECK (so_tien > 0),
+  CONSTRAINT ck_gdtm_lien_ket CHECK (
+       (loai = 'THU_BAN_HANG' AND hoa_don_id IS NOT NULL AND phieu_doi_tra_id IS NULL)
+    OR (loai = 'CHI_HOAN_TRA' AND hoa_don_id IS NULL AND phieu_doi_tra_id IS NOT NULL)
+  ),
+  CONSTRAINT fk_gdtm_hoa_don FOREIGN KEY (hoa_don_id) REFERENCES hoa_don (id),
+  CONSTRAINT fk_gdtm_phieu FOREIGN KEY (phieu_doi_tra_id) REFERENCES phieu_doi_tra (id),
+  CONSTRAINT fk_gdtm_actor FOREIGN KEY (nguoi_thuc_hien_id) REFERENCES tai_khoan (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ---------------------------------------------------------------------
+-- 10a. VIEW (chỉ đọc). NOW() dùng múi giờ của phiên: kết nối phải đặt
 --     time_zone = '+07:00' (xem tài liệu ERD toàn hệ thống, mục quy ước).
 -- ---------------------------------------------------------------------
 
@@ -693,7 +756,7 @@ WHERE d.khuyen_mai_id IS NOT NULL AND h.trang_thai = 'DA_THANH_TOAN'
 GROUP BY d.khuyen_mai_id, h.id, h.ma_hoa_don, h.thanh_toan_luc, h.thu_ngan_id, h.khach_hang_id;
 
 -- ---------------------------------------------------------------------
--- 9b. TRIGGER bảo vệ dữ liệu không được sửa, xóa
+-- 10b. TRIGGER bảo vệ dữ liệu không được sửa, xóa
 -- ---------------------------------------------------------------------
 
 -- BR-KHO-03: thẻ kho chỉ được thêm
@@ -726,6 +789,12 @@ BEGIN
 END//
 DELIMITER ;
 
+-- RFC #273 / POS-12: bản ghi hoàn tiền là nhật ký bất biến.
+CREATE TRIGGER trg_hoan_tien_hd_khong_sua BEFORE UPDATE ON hoan_tien_hoa_don FOR EACH ROW
+  SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'POS-12: hoan_tien_hoa_don chi duoc them';
+CREATE TRIGGER trg_hoan_tien_hd_khong_xoa BEFORE DELETE ON hoan_tien_hoa_don FOR EACH ROW
+  SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'POS-12: hoan_tien_hoa_don khong duoc xoa';
+
 -- BR-POS-07, BR-POS-08: dòng hóa đơn không sửa, không xóa
 CREATE TRIGGER trg_ct_hoa_don_khong_sua BEFORE UPDATE ON ct_hoa_don FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'BR-POS-07: ct_hoa_don khong duoc sua';
@@ -739,7 +808,7 @@ CREATE TRIGGER trg_ct_doi_tra_khong_xoa BEFORE DELETE ON ct_phieu_doi_tra FOR EA
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'BR-DT-03: ct_phieu_doi_tra khong duoc xoa';
 
 -- ---------------------------------------------------------------------
--- 9c. DỮ LIỆU KHỞI TẠO
+-- 10c. DỮ LIỆU KHỞI TẠO
 --     Tài khoản Admin đầu tiên do chương trình khởi tạo (seeder) tạo, vì
 --     mật khẩu phải băm bằng PasswordHasher của ASP.NET Core.
 -- ---------------------------------------------------------------------

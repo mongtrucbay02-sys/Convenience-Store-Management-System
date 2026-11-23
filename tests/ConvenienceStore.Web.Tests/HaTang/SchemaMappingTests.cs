@@ -20,9 +20,9 @@ public sealed class SchemaMappingTests
             .GetTypes().Where(t => !t.IsAbstract && typeof(DbContext).IsAssignableFrom(t)).ToArray());
         using var db = Context();
         var model = db.Model.GetRelationalModel();
-        Assert.Equal(28, SchemaReference.Tables.Length);
+        Assert.Equal(28, SchemaReference.BaselineTables.Length);
         Assert.Equal(3, SchemaReference.Views.Length);
-        Assert.Equal(SchemaReference.Tables, model.Tables.Select(t => t.Name).Order());
+        Assert.Equal(SchemaReference.BaselineTables, model.Tables.Select(t => t.Name).Order());
         Assert.Equal(SchemaReference.Views, model.Views.Select(v => v.Name).Order());
         Assert.All(model.Tables, table => Assert.NotNull(table.PrimaryKey));
         Assert.All(db.Model.GetEntityTypes().Where(e => e.GetViewName() != null),
@@ -37,9 +37,9 @@ public sealed class SchemaMappingTests
             "20261026120030_InitialCreate",
             db.Database.GetMigrations());
         var script = SchemaReference.Normalize(db.GetService<IMigrator>().GenerateScript());
-        var commands = SchemaReference.CreateStatements().ToArray();
+        var commands = SchemaReference.BaselineCreateStatements().ToArray();
         Assert.Equal(41, commands.Length); // 28 tables + 3 views + 10 triggers
-        Assert.Equal(53, SchemaReference.Checks.Length);
+        Assert.Equal(53, SchemaReference.BaselineChecks.Length);
         foreach (var command in commands)
             Assert.Contains(SchemaReference.Normalize(command), script);
     }

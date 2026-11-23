@@ -6,6 +6,19 @@ namespace ConvenienceStore.Web.Tests.HaTang;
 // Only parses the checked-in schema_v1.sql format, not arbitrary SQL.
 internal static class SchemaReference
 {
+    private static readonly string[] ExtensionTables =
+    [
+        "giao_dich_tien_mat",
+        "hoan_tien_hoa_don",
+        "quy_tien_mat"
+    ];
+
+    private static readonly string[] ExtensionTriggers =
+    [
+        "trg_hoan_tien_hd_khong_sua",
+        "trg_hoan_tien_hd_khong_xoa"
+    ];
+
     internal static readonly string Sql = File.ReadAllText(
         Path.Combine(AppContext.BaseDirectory, "SchemaReference", "schema_v1.sql"));
 
@@ -13,12 +26,19 @@ internal static class SchemaReference
         RegexOptions.IgnoreCase).Select(m => m.Groups[1].Value).Order().ToArray();
 
     internal static string[] Tables => Names(@"CREATE TABLE\s+(\w+)");
+    internal static string[] BaselineTables => Tables.Except(ExtensionTables).Order().ToArray();
     internal static string[] Views => Names(@"CREATE VIEW\s+(\w+)");
     internal static string[] Checks => Names(@"CONSTRAINT\s+(\w+)\s+CHECK\s*\(");
+    internal static string[] BaselineChecks => Checks
+        .Except(["ck_quy_tien_mat_so_du", "ck_gdtm_so_tien", "ck_gdtm_lien_ket"])
+        .Order().ToArray();
     internal static string[] Triggers => Regex.Matches(Sql,
         @"CREATE TRIGGER\s+(\w+)\s+(BEFORE|AFTER)\s+(UPDATE|DELETE|INSERT)\s+ON\s+(\w+)",
         RegexOptions.IgnoreCase).Select(m =>
             $"{m.Groups[1]}|{m.Groups[2]}|{m.Groups[3]}|{m.Groups[4]}").Order().ToArray();
+    internal static string[] BaselineTriggers => Triggers
+        .Where(trigger => !ExtensionTriggers.Contains(trigger.Split('|')[0], StringComparer.OrdinalIgnoreCase))
+        .Order().ToArray();
 
     internal static IEnumerable<string> CreateStatements()
     {
@@ -33,6 +53,7 @@ internal static class SchemaReference
                 delimiter = trimmed[10..].Trim();
                 continue;
             }
+
             statement.AppendLine(line);
             if (!trimmed.EndsWith(delimiter, StringComparison.Ordinal)) continue;
             var command = statement.ToString().Trim();
@@ -42,6 +63,11 @@ internal static class SchemaReference
             statement.Clear();
         }
     }
+
+    internal static IEnumerable<string> BaselineCreateStatements() => CreateStatements()
+        .Where(command => !ExtensionTables.Any(table => command.Contains($"{table} ", StringComparison.OrdinalIgnoreCase)
+            || command.Contains($"{table}(", StringComparison.OrdinalIgnoreCase)))
+        .Where(command => !ExtensionTriggers.Any(trigger => command.Contains(trigger, StringComparison.OrdinalIgnoreCase)));
 
     internal static string Normalize(string sql) => Regex.Replace(
         Regex.Replace(sql, @"(?m)^\s*--[^\r\n]*", ""), @"\s+", " ").Trim();

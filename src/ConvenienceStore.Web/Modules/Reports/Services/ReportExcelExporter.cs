@@ -27,8 +27,14 @@ public static class ReportExcelExporter
         rows.Add(Array.Empty<string>());
         rows.Add(["Chỉ số", "Giá trị"]);
 
+        var vietnamese = CultureInfo.GetCultureInfo("vi-VN");
         foreach (var metric in report.Metrics)
-            rows.Add([metric.Label, metric.Format == "currency" ? metric.Value.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) + " ₫" : metric.Value.ToString("N0", CultureInfo.GetCultureInfo("vi-VN"))]);
+            rows.Add([metric.Label, metric.Format switch
+            {
+                "currency" => metric.Value.ToString("N0", vietnamese) + " ₫",
+                "percent" => (metric.Value / 10m).ToString("N1", vietnamese) + "%",
+                _ => metric.Value.ToString("N0", vietnamese)
+            }]);
 
         rows.Add([]);
         rows.Add(report.Columns);
@@ -104,6 +110,8 @@ public static class ReportExcelExporter
         if (query.CategoryId.HasValue) filters.Add($"Danh mục ID={query.CategoryId}");
         if (query.ProductId.HasValue) filters.Add($"Sản phẩm ID={query.ProductId}");
         if (query.CashierId.HasValue) filters.Add($"Thu ngân ID={query.CashierId}");
+        if (query.PromotionId.HasValue) filters.Add($"Chương trình ID={query.PromotionId}");
+        if (!string.IsNullOrWhiteSpace(query.ReturnReason)) filters.Add($"Lý do trả={query.ReturnReason}");
         if (query.GroupBy != "day") filters.Add($"Nhóm={query.GroupBy}");
         if (query.TopN != 10) filters.Add($"Top={query.TopN}");
         if (query.SortBy != "quantity") filters.Add($"Sắp xếp={query.SortBy}");

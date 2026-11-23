@@ -14,6 +14,8 @@ public sealed class ReportQuery
     public int TopN { get; set; } = 10;
     public string SortBy { get; set; } = "quantity";
     public string StockStatus { get; set; } = "all";
+    public string? ReturnReason { get; set; }
+    public long? PromotionId { get; set; }
 }
 
 public sealed record ResolvedReportRange(

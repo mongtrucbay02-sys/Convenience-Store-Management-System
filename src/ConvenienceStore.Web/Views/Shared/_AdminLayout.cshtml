@@ -9,7 +9,8 @@
         ("Dashboard", "Tổng quan báo cáo"), ("Revenue", "Doanh thu theo thời gian"),
         ("Products", "Doanh thu theo sản phẩm"), ("Categories", "Doanh thu theo danh mục"),
         ("Cashiers", "Doanh thu theo thu ngân"), ("Inventory", "Báo cáo tồn kho"),
-        ("Purchases", "Báo cáo nhập hàng"), ("GrossProfit", "Lợi nhuận gộp")
+        ("Purchases", "Báo cáo nhập hàng"), ("GrossProfit", "Lợi nhuận gộp"),
+        ("Returns", "Báo cáo đổi trả"), ("Customers", "Khách hàng và tích điểm"), ("Promotions", "Hiệu quả khuyến mãi")
     };
     bool InArea(string area) => string.Equals(ViewContext.RouteData.Values["area"] as string, area, StringComparison.OrdinalIgnoreCase);
 }

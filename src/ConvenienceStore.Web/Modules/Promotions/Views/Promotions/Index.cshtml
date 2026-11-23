@@ -121,6 +121,8 @@ else
                         @if (isAdmin)
                         {
                             <td class="text-nowrap text-end">
+                                <a class="btn btn-outline-secondary btn-sm" asp-action="Usage" asp-route-id="@p.Id">Lịch sử sử dụng</a>
+                                <a class="btn btn-outline-danger btn-sm" asp-action="Delete" asp-route-id="@p.Id">Xóa</a>
                                 @if (p.DisplayStatus != PromotionDisplayStatus.Ended)
                                 {
                                     <a class="btn btn-outline-secondary btn-sm" asp-action="Edit" asp-route-id="@p.Id">Sửa</a>

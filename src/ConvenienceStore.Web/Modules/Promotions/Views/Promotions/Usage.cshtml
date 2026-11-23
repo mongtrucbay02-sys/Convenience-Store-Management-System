@@ -1,0 +1,11 @@
+@using ConvenienceStore.Web.Modules.Promotions.Services
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model PromotionHistory
+@{ Layout="~/Views/Shared/_AdminLayout.cshtml";ViewData["Title"]="Lịch sử sử dụng khuyến mãi"; }
+<div class="d-flex justify-content-between align-items-center mb-3"><div><h1>Lịch sử sử dụng</h1><p>@Model.Code · @Model.Name</p></div><a class="btn btn-outline-secondary" asp-action="Index">Quay lại</a></div>
+<div class="card p-3 mb-3"><strong>Tổng lượt: @Model.Uses.Count · Tổng tiền giảm: @Model.TotalDiscount.ToString("N0") đ</strong><p class="mb-0">Mỗi hóa đơn tính một lượt cho chương trình. Hóa đơn đã hủy không tính lượt dùng.</p></div>
+@if(Model.Uses.Count==0){<div class="alert alert-info">Chưa có lượt sử dụng khuyến mãi.</div>}
+else {
+<div class="card p-3 table-responsive"><table class="table align-middle"><thead><tr><th>Hóa đơn</th><th>Thời gian (UTC+7)</th><th>Thu ngân</th><th>Khách hàng</th><th class="text-end">Tiền giảm</th></tr></thead><tbody>
+@foreach(var use in Model.Uses){<tr><td>@use.InvoiceCode</td><td>@use.PaidAt.ToString("dd/MM/yyyy HH:mm")</td><td>@use.CashierName</td><td>@use.CustomerName</td><td class="text-end">@use.Discount.ToString("N0") đ</td></tr>}
+</tbody></table></div>}

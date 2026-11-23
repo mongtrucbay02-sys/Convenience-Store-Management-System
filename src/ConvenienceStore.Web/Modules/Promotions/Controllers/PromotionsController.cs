@@ -2,6 +2,7 @@ using ConvenienceStore.Web.Modules.Promotions.Models;
 using ConvenienceStore.Web.Modules.Promotions.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ConvenienceStore.Web.Shared.Errors;
 
 namespace ConvenienceStore.Web.Modules.Promotions.Controllers;
 
@@ -148,6 +149,31 @@ public class PromotionsController : Controller
         else
             TempData["Error"] = result.Error!.Title;
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet,Authorize(Roles=PromotionRoles.Admin)]
+    [ConvenienceStore.Web.Shared.Security.RequirePasswordChanged]
+    public async Task<IActionResult> Usage(long id,[FromServices] PromotionUsageStore store,CancellationToken ct)
+    {
+        try {return View("Usage",await store.HistoryAsync(id,ct));}
+        catch(LoiNghiepVu e) when(e.MaHttp==404) {return NotFound();}
+    }
+
+    [HttpGet,Authorize(Roles=PromotionRoles.Admin)]
+    [ConvenienceStore.Web.Shared.Security.RequirePasswordChanged]
+    public async Task<IActionResult> Delete(long id,[FromServices] PromotionUsageStore store,CancellationToken ct)
+    {
+        try {return View("Delete",await store.HistoryAsync(id,ct));}
+        catch(LoiNghiepVu e) when(e.MaHttp==404) {return NotFound();}
+    }
+
+    [HttpPost,ActionName("Delete"),ValidateAntiForgeryToken,Authorize(Roles=PromotionRoles.Admin)]
+    [ConvenienceStore.Web.Shared.Security.RequirePasswordChanged]
+    public async Task<IActionResult> DeleteConfirmed(long id,bool confirmed,[FromServices] PromotionUsageStore store,CancellationToken ct)
+    {
+        if(!confirmed) return BadRequest("Cần xác nhận xóa chương trình.");
+        try {await store.DeleteAsync(id,ct);TempData["Message"]="Đã xóa chương trình chưa được sử dụng.";return RedirectToAction(nameof(Index));}
+        catch(LoiNghiepVu e) when(e.MaHttp is 404 or 409) {TempData["Error"]=e.Message;return RedirectToAction(nameof(Index));}
     }
 
     // Chọn sản phẩm: tìm kiếm có phân trang (danh mục có thể có hàng nghìn sản phẩm).

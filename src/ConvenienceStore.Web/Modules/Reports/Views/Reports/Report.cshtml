@@ -13,7 +13,7 @@
     string AxisPercent(decimal value) => value.ToString("0.####", CultureInfo.InvariantCulture) + "%";
     string BarPosition(long value) => AxisPercent((Math.Min(value, 0) - (decimal)min) * 100 / scale);
     string BarHeight(long value) => AxisPercent(Math.Abs((decimal)value) * 100 / scale);
-    var actionName = Model.Code switch { "BC-02" => "Revenue", "BC-03" => "Products", "BC-04" => "Categories", "BC-05" => "Cashiers", "BC-06" => "Inventory", "BC-07" => "Purchases", _ => "GrossProfit" };
+    var actionName = Model.Code switch { "BC-02" => "Revenue", "BC-03" => "Products", "BC-04" => "Categories", "BC-05" => "Cashiers", "BC-06" => "Inventory", "BC-07" => "Purchases", "BC-09"=>"Returns", "BC-10"=>"Customers", "BC-11"=>"Promotions", _ => "GrossProfit" };
     var categories = ViewData["ReportCategories"] as Microsoft.AspNetCore.Mvc.Rendering.SelectListItem[];
     var suppliers = ViewData["ReportSuppliers"] as Microsoft.AspNetCore.Mvc.Rendering.SelectListItem[];
     var customRange = string.Equals(Model.Query.Period, "custom", StringComparison.OrdinalIgnoreCase)
@@ -65,6 +65,13 @@
             <div class="col-sm-6 col-lg-2"><label class="form-label" for="supplierId">Nhà cung cấp</label><select class="form-select" id="supplierId" name="SupplierId" asp-items="suppliers"><option value="">Tất cả</option></select></div>
             <div class="col-sm-6 col-lg-2"><label class="form-label" for="productId">Sản phẩm ID</label><input class="form-control" id="productId" type="number" min="1" name="ProductId" value="@Model.Query.ProductId" /></div>
         }
+        @if(Model.Code=="BC-09") {
+            <div class="col-sm-6 col-lg-3"><label for="returnReason" class="form-label">Lý do trả</label><select name="ReturnReason" id="returnReason" class="form-select"><option value="">Tất cả</option>@foreach(var reason in ConvenienceStore.Web.Modules.Reports.Services.WeekEightReportsService.Reasons){<option value="@reason.Key" selected="@(Model.Query.ReturnReason==reason.Key)">@reason.Value</option>}</select></div>
+            <div class="col-sm-6 col-lg-3"><label for="cashierId" class="form-label">Thu ngân</label><select name="CashierId" id="cashierId" class="form-select" asp-items="@(ViewData["ReportCashiers"] as Microsoft.AspNetCore.Mvc.Rendering.SelectListItem[])"><option value="">Tất cả</option></select></div>
+        }
+        @if(Model.Code=="BC-11") {
+            <div class="col-sm-6 col-lg-4"><label for="promotionId" class="form-label">Chương trình</label><select name="PromotionId" id="promotionId" class="form-select" asp-items="@(ViewData["ReportPromotions"] as Microsoft.AspNetCore.Mvc.Rendering.SelectListItem[])"><option value="">Tất cả</option></select></div>
+        }
         <div class="col-sm-6 col-lg-2 d-flex gap-2">
             <button class="btn btn-primary" type="submit">Xem</button>
             @if (Model.Message is null)
@@ -76,6 +83,7 @@
                    asp-route-ProductId="@Model.Query.ProductId" asp-route-CashierId="@Model.Query.CashierId"
                    asp-route-TopN="@Model.Query.TopN" asp-route-SortBy="@Model.Query.SortBy"
                    asp-route-SupplierId="@Model.Query.SupplierId"
+                   asp-route-ReturnReason="@Model.Query.ReturnReason" asp-route-PromotionId="@Model.Query.PromotionId"
                    asp-route-StockStatus="@Model.Query.StockStatus">Xuất Excel</a>
             }
             else
@@ -106,7 +114,7 @@
 {
     <section class="card mb-3"><div class="card-body">
         <h2 class="h6">Biểu đồ</h2>
-        @if (Model.Code is "BC-02" or "BC-08")
+        @if (Model.Code is "BC-02" or "BC-08" or "BC-09" or "BC-10" or "BC-11")
         {
             @if (showProfit)
             {
@@ -115,17 +123,18 @@
                     <span><span class="text-success" aria-hidden="true">■</span> Lợi nhuận gộp</span>
                 </div>
             }
-            <div class="position-relative d-flex" role="img" aria-label="@(showProfit ? "Biểu đồ cột doanh thu thuần và lợi nhuận gộp theo kỳ" : "Biểu đồ cột doanh thu thuần theo kỳ")" style="height:220px">
+            <div class="position-relative d-flex mb-5" role="img" aria-label="Biểu đồ cột @Model.Title" style="height:220px">
                 <div class="position-absolute start-0 end-0 border-top border-secondary" aria-hidden="true" style="bottom:@BarPosition(0)"></div>
                 @foreach (var point in Model.Chart)
                 {
                     <div class="d-flex justify-content-center position-relative" style="flex:1;min-width:0"
-                         title="@point.Label · Doanh thu thuần @point.Value.ToString("N0", vi) ₫@(point.SecondaryValue is long profit ? " · Lợi nhuận gộp " + profit.ToString("N0", vi) + " ₫" : "")">
+                         title="@point.Label · @point.Value.ToString("N0", vi)@(point.SecondaryValue is long profit ? " · Lợi nhuận gộp " + profit.ToString("N0", vi) + " ₫" : "")">
                         <span class="position-absolute bg-primary rounded-top" style="@(showProfit ? "right:51%;width:36%" : "width:72%");max-width:38px;height:@BarHeight(point.Value);bottom:@BarPosition(point.Value)"></span>
                         @if (showProfit && point.SecondaryValue is long secondary)
                         {
                             <span class="position-absolute bg-success rounded-top" style="width:36%;max-width:38px;left:51%;height:@BarHeight(secondary);bottom:@BarPosition(secondary)"></span>
                         }
+                        @if(Model.Code is "BC-09" or "BC-10" or "BC-11"){<span class="position-absolute text-center small" style="top:100%;padding-top:6px;max-width:100%;overflow:hidden">@point.Label</span>}
                     </div>
                 }
             </div>
@@ -163,6 +172,7 @@
                     {
                         <a asp-area="Reports" asp-controller="Reports" asp-action="Detail"
                            asp-route-code="@Model.Code" asp-route-key="@row.Key"
+                           asp-route-ReturnReason="@Model.Query.ReturnReason" asp-route-CashierId="@Model.Query.CashierId" asp-route-PromotionId="@Model.Query.PromotionId"
                            asp-route-Period="@Model.Query.Period" asp-route-From="@Model.Query.From?.ToString("yyyy-MM-dd")"
                            asp-route-To="@Model.Query.To?.ToString("yyyy-MM-dd")" asp-route-GroupBy="@Model.Query.GroupBy">@row.Cells[columnIndex]</a>
                     }
@@ -176,6 +186,8 @@
 </div></section>
 
 <p class="small text-muted mt-2 mb-0">Số liệu theo kỳ đã chọn (UTC+7). Doanh thu và giá vốn sử dụng dữ liệu giao dịch lưu tại thời điểm phát sinh.</p>
+@if(Model.Code=="BC-09"){<p class="small text-muted">Biểu đồ: số lượng hàng trả theo lý do. Một phiếu có thể có nhiều lý do; dòng tổng đếm phiếu không trùng. Tỷ lệ trả dùng doanh thu sau khuyến mãi toàn cửa hàng, chưa trừ hàng trả; mẫu số bằng 0 hiển thị 0%.</p>}
+@if(Model.Code=="BC-11"){<p class="small text-muted">Biểu đồ: lượt dùng theo chương trình. Một đơn dùng nhiều chương trình được xuất hiện ở từng dòng; tổng doanh thu tính theo các đơn không trùng. Giá trị trung bình đơn lấy tại lúc bán, sau khuyến mãi. Hàng trả ghi giảm vào ngày hoàn tất.</p>}
 
 @section Scripts {
     <script>

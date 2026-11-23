@@ -38,7 +38,7 @@ Cột "Trạng thái": **Đã cài đặt** = có code trên `develop`/PR #232; 
 | CP-04 | KM-02, KM-03 | Ảnh khuyến mãi: URL HTTP/HTTPS ≤ 2048 ký tự, lưu xuống CSDL | Đã cài đặt; X3 |
 | R3 | POS-12 | Hủy hóa đơn bị từ chối (`QUY_KHONG_DU`) khi quỹ không đủ, kể cả khi chưa chốt số dư mở | X4: giữ quy tắc; Admin chốt số dư mở trước demo; ghi SRS, HDSD |
 
-## 3. Use case bị cắt hoặc chưa làm
+## 3. Phạm vi use case và các đề xuất cắt
 
 Đề xuất chốt X7, X8, X9 ở issue #257 (hạn 25/11). Use case cắt được SRS ghi "Không thuộc bản nộp" kèm lý do thiếu thời gian.
 
@@ -48,11 +48,13 @@ Cột "Trạng thái": **Đã cài đặt** = có code trên `develop`/PR #232; 
 | DT-06 Duyệt đổi trả ngoại lệ | #239 | Could | Cắt (X7) |
 | DT-07 Danh sách phiếu đổi trả | #237 | Should | Làm nếu xong trước 27/11, không thì cắt (X8) |
 | DT-08 Cấu hình chính sách đổi trả | #253 | Could | Cắt (X7) |
-| BC-09, BC-10, BC-11 | #248, #249, #250 | Could | Cắt (X7) |
-| KM-05, KM-06 | #247, #246 | Could | Cắt (X7) |
+| BC-09, BC-10, BC-11 | #248, #249, #250 | Could | Giữ trong phạm vi: đã triển khai trên `feature/week8-bc-km-20261123`; chờ CI tích hợp, review và staging |
+| KM-05, KM-06 | #247, #246 | Could | Giữ trong phạm vi: đã triển khai trên `feature/week8-bc-km-20261123`; chờ CI tích hợp, review và staging |
 | KH-07 Cấu hình quy tắc tích điểm | #189 | Could | Cắt (X7) |
 | NH-09 Lịch sử nhập theo NCC | #146 | Could | Cắt (X7) |
 | AI-01 Gợi ý số lượng nhập | (chưa có issue) | – | Cắt, giữ thiết kế ADR-001 mục 3.11 (X9) |
+
+Cập nhật của #5 ngày 23/11: rút năm use case BC-09/10/11, KM-05/06 khỏi đề xuất cắt X7 vì đã có code, API/MVC, biểu đồ, chi tiết/Excel và test. Không đồng nghĩa đã nghiệm thu. Xem [báo cáo module tuần 8](../05-implementation/week8-bc-kh-km-report.md) và [báo cáo kiểm thử](../06-testing/test-reports/2026-11-23-week8.md). Các đề xuất cắt của module khác vẫn chờ người phụ trách/nhóm xác nhận; phần Word/PDF cuối phải đồng bộ theo quyết định này.
 
 ## 4. Yêu cầu phi chức năng cần ghi đúng hiện trạng
 

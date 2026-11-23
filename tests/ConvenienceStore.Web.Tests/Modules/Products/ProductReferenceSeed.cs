@@ -7,7 +7,7 @@ namespace ConvenienceStore.Web.Tests.Modules.Products;
 
 internal static class ProductReferenceSeed
 {
-    public static async Task<(uint Product, uint Actor, uint Category)> Unused(CsdlMySqlTam database)
+    public static async Task<(long Product, long Actor, long Category)> Unused(CsdlMySqlTam database)
     {
         var ids = await ProductReadSeed.Create(database);
         var actor = Convert.ToUInt32(await database.DocMotGiaTriAsync("SELECT nguoi_tao_id FROM san_pham WHERE id=@id", ("@id", ids.Active)));
@@ -16,7 +16,7 @@ internal static class ProductReferenceSeed
         return (product, actor, ids.Category);
     }
 
-    public static async Task HeldAndDraft(CsdlMySqlTam db, uint product, uint actor)
+    public static async Task HeldAndDraft(CsdlMySqlTam db, long product, long actor)
     {
         var key = "held_" + Guid.NewGuid().ToString("N"); var supplier = "SUP-" + Guid.NewGuid().ToString("N")[..12]; var receipt = "DR-" + Guid.NewGuid().ToString("N")[..14];
         var phone = "0" + Random.Shared.NextInt64(100000000, 999999999).ToString();
@@ -33,7 +33,7 @@ internal static class ProductReferenceSeed
     }
 
     // SQL fixture, not an executed POS checkout/browser workflow.
-    public static async Task<uint> Invoice(CsdlMySqlTam db, uint product)
+    public static async Task<long> Invoice(CsdlMySqlTam db, long product)
     {
         var name = "snapshot_" + Guid.NewGuid().ToString("N"); var code = "SNAP-" + Guid.NewGuid().ToString("N")[..14];
         await db.ChayAsync("""

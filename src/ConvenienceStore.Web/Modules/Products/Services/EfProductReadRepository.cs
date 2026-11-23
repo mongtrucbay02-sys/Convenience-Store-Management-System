@@ -35,7 +35,7 @@ public sealed class EfProductReadRepository(CuaHangDbContext db) : IProductReadR
                 "tenSanPham" => Order(rows, ordered, x => x.TenSanPham, descending),
                 "trangThai" => Order(rows, ordered, x => x.TrangThai, descending),
                 "ngayTao" => Order(rows, ordered, x => x.NgayTao, descending),
-                "giaBan" => Order(rows, ordered, x => db.VGiaBanHienHanhs.Where(p => p.SanPhamId == x.Id).Select(p => (uint?)p.GiaBan).FirstOrDefault(), descending),
+                "giaBan" => Order(rows, ordered, x => db.VGiaBanHienHanhs.Where(p => p.SanPhamId == x.Id).Select(p => (long?)p.GiaBan).FirstOrDefault(), descending),
                 _ => throw new InvalidOperationException("Query was not validated.")
             };
         }
@@ -43,7 +43,7 @@ public sealed class EfProductReadRepository(CuaHangDbContext db) : IProductReadR
             .Select(x => new ProductListItemDto {
                 Id = x.Id, Ma = x.Ma, TenSanPham = x.TenSanPham, DanhMucId = x.DanhMucId,
                 DanhMuc = new ProductCategoryDto(x.DanhMucId, x.DanhMuc.Ten), DonViTinh = x.DonViTinh,
-                GiaBan = db.VGiaBanHienHanhs.Where(p => p.SanPhamId == x.Id).Select(p => (uint?)p.GiaBan).FirstOrDefault(),
+                GiaBan = db.VGiaBanHienHanhs.Where(p => p.SanPhamId == x.Id).Select(p => (long?)p.GiaBan).FirstOrDefault(),
                 TrangThai = x.TrangThai, PhienBan = x.PhienBan
             }).ToArrayAsync(ct);
         return new(page, total, query.Page, query.Size);

@@ -11,7 +11,7 @@ namespace ConvenienceStore.Web.Modules.Products.Services;
 
 public sealed class EfProductCreationRepository(CuaHangDbContext db, IDichVuKho inventory) : IProductCreationRepository
 {
-    public async Task<uint> CreateAsync(ProductCreateDto input, uint actorId, string? imageUrl = null, CancellationToken ct = default)
+    public async Task<long> CreateAsync(ProductCreateDto input, long actorId, string? imageUrl = null, CancellationToken ct = default)
     {
         input = ProductCreationService.Normalize(input);
         await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, ct);

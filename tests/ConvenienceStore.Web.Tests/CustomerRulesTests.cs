@@ -29,8 +29,10 @@ public sealed class CustomerRulesTests
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => CustomerRules.AdjustedBalance(2, -3));
         Assert.Throws<ArgumentOutOfRangeException>(() => CustomerRules.AdjustedBalance(2, 0));
-        Assert.Throws<ArgumentOutOfRangeException>(() => CustomerRules.AdjustedBalance(uint.MaxValue, 1));
-        Assert.Equal(0u, CustomerRules.AdjustedBalance(2, -2));
+        Assert.Throws<ArgumentOutOfRangeException>(() => CustomerRules.AdjustedBalance(long.MaxValue, 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => CustomerRules.AdjustedBalance(-1, 1));
+        Assert.Equal(0L, CustomerRules.AdjustedBalance(2, -2));
+        Assert.Equal(4294967296L, CustomerRules.AdjustedBalance(uint.MaxValue, 1));
     }
 
     [Theory]

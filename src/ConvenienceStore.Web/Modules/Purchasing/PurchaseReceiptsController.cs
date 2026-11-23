@@ -38,13 +38,13 @@ public sealed class PurchaseReceiptsController(CuaHangDbContext db, PurchaseRece
 
     [HttpGet("GiaNhapGanNhat")]
     [Authorize(Policy = MaQuyen.PhieuNhapLap)]
-    public async Task<IActionResult> LastPrice(uint productId, CancellationToken ct)
+    public async Task<IActionResult> LastPrice(long productId, CancellationToken ct)
     {
-        if (!ModelState.IsValid || productId == 0) return BadRequest();
+        if (!ModelState.IsValid || productId <= 0) return BadRequest();
         var price = await db.CtPhieuNhaps.AsNoTracking()
             .Where(line => line.SanPhamId == productId && line.PhieuNhap.TrangThai == "DA_NHAP_KHO")
             .OrderByDescending(line => line.PhieuNhap.XacNhanLuc).ThenByDescending(line => line.PhieuNhapId)
-            .Select(line => (uint?)line.GiaNhap).FirstOrDefaultAsync(ct);
+            .Select(line => (long?)line.GiaNhap).FirstOrDefaultAsync(ct);
         return Json(new { price });
     }
 
@@ -87,7 +87,7 @@ public sealed class PurchaseReceiptsController(CuaHangDbContext db, PurchaseRece
 
     [HttpGet("{id}")]
     [Authorize(Policy = MaQuyen.PhieuNhapXem)]
-    public async Task<IActionResult> Details(uint id, CancellationToken ct)
+    public async Task<IActionResult> Details(long id, CancellationToken ct)
     {
         var receipt = await db.PhieuNhaps.AsNoTracking().Include(row => row.NhaCungCap)
             .Include(row => row.NguoiLap).Include(row => row.NguoiXacNhan)
@@ -97,7 +97,7 @@ public sealed class PurchaseReceiptsController(CuaHangDbContext db, PurchaseRece
 
     [HttpPost("{id}/XacNhan")]
     [Authorize(Policy = MaQuyen.PhieuNhapXacNhan)]
-    public async Task<IActionResult> Confirm(uint id, CancellationToken ct)
+    public async Task<IActionResult> Confirm(long id, CancellationToken ct)
     {
         try
         {
@@ -118,7 +118,7 @@ public sealed class PurchaseReceiptsController(CuaHangDbContext db, PurchaseRece
 
     [HttpGet("{id}/Sua")]
     [Authorize(Policy = MaQuyen.PhieuNhapLap)]
-    public async Task<IActionResult> Edit(uint id, CancellationToken ct)
+    public async Task<IActionResult> Edit(long id, CancellationToken ct)
     {
         var receipt = await db.PhieuNhaps.AsNoTracking().Include(row => row.CtPhieuNhaps).SingleOrDefaultAsync(row => row.Id == id, ct);
         if (receipt is null) return NotFound();
@@ -132,7 +132,7 @@ public sealed class PurchaseReceiptsController(CuaHangDbContext db, PurchaseRece
 
     [HttpPost("{id}/Sua")]
     [Authorize(Policy = MaQuyen.PhieuNhapLap)]
-    public async Task<IActionResult> Edit(uint id, PurchaseReceiptInput model, CancellationToken ct)
+    public async Task<IActionResult> Edit(long id, PurchaseReceiptInput model, CancellationToken ct)
     {
         if (ModelState.IsValid)
         {
@@ -150,7 +150,7 @@ public sealed class PurchaseReceiptsController(CuaHangDbContext db, PurchaseRece
 
     [HttpPost("{id}/Huy")]
     [Authorize(Policy = MaQuyen.PhieuNhapLap)]
-    public async Task<IActionResult> Cancel(uint id, string? reason, CancellationToken ct)
+    public async Task<IActionResult> Cancel(long id, string? reason, CancellationToken ct)
     {
         try { await receipts.CancelAsync(id, reason, User.LayTaiKhoanId(), ct); }
         catch (ArgumentException ex) { TempData["Loi"] = ex.Message; }
@@ -158,7 +158,7 @@ public sealed class PurchaseReceiptsController(CuaHangDbContext db, PurchaseRece
         return RedirectToAction(nameof(Details), new { id });
     }
 
-    private async Task<IActionResult> CreateView(PurchaseReceiptInput model, CancellationToken ct, uint? id = null)
+    private async Task<IActionResult> CreateView(PurchaseReceiptInput model, CancellationToken ct, long? id = null)
     {
         ViewBag.ReceiptId = id;
         ViewBag.Suppliers = await db.NhaCungCaps.AsNoTracking().Where(row => row.TrangThai == "HOAT_DONG")

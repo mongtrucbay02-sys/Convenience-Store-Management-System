@@ -9,13 +9,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConvenienceStore.Web.Modules.Purchasing;
 
-public sealed record PurchaseLineInput(uint ProductId, int Quantity, uint UnitCost);
-public sealed record QuickPurchaseProduct(string? Name, uint CategoryId, string? Unit, uint SalePrice);
+public sealed record PurchaseLineInput(long ProductId, int Quantity, long UnitCost);
+public sealed record QuickPurchaseProduct(string? Name, long CategoryId, string? Unit, long SalePrice);
 
 public sealed class PurchaseReceiptInput
 {
-    public uint Version { get; set; }
-    public uint SupplierId { get; set; }
+    public long Version { get; set; }
+    public long SupplierId { get; set; }
     public string? SupplierDocument { get; set; }
     public List<PurchaseLineInput> Lines { get; set; } = [];
 }
@@ -27,7 +27,7 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
         var name = input.Name?.Trim();
         var unit = input.Unit?.Trim();
         if (string.IsNullOrEmpty(name) || name.Length > 200 || string.IsNullOrEmpty(unit) ||
-            unit.Length > 20 || input.SalePrice == 0 || input.SalePrice % 100 != 0)
+            unit.Length > 20 || input.SalePrice <= 0 || input.SalePrice % 100 != 0)
             throw new ArgumentException("Nhập tên, đơn vị và giá bán dương chia hết cho 100.");
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
         var category = await db.DocMotGiaTriAsync(
@@ -42,11 +42,11 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
         var product = new SanPham
         {
             Ma = FormattableString.Invariant($"SP-{number:D6}"), TenSanPham = name, DonViTinh = unit,
-            DanhMucId = input.CategoryId, NguoiTaoId = checked((uint)actorId), TrangThai = "DANG_KINH_DOANH"
+            DanhMucId = input.CategoryId, NguoiTaoId = checked((long)actorId), TrangThai = "DANG_KINH_DOANH"
         };
         product.LichSuGia.Add(new LichSuGium
         {
-            GiaBan = input.SalePrice, NguoiTaoId = checked((uint)actorId),
+            GiaBan = input.SalePrice, NguoiTaoId = checked((long)actorId),
             HieuLucTu = clock.GetUtcNow().ToOffset(TimeSpan.FromHours(7)).DateTime
         });
         db.SanPhams.Add(product);
@@ -56,7 +56,7 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
         return product;
     }
 
-    public async Task<uint> CreateAsync(PurchaseReceiptInput input, int actorId, CancellationToken ct)
+    public async Task<long> CreateAsync(PurchaseReceiptInput input, int actorId, CancellationToken ct)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
         var now = clock.GetUtcNow().ToOffset(TimeSpan.FromHours(7)).DateTime;
@@ -70,8 +70,8 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
         var receipt = new PhieuNhap
         {
             MaPhieu = FormattableString.Invariant($"PN-{period}-{serial:D3}"),
-            NgayNhap = now.Date,
-            NguoiLapId = checked((uint)actorId),
+            NgayNhap = DateOnly.FromDateTime(now),
+            NguoiLapId = checked((long)actorId),
             TrangThai = "NHAP"
         };
         await ApplyDraftAsync(receipt, input, ct);
@@ -81,7 +81,7 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
         return receipt.Id;
     }
 
-    public async Task EditAsync(uint id, PurchaseReceiptInput input, CancellationToken ct)
+    public async Task EditAsync(long id, PurchaseReceiptInput input, CancellationToken ct)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
         var receipt = await LockDraftAsync(id, ct);
@@ -92,7 +92,7 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
         await transaction.CommitAsync(ct);
     }
 
-    public async Task CancelAsync(uint id, string? reason, int actorId, CancellationToken ct)
+    public async Task CancelAsync(long id, string? reason, int actorId, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(reason) || reason.Trim().Length > 255)
             throw new ArgumentException("Nhập lý do hủy, tối đa 255 ký tự.");
@@ -100,7 +100,7 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
         var receipt = await LockDraftAsync(id, ct);
         receipt.TrangThai = "DA_HUY";
         receipt.LyDoHuy = reason.Trim();
-        receipt.NguoiHuyId = checked((uint)actorId);
+        receipt.NguoiHuyId = checked((long)actorId);
         receipt.HuyLuc = clock.GetUtcNow().ToOffset(TimeSpan.FromHours(7)).DateTime;
         receipt.PhienBan++;
         await db.SaveChangesAsync(ct);
@@ -110,7 +110,7 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
     private async Task ApplyDraftAsync(PhieuNhap receipt, PurchaseReceiptInput input, CancellationToken ct)
     {
         if (input.Lines.Count is < 1 or > 100 ||
-            input.Lines.Any(line => line.Quantity <= 0 || line.ProductId == 0 || line.ProductId > int.MaxValue))
+            input.Lines.Any(line => line.Quantity <= 0 || line.UnitCost < 0 || line.ProductId <= 0 || line.ProductId > int.MaxValue))
             throw new ArgumentException("Nhập từ 1 đến 100 dòng sản phẩm, với số lượng dương.");
         if (input.SupplierDocument?.Trim().Length > 50)
             throw new ArgumentException("Số chứng từ nhà cung cấp tối đa 50 ký tự.");
@@ -135,7 +135,7 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
 
         receipt.NhaCungCapId = input.SupplierId;
         receipt.SoChungTuNcc = string.IsNullOrWhiteSpace(input.SupplierDocument) ? null : input.SupplierDocument.Trim();
-        receipt.TongTien = lines.Aggregate(0UL, (total, line) => checked(total + (ulong)line.Quantity * line.UnitCost));
+        receipt.TongTien = lines.Aggregate(0L, (total, line) => checked(total + (long)line.Quantity * line.UnitCost));
         var existing = receipt.CtPhieuNhaps.ToDictionary(line => line.SanPhamId);
         db.CtPhieuNhaps.RemoveRange(existing.Values.Where(line => !products.ContainsKey(line.SanPhamId)));
         foreach (var line in lines)
@@ -149,12 +149,12 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
                 };
                 receipt.CtPhieuNhaps.Add(detail);
             }
-            detail.SoLuong = (uint)line.Quantity;
+            detail.SoLuong = (long)line.Quantity;
             detail.GiaNhap = line.UnitCost;
         }
     }
 
-    private async Task<PhieuNhap> LockDraftAsync(uint id, CancellationToken ct)
+    private async Task<PhieuNhap> LockDraftAsync(long id, CancellationToken ct)
     {
         var status = await db.DocMotGiaTriAsync(
             "SELECT trang_thai FROM phieu_nhap WHERE id=@id FOR UPDATE", ct, ("@id", id));
@@ -164,7 +164,7 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
         return await db.PhieuNhaps.Include(row => row.CtPhieuNhaps).SingleAsync(row => row.Id == id, ct);
     }
 
-    public async Task<IReadOnlyList<string>> ConfirmAsync(uint id, int actorId, CancellationToken ct)
+    public async Task<IReadOnlyList<string>> ConfirmAsync(long id, int actorId, CancellationToken ct)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
         var receipt = await LockDraftAsync(id, ct);
@@ -185,12 +185,12 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
             new(LoaiBienDong.NHAP_HANG, checked((int)id), receipt.MaPhieu, actorId, changes), ct);
 
         receipt.TrangThai = "DA_NHAP_KHO";
-        receipt.NguoiXacNhanId = checked((uint)actorId);
+        receipt.NguoiXacNhanId = checked((long)actorId);
         receipt.XacNhanLuc = clock.GetUtcNow().ToOffset(TimeSpan.FromHours(7)).DateTime;
         receipt.PhienBan = checked(receipt.PhienBan + 1);
         await db.SaveChangesAsync(ct);
-        var prices = await db.VGiaBanHienHanhs.Where(price => productIds.Contains(price.SanPhamId))
-            .ToDictionaryAsync(price => price.SanPhamId, price => price.GiaBan, ct);
+        var prices = await db.VGiaBanHienHanhs.Where(price => price.SanPhamId.HasValue && price.GiaBan.HasValue && productIds.Contains(price.SanPhamId.Value))
+            .ToDictionaryAsync(price => price.SanPhamId!.Value, price => price.GiaBan!.Value, ct);
         var warnings = receipt.CtPhieuNhaps.Where(line =>
             prices.TryGetValue(line.SanPhamId, out var price) &&
             result.Dong.Any(change => change.SanPhamId == line.SanPhamId && change.GiaVonSau >= price))

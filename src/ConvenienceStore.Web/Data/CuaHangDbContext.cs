@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ConvenienceStore.Web.Data.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -32,7 +32,7 @@ public partial class CuaHangDbContext : DbContext
         {
             if (entry.State == EntityState.Modified)
             {
-                var phienBanGoc = entry.OriginalValues.GetValue<uint>(
+                var phienBanGoc = entry.OriginalValues.GetValue<long>(
                     nameof(DanhMuc.PhienBan));
                 // Adapt #168's business-property guard while keeping #204/#207's
                 // retry semantics. Detached Update has equal local originals, so
@@ -107,8 +107,23 @@ public partial class CuaHangDbContext : DbContext
 
     public virtual DbSet<VaiTro> VaiTros { get; set; }
 
+    public virtual DbSet<GiaoDichTienMat> GiaoDichTienMats { get; set; }
+    public virtual DbSet<HoanTienHoaDon> HoanTienHoaDons { get; set; }
+    public virtual DbSet<QuyTienMat> QuyTienMats { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+        {
+            ConfigurePostgreSqlModel(modelBuilder);
+            return;
+        }
+
+        // Keep the existing MySQL path while each module's SQL is being ported.
+        modelBuilder.Ignore<GiaoDichTienMat>();
+        modelBuilder.Ignore<HoanTienHoaDon>();
+        modelBuilder.Ignore<QuyTienMat>();
+        modelBuilder.Entity<PhienDangNhap>().Ignore(e => e.HetHanLuc);
+        modelBuilder.Entity<VChuongTrinhKhuyenMai>().Ignore(e => e.AnhUrl);
         modelBuilder.Entity<BoDemChungTu>(entity =>
         {
             entity.HasKey(e => new { e.TienTo, e.Ky }).HasName("PRIMARY");
@@ -232,8 +247,8 @@ public partial class CuaHangDbContext : DbContext
                         j.HasKey("ChuongTrinhId", "SanPhamId").HasName("PRIMARY");
                         j.ToTable("khuyen_mai_san_pham");
                         j.HasIndex(new[] { "SanPhamId" }, "idx_kmsp_san_pham");
-                        j.IndexerProperty<uint>("ChuongTrinhId").HasColumnName("chuong_trinh_id");
-                        j.IndexerProperty<uint>("SanPhamId").HasColumnName("san_pham_id");
+                        j.IndexerProperty<long>("ChuongTrinhId").HasColumnName("chuong_trinh_id");
+                        j.IndexerProperty<long>("SanPhamId").HasColumnName("san_pham_id");
                     });
         });
 
@@ -1509,6 +1524,17 @@ public partial class CuaHangDbContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("ten");
         });
+
+        ApplyLegacyMySqlStorageTypes(modelBuilder);
+
+        // PostgreSQL uses signed 64-bit values; normalize legacy CLR defaults only.
+        foreach (var property in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetProperties()))
+        {
+            var value = property.GetDefaultValue();
+            var type = Nullable.GetUnderlyingType(property.ClrType) ?? property.ClrType;
+            if (value is not null && type.IsPrimitive && value.GetType() != type)
+                property.SetDefaultValue(Convert.ChangeType(value, type, System.Globalization.CultureInfo.InvariantCulture));
+        }
 
         OnModelCreatingPartial(modelBuilder);
     }

@@ -30,7 +30,7 @@ public sealed class ProductCreationPageController(ProductCreationService service
             try {
                 var input = ProductCreationService.Normalize(model.ToRequest());
                 if (model.Anh is not null) imageUrl = await images.StoreAsync(model.Anh, ct);
-                var id = await service.CreateIdAsync(input, checked((uint)User.LayTaiKhoanId()), User.LayMaVaiTro(), ct, imageUrl); return Redirect("/Products/" + id);
+                var id = await service.CreateIdAsync(input, checked((long)User.LayTaiKhoanId()), User.LayMaVaiTro(), ct, imageUrl); return Redirect("/Products/" + id);
             }
             catch (LoiNghiepVu ex) when (ex.MaHttp is 422 or 409)
             {

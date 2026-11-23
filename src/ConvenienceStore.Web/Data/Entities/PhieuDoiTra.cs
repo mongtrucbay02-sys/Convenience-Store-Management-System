@@ -1,23 +1,23 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class PhieuDoiTra
 {
-    public uint Id { get; set; }
+    public long Id { get; set; }
 
     public string MaPhieu { get; set; } = null!;
 
     public string Loai { get; set; } = null!;
 
-    public uint HoaDonGocId { get; set; }
+    public long HoaDonGocId { get; set; }
 
-    public uint? HoaDonMoiId { get; set; }
+    public long? HoaDonMoiId { get; set; }
 
-    public uint? KhachHangId { get; set; }
+    public long? KhachHangId { get; set; }
 
-    public uint ChinhSachId { get; set; }
+    public long ChinhSachId { get; set; }
 
     public string TrangThai { get; set; } = null!;
 
@@ -27,19 +27,19 @@ public partial class PhieuDoiTra
 
     public bool CanDuyetVuotNguong { get; set; }
 
-    public ulong GiaTriHangTra { get; set; }
+    public long GiaTriHangTra { get; set; }
 
-    public ulong TienHoan { get; set; }
+    public long TienHoan { get; set; }
 
-    public ulong TienThuThem { get; set; }
+    public long TienThuThem { get; set; }
 
-    public uint DiemThuHoi { get; set; }
+    public long DiemThuHoi { get; set; }
 
-    public uint ThuNganId { get; set; }
+    public long ThuNganId { get; set; }
 
     public DateTime NgayLap { get; set; }
 
-    public uint? NguoiDuyetId { get; set; }
+    public long? NguoiDuyetId { get; set; }
 
     public DateTime? DuyetLuc { get; set; }
 
@@ -52,6 +52,8 @@ public partial class PhieuDoiTra
     public virtual ICollection<CtPhieuDoiTra> CtPhieuDoiTraPhieuDoiTraNavigations { get; set; } = new List<CtPhieuDoiTra>();
 
     public virtual ICollection<CtPhieuDoiTra> CtPhieuDoiTraPhieuDoiTras { get; set; } = new List<CtPhieuDoiTra>();
+
+    public virtual ICollection<GiaoDichTienMat> GiaoDichTienMats { get; set; } = new List<GiaoDichTienMat>();
 
     public virtual HoaDon HoaDonGoc { get; set; } = null!;
 

@@ -9,7 +9,7 @@ namespace ConvenienceStore.Web.Modules.Products.Services;
 
 public sealed class EfProductLifecycleRepository(CuaHangDbContext db) : IProductLifecycleRepository
 {
-    public Task<ProductLifecyclePreview?> PreviewAsync(uint id, CancellationToken ct = default) => db.SanPhams.AsNoTracking().Where(x => x.Id == id)
+    public Task<ProductLifecyclePreview?> PreviewAsync(long id, CancellationToken ct = default) => db.SanPhams.AsNoTracking().Where(x => x.Id == id)
         .Select(x => new ProductLifecyclePreview(x.Id, x.TenSanPham, x.TrangThai, x.PhienBan, x.TonKho == null ? 0 : x.TonKho.SoLuongTon,
             db.CtGioHangs.Count(d => d.SanPhamId == x.Id && d.GioHang.TrangThai == "TAM_GIU"),
             db.CtPhieuNhaps.Count(d => d.SanPhamId == x.Id && d.PhieuNhap.TrangThai == "NHAP"),
@@ -17,7 +17,7 @@ public sealed class EfProductLifecycleRepository(CuaHangDbContext db) : IProduct
                 || db.CtKiemKes.Any(d => d.SanPhamId == x.Id) || db.CtXuatHuys.Any(d => d.SanPhamId == x.Id) || db.CtGioHangs.Any(d => d.SanPhamId == x.Id) || x.ChuongTrinhs.Any(),
             x.DanhMuc.TrangThai, x.TonKho != null)).SingleOrDefaultAsync(ct);
 
-    public async Task<ProductLifecyclePreview> ExecuteAsync(uint id, ProductLifecycleOperation operation, ProductLifecycleCommand input, CancellationToken ct = default)
+    public async Task<ProductLifecyclePreview> ExecuteAsync(long id, ProductLifecycleOperation operation, ProductLifecycleCommand input, CancellationToken ct = default)
     {
         ProductLifecycleRules.Validate(input);
         await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, ct);

@@ -8,14 +8,14 @@ namespace ConvenienceStore.Web.Modules.Products.Services;
 
 public sealed class EfCategoryRemovalRepository(CuaHangDbContext db) : ICategoryRemovalRepository
 {
-    public Task<CategoryRemovalPreviewDto?> PreviewAsync(uint id, CancellationToken ct = default) => db.DanhMucs.AsNoTracking().Where(x => x.Id == id)
+    public Task<CategoryRemovalPreviewDto?> PreviewAsync(long id, CancellationToken ct = default) => db.DanhMucs.AsNoTracking().Where(x => x.Id == id)
         .Select(x => new CategoryRemovalPreviewDto(x.Id, x.Ten, x.TrangThai, x.PhienBan,
             db.SanPhams.Count(p => p.DanhMucId == x.Id), db.SanPhams.Count(p => p.DanhMucId == x.Id && p.TrangThai == "DANG_KINH_DOANH"),
             db.PhieuKiemKes.Any(p => p.DanhMucId == x.Id))).SingleOrDefaultAsync(ct);
-    public Task<CategoryRemovalResult> DeleteAsync(uint id, uint version, CancellationToken ct = default) => Change(id, version, false, ct);
-    public Task<CategoryRemovalResult> HideAsync(uint id, uint version, CancellationToken ct = default) => Change(id, version, true, ct);
+    public Task<CategoryRemovalResult> DeleteAsync(long id, long version, CancellationToken ct = default) => Change(id, version, false, ct);
+    public Task<CategoryRemovalResult> HideAsync(long id, long version, CancellationToken ct = default) => Change(id, version, true, ct);
 
-    private async Task<CategoryRemovalResult> Change(uint id, uint version, bool hide, CancellationToken ct)
+    private async Task<CategoryRemovalResult> Change(long id, long version, bool hide, CancellationToken ct)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, ct);
         var tracked = db.ChangeTracker.Entries<DanhMuc>().SingleOrDefault(x => x.Entity.Id == id);

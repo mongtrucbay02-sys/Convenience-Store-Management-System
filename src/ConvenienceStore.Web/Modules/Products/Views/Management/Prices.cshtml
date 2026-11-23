@@ -1,6 +1,6 @@
 @using ConvenienceStore.Web.Modules.Products.DTOs
 @model PagedResultDto<ProductPriceDto>
-@{ Layout = "~/Views/Shared/_Layout.cshtml"; var id = (uint)ViewData["ProductId"]!; var scheduled = (bool)ViewData["ScheduledOnly"]!; ViewData["Title"] = scheduled ? "Giá đã lên lịch" : "Lịch sử giá"; }
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; var id = (long)ViewData["ProductId"]!; var scheduled = (bool)ViewData["ScheduledOnly"]!; ViewData["Title"] = scheduled ? "Giá đã lên lịch" : "Lịch sử giá"; }
 <a href="/Products/@id">Chi tiết sản phẩm</a><h1>@ViewData["Title"]</h1>
 @if(ViewData["PriceError"] is string error){<p role="alert">@error</p>}
 else if(Model.Items.Count == 0){<p>Không có giá ở trang này</p>}

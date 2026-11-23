@@ -8,7 +8,7 @@ namespace ConvenienceStore.Web.Modules.Products.Services;
 
 public sealed class EfProductEditRepository(CuaHangDbContext db) : IProductEditRepository
 {
-    public async Task UpdateAsync(uint id, ProductEditDto input, string? imageUrl = null, CancellationToken ct = default)
+    public async Task UpdateAsync(long id, ProductEditDto input, string? imageUrl = null, CancellationToken ct = default)
     {
         input = ProductEditService.Normalize(input);
         await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, ct);

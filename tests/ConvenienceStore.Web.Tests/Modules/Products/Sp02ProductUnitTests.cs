@@ -20,7 +20,7 @@ public sealed class Sp02ProductUnitTests
         Assert.Equal(7, result.TonKho); Assert.Equal(5, result.NguongToiThieu);
         Assert.Equal(role == "AD" ? 8000m : null, result.GiaVon);
         Assert.Equal(role == "AD", result.LichSuGia is not null);
-        Assert.Equal(role == "AD" ? 3u : null, result.GiaDaLenLich.Items[0].NguoiTaoId);
+        Assert.Equal(role == "AD" ? 3L : null, result.GiaDaLenLich.Items[0].NguoiTaoId);
     }
 
     [Fact]
@@ -50,12 +50,12 @@ public sealed class Sp02ProductUnitTests
     private sealed class DetailStub : IProductDetailRepository
     {
         public bool ActiveOnly; public int PriceCalls; public bool Missing;
-        public Task<ProductDetailsDto?> FindAsync(uint id, bool activeOnly, CancellationToken ct = default)
+        public Task<ProductDetailsDto?> FindAsync(long id, bool activeOnly, CancellationToken ct = default)
         {
             ActiveOnly = activeOnly;
             return Task.FromResult<ProductDetailsDto?>(Missing ? null : new() { Id = id, Ma = "P", TenSanPham = "Product", DanhMuc = new(1, "Category"), DonViTinh = "Unit", TrangThai = "DANG_KINH_DOANH" });
         }
-        public Task<PagedResultDto<ProductPriceDto>> PricesAsync(uint id, ProductPricesQuery query, CancellationToken ct = default)
+        public Task<PagedResultDto<ProductPriceDto>> PricesAsync(long id, ProductPricesQuery query, CancellationToken ct = default)
         { PriceCalls++; return Task.FromResult(new PagedResultDto<ProductPriceDto>([new(1, 10000, DateTimeOffset.UtcNow, 3, DateTimeOffset.UtcNow, null, null)], 1, 1, 20)); }
     }
 

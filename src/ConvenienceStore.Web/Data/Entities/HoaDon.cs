@@ -1,41 +1,41 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class HoaDon
 {
-    public uint Id { get; set; }
+    public long Id { get; set; }
 
     public string MaHoaDon { get; set; } = null!;
 
-    public uint GioHangId { get; set; }
+    public long GioHangId { get; set; }
 
-    public uint ThuNganId { get; set; }
+    public long ThuNganId { get; set; }
 
-    public uint? KhachHangId { get; set; }
+    public long? KhachHangId { get; set; }
 
     public DateTime ThanhToanLuc { get; set; }
 
-    public ulong TongTienHang { get; set; }
+    public long TongTienHang { get; set; }
 
-    public ulong TongGiam { get; set; }
+    public long TongGiam { get; set; }
 
-    public ulong TongThanhToan { get; set; }
+    public long TongThanhToan { get; set; }
 
-    public ulong TienTruHangDoi { get; set; }
+    public long TienTruHangDoi { get; set; }
 
-    public ulong TienKhachDua { get; set; }
+    public long TienKhachDua { get; set; }
 
-    public ulong TienThua { get; set; }
+    public long TienThua { get; set; }
 
-    public uint? SoTienMotDiem { get; set; }
+    public long? SoTienMotDiem { get; set; }
 
-    public uint DiemCong { get; set; }
+    public long DiemCong { get; set; }
 
     public string TrangThai { get; set; } = null!;
 
-    public uint? NguoiHuyId { get; set; }
+    public long? NguoiHuyId { get; set; }
 
     public DateTime? HuyLuc { get; set; }
 
@@ -43,7 +43,11 @@ public partial class HoaDon
 
     public virtual ICollection<CtHoaDon> CtHoaDons { get; set; } = new List<CtHoaDon>();
 
+    public virtual ICollection<GiaoDichTienMat> GiaoDichTienMats { get; set; } = new List<GiaoDichTienMat>();
+
     public virtual GioHang GioHang { get; set; } = null!;
+
+    public virtual HoanTienHoaDon? HoanTienHoaDon { get; set; }
 
     public virtual KhachHang? KhachHang { get; set; }
 

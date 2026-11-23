@@ -18,7 +18,7 @@ public sealed class CustomerService(CuaHangDbContext db)
         if (search.Length != 0)
         {
             var pattern = "%" + search + "%";
-            uint? code = uint.TryParse(search, out var parsed) && parsed.ToString() == search
+            long? code = long.TryParse(search, out var parsed) && parsed.ToString() == search
                 ? parsed : null;
             query = query.Where(customer => EF.Functions.Like(customer.HoTen!, pattern)
                 || EF.Functions.Like(customer.SoDienThoai!, pattern)
@@ -40,23 +40,23 @@ public sealed class CustomerService(CuaHangDbContext db)
             }).ToListAsync(ct);
         return rows.Select(row => new CustomerRow(row.Id, row.HoTen!,
             admin ? row.SoDienThoai! : CustomerRules.MaskPhone(row.SoDienThoai),
-            row.DiemHienCo, (ulong)row.Spending, row.LastPurchase, row.PhienBan)).ToList();
+            row.DiemHienCo, (long)row.Spending, row.LastPurchase, row.PhienBan)).ToList();
     }
 
-    public async Task<CustomerInput> GetInputAsync(uint id, CancellationToken ct)
+    public async Task<CustomerInput> GetInputAsync(long id, CancellationToken ct)
     {
         var k = await db.KhachHangs.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id && x.TrangThai == "HOAT_DONG", ct)
             ?? throw LoiNghiepVu.KhongTimThay("Không tìm thấy khách hàng.");
         return new CustomerInput { Name = k.HoTen!, Phone = k.SoDienThoai!, Email = k.Email,
-            BirthDate = k.NgaySinh, Gender = k.GioiTinh, Version = k.PhienBan };
+            BirthDate = k.NgaySinh?.ToDateTime(TimeOnly.MinValue), Gender = k.GioiTinh, Version = k.PhienBan };
     }
 
-    public async Task<uint> SaveAsync(uint? id, CustomerInput input, int actor, CancellationToken ct)
+    public async Task<long> SaveAsync(long? id, CustomerInput input, int actor, CancellationToken ct)
     {
         Validate(input);
         await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
         KhachHang customer;
-        if (id is uint customerId)
+        if (id is long customerId)
         {
             await LockAsync(customerId, ct);
             var tracked = db.KhachHangs.Local.SingleOrDefault(row => row.Id == customerId);
@@ -68,11 +68,11 @@ public sealed class CustomerService(CuaHangDbContext db)
         }
         else
         {
-            customer = new KhachHang { NguoiTaoId = checked((uint)actor), TrangThai = "HOAT_DONG" };
+            customer = new KhachHang { NguoiTaoId = checked((long)actor), TrangThai = "HOAT_DONG" };
         }
         var duplicate = await db.KhachHangs.AsNoTracking()
             .Where(customer => customer.SoDienThoai == input.Phone && customer.Id != id)
-            .Select(customer => (uint?)customer.Id)
+            .Select(customer => (long?)customer.Id)
             .FirstOrDefaultAsync(ct);
         if (duplicate.HasValue)
             throw LoiNghiepVu.XungDot(MaLoiChung.TrungDuLieu,
@@ -80,7 +80,7 @@ public sealed class CustomerService(CuaHangDbContext db)
         customer.HoTen = input.Name.Trim();
         customer.SoDienThoai = input.Phone;
         customer.Email = string.IsNullOrWhiteSpace(input.Email) ? null : input.Email.Trim();
-        customer.NgaySinh = input.BirthDate?.Date;
+        customer.NgaySinh = input.BirthDate.HasValue ? DateOnly.FromDateTime(input.BirthDate.Value) : null;
         customer.GioiTinh = string.IsNullOrEmpty(input.Gender) ? null : input.Gender;
         if (id.HasValue)
             customer.PhienBan++;
@@ -101,7 +101,7 @@ public sealed class CustomerService(CuaHangDbContext db)
         return customer.Id;
     }
 
-    public async Task<CustomerHistory> HistoryAsync(uint id, bool admin, CancellationToken ct)
+    public async Task<CustomerHistory> HistoryAsync(long id, bool admin, CancellationToken ct)
     {
         var input = await GetInputAsync(id, ct);
         var invoices = await db.HoaDons
@@ -123,14 +123,14 @@ public sealed class CustomerService(CuaHangDbContext db)
         var summary = await db.DocMotDongAsync("""
             SELECT COALESCE(SUM(tong_thanh_toan),0), MAX(thanh_toan_luc)
             FROM hoa_don WHERE khach_hang_id=@id AND trang_thai='DA_THANH_TOAN'
-            """, r => new { Total = Convert.ToUInt64(r[0]), Last = r.IsDBNull(1) ? (DateTime?)null : r.GetDateTime(1) }, ct, ("@id", id));
+            """, r => new { Total = Convert.ToInt64(r[0]), Last = r.IsDBNull(1) ? (DateTime?)null : r.GetDateTime(1) }, ct, ("@id", id));
         var balance = await db.KhachHangs.AsNoTracking().Where(x => x.Id == id).Select(x => x.DiemHienCo).SingleAsync(ct);
         var customer = new CustomerRow(id, input.Name, admin ? input.Phone : CustomerRules.MaskPhone(input.Phone),
             balance, summary!.Total, summary.Last, input.Version);
         return new(customer, invoices, points);
     }
 
-    public async Task DeleteAsync(uint id, CancellationToken ct)
+    public async Task DeleteAsync(long id, CancellationToken ct)
     {
         await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
         await LockAsync(id, ct);
@@ -154,7 +154,7 @@ public sealed class CustomerService(CuaHangDbContext db)
         await tx.CommitAsync(ct);
     }
 
-    public async Task AdjustAsync(uint id, PointAdjustment input, int actor, CancellationToken ct)
+    public async Task AdjustAsync(long id, PointAdjustment input, int actor, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(input.Reason) || input.Reason.Trim().Length > 500)
             throw LoiNghiepVu.DuLieuKhongHopLe("reason", "Lý do bắt buộc, tối đa 500 ký tự.");
@@ -167,10 +167,10 @@ public sealed class CustomerService(CuaHangDbContext db)
         await tx.CommitAsync(ct);
     }
 
-    private async Task<uint> LockAsync(uint id, CancellationToken ct)
+    private async Task<long> LockAsync(long id, CancellationToken ct)
     {
         var value = await db.DocMotGiaTriAsync("SELECT diem_hien_co FROM khach_hang WHERE id=@id AND trang_thai='HOAT_DONG' FOR UPDATE", ct, ("@id", id));
-        return value == null ? throw LoiNghiepVu.KhongTimThay("Không tìm thấy khách hàng.") : Convert.ToUInt32(value);
+        return value == null ? throw LoiNghiepVu.KhongTimThay("Không tìm thấy khách hàng.") : Convert.ToInt64(value);
     }
     private static void Validate(CustomerInput input)
     {

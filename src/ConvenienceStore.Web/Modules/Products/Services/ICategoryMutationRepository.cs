@@ -4,9 +4,9 @@ namespace ConvenienceStore.Web.Modules.Products.Services;
 
 public interface ICategoryMutationRepository
 {
-    Task<CategoryDetailsDto?> FindAsync(uint id, CancellationToken ct = default);
+    Task<CategoryDetailsDto?> FindAsync(long id, CancellationToken ct = default);
     Task<CategoryMutationResult> CreateAsync(CategoryMutationDto input,
         CancellationToken cancellationToken = default);
-    Task<CategoryMutationResult> UpdateAsync(uint id, CategoryUpdateDto input,
+    Task<CategoryMutationResult> UpdateAsync(long id, CategoryUpdateDto input,
         CancellationToken cancellationToken = default);
 }

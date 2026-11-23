@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class TheKho
 {
-    public ulong Id { get; set; }
+    public long Id { get; set; }
 
-    public uint SanPhamId { get; set; }
+    public long SanPhamId { get; set; }
 
     public string LoaiBienDong { get; set; } = null!;
 
     public string MaChungTu { get; set; } = null!;
 
-    public uint ChungTuId { get; set; }
+    public long ChungTuId { get; set; }
 
     public int SoLuongThayDoi { get; set; }
 
@@ -23,7 +23,7 @@ public partial class TheKho
 
     public decimal GiaVonSau { get; set; }
 
-    public uint NguoiThucHienId { get; set; }
+    public long NguoiThucHienId { get; set; }
 
     public DateTime ThoiDiem { get; set; }
 

@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class CtPhieuDoiTra
 {
-    public uint PhieuDoiTraId { get; set; }
+    public long PhieuDoiTraId { get; set; }
 
-    public uint SanPhamId { get; set; }
+    public long SanPhamId { get; set; }
 
-    public uint HoaDonId { get; set; }
+    public long HoaDonId { get; set; }
 
-    public uint SoLuong { get; set; }
+    public long SoLuong { get; set; }
 
-    public uint DonGiaThucTra { get; set; }
+    public long DonGiaThucTra { get; set; }
 
     public string LyDo { get; set; } = null!;
 
@@ -27,7 +27,7 @@ public partial class CtPhieuDoiTra
 
     public decimal GiaVon { get; set; }
 
-    public ulong? ThanhTien { get; set; }
+    public long? ThanhTien { get; set; }
 
     public decimal? GiaTriHuy { get; set; }
 

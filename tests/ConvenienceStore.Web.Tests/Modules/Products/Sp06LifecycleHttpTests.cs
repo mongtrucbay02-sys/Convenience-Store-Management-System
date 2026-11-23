@@ -38,7 +38,7 @@ public sealed class Sp06LifecycleHttpTests(CsdlMySqlTam db) : IClassFixture<Csdl
         using var changed = await client.PostAsJsonAsync($"/api/v1/products/{ids.Active}/discontinue", body with { xacNhanTonKho = true }); Assert.Equal(HttpStatusCode.OK, changed.StatusCode);
         using var j = JsonDocument.Parse(await changed.Content.ReadAsStringAsync()); Assert.Equal("NGUNG_KINH_DOANH", j.RootElement.GetProperty("trangThai").GetString()); Assert.Equal(2, j.RootElement.GetProperty("phienBan").GetInt32());
         Assert.Equal(7, Convert.ToInt32(await db.DocMotGiaTriAsync("SELECT so_luong_ton FROM ton_kho WHERE san_pham_id=@id", ("@id", ids.Active))));
-        using var active = JsonDocument.Parse(await client.GetStringAsync($"/api/v1/products?danhMucId={ids.Category}&trangThai=DANG_KINH_DOANH")); Assert.DoesNotContain(active.RootElement.GetProperty("items").EnumerateArray(), x => x.GetProperty("id").GetUInt32() == ids.Active);
+        using var active = JsonDocument.Parse(await client.GetStringAsync($"/api/v1/products?danhMucId={ids.Category}&trangThai=DANG_KINH_DOANH")); Assert.DoesNotContain(active.RootElement.GetProperty("items").EnumerateArray(), x => x.GetProperty("id").GetInt64() == ids.Active);
         Assert.Equal(HttpStatusCode.OK, (await client.PostAsJsonAsync($"/api/v1/products/{ids.Active}/reactivate", body with { phienBan = 2 })).StatusCode);
         Assert.Equal(HttpStatusCode.Conflict, (await client.PostAsJsonAsync($"/api/v1/products/{ids.Active}/reactivate", body with { phienBan = 3 })).StatusCode);
     }
@@ -82,10 +82,10 @@ public sealed class Sp06LifecycleHttpTests(CsdlMySqlTam db) : IClassFixture<Csdl
         var responses = await Task.WhenAll(first.PostAsJsonAsync($"/api/v1/products/{ids.Product}/discontinue", body), second.PostAsJsonAsync($"/api/v1/products/{ids.Product}/discontinue", body));
         Assert.Equal(new[] { 200, 409 }, responses.Select(x => (int)x.StatusCode).Order().ToArray()); foreach(var response in responses) response.Dispose();
         Assert.Equal(HttpStatusCode.NotFound, (await first.PostAsJsonAsync("/api/v1/products/4294967295/discontinue", body)).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await Delete(first, uint.MaxValue, body)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await Delete(first, 4294967295L, body)).StatusCode);
     }
 
-    internal static async Task<HttpResponseMessage> Delete(HttpClient client, uint id, object body)
+    internal static async Task<HttpResponseMessage> Delete(HttpClient client, long id, object body)
     { using var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/products/{id}") { Content = JsonContent.Create(body) }; return await client.SendAsync(request); }
 
     [Fact]

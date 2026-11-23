@@ -6,10 +6,10 @@ namespace ConvenienceStore.Web.Modules.Products.DTOs;
 /// Các trường đang ở trạng thái draft, chờ đối chiếu ERD/API.
 /// </summary>
 public sealed record CategoryListItemDto(
-    uint Id,
+    long Id,
     string Ten,
     bool KhongDoiTra,
     int SoSanPham,
     string TrangThai,
-    uint PhienBan
+    long PhienBan
 );

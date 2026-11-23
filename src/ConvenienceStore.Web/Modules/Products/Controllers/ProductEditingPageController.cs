@@ -13,7 +13,7 @@ public sealed class ProductEditingPageController(ProductEditService service, Pro
 {
     private const string Template = "~/Modules/Products/Views/Management/Edit.cshtml";
     [HttpGet("/Products/{id}/Edit")]
-    public async Task<IActionResult> Edit(uint id, CancellationToken ct)
+    public async Task<IActionResult> Edit(long id, CancellationToken ct)
     {
         if (User.DangPhaiDoiMatKhau()) return Forbid();
         try {
@@ -24,7 +24,7 @@ public sealed class ProductEditingPageController(ProductEditService service, Pro
     }
 
     [HttpPost("/Products/{id}/Edit"), ValidateAntiForgeryToken, RequestSizeLimit(3 * 1024 * 1024)]
-    public async Task<IActionResult> Edit(uint id, [Bind("TenSanPham,DanhMucId,DonViTinh,MoTa,NguongToiThieu,PhienBan,Anh")] ProductEditModel model, CancellationToken ct)
+    public async Task<IActionResult> Edit(long id, [Bind("TenSanPham,DanhMucId,DonViTinh,MoTa,NguongToiThieu,PhienBan,Anh")] ProductEditModel model, CancellationToken ct)
     {
         if (User.DangPhaiDoiMatKhau()) return Forbid(); model.Id = id;
         if (!ModelState.IsValid) Response.StatusCode = 422;

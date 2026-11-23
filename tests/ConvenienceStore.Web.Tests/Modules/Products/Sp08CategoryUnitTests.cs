@@ -8,7 +8,7 @@ public sealed class Sp08CategoryUnitTests
 {
     private sealed class Repository : ICategoryMutationRepository
     {
-        public Task<CategoryDetailsDto?> FindAsync(uint id, CancellationToken ct = default) => Task.FromResult<CategoryDetailsDto?>(null);
+        public Task<CategoryDetailsDto?> FindAsync(long id, CancellationToken ct = default) => Task.FromResult<CategoryDetailsDto?>(null);
         public int Calls;
         public CategoryMutationDto? Created;
         public CategoryUpdateDto? Updated;
@@ -19,7 +19,7 @@ public sealed class Sp08CategoryUnitTests
             Created = input;
             return Task.FromResult(new CategoryMutationResult(CategoryMutationStatus.Success));
         }
-        public Task<CategoryMutationResult> UpdateAsync(uint id, CategoryUpdateDto input,
+        public Task<CategoryMutationResult> UpdateAsync(long id, CategoryUpdateDto input,
             CancellationToken cancellationToken = default)
         {
             Calls++;
@@ -73,6 +73,6 @@ public sealed class Sp08CategoryUnitTests
             (await service.UpdateAsync(1, new(" Fresh ", " Note ", true, 2))).Status);
         Assert.Equal("Fresh", repo.Updated?.Ten);
         Assert.Equal("Note", repo.Updated?.MoTa);
-        Assert.Equal((uint)2, repo.Updated?.PhienBan);
+        Assert.Equal((long)2, repo.Updated?.PhienBan);
     }
 }

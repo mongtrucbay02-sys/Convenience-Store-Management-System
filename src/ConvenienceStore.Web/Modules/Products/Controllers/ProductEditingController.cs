@@ -14,5 +14,5 @@ public sealed class ProductEditingController(ProductEditService service) : Contr
 {
     /// <summary>SP-04 Edit metadata/threshold with optimistic concurrency; price and code are immutable here.</summary>
     [HttpPut]
-    public async Task<IActionResult> Update(uint id, ProductEditDto input, CancellationToken ct) => Ok(await service.UpdateAsync(id, input, User.LayMaVaiTro(), ct));
+    public async Task<IActionResult> Update(long id, ProductEditDto input, CancellationToken ct) => Ok(await service.UpdateAsync(id, input, User.LayMaVaiTro(), ct));
 }

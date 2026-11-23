@@ -8,7 +8,7 @@ namespace ConvenienceStore.Web.Modules.Products.Services;
 
 public sealed class EfCategoryMutationRepository(CuaHangDbContext db):ICategoryMutationRepository
 {
-    public Task<CategoryDetailsDto?> FindAsync(uint id,CancellationToken ct=default) => db.DanhMucs.AsNoTracking()
+    public Task<CategoryDetailsDto?> FindAsync(long id,CancellationToken ct=default) => db.DanhMucs.AsNoTracking()
         .Where(x=>x.Id==id).Select(x=>new CategoryDetailsDto(x.Id,x.Ten,x.MoTa,x.KhongDoiTra,x.TrangThai,x.PhienBan)).SingleOrDefaultAsync(ct);
 
     public async Task<CategoryMutationResult> CreateAsync(CategoryMutationDto input,CancellationToken cancellationToken=default)
@@ -20,7 +20,7 @@ public sealed class EfCategoryMutationRepository(CuaHangDbContext db):ICategoryM
         {db.Entry(row).State=EntityState.Detached;return new(CategoryMutationStatus.Duplicate);}
         return new(CategoryMutationStatus.Success,Map(row));
     }
-    public async Task<CategoryMutationResult> UpdateAsync(uint id,CategoryUpdateDto input,CancellationToken cancellationToken=default)
+    public async Task<CategoryMutationResult> UpdateAsync(long id,CategoryUpdateDto input,CancellationToken cancellationToken=default)
     {
         var row=await db.DanhMucs.SingleOrDefaultAsync(x=>x.Id==id,cancellationToken);
         if(row is null)return new(CategoryMutationStatus.NotFound);

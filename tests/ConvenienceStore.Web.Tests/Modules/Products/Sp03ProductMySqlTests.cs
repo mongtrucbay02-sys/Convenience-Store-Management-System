@@ -21,7 +21,7 @@ public sealed class Sp03ProductMySqlTests(CsdlMySqlTam database) : IClassFixture
         var id = await repo.CreateAsync(input, actor);
         var stock = await db.TonKhos.AsNoTracking().SingleAsync(x => x.SanPhamId == id); Assert.Equal(0, stock.SoLuongTon); Assert.Equal(0, stock.GiaVonBinhQuan); Assert.Equal(5, stock.NguongToiThieu);
         Assert.Equal(1, await db.LichSuGia.CountAsync(x => x.SanPhamId == id));
-        Assert.Equal(10000u, (await db.VGiaBanHienHanhs.SingleAsync(x => x.SanPhamId == id)).GiaBan);
+        Assert.Equal(10000L, (await db.VGiaBanHienHanhs.SingleAsync(x => x.SanPhamId == id)).GiaBan);
         Assert.Equal(409, (await Assert.ThrowsAsync<LoiNghiepVu>(() => repo.CreateAsync(input, actor))).MaHttp);
     }
 

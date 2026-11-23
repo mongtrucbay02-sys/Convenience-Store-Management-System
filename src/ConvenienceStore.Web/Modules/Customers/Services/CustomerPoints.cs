@@ -9,8 +9,8 @@ namespace ConvenienceStore.Web.Modules.Customers.Services;
 /// <summary>Shared append-only ledger for checkout, returns and invoice cancellation. Caller owns the transaction.</summary>
 public static class CustomerPoints
 {
-    public static async Task<uint> ChangeAsync(CuaHangDbContext db, uint customerId, int delta,
-        string type, int actor, uint? invoiceId, uint? returnId, string? reason, CancellationToken ct)
+    public static async Task<long> ChangeAsync(CuaHangDbContext db, long customerId, int delta,
+        string type, int actor, long? invoiceId, long? returnId, string? reason, CancellationToken ct)
     {
         if (db.Database.CurrentTransaction == null)
             throw new InvalidOperationException("Thay đổi điểm phải cùng giao dịch nghiệp vụ.");
@@ -35,11 +35,11 @@ public static class CustomerPoints
             {
                 if (Convert.ToInt32(existing) != delta)
                     throw LoiNghiepVu.XungDot(MaLoiChung.XungDotDuLieu, "Sự kiện đã ghi với số điểm khác.");
-                return Convert.ToUInt32(current);
+                return Convert.ToInt64(current);
             }
         }
-        uint next;
-        try { next = CustomerRules.AdjustedBalance(Convert.ToUInt32(current), delta); }
+        long next;
+        try { next = CustomerRules.AdjustedBalance(Convert.ToInt64(current), delta); }
         catch (ArgumentOutOfRangeException ex) { throw LoiNghiepVu.DuLieuKhongHopLe("points", ex.Message); }
         await db.ChayAsync("UPDATE khach_hang SET diem_hien_co=@p,phien_ban=phien_ban+1 WHERE id=@id", ct, ("@p", next), ("@id", customerId));
         await db.ChayAsync("""

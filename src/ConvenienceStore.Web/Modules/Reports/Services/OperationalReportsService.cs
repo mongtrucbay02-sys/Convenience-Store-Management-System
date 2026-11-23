@@ -248,13 +248,14 @@ public sealed class OperationalReportsService : IOperationalReportsService
           }).OrderBy(x => x.Product.CategoryName, StringComparer.Ordinal).ThenBy(x => x.Product.Name, StringComparer.Ordinal).ToArray();
         var lowCount = result.Count(p => p.Product.CurrentStock > 0 && p.Product.CurrentStock <= p.Product.ReorderPoint);
         var outCount = result.Count(p => p.Product.CurrentStock == 0);
-        var value = result.Sum(x => (long)x.Product.CurrentStock * x.Product.UnitCost);
+        // Làm tròn giá trị tồn từng dòng trước khi cộng để dòng Tổng cộng khớp tổng các dòng hiển thị.
+        var value = result.Sum(x => RowStockValue(x.Product));
         return Build("BC-06", "Báo cáo tồn kho", range, query,
             [Metric("Sản phẩm", result.Length, "number"), Metric("Sắp hết", lowCount, "number"),
-             Metric("Hết hàng", outCount, "number"), Metric("Giá trị tồn", checked((long)decimal.Round(value, 0, MidpointRounding.AwayFromZero)))],
+             Metric("Hết hàng", outCount, "number"), Metric("Giá trị tồn", value)],
             ["Sản phẩm", "Danh mục", "Tồn hiện tại", "Giá vốn", "Giá trị tồn", "Trạng thái", "Tồn đầu", "Nhập", "Xuất", "Tồn cuối"],
             result.Select(x => Row($"product:{x.Product.Id}", x.Product.Name, x.Product.CategoryName,
-                x.Product.CurrentStock.ToString(), Money(x.Product.UnitCost), Money((long)x.Product.CurrentStock * x.Product.UnitCost),
+                x.Product.CurrentStock.ToString(), Money(x.Product.UnitCost), Money(RowStockValue(x.Product)),
                 x.Product.CurrentStock == 0 ? "Hết hàng" : x.Product.CurrentStock <= x.Product.ReorderPoint ? "Sắp hết" : "Đủ hàng",
                 x.Opening.ToString(), x.Incoming.ToString(), x.Outgoing.ToString(), x.Closing.ToString()))
                 .Append(Row("total", "Tổng cộng", "", result.Sum(x => x.Product.CurrentStock).ToString(), "", Money(value), "",
@@ -503,6 +504,8 @@ public sealed class OperationalReportsService : IOperationalReportsService
     private static string Money(long value) => value.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
     private static string Money(decimal value) => decimal.Round(value, 0, MidpointRounding.AwayFromZero)
         .ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
+    private static long RowStockValue(ReportProductFact product) =>
+        checked((long)decimal.Round(product.CurrentStock * product.UnitCost, 0, MidpointRounding.AwayFromZero));
     private static string Percent(decimal value) => value.ToString("0.0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + "%";
     private static string Label(DateOnly date, string groupBy) => groupBy switch
     {

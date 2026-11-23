@@ -10,6 +10,23 @@ public sealed class CashLedgerReconciliation : Migration
     protected override void Up(MigrationBuilder migrationBuilder)
     {
         // No historical cash is inferred or rewritten. An Admin must count and confirm it.
+        // MySQL DDL commits each statement, so check for duplicate cash events before any
+        // ALTER. A failure here leaves the schema untouched and the migration can be rerun
+        // after the duplicates are investigated.
+        migrationBuilder.Sql("DROP TEMPORARY TABLE IF EXISTS cash_upgrade_guard;");
+        migrationBuilder.Sql("""
+            CREATE TEMPORARY TABLE cash_upgrade_guard (
+              allowed TINYINT NOT NULL,
+              CONSTRAINT ck_cash_upgrade_no_duplicate_events CHECK (allowed=1));
+            """);
+        migrationBuilder.Sql("""
+            INSERT INTO cash_upgrade_guard
+            SELECT IF(EXISTS(SELECT 1 FROM giao_dich_tien_mat WHERE hoa_don_id IS NOT NULL
+                             GROUP BY loai,hoa_don_id HAVING COUNT(*)>1)
+                   OR EXISTS(SELECT 1 FROM giao_dich_tien_mat WHERE phieu_doi_tra_id IS NOT NULL
+                             GROUP BY loai,phieu_doi_tra_id HAVING COUNT(*)>1),0,1);
+            """);
+        migrationBuilder.Sql("DROP TEMPORARY TABLE cash_upgrade_guard;");
         migrationBuilder.Sql("ALTER TABLE quy_tien_mat ADD da_chot_so_du_dau BOOLEAN NOT NULL DEFAULT FALSE;");
         migrationBuilder.Sql("""
             ALTER TABLE giao_dich_tien_mat
@@ -39,6 +56,7 @@ public sealed class CashLedgerReconciliation : Migration
     protected override void Down(MigrationBuilder migrationBuilder)
     {
         // Refuse rollback once new business events exist; do not erase the audit trail.
+        migrationBuilder.Sql("DROP TEMPORARY TABLE IF EXISTS cash_rollback_guard;");
         migrationBuilder.Sql("""
             CREATE TEMPORARY TABLE cash_rollback_guard (
               allowed TINYINT NOT NULL,

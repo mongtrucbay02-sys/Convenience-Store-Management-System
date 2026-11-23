@@ -40,13 +40,13 @@
 
 ## 3. Vấn đề mở còn lại từ sprint 1–2
 
-Ba điểm nêu trong issue #5 (16/10/2026) chưa có quyết định ghi nhận:
+Ba điểm nêu trong issue #5 (16/10/2026), chốt ngày 23/11/2026 (`docs/quan-ly/quyet-dinh-AUTH-01-06-09.md`, PR #271):
 
 | Vấn đề | Nội dung | Trạng thái |
 | --- | --- | --- |
-| AUTH-06 | Số điện thoại có bắt buộc khi tạo tài khoản không (đặc tả ngầm hiểu bắt buộc, ERD và OpenAPI cho phép null) | Mở |
-| AUTH-09 | Đặt lại mật khẩu khi tài khoản đang bị khóa tạm có gỡ khóa tạm không (PR #137 ghi là "điểm chờ nhóm chốt") | Mở |
-| AUTH-01 | Thứ tự kiểm tra khóa tạm và mật khẩu khi đăng nhập (OpenAPI kiểm khóa tạm trước, đặc tả bước 4–5 ngược lại; vấn đề mở số 8 trong SRS) | Mở |
+| AUTH-06 | Số điện thoại có bắt buộc khi tạo tài khoản không (đặc tả ngầm hiểu bắt buộc, ERD và OpenAPI cho phép null) | **Đã chốt 23/11:** không bắt buộc (issue #5, PR #271) |
+| AUTH-09 | Đặt lại mật khẩu khi tài khoản đang bị khóa tạm có gỡ khóa tạm không (PR #137 ghi là "điểm chờ nhóm chốt") | **Đã chốt 23/11:** gỡ khóa tạm, bộ đếm về 0; khóa do Admin vẫn phải mở trước (PR #271) |
+| AUTH-01 | Thứ tự kiểm tra khóa tạm và mật khẩu khi đăng nhập (OpenAPI kiểm khóa tạm trước, đặc tả bước 4–5 ngược lại; vấn đề mở số 8 trong SRS) | **Đã chốt 23/11:** kiểm khóa tạm trước mật khẩu (issue #5, PR #271) |
 
 ## 4. Việc còn lại để ra SRS v1.1
 

@@ -54,3 +54,7 @@ Tài liệu đó liệt kê 42 mục do #1 điền thay và chờ người phụ
 2. Viết ADR-002 (C1) và đưa vào `docs/adr/`.
 3. #3, #5 xác nhận C4, C6 và mục 2 trên PR này.
 4. Xuất SRS v1.2 sang PDF, đưa vào `docs/srs/` qua PR.
+
+## Bổ sung ngày 23/11/2026 — chờ duyệt
+
+Xem [đề xuất cập nhật SRS theo migration runtime](../03-requirements/migration-srs-review-2026-11-23.md) và [báo cáo đối chiếu ERD](../04-system-design/database/reconciliation-20261123/README.md). Hai tài liệu này chỉ chuẩn bị nội dung để nhóm chốt; không thay đổi trạng thái duyệt của các dòng C/B phía trên và không xác nhận Word SRS đã được sửa.

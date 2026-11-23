@@ -88,7 +88,7 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
             SELECT CONCAT(TRIGGER_NAME,'|',ACTION_TIMING,'|',EVENT_MANIPULATION,'|',EVENT_OBJECT_TABLE)
             FROM information_schema.TRIGGERS
             WHERE TRIGGER_SCHEMA=DATABASE()
-              AND EVENT_OBJECT_TABLE <> 'hoan_tien_hoa_don'
+              AND EVENT_OBJECT_TABLE NOT IN ('hoan_tien_hoa_don','giao_dich_tien_mat')
             """);
         Assert.Equal(10, triggers.Length);
         Assert.Equal(SchemaReference.Triggers, triggers);

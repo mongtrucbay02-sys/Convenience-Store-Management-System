@@ -42,7 +42,10 @@ public class CsdlMySqlTam : IAsyncLifetime
 
         var mayChu = new MySqlConnectionStringBuilder(chuoi) { Database = "" };
         _chuoiMayChu = mayChu.ConnectionString;
-        ChuoiKetNoi = new MySqlConnectionStringBuilder(chuoi) { Database = TenCsdl }.ConnectionString;
+        // Never return a migration connection holding the provider's named lock
+        // to a pool shared with concurrently disposed fixtures. Closing the
+        // physical connection releases that lock even when migration fails.
+        ChuoiKetNoi = new MySqlConnectionStringBuilder(chuoi) { Database = TenCsdl, Pooling = false }.ConnectionString;
 
         await ChayTrenMayChuAsync(
             $"CREATE DATABASE `{TenCsdl}` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci");

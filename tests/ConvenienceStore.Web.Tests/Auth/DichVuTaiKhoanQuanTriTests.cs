@@ -184,6 +184,21 @@ public sealed class DichVuTaiKhoanQuanTriTests(CsdlXacThucFixture csdl) : IAsync
     }
 
     [Fact]
+    public async Task DatLai_DangKhoaTamDoSaiMatKhau_GoKhoaTam_BoDemVe0_DangNhapDuocNgay()
+    {
+        var tk = await _duLieu.TaoTaiKhoanAsync("TN");
+        await csdl.ChayAsync(
+            "UPDATE tai_khoan SET khoa_tam_den = NOW() + INTERVAL 15 MINUTE, so_lan_sai = 3 WHERE id = @id", ("@id", tk.Id));
+
+        var kq = await TaiKhoan().DatLaiMatKhauAsync(tk.Id, null);
+
+        Assert.True(await _duLieu.DocCotAsync(tk.Id, "khoa_tam_den") is null or DBNull);
+        Assert.Equal(0, Convert.ToInt32(await _duLieu.DocCotAsync(tk.Id, "so_lan_sai")));
+        var dangNhap = await XacThuc().DangNhapAsync(new YeuCauDangNhap(tk.TenDangNhap, kq.MatKhauTam));
+        Assert.True(dangNhap.KetQua.BatBuocDoiMatKhau);
+    }
+
+    [Fact]
     public async Task DatLai_AdminTuNhap_MatKhauYeu422()
     {
         var tk = await _duLieu.TaoTaiKhoanAsync("NK");

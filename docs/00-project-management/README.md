@@ -11,7 +11,8 @@ Lưu mọi tài liệu giúp nhóm biết **ai làm gì, khi nào, theo quy ư�
 |---|---|---|
 | `project-charter.md` | Mục tiêu, phạm vi tổng, thành viên và vai trò (#1…#6), kênh liên lạc | Chưa có |
 | `plan.md` | Kế hoạch theo tuần/sprint, mốc bàn giao từng giai đoạn `01`–`08` | Chưa có |
-| `task-assignment.md` | Bảng phân công task (mã T…-…), người dự phòng; liên kết Issue GitHub | Chưa có |
+| `task-assignment.md` | Bảng phân công task (mã T…-…); liên kết Issue GitHub | Chưa có |
+| [`CONTRIBUTING.md`](../../CONTRIBUTING.md) | Quy trình thay đổi yêu cầu và danh sách người dự phòng cho mỗi module (issue #30) | Có |
 | `conventions.md` | Quy ước làm việc: nhánh Git, PR, review, đặt tên — có thể dẫn tới Issue #4 (quy ước API) | Chưa có |
 | `risk-register.md` | Danh sách rủi ro, mức độ, phương án xử lý | Chưa có |
 | [`traceability-matrix.md`](traceability-matrix.md) | Ma trận truy vết yêu cầu → thiết kế → code → test → nghiệm thu | Khung sẵn |

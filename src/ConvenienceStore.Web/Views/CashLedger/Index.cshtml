@@ -5,6 +5,8 @@
     ViewData["Title"] = "Quỹ tiền mặt";
     var entries = (IReadOnlyList<CashLedgerService.Entry>)ViewData["Entries"]!;
     string Money(long amount) => amount.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " đ";
+    // Chốt số dư mở lưu độ lớn chênh lệch (cột UNSIGNED); dấu lấy từ số dư trước/sau.
+    string SignedMoney(long diff) => (diff > 0 ? "+" : diff < 0 ? "−" : "") + Money(Math.Abs(diff));
     string Kind(string kind) => kind switch {
         "THU_BAN_HANG" => "Thu bán hàng", "CHI_HOAN_TRA" => "Chi hoàn trả",
         "CHI_HUY_HOA_DON" => "Chi hủy hóa đơn", "CHOT_SO_DU_DAU" => "Chốt số dư mở quỹ", _ => kind };
@@ -28,6 +30,6 @@
 </section>
 <section class="card p-3"><h2>100 giao dịch gần nhất</h2><div class="table-responsive"><table class="table align-middle">
     <thead><tr><th>Thời điểm</th><th>Nghiệp vụ</th><th>Số tiền</th><th>Trước</th><th>Sau</th><th>Người thực hiện</th><th>Ghi chú</th></tr></thead>
-    <tbody>@foreach (var entry in entries) { <tr><td>@entry.At.ToString("dd/MM/yyyy HH:mm")</td><td>@Kind(entry.Kind)</td><td>@Money(entry.Amount)</td><td>@Money(entry.Before)</td><td>@Money(entry.After)</td><td>@entry.Actor</td><td>@entry.Note</td></tr> }
+    <tbody>@foreach (var entry in entries) { <tr><td>@entry.At.ToString("dd/MM/yyyy HH:mm")</td><td>@Kind(entry.Kind)</td><td>@(entry.Kind == "CHOT_SO_DU_DAU" ? SignedMoney(entry.After - entry.Before) : Money(entry.Amount))</td><td>@Money(entry.Before)</td><td>@Money(entry.After)</td><td>@entry.Actor</td><td>@entry.Note</td></tr> }
     @if (entries.Count == 0) { <tr><td colspan="7">Chưa có giao dịch quỹ tiền mặt.</td></tr> }</tbody>
 </table></div></section>

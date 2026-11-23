@@ -11,7 +11,7 @@ namespace ConvenienceStore.Web.Modules.Returns.Controllers;
 [Authorize(Policy=MaQuyen.DoiTra,Roles=BangQuyen.ThuNgan)]
 [ResponseCache(NoStore=true,Location=ResponseCacheLocation.None)]
 [Route("Returns")]
-public sealed class ReturnOrdersController(ReturnOrderService service) : Controller
+public sealed class ReturnOrdersController(ReturnOrderService service, ExchangeService exchange) : Controller
 {
     public override void OnActionExecuted(ActionExecutedContext context)
     {
@@ -65,7 +65,45 @@ public sealed class ReturnOrdersController(ReturnOrderService service) : Control
     [HttpGet("Exchange")]
     public async Task<IActionResult> Exchange(long invoiceId,CancellationToken ct)
     {
-        await service.FormAsync(invoiceId,User,ct);
-        return View("~/Modules/Returns/Views/Exchange.cshtml",invoiceId);
+        var form = await service.FormAsync(invoiceId,User,ct);
+        return View("~/Modules/Returns/Views/Exchange.cshtml",new ExchangePage {
+            Invoice=form,
+            Request=new ExchangeRequest { InvoiceId=invoiceId }
+        });
+    }
+
+    [HttpPost("Exchange/Preview")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ExchangePreview(ExchangeRequest request,CancellationToken ct)
+    {
+        try
+        {
+            var preview=await exchange.PreviewAsync(request,User,ct);
+            var form=await service.FormAsync(request.InvoiceId,User,ct);
+            return View("~/Modules/Returns/Views/Exchange.cshtml",new ExchangePage { Invoice=form,Request=request,Preview=preview });
+        }
+        catch(LoiNghiepVu e) when(e.MaHttp<500)
+        {
+            Response.StatusCode=e.MaHttp;
+            var form=await service.FormAsync(request.InvoiceId,User,ct);
+            return View("~/Modules/Returns/Views/Exchange.cshtml",new ExchangePage { Invoice=form,Request=request,Error=e.Message });
+        }
+    }
+
+    [HttpPost("Exchange/Complete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ExchangeComplete(ExchangeRequest request,CancellationToken ct)
+    {
+        try
+        {
+            var invoiceId=await exchange.CompleteAsync(request,User,ct);
+            return RedirectToAction(nameof(Receipt),new { id=invoiceId });
+        }
+        catch(LoiNghiepVu e) when(e.MaHttp<500)
+        {
+            Response.StatusCode=e.MaHttp;
+            var form=await service.FormAsync(request.InvoiceId,User,ct);
+            return View("~/Modules/Returns/Views/Exchange.cshtml",new ExchangePage { Invoice=form,Request=request,Error=e.Message });
+        }
     }
 }

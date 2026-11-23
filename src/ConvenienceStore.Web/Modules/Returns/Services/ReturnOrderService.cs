@@ -740,14 +740,20 @@ public sealed class ReturnOrderService(
                 p.tien_hoan,
                 p.diem_thu_hoi,
                 p.ngay_lap,
-                t.ho_ten
+                t.ho_ten,
+                p.loai,
+                COALESCE(p.hoa_don_moi_id,0),
+                COALESCE(h2.ma_hoa_don,''),
+                COALESCE(p.tien_thu_them,0)
             FROM phieu_doi_tra p
             JOIN hoa_don h
                 ON h.id = p.hoa_don_goc_id
+            LEFT JOIN hoa_don h2
+                ON h2.id = p.hoa_don_moi_id
             JOIN tai_khoan t
                 ON t.id = p.thu_ngan_id
             WHERE p.id = @id
-              AND p.loai = 'TRA_HANG'
+              AND p.loai IN ('TRA_HANG','DOI_HANG')
               AND p.thu_ngan_id = @actor
             """,
             r => new ReturnReceipt(
@@ -760,7 +766,11 @@ public sealed class ReturnOrderService(
                 r.SoNguyen(6),
                 GioVietNam.ThanhOffset(r.NgayGio(7)),
                 r.Chuoi(8),
-                []),
+                [],
+                Type: r.Chuoi(9),  // TRA_HANG or DOI_HANG
+                NewInvoiceId: r.SoNguyenDai(10) > 0 ? r.SoNguyenDai(10) : null,
+                NewInvoiceCode: !string.IsNullOrEmpty(r.Chuoi(11)) ? r.Chuoi(11) : null,
+                ExtraPaid: r.SoNguyenDai(12)),
             ct,
             ("@id", id),
             ("@actor", actor))

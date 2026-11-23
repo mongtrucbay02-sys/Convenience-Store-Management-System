@@ -1,5 +1,26 @@
-@model long
-@{ Layout="_AdminLayout";ViewData["Title"]="Chuyển sang đổi hàng"; }
-<h1>Đổi sang hàng khác — DT-03</h1>
-<p>DT-03 được triển khai ở tuần 8. Hiện chưa tạo phiếu đổi, chưa hoàn tiền, chưa thay đổi tồn hoặc điểm.</p>
-<a href="/Returns/New?invoiceId=@Model">Quay lại trả hàng</a>
+@using ConvenienceStore.Web.Modules.Returns.Models
+@model ExchangePage
+@{ Layout="_AdminLayout"; ViewData["Title"]="Đổi hàng — DT-03"; }
+<link rel="stylesheet" href="~/css/return-order.css" asp-append-version="true" />
+<section class="hero"><div><p class="eyebrow">SMART MART / ĐỔI TRẢ</p><h1>Đổi hàng — DT-03</h1><p>Chọn hàng trả và dùng giỏ POS hiện tại làm hàng mới.</p></div></section>
+@if (Model.Error is { } error) { <div class="ret-alert ret-danger" role="alert">@error</div> }
+<form method="post" asp-controller="ReturnOrders" asp-action="ExchangePreview">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="InvoiceId" value="@Model.Request.InvoiceId" />
+    <section class="panel"><h2>Hàng trả từ hóa đơn @Model.Invoice?.InvoiceCode</h2>
+        <p class="muted">Chọn số lượng lớn hơn 0 ở đúng dòng sản phẩm. Số lượng tối đa là số hàng còn được trả.</p>
+        @for (var i=0; i<(Model.Invoice?.Lines.Count ?? 0); i++)
+        { var product=Model.Invoice!.Lines[i]; var line=Model.Request.Lines.FirstOrDefault(x=>x.ProductId==product.ProductId) ?? new ExchangeLineRequest { ProductId=product.ProductId };
+          <div class="ret-table-wrap"><table class="ret-table"><tbody><tr>
+            <td><strong>@product.Name</strong><small>ProductId: @product.ProductId · Giá thực trả: @product.UnitPaid.ToString("N0") đ · Còn được trả: @product.Remaining</small><input name="Lines[@i].ProductId" type="hidden" value="@product.ProductId" /></td>
+            <td><label>Số lượng trả</label><input name="Lines[@i].Quantity" type="number" min="0" max="@product.Remaining" value="@line.Quantity" /></td>
+            <td><label>Lý do</label><select name="Lines[@i].Reason"><option value="LOI_SAN_PHAM">Lỗi sản phẩm</option><option value="HET_HAN">Hết hạn</option><option value="KHONG_DUNG_NHU_CAU">Không đúng nhu cầu</option><option value="KHAC">Khác</option></select></td>
+            <td><label>Tình trạng</label><input name="Lines[@i].Condition" value="@line.Condition" maxlength="255" /></td>
+          </tr></tbody></table></div> }
+        @if (Model.Invoice?.Lines.Count > 0) { <button type="submit">Tính chênh lệch</button> } else { <div class="ret-alert ret-danger">Hóa đơn không có dòng hàng hợp lệ.</div> } <a href="/Returns">Quay lại tra cứu</a>
+    </section>
+</form>
+@if (Model.Preview is { } preview)
+{ <section class="panel"><h2>Kết quả tính đổi</h2><p>Hàng trả: <strong>@preview.ReturnValue.ToString("N0") đ</strong></p><p>Hàng mới trong giỏ POS: <strong>@preview.NewOrderTotal.ToString("N0") đ</strong></p><p>Chênh lệch: <strong>@Math.Max(0,preview.Difference).ToString("N0") đ</strong></p>
+  @if(preview.CanComplete){<form method="post" asp-controller="ReturnOrders" asp-action="ExchangeComplete">@Html.AntiForgeryToken()<input type="hidden" name="InvoiceId" value="@Model.Request.InvoiceId" />@for(var i=0;i<Model.Request.Lines.Count;i++){var line=Model.Request.Lines[i];<input type="hidden" name="Lines[@i].ProductId" value="@line.ProductId"/><input type="hidden" name="Lines[@i].Quantity" value="@line.Quantity"/><input type="hidden" name="Lines[@i].Reason" value="@line.Reason"/><input type="hidden" name="Lines[@i].Condition" value="@line.Condition"/>}<label>Tiền khách đưa thêm <input name="CashReceived" type="number" min="@preview.Difference" value="@preview.Difference" /></label><button type="submit">Hoàn tất đổi hàng</button></form>}else{<div class="ret-alert ret-warning">@preview.Error</div>}
+  </section> }

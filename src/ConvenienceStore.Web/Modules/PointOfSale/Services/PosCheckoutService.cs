@@ -63,7 +63,8 @@ public interface IPosCheckoutStore
     Task<PosOrderSaved> SaveOrderAsync(
         int cashierId,
         long cashReceived,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken,
+        long exchangeCredit = 0);
 }
 
 /// <summary>

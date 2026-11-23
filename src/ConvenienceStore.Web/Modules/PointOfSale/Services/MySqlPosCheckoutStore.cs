@@ -58,7 +58,8 @@ public sealed class MySqlPosCheckoutStore(
     public async Task<PosOrderSaved> SaveOrderAsync(
         int cashierId,
         long cashReceived,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        long exchangeCredit = 0)
     {
         // Bắt buộc có transaction từ PosCheckoutService.
         if (db.Database.CurrentTransaction is null)
@@ -69,7 +70,7 @@ public sealed class MySqlPosCheckoutStore(
 
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(cashierId);
 
-        if (cashReceived < 0)
+        if (cashReceived < 0 || exchangeCredit < 0)
         {
             throw new PosCheckoutException(
                 "Tiền khách đưa không hợp lệ.");
@@ -153,13 +154,13 @@ public sealed class MySqlPosCheckoutStore(
                 "Tổng tiền thanh toán phải lớn hơn 0.");
         }
 
-        if (cashReceived < tongThanhToan)
+        if (cashReceived + exchangeCredit < tongThanhToan)
         {
             throw new PosCheckoutException(
-                $"Khách đưa chưa đủ. Còn thiếu {tongThanhToan - cashReceived:N0} đ.");
+                $"Khách đưa chưa đủ. Còn thiếu {tongThanhToan - cashReceived - exchangeCredit:N0} đ.");
         }
 
-        long tienThua = cashReceived - tongThanhToan;
+        long tienThua = cashReceived + exchangeCredit - tongThanhToan;
 
         // 5. Lấy thời gian database và cấp mã hóa đơn.
         var bayGio = Convert.ToDateTime(
@@ -224,9 +225,11 @@ public sealed class MySqlPosCheckoutStore(
 
                 soTienMotDiem = quyTac?.SoTienMotDiem ?? 10000;
 
+                // DT-03: Nếu có exchange credit (đổi hàng), chỉ tính điểm trên chênh lệch (tiền khách trả thêm).
+                var tongTienTinhDiem = exchangeCredit > 0 ? tongThanhToan - exchangeCredit : tongThanhToan;
                 diemCong =
                     ConvenienceStore.Web.Modules.Customers.Models.CustomerRules
-                        .EarnedPoints(tongThanhToan, soTienMotDiem);
+                        .EarnedPoints(tongTienTinhDiem, soTienMotDiem);
             }
         }
 
@@ -253,7 +256,7 @@ public sealed class MySqlPosCheckoutStore(
                 VALUES
                 (
                     @ma, @g, @t, @kh, @tg,
-                    @tth, @giam, @ttt, 0,
+                 @tth, @giam, @ttt, @tru,
                     @khach, @thua, @stmd, @diem
                 );
                 SELECT LAST_INSERT_ID();
@@ -267,6 +270,7 @@ public sealed class MySqlPosCheckoutStore(
                 ("@tth", tongTienHang),
                 ("@giam", tongGiam),
                 ("@ttt", tongThanhToan),
+                 ("@tru", exchangeCredit),
                 ("@khach", cashReceived),
                 ("@thua", tienThua),
                 ("@stmd", soTienMotDiem),
@@ -379,12 +383,16 @@ public sealed class MySqlPosCheckoutStore(
         // 12. DT-04: Ghi tăng quỹ bằng doanh thu thực thu.
         // Dùng cùng DbContext và transaction của POS.
         // Không commit transaction tại đây.
-        await cashLedger.RecordSaleAsync(
-            db,
-            hoaDonId,
-            cashierId,
-            tongThanhToan,
-            cancellationToken);
+        var cashSale = checked(tongThanhToan - exchangeCredit);
+        if (cashSale > 0)
+        {
+            await cashLedger.RecordSaleAsync(
+                db,
+                hoaDonId,
+                cashierId,
+                cashSale,
+                cancellationToken);
+        }
 
         log.LogInformation(
             "POS-07: Đã ghi hóa đơn {Ma}, ID {Id}, tổng tiền {Tong}. Đang chờ commit.",

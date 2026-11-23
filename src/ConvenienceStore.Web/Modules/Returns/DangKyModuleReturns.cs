@@ -25,6 +25,7 @@ public static class DangKyModuleReturns
 
         // Đăng ký dịch vụ đổi trả hàng
         services.AddScoped<ReturnOrderService>();
+        services.AddScoped<ExchangeService>();
 
         // Đăng ký cổng tích hợp thu hồi điểm KH-06
         services.TryAddScoped<IReturnPointsGateway, ReturnPointsGateway>();

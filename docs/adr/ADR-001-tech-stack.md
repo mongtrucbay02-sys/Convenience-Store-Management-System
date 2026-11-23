@@ -12,6 +12,8 @@
 
 > Đã chốt: SRS v1.0.3 đã điền mục 2.4 và đóng các vấn đề mở số 2, 3, 9 (mục 7.2).
 
+> **Cập nhật 23/11/2026:** phần CSDL của ADR này (MySQL 9.7.2, MySQL Workbench, provider `MySql.EntityFrameworkCore`, triển khai Aiven – mục 2, 3.3, 3.10) **được thay bằng [ADR-003](ADR-003-chuyen-csdl-postgresql-supabase.md)**: nhóm chốt PostgreSQL 17 trên Supabase. Ứng dụng vẫn chạy MySQL cho tới khi đạt điều kiện ở ADR-003 mục 4. Các mục khác của ADR-001 giữ nguyên. Nội dung bên dưới giữ để làm lịch sử quyết định.
+
 ---
 
 ## 1. Bối cảnh

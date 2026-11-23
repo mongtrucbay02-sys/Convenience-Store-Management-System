@@ -21,7 +21,10 @@ public static class ListFeatureHost
         });
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Logging.ClearProviders();
-        builder.Services.AddControllersWithViews();
+        builder.Services.AddControllersWithViews().AddRazorOptions(options =>
+        {
+            options.ViewLocationFormats.Insert(0, "/Modules/PointOfSale/Views/{1}/{0}.cshtml");
+        });
         builder.Services.AddScoped(_ => database.TaoDbContext());
         builder.Services.AddModuleAuth();
         builder.Services.AddXuLyLoiApi();

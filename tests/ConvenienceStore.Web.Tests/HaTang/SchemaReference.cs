@@ -15,6 +15,9 @@ internal static class SchemaReference
     internal static string[] Tables => Names(@"CREATE TABLE\s+(\w+)");
     internal static string[] Views => Names(@"CREATE VIEW\s+(\w+)");
     internal static string[] Checks => Names(@"CONSTRAINT\s+(\w+)\s+CHECK\s*\(");
+    internal static string[] BaselineChecks => Checks
+        .Except(["ck_quy_tien_mat_so_du", "ck_gdtm_so_tien", "ck_gdtm_lien_ket"])
+        .Order().ToArray();
     internal static string[] Triggers => Regex.Matches(Sql,
         @"CREATE TRIGGER\s+(\w+)\s+(BEFORE|AFTER)\s+(UPDATE|DELETE|INSERT)\s+ON\s+(\w+)",
         RegexOptions.IgnoreCase).Select(m =>

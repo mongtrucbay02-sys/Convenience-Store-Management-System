@@ -30,6 +30,7 @@ builder.Services.AddScoped<
     ConvenienceStore.Web.Modules.Customers.Services.CustomerService>();
 
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<ReportFilterService>();
 
 // Dashboard
 builder.Services.AddScoped<

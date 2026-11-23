@@ -159,6 +159,7 @@ public partial class CuaHangDbContext : DbContext
 
         modelBuilder.Entity<ChuongTrinhKhuyenMai>(entity =>
         {
+            entity.Property(e => e.AnhUrl).HasMaxLength(2048).HasColumnName("anh_url");
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
             entity.ToTable("chuong_trinh_khuyen_mai");

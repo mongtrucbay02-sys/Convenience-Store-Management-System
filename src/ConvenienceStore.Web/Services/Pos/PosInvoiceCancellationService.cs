@@ -6,6 +6,7 @@ using ConvenienceStore.Web.Modules.Customers.Models;
 using ConvenienceStore.Web.Modules.Customers.Services;
 using ConvenienceStore.Web.Modules.Inventory.Models;
 using ConvenienceStore.Web.Modules.Inventory.Services;
+using ConvenienceStore.Web.Modules.Returns.Services;
 using ConvenienceStore.Web.Shared.Data;
 using ConvenienceStore.Web.Shared.Api;
 using ConvenienceStore.Web.Shared.Errors;
@@ -21,7 +22,8 @@ namespace ConvenienceStore.Web.Services.Pos;
 public sealed class PosInvoiceCancellationService(
     CuaHangDbContext db,
     IDichVuKho stock,
-    TimeProvider time)
+    TimeProvider time,
+    CashLedgerService cashLedger)
 {
     // Thông tin hóa đơn lấy từ bảng hoa_don.
     private sealed record InvoiceRow(
@@ -223,6 +225,7 @@ public sealed class PosInvoiceCancellationService(
         ulong cashRefund =
             invoice.CashReceived - invoice.Change;
 
+
         // 8. Hoàn lại tồn kho và ghi thẻ kho.
         // DichVuKho sử dụng transaction hiện tại của DbContext.
         await stock.GhiNhanBienDongAsync(
@@ -298,6 +301,11 @@ public sealed class PosInvoiceCancellationService(
                     ct);
             }
         }
+
+        // Keep lock order invoice -> stock -> customer -> fund, as in checkout.
+        // Zero-cash invoices have no cash movement to record.
+        if (cashRefund > 0)
+            await cashLedger.RecordCancellationRefundAsync(db, invoice.Id, actor, checked((long)cashRefund), ct);
 
         // 10. Ghi nhận hoàn tiền và thông tin kiểm toán.
         // Cần có bảng hoan_tien_hoa_don với các cột tương ứng.

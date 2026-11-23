@@ -1,7 +1,7 @@
 namespace ConvenienceStore.Web.Modules.Reports.Services;
 
 public sealed record ReportProductFact(
-    long Id, string Name, int CategoryId, string CategoryName, long UnitCost, int ReorderPoint,
+    long Id, string Name, int CategoryId, string CategoryName, decimal UnitCost, int ReorderPoint,
     int CurrentStock);
 
 public sealed record ReportInvoiceLineFact(

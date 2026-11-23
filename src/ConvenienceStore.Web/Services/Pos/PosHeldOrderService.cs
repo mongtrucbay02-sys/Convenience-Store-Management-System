@@ -24,7 +24,7 @@ public sealed record PosHeldOrderResult(
 
 /// <summary>
 /// POS-08: Quản lý đơn hàng tạm giữ.
-/// Admin (AD) và Thu ngân (TN) có phạm vi đơn hàng riêng.
+/// Thu ngân (TN) quản lý các đơn hàng của chính mình.
 /// Không giữ chỗ hoặc thay đổi tồn kho khi tạm giữ đơn.
 /// </summary>
 public sealed class PosHeldOrderService(
@@ -32,7 +32,7 @@ public sealed class PosHeldOrderService(
     IHttpContextAccessor http)
 {
     // ID tài khoản đăng nhập hiện tại.
-    // Admin và Thu ngân đều sử dụng ID tài khoản của chính mình.
+    // Chỉ chấp nhận tài khoản Thu ngân đang đăng nhập.
     private int AccountId
     {
         get

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Shared.Data;
 using ConvenienceStore.Web.Shared.Errors;
+using Microsoft.EntityFrameworkCore;
 
 namespace ConvenienceStore.Web.Modules.Returns.Services;
 
@@ -20,6 +21,67 @@ namespace ConvenienceStore.Web.Modules.Returns.Services;
 /// </summary>
 public sealed class CashLedgerService
 {
+    public sealed record Balance(long Amount, bool OpeningConfirmed);
+    public sealed record Entry(string Kind, long Amount, long Before, long After, DateTime At, string Actor, string? Note);
+
+    public async Task<Balance> GetBalanceAsync(CuaHangDbContext db, CancellationToken ct) =>
+        await db.DocMotDongAsync("SELECT so_du,da_chot_so_du_dau FROM quy_tien_mat WHERE id=1",
+            r => new Balance(Convert.ToInt64(r[0]), Convert.ToBoolean(r[1])), ct)
+        ?? throw new LoiNghiepVu("CHUA_KHOI_TAO_QUY", 409, "Chưa khởi tạo quỹ tiền mặt.");
+
+    public async Task<List<Entry>> GetEntriesAsync(CuaHangDbContext db, CancellationToken ct) =>
+        await db.DocDanhSachAsync("""
+            SELECT g.loai,g.so_tien,g.so_du_truoc,g.so_du_sau,g.thoi_diem,t.ho_ten,g.ghi_chu
+            FROM giao_dich_tien_mat g JOIN tai_khoan t ON t.id=g.nguoi_thuc_hien_id
+            ORDER BY g.id DESC LIMIT 100
+            """, r => new Entry(r.GetString(0), Convert.ToInt64(r[1]), Convert.ToInt64(r[2]),
+                Convert.ToInt64(r[3]), r.GetDateTime(4), r.GetString(5), r.IsDBNull(6) ? null : r.GetString(6)), ct);
+
+    /// <summary>One-time physical count at upgrade. Never sum old invoices or reset the ledger.</summary>
+    public async Task ConfirmOpeningAsync(CuaHangDbContext db, int actor, long counted, long expectedBalance, string? reason, CancellationToken ct)
+    {
+        reason = reason?.Trim();
+        if (counted < 0 || expectedBalance < 0 || string.IsNullOrWhiteSpace(reason) || reason.Length > 500)
+            throw LoiNghiepVu.DuLieuKhongHopLe("reason", "Số dư phải không âm; lý do bắt buộc, tối đa 500 ký tự.");
+        await using var tx = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, ct);
+        var role = await db.DocMotGiaTriAsync("""
+            SELECT v.ma FROM tai_khoan t JOIN vai_tro v ON v.id=t.vai_tro_id
+            WHERE t.id=@actor AND t.trang_thai='HOAT_DONG' AND t.bat_buoc_doi_mk=FALSE FOR UPDATE
+            """, ct, ("@actor", actor));
+        if (!string.Equals(Convert.ToString(role), "AD", StringComparison.Ordinal))
+            throw new LoiNghiepVu("KHONG_DU_QUYEN", 403, "Chỉ Admin được chốt số dư mở quỹ.");
+        var before = await LockBalanceAsync(db, ct);
+        var balance = await GetBalanceAsync(db, ct);
+        if (balance.OpeningConfirmed)
+            throw new LoiNghiepVu("DA_CHOT_SO_DU_DAU", 409, "Số dư mở quỹ đã được chốt; không được chốt lại.");
+        if (before != expectedBalance)
+            throw new LoiNghiepVu("QUY_DA_THAY_DOI", 409, "Quỹ đã thay đổi. Hãy tải lại và kiểm đếm trước khi chốt.");
+        await db.ChayAsync("UPDATE quy_tien_mat SET so_du=@amount,da_chot_so_du_dau=TRUE WHERE id=1", ct, ("@amount", counted));
+        await db.ChayAsync("""
+            INSERT INTO giao_dich_tien_mat(loai,so_tien,so_du_truoc,so_du_sau,nguoi_thuc_hien_id,ghi_chu)
+            VALUES ('CHOT_SO_DU_DAU',@difference,@before,@after,@actor,@reason)
+            """, ct, ("@difference", Math.Abs(counted - before)), ("@before", before), ("@after", counted), ("@actor", actor), ("@reason", reason));
+        await tx.CommitAsync(ct);
+    }
+
+    public async Task RecordCancellationRefundAsync(CuaHangDbContext db, long invoiceId, int actor, long amount, CancellationToken ct)
+    {
+        RequireTransaction(db);
+        if (invoiceId <= 0 || actor <= 0 || amount <= 0)
+            throw LoiNghiepVu.DuLieuKhongHopLe("amount", "Thông tin hoàn tiền hủy hóa đơn không hợp lệ.");
+        var before = await LockBalanceAsync(db, ct);
+        var existing = await db.DocMotGiaTriAsync("SELECT id FROM giao_dich_tien_mat WHERE loai='CHI_HUY_HOA_DON' AND hoa_don_id=@id", ct, ("@id", invoiceId));
+        if (existing is not null)
+            throw new LoiNghiepVu("DA_HOAN_TIEN_HUY", 409, "Hóa đơn đã được ghi chi hoàn tiền.");
+        if (before < amount)
+            throw new LoiNghiepVu("QUY_KHONG_DU", 409, "Quỹ tiền mặt không đủ để hoàn. Admin cần kiểm đếm và chốt số dư mở quỹ nếu chưa chốt.");
+        await db.ChayAsync("UPDATE quy_tien_mat SET so_du=@after WHERE id=1", ct, ("@after", before - amount));
+        await db.ChayAsync("""
+            INSERT INTO giao_dich_tien_mat(loai,hoa_don_id,so_tien,so_du_truoc,so_du_sau,nguoi_thuc_hien_id)
+            VALUES ('CHI_HUY_HOA_DON',@invoice,@amount,@before,@after,@actor)
+            """, ct, ("@invoice", invoiceId), ("@amount", amount), ("@before", before), ("@after", before - amount), ("@actor", actor));
+    }
+
     /// <summary>
     /// Ghi nhận doanh thu tiền mặt khi POS hoàn tất hóa đơn.
     /// Số tiền ghi thu là tổng thanh toán thực tế, không phải tiền khách đưa.

@@ -13,15 +13,18 @@ public class ReportsController : Controller
     private readonly TimeProvider _clock;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ReportsController> _logger;
+    private readonly ReportFilterService _filters;
 
     public ReportsController(IDashboardService dashboardService, IOperationalReportsService reportsService,
-        TimeProvider clock, IConfiguration configuration, ILogger<ReportsController> logger)
+        TimeProvider clock, IConfiguration configuration, ILogger<ReportsController> logger,
+        ReportFilterService filters)
     {
         _dashboardService = dashboardService;
         _reportsService = reportsService;
         _clock = clock;
         _configuration = configuration;
         _logger = logger;
+        _filters = filters;
     }
 
     // BC-01: /Reports/Reports/Dashboard
@@ -99,8 +102,17 @@ public class ReportsController : Controller
         }
     }
 
-    private async Task<IActionResult> Render(Task<Models.OperationalReportResponse> response) =>
-        View("Report", await response);
+    private async Task<IActionResult> Render(Task<Models.OperationalReportResponse> response)
+    {
+        var report = await response;
+        if (report.Code is "BC-03" or "BC-06" or "BC-08")
+            ViewData["ReportCategories"] = await _filters.GetCategoriesAsync(
+                report.Query.CategoryId, HttpContext.RequestAborted);
+        if (report.Code == "BC-07")
+            ViewData["ReportSuppliers"] = await _filters.GetSuppliersAsync(
+                report.Query.SupplierId, HttpContext.RequestAborted);
+        return View("Report", report);
+    }
 
     private async Task<IActionResult> RenderDetail(Task<Models.OperationalReportResponse> response) =>
         View("ReportDetail", await response);

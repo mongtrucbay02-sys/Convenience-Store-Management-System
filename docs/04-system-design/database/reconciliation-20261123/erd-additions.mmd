@@ -1,0 +1,34 @@
+%% PROPOSED / AWAITING REVIEW — physical extension to schema_v1, not a new approved baseline.
+erDiagram
+    hoa_don ||--o| hoan_tien_hoa_don : hoa_don_id_UNIQUE
+    tai_khoan ||--o{ hoan_tien_hoa_don : nguoi_thuc_hien_id
+    hoa_don |o--o{ giao_dich_tien_mat : hoa_don_id_nullable
+    phieu_doi_tra |o--o{ giao_dich_tien_mat : phieu_doi_tra_id_nullable
+    tai_khoan ||--o{ giao_dich_tien_mat : nguoi_thuc_hien_id
+    hoan_tien_hoa_don {
+        BIGINT_UNSIGNED id PK
+        INT_UNSIGNED hoa_don_id FK, UK
+        BIGINT_UNSIGNED so_tien_hoan
+        ENUM phuong_thuc
+        INT_UNSIGNED diem_da_thu_hoi
+        INT_UNSIGNED diem_chua_thu_hoi
+        VARCHAR_255 ly_do
+        INT_UNSIGNED nguoi_thuc_hien_id FK
+        DATETIME thoi_diem
+    }
+    quy_tien_mat {
+        INT_UNSIGNED id PK
+        BIGINT_UNSIGNED so_du
+        DATETIME ngay_cap_nhat
+    }
+    giao_dich_tien_mat {
+        BIGINT_UNSIGNED id PK
+        ENUM loai
+        INT_UNSIGNED hoa_don_id FK
+        INT_UNSIGNED phieu_doi_tra_id FK
+        BIGINT_UNSIGNED so_tien
+        BIGINT_UNSIGNED so_du_truoc
+        BIGINT_UNSIGNED so_du_sau
+        INT_UNSIGNED nguoi_thuc_hien_id FK
+        DATETIME thoi_diem
+    }

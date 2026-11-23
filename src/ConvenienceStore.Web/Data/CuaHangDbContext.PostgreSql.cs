@@ -1424,6 +1424,8 @@ public partial class CuaHangDbContext
         });
 
         ConfigurePostgreSqlConstraints(modelBuilder);
+        ConfigurePostgreSqlDefaults(modelBuilder);
+        ConvenienceStore.Web.Shared.Data.VietnameseSearch.Configure(modelBuilder);
         OnModelCreatingPartial(modelBuilder);
     }
 

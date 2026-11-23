@@ -1,6 +1,6 @@
 # Kiểm chứng ánh xạ Supabase — 23/11/2026
 
-Trạng thái: hoàn thành lớp entity/mapping, chưa nghiệm thu toàn bộ ứng dụng PostgreSQL. Nhánh cục bộ `feature/supabase-entities-20261123`; chưa commit/push.
+Ghi nhận lịch sử đợt ánh xạ entity, sau đó được commit/push ở `498daf5`. Kết quả chuyển SQL nghiệp vụ mới hơn nằm trong [báo cáo runtime](2026-11-23-postgresql-runtime.md); các số 740/41 dưới đây chỉ thuộc đợt entity.
 
 ## Kết quả thực chạy
 

@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using ConvenienceStore.Web.Shared.Data;
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Data.Entities;
 using ConvenienceStore.Web.Modules.Products.DTOs;
@@ -19,7 +20,13 @@ public sealed class EfProductReadRepository(CuaHangDbContext db) : IProductReadR
             // LIKE respects the column's accent-insensitive collation. Escape pattern metacharacters
             // so the keyword remains literal; Oracle's Contains/LOCATE translation does not meet BR-SP-01.
             var pattern = "%" + query.Keyword.Replace("!", "!!").Replace("%", "!%").Replace("_", "!_") + "%";
-            rows = rows.Where(x => EF.Functions.Like(x.Ma, pattern, "!") || EF.Functions.Like(x.TenSanPham, pattern, "!"));
+            if(db.IsPostgres())
+            {
+                pattern=VietnameseSearch.Fold(pattern);
+                rows=rows.Where(x=>EF.Functions.Like(VietnameseSearch.Fold(x.Ma),pattern,"!")
+                    || EF.Functions.Like(VietnameseSearch.Fold(x.TenSanPham),pattern,"!"));
+            }
+            else rows = rows.Where(x => EF.Functions.Like(x.Ma, pattern, "!") || EF.Functions.Like(x.TenSanPham, pattern, "!"));
         }
         if (query.DanhMucId.HasValue) rows = rows.Where(x => x.DanhMucId == query.DanhMucId);
         if (!string.IsNullOrEmpty(query.TrangThai)) rows = rows.Where(x => x.TrangThai == query.TrangThai);

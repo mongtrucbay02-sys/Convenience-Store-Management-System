@@ -46,6 +46,9 @@ public sealed class SupabaseModelMappingTests
             };
             if(actual.StoreType!=type)errors.Add($"Type {name}.{columnName}: {actual.StoreType} != {type}");
             if(actual.IsNullable!=(column.GetProperty("nullable").GetString()=="YES"))errors.Add($"Nullability {name}.{columnName}");
+            if(column.GetProperty("default").ValueKind!=JsonValueKind.Null &&
+                actual.PropertyMappings.All(p=>p.Property.FindAnnotation(RelationalAnnotationNames.DefaultValue) is null
+                    && p.Property.GetDefaultValueSql() is null)) errors.Add($"Default {name}.{columnName}");
             if(column.GetProperty("generated").GetString()=="ALWAYS" && actual.PropertyMappings.Any(p=>p.Property.ValueGenerated!=ValueGenerated.OnAddOrUpdate))errors.Add($"Generated {name}.{columnName}");
         }
     }

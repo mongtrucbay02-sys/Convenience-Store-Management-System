@@ -19,6 +19,18 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: ci-only-postgres-password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432/tcp
+        options: >-
+          --health-cmd="pg_isready -U postgres -d postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
       mysql:
         image: mysql:8.4
         env:
@@ -54,10 +66,11 @@ jobs:
       - name: Build
         run: dotnet build ConvenienceStoreManagement.slnx --configuration Release --no-restore
 
-      - name: Test with isolated MySQL
+      - name: Test with isolated MySQL and PostgreSQL
         env:
           # Fixtures create/migrate/drop their own cuahang_test_* databases.
           ConnectionStrings__CuaHangTest: "Server=127.0.0.1;Port=${{ job.services.mysql.ports['3306'] }};User ID=root;Password=ci-only-password;SslMode=Preferred;AllowPublicKeyRetrieval=True;"
+          ConnectionStrings__CuaHangPostgreSqlTest: "Host=127.0.0.1;Port=${{ job.services.postgres.ports['5432'] }};Database=postgres;Username=postgres;Password=ci-only-postgres-password;Pooling=false;"
         run: >-
           dotnet test tests/ConvenienceStore.Web.Tests/ConvenienceStore.Web.Tests.csproj
           --configuration Release --no-build --no-restore

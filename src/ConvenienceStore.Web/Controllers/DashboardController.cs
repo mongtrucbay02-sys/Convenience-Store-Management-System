@@ -1,20 +1,22 @@
-﻿
+
 using ConvenienceStore.Web.Models;
 using ConvenienceStore.Web.Modules.Auth.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MySqlConnector;
+using System.Data.Common;
+using ConvenienceStore.Web.Shared.Data;
 
 namespace ConvenienceStore.Web.Controllers;
 
 [Authorize(Roles = BangQuyen.Admin)]
 public class DashboardController : Controller
 {
-    private readonly string _connectionString;
+    private readonly IConfiguration _configuration;
 
     public DashboardController(IConfiguration configuration)
     {
-        _connectionString =
+        _configuration = configuration;
+        _ =
             configuration.GetConnectionString("PosMySql")
             ?? configuration.GetConnectionString("CuaHang")
             ?? throw new InvalidOperationException(
@@ -24,9 +26,10 @@ public class DashboardController : Controller
     public async Task<IActionResult> Index()
     {
         var model = new DashboardViewModel();
+        var today=DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)).Date;
 
         await using var connection =
-            new MySqlConnection(_connectionString);
+            SqlDialect.CreateConnection(_configuration);
 
         await connection.OpenAsync();
 
@@ -43,13 +46,13 @@ public class DashboardController : Controller
             """;
 
         await using (var command =
-            new MySqlCommand(invoiceSql, connection))
+            SqlDialect.Command(invoiceSql, connection))
         {
-            command.Parameters.AddWithValue(
-                "@startDate", DateTime.Today);
+            command.AddValue(
+                "@startDate", today);
 
-            command.Parameters.AddWithValue(
-                "@endDate", DateTime.Today.AddDays(1));
+            command.AddValue(
+                "@endDate", today.AddDays(1));
 
             await using var reader =
                 await command.ExecuteReaderAsync();
@@ -72,7 +75,7 @@ public class DashboardController : Controller
             """;
 
         await using (var command =
-            new MySqlCommand(productSql, connection))
+            SqlDialect.Command(productSql, connection))
         {
             model.TotalProducts = Convert.ToInt32(
                 await command.ExecuteScalarAsync());
@@ -92,7 +95,7 @@ public class DashboardController : Controller
             """;
 
         await using (var command =
-            new MySqlCommand(stockSql, connection))
+            SqlDialect.Command(stockSql, connection))
         {
             model.LowStockProducts = Convert.ToInt32(
                 await command.ExecuteScalarAsync());

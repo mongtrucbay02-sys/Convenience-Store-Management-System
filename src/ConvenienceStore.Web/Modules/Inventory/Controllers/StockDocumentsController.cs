@@ -245,9 +245,9 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
     private async Task<string> NextCodeAsync(string prefix, CancellationToken ct)
     {
         var period = Now.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
-        await db.ChayAsync("""
+        await db.ChayAsync($"""
             INSERT INTO bo_dem_chung_tu (tien_to,ky,so_cuoi) VALUES (@prefix,@period,1)
-            ON DUPLICATE KEY UPDATE so_cuoi=so_cuoi+1
+            {db.CounterUpsert()}
             """, ct, ("@prefix", prefix), ("@period", period));
         var number = Convert.ToInt64(await db.DocMotGiaTriAsync(
             "SELECT so_cuoi FROM bo_dem_chung_tu WHERE tien_to=@prefix AND ky=@period",

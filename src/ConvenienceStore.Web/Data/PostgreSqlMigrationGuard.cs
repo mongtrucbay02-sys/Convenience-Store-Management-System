@@ -25,7 +25,10 @@ public partial class CuaHangDbContext
     {
         if (optionsBuilder.Options.Extensions.Any(extension =>
             extension.GetType().Assembly.GetName().Name == "Npgsql.EntityFrameworkCore.PostgreSQL"))
+        {
             optionsBuilder.ReplaceService<IMigrator, PostgreSqlMigrationGuard>();
+            optionsBuilder.AddInterceptors(new PostgreSqlTimeInterceptor());
+        }
         base.OnConfiguring(optionsBuilder);
     }
 }

@@ -14,6 +14,7 @@ Chứng minh hệ thống **làm đúng yêu cầu** ở `03` và **đúng thi�
 | Tài liệu | Mô tả | Trạng thái |
 |---|---|---|
 | [`test-reports/2026-11-23-supabase-entities.md`](test-reports/2026-11-23-supabase-entities.md) | Catalog Supabase 31 bảng, SELECT chỉ đọc và hồi quy model MySQL | Ánh xạ đã kiểm tra; E2E PostgreSQL/staging chưa xác nhận |
+| [`test-reports/2026-11-23-postgresql-runtime.md`](test-reports/2026-11-23-postgresql-runtime.md) | Chuyển SQL PostgreSQL, test ghi/HTTP/publish và trạng thái Supabase/staging | 759/759 Release đạt cục bộ; CI mới/staging chưa xác nhận |
 | `test-plan.md` | Chiến lược: unit / integration / API / UI, môi trường, tiêu chí đạt | Chưa có |
 | `test-cases/` | Test case thủ công theo module, mã `TC-<module>-xx`, liên kết mã chức năng | Chưa có |
 | `automated-tests.md` | Mô tả bộ test tự động trong `tests/ConvenienceStore.Web.Tests/` và cách chạy `dotnet test` | Chưa có |

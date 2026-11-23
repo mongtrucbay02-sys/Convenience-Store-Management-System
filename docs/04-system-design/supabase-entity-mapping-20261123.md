@@ -39,7 +39,7 @@ Không áp interceptor SET time_zone của MySQL cho Npgsql. Gửi DateTime UTC 
 Các migration đang có dành cho MySQL. `PostgreSqlMigrationGuard` chặn Migrate/MigrateAsync/GenerateScript/HasPendingModelChanges khi dùng Npgsql, trước khi kết nối server. Cần baseline PostgreSQL được nhóm CSDL duyệt riêng.
 Metadata trigger/CHECK không phải script triển khai đầy đủ: hàm trigger, view, RLS và quyền truy cập vẫn do bộ DDL PostgreSQL đã duyệt quản lý. Chưa dùng EnsureCreated hay áp migration lên Supabase.
 
-**Đủ ánh xạ entity không đồng nghĩa toàn ứng dụng đã chuyển PostgreSQL.** AUTH, POS, Returns, Customers, Purchasing, Inventory, báo cáo và khuyến mãi còn SQL trực tiếp/cú pháp MySQL (ví dụ ON DUPLICATE KEY, <=>, DATE_FORMAT, SET time_zone), lớp MySqlException và fixture MySQL. Cần chuyển và kiểm thử các luồng này trước khi dùng provider PostgreSql để demo hoặc triển khai. Cấu hình trên cho lớp EF; chưa xác nhận đăng nhập/thanh toán/hoàn tiền ghi dữ liệu trên PostgreSQL.
+Đợt tiếp theo đã chuyển SQL nghiệp vụ AUTH/POS/KH/NH/KHO/DT/KM/BC sang nhánh PostgreSQL, giữ MySQL tương thích. INSERT RETURNING, upsert, khóa dòng, lỗi SQLSTATE, default 0/false, hạn phiên và UTC+7 đã được kiểm thử trên PostgreSQL riêng; xem [báo cáo runtime](../06-testing/test-reports/2026-11-23-postgresql-runtime.md). Các tên adapter MySql* còn giữ để tương thích API nội bộ, không ép dùng MySQL driver.
 
 ## Bằng chứng kiểm tra
 
@@ -48,7 +48,7 @@ Metadata trigger/CHECK không phải script triển khai đầy đủ: hàm trig
 - Test `PostgreSql/SupabaseModelMappingTests` đối chiếu model với catalog, kiểu dữ liệu, cột sinh, và chặn migration MySQL; chạy không cần CSDL.
 - Kết quả hồi quy/build cuối cùng ghi trong [báo cáo kiểm thử](../06-testing/test-reports/2026-11-23-supabase-entities.md) sau khi chạy xong.
 
-Không xác nhận staging, quyền ghi RLS hay toàn bộ E2E PostgreSQL trong thay đổi ánh xạ này.
+Đã xác nhận luồng ghi và HTTP trên PostgreSQL localhost riêng. Chưa nghiệm thu staging/cloud hoặc quyền RLS của role backend ít quyền trên Supabase; không ghi dữ liệu Supabase/Aiven chung.
 
 ## Danh sách đối chiếu entity–bảng/view
 

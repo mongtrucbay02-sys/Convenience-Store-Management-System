@@ -1,3 +1,4 @@
+using System.Data.Common;
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Products.DTOs;
 using ConvenienceStore.Web.Shared.Data;
@@ -33,7 +34,7 @@ public sealed class EfProductLifecycleRepository(CuaHangDbContext db) : IProduct
                 await db.ChayAsync("DELETE FROM ton_kho WHERE san_pham_id=@id", ct, ("@id", id));
                 if (await db.ChayAsync("DELETE FROM san_pham WHERE id=@id AND phien_ban=@version", ct, ("@id", id), ("@version", input.PhienBan)) != 1) throw Stale();
             }
-            catch (MySqlException ex) when (ex.Number == 1451) { throw LoiNghiepVu.XungDot("SAN_PHAM_DA_THAM_CHIEU", "Sản phẩm được tham chiếu. Hãy ngừng kinh doanh thay vì xóa hẳn."); }
+            catch (DbException ex) when (SqlDialect.IsForeignKeyViolation(ex)) { throw LoiNghiepVu.XungDot("SAN_PHAM_DA_THAM_CHIEU", "Sản phẩm được tham chiếu. Hãy ngừng kinh doanh thay vì xóa hẳn."); }
         }
         else {
             var target = operation == ProductLifecycleOperation.Discontinue ? "NGUNG_KINH_DOANH" : "DANG_KINH_DOANH";

@@ -20,9 +20,14 @@ public sealed class CustomerService(CuaHangDbContext db)
             var pattern = "%" + search + "%";
             long? code = long.TryParse(search, out var parsed) && parsed.ToString() == search
                 ? parsed : null;
-            query = query.Where(customer => EF.Functions.Like(customer.HoTen!, pattern)
-                || EF.Functions.Like(customer.SoDienThoai!, pattern)
-                || customer.Id == code);
+            if(db.IsPostgres())
+            {
+                pattern=VietnameseSearch.Fold(pattern);
+                query=query.Where(customer=>EF.Functions.Like(VietnameseSearch.Fold(customer.HoTen!),pattern)
+                    || EF.Functions.Like(customer.SoDienThoai!,pattern) || customer.Id==code);
+            }
+            else query = query.Where(customer => EF.Functions.Like(customer.HoTen!, pattern)
+                || EF.Functions.Like(customer.SoDienThoai!, pattern) || customer.Id == code);
         }
 
         var rows = await query.OrderByDescending(customer => customer.Id).Take(100)
@@ -40,7 +45,7 @@ public sealed class CustomerService(CuaHangDbContext db)
             }).ToListAsync(ct);
         return rows.Select(row => new CustomerRow(row.Id, row.HoTen!,
             admin ? row.SoDienThoai! : CustomerRules.MaskPhone(row.SoDienThoai),
-            row.DiemHienCo, (long)row.Spending, row.LastPurchase, row.PhienBan)).ToList();
+            row.DiemHienCo, (long)row.Spending, row.LastPurchase.HasValue ? ConvenienceStore.Web.Shared.Api.GioVietNam.ThanhOffset(row.LastPurchase.Value).DateTime : null, row.PhienBan)).ToList();
     }
 
     public async Task<CustomerInput> GetInputAsync(long id, CancellationToken ct)
@@ -123,11 +128,12 @@ public sealed class CustomerService(CuaHangDbContext db)
         var summary = await db.DocMotDongAsync("""
             SELECT COALESCE(SUM(tong_thanh_toan),0), MAX(thanh_toan_luc)
             FROM hoa_don WHERE khach_hang_id=@id AND trang_thai='DA_THANH_TOAN'
-            """, r => new { Total = Convert.ToInt64(r[0]), Last = r.IsDBNull(1) ? (DateTime?)null : r.GetDateTime(1) }, ct, ("@id", id));
+            """, r => new { Total = Convert.ToInt64(r[0]), Last = r.IsDBNull(1) ? (DateTime?)null : r.VietnamDateTime(1) }, ct, ("@id", id));
         var balance = await db.KhachHangs.AsNoTracking().Where(x => x.Id == id).Select(x => x.DiemHienCo).SingleAsync(ct);
         var customer = new CustomerRow(id, input.Name, admin ? input.Phone : CustomerRules.MaskPhone(input.Phone),
             balance, summary!.Total, summary.Last, input.Version);
-        return new(customer, invoices, points);
+        return new(customer, invoices.Select(row=>row with {PaidAt=ConvenienceStore.Web.Shared.Api.GioVietNam.ThanhOffset(row.PaidAt).DateTime}).ToList(),
+            points.Select(row=>row with {At=ConvenienceStore.Web.Shared.Api.GioVietNam.ThanhOffset(row.At).DateTime}).ToList());
     }
 
     public async Task DeleteAsync(long id, CancellationToken ct)

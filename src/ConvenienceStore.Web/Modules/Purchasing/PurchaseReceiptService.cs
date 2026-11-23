@@ -33,9 +33,9 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
         var category = await db.DocMotGiaTriAsync(
             "SELECT id FROM danh_muc WHERE id=@id AND trang_thai='HOAT_DONG' FOR SHARE", ct, ("@id", input.CategoryId));
         if (category is null) throw new ArgumentException("Chọn danh mục đang hoạt động.");
-        await db.ChayAsync("""
+        await db.ChayAsync($"""
             INSERT INTO bo_dem_chung_tu (tien_to,ky,so_cuoi) VALUES ('SP','',1)
-            ON DUPLICATE KEY UPDATE so_cuoi=so_cuoi+1
+            {db.CounterUpsert()}
             """, ct);
         var number = Convert.ToInt64(await db.DocMotGiaTriAsync(
             "SELECT so_cuoi FROM bo_dem_chung_tu WHERE tien_to='SP' AND ky=''", ct));
@@ -61,9 +61,9 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
         var now = clock.GetUtcNow().ToOffset(TimeSpan.FromHours(7)).DateTime;
         var period = now.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
-        await db.ChayAsync("""
+        await db.ChayAsync($"""
             INSERT INTO bo_dem_chung_tu (tien_to,ky,so_cuoi) VALUES ('PN',@ky,1)
-            ON DUPLICATE KEY UPDATE so_cuoi=so_cuoi+1
+            {db.CounterUpsert()}
             """, ct, ("@ky", period));
         var serial = Convert.ToInt64(await db.DocMotGiaTriAsync(
             "SELECT so_cuoi FROM bo_dem_chung_tu WHERE tien_to='PN' AND ky=@ky", ct, ("@ky", period)));

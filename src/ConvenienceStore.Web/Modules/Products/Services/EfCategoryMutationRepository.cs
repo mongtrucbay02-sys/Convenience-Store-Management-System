@@ -1,3 +1,5 @@
+using System.Data.Common;
+using ConvenienceStore.Web.Shared.Data;
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Data.Entities;
 using ConvenienceStore.Web.Modules.Products.DTOs;
@@ -16,7 +18,7 @@ public sealed class EfCategoryMutationRepository(CuaHangDbContext db):ICategoryM
         if(await db.DanhMucs.AnyAsync(x=>x.Ten==input.Ten,cancellationToken)) return new(CategoryMutationStatus.Duplicate);
         var row=new DanhMuc{Ten=input.Ten!,MoTa=input.MoTa,KhongDoiTra=input.KhongDoiTra};db.DanhMucs.Add(row);
         try { await db.SaveChangesAsync(cancellationToken); }
-        catch(DbUpdateException ex) when(ex.InnerException is MySqlException {Number:1062})
+        catch(DbUpdateException ex) when(ex.InnerException is DbException inner && SqlDialect.IsUniqueViolation(inner))
         {db.Entry(row).State=EntityState.Detached;return new(CategoryMutationStatus.Duplicate);}
         return new(CategoryMutationStatus.Success,Map(row));
     }
@@ -30,7 +32,7 @@ public sealed class EfCategoryMutationRepository(CuaHangDbContext db):ICategoryM
         // CuaHangDbContext owns increment and OriginalValues concurrency predicate.
         try {await db.SaveChangesAsync(cancellationToken);}
         catch(DbUpdateConcurrencyException){db.Entry(row).State=EntityState.Detached;return new(CategoryMutationStatus.Conflict);}
-        catch(DbUpdateException ex) when(ex.InnerException is MySqlException {Number:1062})
+        catch(DbUpdateException ex) when(ex.InnerException is DbException inner && SqlDialect.IsUniqueViolation(inner))
         {db.Entry(row).State=EntityState.Detached;return new(CategoryMutationStatus.Duplicate);}
         return new(CategoryMutationStatus.Success,Map(row));
     }

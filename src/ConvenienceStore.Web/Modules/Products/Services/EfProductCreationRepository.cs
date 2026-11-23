@@ -1,3 +1,4 @@
+using System.Data.Common;
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Data.Entities;
 using ConvenienceStore.Web.Modules.Inventory.Services;
@@ -20,7 +21,7 @@ public sealed class EfProductCreationRepository(CuaHangDbContext db, IDichVuKho 
         var row = new SanPham { Ma = input.Ma!, TenSanPham = input.TenSanPham!, DanhMucId = input.DanhMucId, DonViTinh = input.DonViTinh!, MoTa = input.MoTa, AnhUrl = imageUrl, NguoiTaoId = actorId };
         db.SanPhams.Add(row);
         try { await db.SaveChangesAsync(ct); }
-        catch (DbUpdateException ex) when (ex.InnerException is MySqlException { Number: 1062 })
+        catch (DbUpdateException ex) when (ex.InnerException is DbException inner && SqlDialect.IsUniqueViolation(inner))
         { db.Entry(row).State = EntityState.Detached; throw LoiNghiepVu.XungDot("TRUNG_MA_SAN_PHAM", "Mã sản phẩm đã tồn tại"); }
         await db.ChayAsync("INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id) VALUES(@id,@price,NOW(),@actor)", ct,
             ("@id", row.Id), ("@price", input.GiaBan), ("@actor", actorId));

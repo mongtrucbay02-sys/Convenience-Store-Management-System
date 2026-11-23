@@ -36,7 +36,7 @@ public sealed class MySqlWeekEightReportDataSource(CuaHangDbContext db,Promotion
             WHERE h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=@from AND h.thanh_toan_luc<@to
             GROUP BY h.id,h.ma_hoa_don,h.thanh_toan_luc,h.khach_hang_id,k.trang_thai,k.ho_ten,k.id,a.ho_ten
             ORDER BY h.thanh_toan_luc,h.id
-            """,r=>new WeekSale(Number(r[0]),r.GetString(1),r.GetDateTime(2),NullableNumber(r[3]),r.GetString(4),r.GetString(5),Number(r[6]),Number(r[7])),
+            """,r=>new WeekSale(Number(r[0]),r.GetString(1),r.VietnamDateTime(2),NullableNumber(r[3]),r.GetString(4),r.GetString(5),Number(r[6]),Number(r[7])),
             ct,("@from",from),("@to",to));
 
     public async Task<IReadOnlyList<WeekReturn>> ReturnsAsync(DateTime from,DateTime to,CancellationToken ct)
@@ -51,7 +51,7 @@ public sealed class MySqlWeekEightReportDataSource(CuaHangDbContext db,Promotion
             JOIN tai_khoan a ON a.id=h.thu_ngan_id LEFT JOIN khach_hang k ON k.id=h.khach_hang_id
             WHERE h.trang_thai='HOAN_TAT' AND h.hoan_tat_luc>=@from AND h.hoan_tat_luc<@to
             ORDER BY h.id,l.san_pham_id
-            """,r=>new WeekReturn(Number(r[0]),r.GetString(1),Number(r[2]),r.GetDateTime(3),r.GetString(4),Number(r[5]),r.GetString(6),
+            """,r=>new WeekReturn(Number(r[0]),r.GetString(1),Number(r[2]),r.VietnamDateTime(3),r.GetString(4),Number(r[5]),r.GetString(6),
                 NullableNumber(r[7]),r.GetString(8),Number(r[9]),r.GetString(10),r.GetString(11),Convert.ToInt32(r[12]),Number(r[13]),Number(r[14]),[]),ct,("@from",from),("@to",to));
         // Separate rows avoid GROUP_CONCAT's length limit and preserve names for returns of prior-period sales.
         var promotions=await db.DocDanhSachAsync("""
@@ -79,7 +79,7 @@ public sealed class MySqlWeekEightReportDataSource(CuaHangDbContext db,Promotion
         await db.DocDanhSachAsync("""
             SELECT id,CASE WHEN trang_thai='HOAT_DONG' THEN ho_ten ELSE CONCAT('Khách đã ẩn #',id) END,ngay_tao
             FROM khach_hang WHERE ngay_tao>=@from AND ngay_tao<@to ORDER BY id
-            """,r=>new WeekCustomer(Number(r[0]),r.GetString(1),r.GetDateTime(2)),ct,("@from",from),("@to",to));
+            """,r=>new WeekCustomer(Number(r[0]),r.GetString(1),r.VietnamDateTime(2)),ct,("@from",from),("@to",to));
 
     public async Task<IReadOnlyList<WeekPoints>> PointsAsync(DateTime from,DateTime to,CancellationToken ct) =>
         await db.DocDanhSachAsync("""
@@ -87,7 +87,7 @@ public sealed class MySqlWeekEightReportDataSource(CuaHangDbContext db,Promotion
               l.thoi_diem,l.loai,l.so_diem,l.hoa_don_id
             FROM lich_su_diem l JOIN khach_hang k ON k.id=l.khach_hang_id
             WHERE l.thoi_diem>=@from AND l.thoi_diem<@to ORDER BY l.id
-            """,r=>new WeekPoints(Number(r[0]),Number(r[1]),r.GetString(2),r.GetDateTime(3),r.GetString(4),Convert.ToInt32(r[5]),NullableNumber(r[6])),ct,("@from",from),("@to",to));
+            """,r=>new WeekPoints(Number(r[0]),Number(r[1]),r.GetString(2),r.VietnamDateTime(3),r.GetString(4),Convert.ToInt32(r[5]),NullableNumber(r[6])),ct,("@from",from),("@to",to));
 
     public async Task<IReadOnlyList<PromotionUse>> UsesAsync(DateTime from,DateTime to,CancellationToken ct)=>await usage.ReadAsync(from,to,null,ct);
 }

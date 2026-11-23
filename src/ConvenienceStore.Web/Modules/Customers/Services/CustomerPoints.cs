@@ -27,9 +27,9 @@ public static class CustomerPoints
         // Customer row lock serializes retries. One business event must not award/revoke twice.
         if (type != "DIEU_CHINH")
         {
-            var existing = await db.DocMotGiaTriAsync("""
+            var existing = await db.DocMotGiaTriAsync($"""
                 SELECT so_diem FROM lich_su_diem WHERE khach_hang_id=@id AND loai=@type
-                AND hoa_don_id=@invoice AND phieu_doi_tra_id <=> @return LIMIT 1
+                AND hoa_don_id=@invoice AND {db.Sql("phieu_doi_tra_id <=> @return", "phieu_doi_tra_id IS NOT DISTINCT FROM @return")} LIMIT 1
                 """, ct, ("@id", customerId), ("@type", type), ("@invoice", invoiceId), ("@return", returnId));
             if (existing != null)
             {

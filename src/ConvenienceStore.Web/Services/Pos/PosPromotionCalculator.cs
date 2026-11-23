@@ -1,3 +1,4 @@
+using ConvenienceStore.Web.Shared.Data;
 using System.Data.Common;
 
 namespace ConvenienceStore.Web.Services.Pos;
@@ -49,7 +50,7 @@ public static class PosPromotionCalculator
             result.Add(new(Convert.ToInt32(reader[0]), Convert.ToInt32(reader[1]),
                 reader.GetString(2), reader.GetString(3), Convert.ToInt64(reader[4]),
                 reader.IsDBNull(5) ? null : Convert.ToInt64(reader[5]),
-                Convert.ToBoolean(reader[6]), reader.GetDateTime(7)));
+                Convert.ToBoolean(reader[6]), reader.VietnamDateTime(7)));
         return result;
     }
 }

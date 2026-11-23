@@ -73,9 +73,9 @@ public sealed class SuppliersController(CuaHangDbContext db) : Controller
         NhaCungCap row;
         if (input.Id == 0)
         {
-            await db.ChayAsync("""
+            await db.ChayAsync($"""
                 INSERT INTO bo_dem_chung_tu (tien_to,ky,so_cuoi) VALUES ('NCC','',1)
-                ON DUPLICATE KEY UPDATE so_cuoi=GREATEST(so_cuoi+1,1)
+                {db.CounterUpsert()}
                 """, ct);
             var number = Convert.ToInt64(await db.DocMotGiaTriAsync(
                 "SELECT so_cuoi FROM bo_dem_chung_tu WHERE tien_to='NCC' AND ky=''", ct));

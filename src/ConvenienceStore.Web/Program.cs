@@ -85,8 +85,10 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "ConvenienceStore.Web hoặc truyền qua biến môi trường.");
 }
 
-builder.Configuration["ConnectionStrings:CuaHang"] = connectionString;
 var databaseProvider = MySqlEnv.GetProvider(builder.Environment.ContentRootPath, builder.Configuration);
+if (databaseProvider == "PostgreSql") connectionString = SqlDialect.PostgresConnectionString(connectionString);
+builder.Configuration["ConnectionStrings:CuaHang"] = connectionString;
+builder.Configuration["Database:Provider"] = databaseProvider;
 builder.Services.AddDbContext<CuaHangDbContext>(options =>
 {
     if (databaseProvider == "PostgreSql")

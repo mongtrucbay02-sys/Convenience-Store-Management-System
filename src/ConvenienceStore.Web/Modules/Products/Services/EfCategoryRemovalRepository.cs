@@ -1,3 +1,5 @@
+using System.Data.Common;
+using ConvenienceStore.Web.Shared.Data;
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Data.Entities;
 using ConvenienceStore.Web.Modules.Products.DTOs;
@@ -32,7 +34,7 @@ public sealed class EfCategoryRemovalRepository(CuaHangDbContext db) : ICategory
         if (hide) category.TrangThai = "DA_AN"; else db.DanhMucs.Remove(category);
         try { await db.SaveChangesAsync(ct); }
         catch (DbUpdateConcurrencyException) { return new(CategoryRemovalStatus.Conflict); }
-        catch (DbUpdateException ex) when (ex.InnerException is MySqlException { Number: 1451 }) { return new(CategoryRemovalStatus.Referenced, preview); }
+        catch (DbUpdateException ex) when (ex.InnerException is DbException inner && SqlDialect.IsForeignKeyViolation(inner)) { return new(CategoryRemovalStatus.Referenced, preview); }
         await transaction.CommitAsync(ct);
         return new(CategoryRemovalStatus.Success, preview with { TrangThai = category.TrangThai, PhienBan = category.PhienBan });
     }

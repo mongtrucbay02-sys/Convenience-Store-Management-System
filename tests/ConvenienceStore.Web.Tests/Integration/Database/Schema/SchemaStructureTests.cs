@@ -103,7 +103,7 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
               AND TABLE_NAME NOT IN ('quy_tien_mat','giao_dich_tien_mat')
             """);
         Assert.Equal(53, checks.Length);
-        Assert.Equal(SchemaReference.Checks, checks);
+        Assert.Equal(SchemaReference.BaselineChecks, checks);
     }
 
     [Fact]

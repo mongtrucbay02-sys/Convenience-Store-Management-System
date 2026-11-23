@@ -37,7 +37,7 @@ public class PosHeldOrderRenderTests
         http.SetEndpoint(new Endpoint(null,EndpointMetadataCollection.Empty,"Render test"));
         var context=new ActionContext(http,new RouteData(),new ActionDescriptor());
         var engine=services.GetRequiredService<ICompositeViewEngine>();
-        var view=engine.GetView(null,"/Views/Pos/_HeldOrders.cshtml",false);Assert.True(view.Success);
+         var view=engine.GetView(null,"/Modules/PointOfSale/Views/Pos/_HeldOrders.cshtml",false);Assert.True(view.Success);
         var model=new PosPageViewModel {
             Cart=new PosCart { Items=hasOrder?[new PosCartItem { Name="Sữa",Quantity=1,UnitPrice=25000 }]:[] },
             HeldOrders=hasOrder?[new PosHeldOrder(7,new DateTime(2026,11,5,10,30,0),"Khách <script>alert(1)</script>",2,50000)]:[] };

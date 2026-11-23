@@ -23,7 +23,10 @@ var builder = WebApplication.CreateBuilder(args);
 // ==========================================
 
 builder.Services.AddControllersWithViews().AddRazorOptions(options =>
-    options.AreaViewLocationFormats.Insert(0, "/Modules/{2}/Views/{1}/{0}.cshtml"));
+{
+    options.ViewLocationFormats.Insert(0, "/Modules/PointOfSale/Views/{1}/{0}.cshtml");
+    options.AreaViewLocationFormats.Insert(0, "/Modules/{2}/Views/{1}/{0}.cshtml");
+});
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<

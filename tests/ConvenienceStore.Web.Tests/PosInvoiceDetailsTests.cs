@@ -319,7 +319,7 @@ public class PosInvoiceDetailsTests
             await controller.Details(15, default));
 
         Assert.Equal(
-            "~/Views/Invoices/Details.cshtml",
+            "~/Modules/PointOfSale/Views/Invoices/Details.cshtml",
             result.ViewName);
 
         var model = Assert.IsType<PosInvoiceViewModel>(result.Model);

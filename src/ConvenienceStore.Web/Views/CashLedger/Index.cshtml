@@ -1,0 +1,35 @@
+@model ConvenienceStore.Web.Modules.Returns.Services.CashLedgerService.Balance
+@using ConvenienceStore.Web.Modules.Returns.Services
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quỹ tiền mặt";
+    var entries = (IReadOnlyList<CashLedgerService.Entry>)ViewData["Entries"]!;
+    string Money(long amount) => amount.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " đ";
+    // Chốt số dư mở lưu độ lớn chênh lệch (cột UNSIGNED); dấu lấy từ số dư trước/sau.
+    string SignedMoney(long diff) => (diff > 0 ? "+" : diff < 0 ? "−" : "") + Money(Math.Abs(diff));
+    string Kind(string kind) => kind switch {
+        "THU_BAN_HANG" => "Thu bán hàng", "CHI_HOAN_TRA" => "Chi hoàn trả",
+        "CHI_HUY_HOA_DON" => "Chi hủy hóa đơn", "CHOT_SO_DU_DAU" => "Chốt số dư mở quỹ", _ => kind };
+}
+<div class="page-header"><div><h1>Quỹ tiền mặt</h1><p>Đối chiếu tiền thực tế và lịch sử thu chi tại cửa hàng.</p></div></div>
+@if (TempData["Error"] is string error) { <div class="alert alert-danger" role="alert">@error</div> }
+@if (TempData["Success"] is string success) { <div class="alert alert-success" role="status">@success</div> }
+<section class="card p-4 mb-4">
+    <h2>Số dư hệ thống: @Money(Model.Amount)</h2>
+    @if (!Model.OpeningConfirmed)
+    {
+        <p>Chưa chốt số dư mở quỹ. Tạm dừng thu chi, kiểm đếm toàn bộ tiền đang có rồi nhập số thực đếm tại thời điểm này. Hệ thống ghi phần chênh lệch; không cộng lại hóa đơn cũ. Thao tác chỉ được thực hiện một lần.</p>
+        <form asp-action="ConfirmOpening" method="post" class="row g-3">
+            <input type="hidden" name="ExpectedBalance" value="@Model.Amount" />
+            <div class="col-md-4"><label for="counted" class="form-label">Tiền mặt thực đếm (đ)</label><input id="counted" class="form-control" name="Counted" type="number" min="0" step="1" required /></div>
+            <div class="col-md-8"><label for="reason" class="form-label">Lý do và thông tin kiểm đếm</label><input id="reason" class="form-control" name="Reason" maxlength="500" required /></div>
+            <div><button class="btn btn-primary" type="submit">Xác nhận số tiền thực đếm</button></div>
+        </form>
+    }
+    else { <p>Đã chốt số dư mở quỹ. Các giao dịch tiếp theo tự cập nhật số dư và giữ lịch sử.</p> }
+</section>
+<section class="card p-3"><h2>100 giao dịch gần nhất</h2><div class="table-responsive"><table class="table align-middle">
+    <thead><tr><th>Thời điểm</th><th>Nghiệp vụ</th><th>Số tiền</th><th>Trước</th><th>Sau</th><th>Người thực hiện</th><th>Ghi chú</th></tr></thead>
+    <tbody>@foreach (var entry in entries) { <tr><td>@entry.At.ToString("dd/MM/yyyy HH:mm")</td><td>@Kind(entry.Kind)</td><td>@(entry.Kind == "CHOT_SO_DU_DAU" ? SignedMoney(entry.After - entry.Before) : Money(entry.Amount))</td><td>@Money(entry.Before)</td><td>@Money(entry.After)</td><td>@entry.Actor</td><td>@entry.Note</td></tr> }
+    @if (entries.Count == 0) { <tr><td colspan="7">Chưa có giao dịch quỹ tiền mặt.</td></tr> }</tbody>
+</table></div></section>

@@ -89,6 +89,11 @@ namespace ConvenienceStore.Web.Data.Migrations
 
             modelBuilder.Entity("ConvenienceStore.Web.Data.Entities.ChuongTrinhKhuyenMai", b =>
                 {
+                    b.Property<string>("AnhUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("varchar(2048)")
+                        .HasColumnName("anh_url");
+
                     b.Property<uint>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int unsigned")

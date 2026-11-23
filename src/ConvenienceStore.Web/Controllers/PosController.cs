@@ -43,6 +43,7 @@ public sealed class PosController : Controller
     // ==========================================
 
     [HttpGet]
+    [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Index(
         string? search,
         int? categoryId)
@@ -72,6 +73,7 @@ public sealed class PosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Hold(string? note)
     {
         var result = await _heldOrders.HoldAsync(note);
@@ -81,6 +83,7 @@ public sealed class PosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Recall(int orderId)
     {
         var result = await _heldOrders.RecallAsync(orderId);
@@ -94,6 +97,7 @@ public sealed class PosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Add(int productId)
     {
         if (productId <= 0)
@@ -116,6 +120,7 @@ public sealed class PosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Update(
         int productId,
         string? quantity)
@@ -161,6 +166,7 @@ public sealed class PosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Remove(int productId)
     {
         if (productId <= 0)
@@ -183,6 +189,7 @@ public sealed class PosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Calculate(
         long cashReceived)
     {
@@ -231,6 +238,7 @@ public sealed class PosController : Controller
     // ==========================================
 
     [HttpGet]
+    [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Checkout()
     {
         var cart = await _cart.GetCartAsync();
@@ -258,6 +266,7 @@ public sealed class PosController : Controller
     // ==========================================
 
     [HttpGet]
+    [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Cash()
     {
         var cart = await _cart.GetCartAsync();
@@ -289,6 +298,7 @@ public sealed class PosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> ConfirmCash(
         string? cashReceived)
     {
@@ -351,6 +361,7 @@ public sealed class PosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> CompleteOrder(
         string? cashReceived,
         CancellationToken cancellationToken)
@@ -496,6 +507,7 @@ public sealed class PosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Cancel()
     {
         await _cart.CancelAsync();

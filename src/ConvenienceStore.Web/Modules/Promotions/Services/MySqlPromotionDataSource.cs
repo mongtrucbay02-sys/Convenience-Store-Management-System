@@ -18,7 +18,7 @@ public sealed class MySqlPromotionDataSource(CuaHangDbContext db, IHttpContextAc
     public async Task<IReadOnlyList<PromotionRecord>> GetAllAsync(CancellationToken ct)
     {
         const string sql = """
-            SELECT p.id,p.ma,p.ten,p.mo_ta,p.loai_giam,p.gia_tri,p.giam_toi_da,p.bat_dau_luc,p.ket_thuc_luc,
+            SELECT p.id,p.ma,p.ten,p.mo_ta,p.anh_url,p.loai_giam,p.gia_tri,p.giam_toi_da,p.bat_dau_luc,p.ket_thuc_luc,
                    p.chi_thanh_vien,p.trang_thai,COALESCE(u.usage_count,0) usage_count,
                    k.san_pham_id product_id,COALESCE(s.ma,'') product_sku,COALESCE(s.ten_san_pham,'') product_name
             FROM chuong_trinh_khuyen_mai p
@@ -31,7 +31,7 @@ public sealed class MySqlPromotionDataSource(CuaHangDbContext db, IHttpContextAc
         var rows = await QueryAsync(sql, null, r => new PromotionRow(
             Long(r,"id"), Text(r,"ma"), Text(r,"ten"), NullableText(r,"mo_ta"), Text(r,"loai_giam"),
             Long(r,"gia_tri"), NullableLong(r,"giam_toi_da") is 0 ? null : NullableLong(r,"giam_toi_da"), VietnamDate(r,"bat_dau_luc"), VietnamDate(r,"ket_thuc_luc"),
-            Bool(r,"chi_thanh_vien"), Text(r,"trang_thai"), Int(r,"usage_count"),
+            Bool(r,"chi_thanh_vien"), Text(r,"trang_thai"), Int(r,"usage_count"), NullableText(r,"anh_url"),
             r["product_id"] is DBNull ? null : new ProductRefDto(Long(r,"product_id"),Text(r,"product_sku"),Text(r,"product_name"))), ct);
         return rows.GroupBy(r=>r.Id).Select(g=>ToRecord(g.First(),g.Where(x=>x.Product is not null).Select(x=>x.Product!).ToArray())).ToArray();
     }
@@ -53,8 +53,8 @@ public sealed class MySqlPromotionDataSource(CuaHangDbContext db, IHttpContextAc
                 createParams["@creator"] = creatorId;
                 await ExecuteAsync(connection,tx,"""
                     INSERT INTO chuong_trinh_khuyen_mai
-                      (ma,ten,mo_ta,loai_giam,gia_tri,giam_toi_da,bat_dau_luc,ket_thuc_luc,chi_thanh_vien,trang_thai,nguoi_tao_id,phien_ban,ngay_tao,ngay_cap_nhat)
-                    VALUES (@code,@name,@description,@type,@value,@max,@start,@end,@members,@status,@creator,1,NOW(),NOW())
+                      (ma,ten,mo_ta,anh_url,loai_giam,gia_tri,giam_toi_da,bat_dau_luc,ket_thuc_luc,chi_thanh_vien,trang_thai,nguoi_tao_id,phien_ban,ngay_tao,ngay_cap_nhat)
+                    VALUES (@code,@name,@description,@image,@type,@value,@max,@start,@end,@members,@status,@creator,1,NOW(),NOW())
                     """, ct, createParams);
                 var id=Convert.ToInt64(await ScalarAsync(connection,tx,"SELECT LAST_INSERT_ID()",ct),CultureInfo.InvariantCulture);
                 await ExecuteAsync(connection,tx,"UPDATE chuong_trinh_khuyen_mai SET ma=@code WHERE id=@id",ct,
@@ -78,7 +78,7 @@ public sealed class MySqlPromotionDataSource(CuaHangDbContext db, IHttpContextAc
             try
             {
                 var affected=await ExecuteAsync(connection,tx,"""
-                    UPDATE chuong_trinh_khuyen_mai SET ten=@name,mo_ta=@description,loai_giam=@type,gia_tri=@value,
+                    UPDATE chuong_trinh_khuyen_mai SET ten=@name,mo_ta=@description,anh_url=@image,loai_giam=@type,gia_tri=@value,
                       giam_toi_da=@max,bat_dau_luc=@start,ket_thuc_luc=@end,chi_thanh_vien=@members,trang_thai=@status,
                       phien_ban=phien_ban+1,ngay_cap_nhat=NOW() WHERE id=@id
                     """,ct,Params(record));
@@ -101,14 +101,14 @@ public sealed class MySqlPromotionDataSource(CuaHangDbContext db, IHttpContextAc
 
     private static Dictionary<string,object?> Params(PromotionRecord r)=>new()
     {
-        ["@id"]=r.Id,["@code"]=r.Code,["@name"]=r.Name,["@description"]=r.Description,
+        ["@id"]=r.Id,["@code"]=r.Code,["@name"]=r.Name,["@description"]=r.Description,["@image"]=r.ImageUrl,
         ["@type"]=r.DiscountType==DiscountType.Percent?"PHAN_TRAM":"SO_TIEN",["@value"]=r.DiscountValue,
-        ["@max"]=r.MaxDiscountAmount ?? 0,["@start"]=DbDate(r.StartAt),["@end"]=DbDate(r.EndAt),
+        ["@max"]=r.MaxDiscountAmount,["@start"]=DbDate(r.StartAt),["@end"]=DbDate(r.EndAt),
         ["@members"]=r.MembersOnly,["@status"]=r.Status switch {PromotionStatus.Draft=>"NHAP",PromotionStatus.Active=>"DA_KICH_HOAT",PromotionStatus.Paused=>"TAM_DUNG",_=>"DA_KET_THUC"}
     };
     private static PromotionRecord ToRecord(PromotionRow r,IReadOnlyList<ProductRefDto> products)=>new(
         r.Id,r.Code,r.Name,r.Description,r.Type=="PHAN_TRAM"?DiscountType.Percent:DiscountType.FixedAmount,
-        r.Value,r.MaxDiscount,products,r.StartAt,r.EndAt,r.Members,r.Status switch {"NHAP"=>PromotionStatus.Draft,"DA_KICH_HOAT"=>PromotionStatus.Active,"TAM_DUNG"=>PromotionStatus.Paused,_=>PromotionStatus.Ended},r.UsageCount);
+        r.Value,r.MaxDiscount,products,r.StartAt,r.EndAt,r.Members,r.Status switch {"NHAP"=>PromotionStatus.Draft,"DA_KICH_HOAT"=>PromotionStatus.Active,"TAM_DUNG"=>PromotionStatus.Paused,_=>PromotionStatus.Ended},r.UsageCount,r.ImageUrl);
     private static string Code(long id)=>$"KM-{id:00000000}";
     private long GetCreatorId()
     {
@@ -119,7 +119,7 @@ public sealed class MySqlPromotionDataSource(CuaHangDbContext db, IHttpContextAc
             : throw new InvalidOperationException("Không xác định được mã tài khoản Admin để lưu người tạo khuyến mãi.");
     }
     private sealed record PromotionRow(long Id,string Code,string Name,string? Description,string Type,long Value,long? MaxDiscount,
-        DateTimeOffset StartAt,DateTimeOffset EndAt,bool Members,string Status,int UsageCount,ProductRefDto? Product);
+        DateTimeOffset StartAt,DateTimeOffset EndAt,bool Members,string Status,int UsageCount,string? ImageUrl,ProductRefDto? Product);
 
     private async Task<IReadOnlyList<T>> QueryAsync<T>(string sql,DateTimeOffset? unused,Func<DbDataReader,T> map,CancellationToken ct)
     {

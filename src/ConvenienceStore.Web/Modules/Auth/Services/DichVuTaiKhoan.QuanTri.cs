@@ -101,6 +101,8 @@ public sealed partial class DichVuTaiKhoan
         return await XemAsync(id, ct);
     }
 
+    // AUTH-09 (quyết định 23/11/2026, issue #5): đặt lại mật khẩu gỡ khóa tạm do sai mật khẩu và đưa bộ đếm sai về 0;
+    // tài khoản bị Admin khóa (DA_KHOA) vẫn phải mở khóa trước.
     public async Task<KetQuaDatLaiMatKhau> DatLaiMatKhauAsync(
         long id, YeuCauDatLaiMatKhau? yeuCau, CancellationToken ct = default)
     {
@@ -115,7 +117,8 @@ public sealed partial class DichVuTaiKhoan
                 MaLoiAuth.TaiKhoanDangKhoa, "Tài khoản đang bị khóa, vui lòng mở khóa trước khi đặt lại mật khẩu.");
 
         await db.ChayAsync(
-            "UPDATE tai_khoan SET mat_khau_bam = @bam, bat_buoc_doi_mk = TRUE, phien_ban = phien_ban + 1 WHERE id = @id",
+            "UPDATE tai_khoan SET mat_khau_bam = @bam, bat_buoc_doi_mk = TRUE, khoa_tam_den = NULL, so_lan_sai = 0, " +
+            "phien_ban = phien_ban + 1 WHERE id = @id",
             ct, ("@bam", BamMatKhau.Bam(matKhauTam)), ("@id", id));
         await HuyMoiPhienAsync(id, ct);
         await giaoTac.CommitAsync(ct);

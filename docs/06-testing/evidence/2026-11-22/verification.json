@@ -1,0 +1,115 @@
+{
+  "date": "2026-11-22",
+  "sourceCommit": "963294287f579b39185455f2291d6cccdf52916b",
+  "branch": "fix/integrate-main-develop-20261122",
+  "status": "local verification; awaiting independent review",
+  "runner": "OpenAI Codex tools",
+  "independentReviewer": null,
+  "environment": {
+    "databaseScope": "disposable local test database; not shared Aiven",
+    "mysql": "8.4.13",
+    "os": "Windows",
+    "dotnet": "10"
+  },
+  "build": {
+    "warnings": 0,
+    "errors": 0
+  },
+  "testRun": {
+    "passed": 697,
+    "notExecuted": 0,
+    "failed": 0,
+    "total": 697,
+    "id": "aa432784-8d27-42cd-9e3e-a14db39da3cf"
+  },
+  "newRegressionCases": [
+    {
+      "outcome": "Passed",
+      "name": "ConvenienceStore.Web.Tests.ReportPromotionMySqlRegressionTests.ReportFiltersUseStoredIdsAndKeepHistoricalEntriesSelectable"
+    },
+    {
+      "outcome": "Passed",
+      "name": "ConvenienceStore.Web.Tests.ReportPromotionMySqlRegressionTests.PromotionCreateAndUpdateRespectNullableDiscountCap(type: FixedAmount, cap: null)"
+    },
+    {
+      "outcome": "Passed",
+      "name": "ConvenienceStore.Web.Tests.ReportPromotionMySqlRegressionTests.InventoryValueUsesDecimalCostUntilTheTotalIsCalculated"
+    },
+    {
+      "outcome": "Passed",
+      "name": "ConvenienceStore.Web.Tests.ReportPromotionMySqlRegressionTests.PromotionCreateAndUpdateRespectNullableDiscountCap(type: Percent, cap: null)"
+    },
+    {
+      "outcome": "Passed",
+      "name": "ConvenienceStore.Web.Tests.ReportPromotionMySqlRegressionTests.PromotionCreateAndUpdateRespectNullableDiscountCap(type: Percent, cap: 1000)"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "candidate-full.trx",
+      "sha256": "40c218fda1284a5aabf258fafe62a6a1afadea8eba5cb06a21174684e0d6b097",
+      "bytes": 1122143,
+      "storage": "local outputs/ui-e2e-20261122; raw file not committed"
+    },
+    {
+      "name": "candidate-build.log",
+      "sha256": "85cfa94cec6cd9ffc1d1d539dfd1dc0a7f59e2811b848041b5677a987ddd3f0a",
+      "bytes": 982,
+      "storage": "local outputs/ui-e2e-20261122; raw file not committed"
+    },
+    {
+      "name": "candidate-test.log",
+      "sha256": "2c73884421596c202011216fb6db81b97df66357c74632d54001162210266ead",
+      "bytes": 668,
+      "storage": "local outputs/ui-e2e-20261122; raw file not committed"
+    },
+    {
+      "name": "after-sale.tsv",
+      "sha256": "a95aba20e371085a4a971bd6d112bc0a6581fb34f5713bb37b4b840673f3bcd8",
+      "bytes": 189,
+      "storage": "local outputs/ui-e2e-20261122; raw file not committed"
+    },
+    {
+      "name": "after-return-draft-purchase.tsv",
+      "sha256": "be0c8c0c3060c08557986f61d3b3929f493a1ec0f570378f7c8ae847fbb92d27",
+      "bytes": 149,
+      "storage": "local outputs/ui-e2e-20261122; raw file not committed"
+    },
+    {
+      "name": "after-purchase.tsv",
+      "sha256": "4ad8b670405193101fa93afdd043d21cf6522ebd655be0970757c4c8651f04a2",
+      "bytes": 205,
+      "storage": "local outputs/ui-e2e-20261122; raw file not committed"
+    },
+    {
+      "name": "BC-07-kiem-thu.xlsx",
+      "sha256": "58b1b25d09b56b8d9867e8c031dddc9d646827b024e5839aef30c13a22fc7233",
+      "bytes": 2043,
+      "storage": "local outputs/ui-e2e-20261122; raw file not committed"
+    },
+    {
+      "name": "lich-su-diem.jpg",
+      "sha256": "1e1fb27e93abd991cc45f7217e564b2eaf6fa0e5302947af09ddfbb50814a3a0",
+      "bytes": 64226,
+      "storage": "committed alongside this manifest; synthetic test data"
+    },
+    {
+      "name": "hoa-don.jpg",
+      "sha256": "095bdabc620a16b554400816e4cde2497d9b59cee3a1ade8a2127cfb4b2a0793",
+      "bytes": 104566,
+      "storage": "committed alongside this manifest; synthetic test data"
+    },
+    {
+      "name": "ton-kho-sau-sua.jpg",
+      "sha256": "a4a0b29ffe1ccdda159cb746fe6e7f5f479214bb36f88187e96544f2cc8aab39",
+      "bytes": 103554,
+      "storage": "committed alongside this manifest; synthetic test data"
+    }
+  ],
+  "limits": [
+    "No Aiven/staging acceptance",
+    "Promotion image persistence incomplete",
+    "Not all mobile screens verified",
+    "Not independent review or CI result"
+  ]
+}

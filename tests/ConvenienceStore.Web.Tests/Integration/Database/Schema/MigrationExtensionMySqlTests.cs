@@ -49,6 +49,50 @@ public sealed class MigrationExtensionMySqlTests(CsdlMySqlTam database) : IClass
     }
 
     [Fact]
+    public async Task CashReconciliationStopsBeforeSchemaChangesWhenEventsAreDuplicatedAndCanBeRerun()
+    {
+        await using var context = database.TaoDbContext();
+        context.Database.SetConnectionString(new MySqlConnectionStringBuilder(database.ChuoiKetNoi) {
+            Pooling = false
+        }.ConnectionString);
+        await context.Database.OpenConnectionAsync();
+        var migrator = context.GetService<IMigrator>();
+        try
+        {
+            await migrator.MigrateAsync("20261112170000_CashLedger");
+            await database.ChayAsync("""
+                INSERT INTO tai_khoan(ten_dang_nhap,mat_khau_bam,ho_ten,vai_tro_id,bat_buoc_doi_mk)
+                SELECT 'cash_guard_actor','unused','Cash guard test',id,0 FROM vai_tro WHERE ma='TN';
+                INSERT INTO gio_hang(thu_ngan_id) SELECT id FROM tai_khoan WHERE ten_dang_nhap='cash_guard_actor';
+                INSERT INTO hoa_don(ma_hoa_don,gio_hang_id,thu_ngan_id,thanh_toan_luc,tong_tien_hang,tong_thanh_toan,tien_khach_dua,tien_thua)
+                SELECT 'HD-CASH-GUARD',g.id,g.thu_ngan_id,NOW(),10000,10000,10000,0
+                FROM gio_hang g JOIN tai_khoan a ON a.id=g.thu_ngan_id WHERE a.ten_dang_nhap='cash_guard_actor';
+                INSERT INTO giao_dich_tien_mat(loai,hoa_don_id,so_tien,so_du_truoc,so_du_sau,nguoi_thuc_hien_id)
+                SELECT 'THU_BAN_HANG',h.id,10000,0,10000,h.thu_ngan_id FROM hoa_don h WHERE h.ma_hoa_don='HD-CASH-GUARD';
+                INSERT INTO giao_dich_tien_mat(loai,hoa_don_id,so_tien,so_du_truoc,so_du_sau,nguoi_thuc_hien_id)
+                SELECT 'THU_BAN_HANG',h.id,10000,10000,20000,h.thu_ngan_id FROM hoa_don h WHERE h.ma_hoa_don='HD-CASH-GUARD';
+                """);
+
+            // The duplicate check runs before any DDL, so a failed upgrade leaves the schema unchanged.
+            await Assert.ThrowsAsync<MySqlException>(() => migrator.MigrateAsync("20261123090000_CashLedgerReconciliation"));
+            Assert.Equal(0, await Count("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='quy_tien_mat' AND COLUMN_NAME='da_chot_so_du_dau'"));
+            Assert.DoesNotContain("20261123090000_CashLedgerReconciliation", await context.Database.GetAppliedMigrationsAsync());
+
+            // After the duplicate is investigated and removed, the same migration runs cleanly.
+            await database.ChayAsync("""
+                DELETE g FROM giao_dich_tien_mat g JOIN hoa_don h ON h.id=g.hoa_don_id
+                WHERE h.ma_hoa_don='HD-CASH-GUARD' AND g.so_du_truoc=10000;
+                """);
+            await migrator.MigrateAsync("20261123090000_CashLedgerReconciliation");
+            Assert.Equal(1, await Count("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='quy_tien_mat' AND COLUMN_NAME='da_chot_so_du_dau'"));
+        }
+        finally
+        {
+            await migrator.MigrateAsync();
+        }
+    }
+
+    [Fact]
     public async Task CancellationRefundAuditRejectsUpdatesAndDeletes()
     {
         await database.ChayAsync("""

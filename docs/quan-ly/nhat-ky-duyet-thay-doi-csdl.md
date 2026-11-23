@@ -19,7 +19,18 @@ Rà toàn bộ pull request đang mở có tệp migration, `.sql`, DbContext ho
 
 Kết quả: không có thay đổi CSDL nào được gộp mà chưa duyệt. Không có migration mới nào cần thêm vào `CuaHangDbContext` trong tuần 6. T-KHO-SV2 (#140) không đổi cấu trúc CSDL.
 
-## Mẫu ghi cho các lượt sau (T7-R1 và về sau)
+## Lượt rà 16/11/2026 (tuần 7, T7-R1)
+
+Rà soát thay đổi cấu trúc CSDL theo Issue RFC #273 ("Đề xuất duyệt bổ sung cấu trúc lưu vết hoàn tiền (POS-12) và quỹ tiền mặt (DT-04, DT-05)").
+
+| PR / Commit | Tác giả | Nhánh đích | Thay đổi CSDL | Kết luận đề xuất | Lý do và việc cần làm |
+| --- | --- | --- | --- | --- | --- |
+| PR #217 (`feature/pos-12`) | #3 Hoài | `develop` | Bảng `hoan_tien_hoa_don` và 2 trigger `trg_hoan_tien_hd_khong_sua`, `trg_hoan_tien_hd_khong_xoa` | **Đề nghị duyệt (RFC #273)** | Lưu vết hoàn tiền hủy hóa đơn POS-12; dữ liệu bất biến chỉ thêm, không sửa/xóa; có khóa ngoại FK tới `hoa_don(id)` và `tai_khoan(id)`. Migration `20261112160000_Pos12CancelInvoice` có cả `Up()` và `Down()`. |
+| Commit `ea4ecee` | #3 Hoài | `develop` | Bảng `quy_tien_mat` (id=1, số dư >= 0), bảng `giao_dich_tien_mat` (CHECK `so_tien > 0`, liên kết FK) | **Đề nghị duyệt (RFC #273)** | Quản lý dòng tiền mặt quầy và hoàn tiền đổi trả DT-04/DT-05. Đã có migration `20261112170000_CashLedger` có cả `Up()` và `Down()`. |
+
+Tài liệu thiết kế chi tiết: `docs/database/invoice-returns/rfc-273-pos12-cashledger-schema.md` và tệp DDL delta `docs/db/schema_v1_delta_pos12_cashledger.sql`.
+
+## Mẫu ghi cho các lượt sau (T8-R1 và về sau)
 
 | Ngày | PR | Tác giả | Thay đổi CSDL | Kết luận | Ghi chú |
 | --- | --- | --- | --- | --- | --- |

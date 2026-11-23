@@ -752,3 +752,14 @@ VALUES (10000, TRUE, '2026-01-01 00:00:00', NULL);
 
 INSERT INTO chinh_sach_doi_tra (so_ngay_doi_tra, nguong_tien_can_duyet, hieu_luc_tu, nguoi_tao_id)
 VALUES (7, 500000, '2026-01-01 00:00:00', NULL);
+
+-- ---------------------------------------------------------------------
+-- 10. PHẦN BỔ SUNG CSDL V1.1 (POS-12 & CASH LEDGER)
+--     Chi tiết đặc tả và DDL delta xem tại:
+--     - docs/db/schema_v1_delta_pos12_cashledger.sql
+--     - docs/database/invoice-returns/rfc-273-pos12-cashledger-schema.md
+--     - Issue RFC: #273
+--     Các cấu trúc đã áp dụng qua migration EF Core:
+--       + 20261112160000_Pos12CancelInvoice: bảng hoan_tien_hoa_don, 2 trigger
+--       + 20261112170000_CashLedger: bảng quy_tien_mat, giao_dich_tien_mat
+-- ---------------------------------------------------------------------

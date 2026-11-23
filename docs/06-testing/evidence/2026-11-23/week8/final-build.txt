@@ -1,0 +1,8 @@
+  ConvenienceStore.Web -> C:\Users\Admin\Documents\Codex\2026-11-02\ng-i-ph-tr-ch-5\work\smartmart-ui-develop\src\ConvenienceStore.Web\bin\Release\net10.0\ConvenienceStore.Web.dll
+  ConvenienceStore.Web.Tests -> C:\Users\Admin\Documents\Codex\2026-11-02\ng-i-ph-tr-ch-5\work\smartmart-ui-develop\tests\ConvenienceStore.Web.Tests\bin\Release\net10.0\ConvenienceStore.Web.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:34.73

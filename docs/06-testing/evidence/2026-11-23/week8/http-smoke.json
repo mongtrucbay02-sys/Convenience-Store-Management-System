@@ -1,0 +1,324 @@
+{
+  "checks": 53,
+  "errors": [],
+  "results": [
+    {
+      "actor": "anonymous",
+      "path": "/login.html",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "anonymous",
+      "path": "/Reports/Reports/Revenue",
+      "status": 401,
+      "expected": 401
+    },
+    {
+      "actor": "anonymous",
+      "path": "/Pos",
+      "status": 401,
+      "expected": 401
+    },
+    {
+      "actor": "AD",
+      "path": "/api/v1/auth/login",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Home/Workspace",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Customers",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Promotions/Promotions/Index",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Promotions/Promotions/Create",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Pos",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "AD",
+      "path": "/Pos/Receipt?invoiceId=0",
+      "status": 400,
+      "expected": 400
+    },
+    {
+      "actor": "AD",
+      "path": "/Dashboard",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/CashLedger",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Promotions/Promotions/Usage/1",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Promotions/Promotions/Delete/3",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/api/promotions/1/usage",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/CashLedger/ConfirmOpening (no csrf)",
+      "status": 400,
+      "expected": 400
+    },
+    {
+      "actor": "AD",
+      "path": "/Reports/Reports/Dashboard",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Reports/Reports/Revenue",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Reports/Reports/Products",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Reports/Reports/Categories",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Reports/Reports/Cashiers",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Reports/Reports/Inventory",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Reports/Reports/Purchases",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Reports/Reports/GrossProfit",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Reports/Reports/Returns",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Reports/Reports/Customers",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Reports/Reports/Promotions",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "AD",
+      "path": "/Returns",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/api/v1/auth/login",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "TN",
+      "path": "/Home/Workspace",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "TN",
+      "path": "/Customers",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "TN",
+      "path": "/Promotions/Promotions/Index",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "TN",
+      "path": "/Promotions/Promotions/Create",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Pos",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "actor": "TN",
+      "path": "/Pos/Receipt?invoiceId=0",
+      "status": 400,
+      "expected": 400
+    },
+    {
+      "actor": "TN",
+      "path": "/Dashboard",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/CashLedger",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Promotions/Promotions/Usage/1",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Promotions/Promotions/Delete/3",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/api/promotions/1/usage",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/CashLedger/ConfirmOpening (no csrf)",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Reports/Reports/Dashboard",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Reports/Reports/Revenue",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Reports/Reports/Products",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Reports/Reports/Categories",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Reports/Reports/Cashiers",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Reports/Reports/Inventory",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Reports/Reports/Purchases",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Reports/Reports/GrossProfit",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Reports/Reports/Returns",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Reports/Reports/Customers",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Reports/Reports/Promotions",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "actor": "TN",
+      "path": "/Returns",
+      "status": 200,
+      "expected": 200
+    }
+  ]
+}

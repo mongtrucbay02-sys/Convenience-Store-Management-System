@@ -40,7 +40,7 @@ public class CsdlMySqlTam : IAsyncLifetime
                 $"export {TenBienMoiTruong}=\"server=localhost;port=3306;user=root;password=...\"");
         }
 
-        var mayChu = new MySqlConnectionStringBuilder(chuoi) { Database = "" };
+        var mayChu = new MySqlConnectionStringBuilder(chuoi) { Database = "", Pooling = false };
         _chuoiMayChu = mayChu.ConnectionString;
         // Never return a migration connection holding the provider's named lock
         // to a pool shared with concurrently disposed fixtures. Closing the
@@ -57,7 +57,16 @@ public class CsdlMySqlTam : IAsyncLifetime
 
         await using (var db = TaoDbContext())
         {
-            await db.Database.MigrateAsync();
+            // Keep one physical connection for the provider's session-scoped
+            // migration lock. Some provider paths otherwise retain a named lock
+            // after the fixture database has already been dropped.
+            await db.Database.OpenConnectionAsync();
+            try { await db.Database.MigrateAsync(); }
+            finally
+            {
+                try { await db.Database.ExecuteSqlRawAsync("DO RELEASE_LOCK('__EFMigrationsLock')"); }
+                finally { await db.Database.CloseConnectionAsync(); }
+            }
         }
 
         await NapDuLieuNenAsync();
@@ -65,7 +74,8 @@ public class CsdlMySqlTam : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        MySqlConnection.ClearAllPools();
+        // All fixture connections are unpooled. Do not clear other fixtures'
+        // or web hosts' global pools while their migrations may still be active.
         if (Environment.GetEnvironmentVariable("GIU_CSDL_TEST") == "1" || _chuoiMayChu.Length == 0)
             return;
         await ChayTrenMayChuAsync($"DROP DATABASE IF EXISTS `{TenCsdl}`");

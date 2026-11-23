@@ -4,7 +4,8 @@ Soạn 23/11/2026 · #1 Phạm Gia Thăng. Gắn tag và tạo Release do **#5 T
 
 ## 1. Điều kiện trước khi gắn tag
 
-- [ ] PR #270 gộp vào nhánh của #232; PR #232 gộp vào `develop`; CI xanh
+- [ ] PR #270 và #271 gộp vào nhánh của #232; PR #232 gộp vào `develop`; CI mã kết hợp xanh
+- [ ] Nhánh `feature/week8-bc-km-20261123` (KM-05/06, BC-09/10/11, #246–252) gộp qua PR vào `develop`; CI/review và kiểm thử bản chạy đạt; SRS không ghi cắt nhầm năm use case đã triển khai
 - [ ] PR #230 (vào `main`) và #231 (vào `develop`) đã gộp; xử lý xung đột `docs/09-ai-usage/ai-usage-log.md` khi đưa `develop` sang `main`
 - [ ] `develop` gộp vào `main` qua PR, CI xanh trên `main`
 - [ ] Đóng băng tính năng (#260, #262, #266) và sửa lỗi theo test report

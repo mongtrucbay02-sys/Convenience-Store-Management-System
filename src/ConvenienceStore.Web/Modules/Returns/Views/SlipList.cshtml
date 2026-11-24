@@ -1,0 +1,110 @@
+@using ConvenienceStore.Web.Modules.Auth.Security
+@using ConvenienceStore.Web.Modules.Returns.Models
+@using System.Globalization
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model ReturnSlipList
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Phiếu đổi trả";
+    var vi = CultureInfo.GetCultureInfo("vi-VN");
+    string Money(long amount) => amount.ToString("N0", vi) + " đ";
+    string Day(DateOnly? date) => date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "";
+    var query = Model.Query;
+    var filters = new Dictionary<string, string>
+    {
+        ["code"] = query.Code ?? "", ["invoiceCode"] = query.InvoiceCode ?? "",
+        ["from"] = Day(query.From), ["to"] = Day(query.To),
+        ["reason"] = query.Reason ?? "", ["status"] = query.Status ?? ""
+    };
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="mb-0">Phiếu đổi trả</h1>
+    @if (User.IsInRole(BangQuyen.ThuNgan))
+    {
+        <a class="btn btn-outline-primary" asp-controller="Returns" asp-action="Index">Tra cứu hóa đơn gốc</a>
+    }
+</div>
+<form class="card card-body mb-3" method="get" action="@Url.Action("Index", "ReturnSlips")">
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-4">
+            <label class="form-label" for="slip-code">Mã phiếu</label>
+            <input class="form-control" id="slip-code" name="code" maxlength="20" value="@query.Code" />
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <label class="form-label" for="original-invoice">Mã hóa đơn gốc</label>
+            <input class="form-control" id="original-invoice" name="invoiceCode" maxlength="20" value="@query.InvoiceCode" />
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <label class="form-label" for="slip-from">Từ ngày</label>
+            <input class="form-control" id="slip-from" name="from" type="date" value="@Day(query.From)" />
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <label class="form-label" for="slip-to">Đến ngày</label>
+            <input class="form-control" id="slip-to" name="to" type="date" value="@Day(query.To)" />
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <label class="form-label" for="slip-reason">Lý do trả</label>
+            <select class="form-select" id="slip-reason" name="reason">
+                <option value="">Tất cả</option>
+                @foreach (var reason in ReturnSlipQuery.Reasons)
+                {
+                    <option value="@reason.Key" selected="@(query.Reason == reason.Key)">@reason.Value</option>
+                }
+            </select>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <label class="form-label" for="slip-status">Trạng thái</label>
+            <select class="form-select" id="slip-status" name="status">
+                <option value="">Tất cả</option>
+                @foreach (var status in ReturnSlipQuery.Statuses)
+                {
+                    <option value="@status.Key" selected="@(query.Status == status.Key)">@status.Value</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="d-flex align-items-center gap-3 mt-3">
+        <button type="submit" class="btn btn-primary">Tra cứu</button>
+        <a asp-action="Index">Xóa bộ lọc</a>
+    </div>
+</form>
+@if (Model.Error is not null)
+{
+    <div class="alert alert-danger" role="alert">@Model.Error</div>
+}
+else if (Model.Items.Count == 0)
+{
+    <p class="alert alert-info" role="status">Không tìm thấy phiếu đổi trả phù hợp.</p>
+}
+else
+{
+    <div class="table-responsive card">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Mã phiếu</th><th>Loại</th><th>Hóa đơn gốc</th><th>Ngày lập</th><th>Thu ngân</th><th>Tiền hoàn</th><th>Thu thêm</th><th>Trạng thái</th></tr></thead>
+            <tbody>
+                @foreach (var slip in Model.Items)
+                {
+                    <tr>
+                        <td><a asp-action="Details" asp-route-id="@slip.Id">@slip.Code</a></td>
+                        <td>@slip.KindLabel</td><td>@slip.InvoiceCode</td><td>@slip.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@slip.CashierName</td><td>@Money(slip.Refund)</td><td>@Money(slip.CashDue)</td><td>@slip.StatusLabel</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+@if (Model.Error is null && (query.Page > 1 || Model.HasNext))
+{
+    <nav class="d-flex align-items-center gap-3 mt-3" aria-label="Trang kết quả">
+        @if (query.Page > 1)
+        {
+            <a asp-action="Index" asp-all-route-data="@filters" asp-route-page="@(query.Page - 1)">Trang trước</a>
+        }
+        <span>Trang @query.Page</span>
+        @if (Model.HasNext)
+        {
+            <a asp-action="Index" asp-all-route-data="@filters" asp-route-page="@(query.Page + 1)">Trang sau</a>
+        }
+    </nav>
+}

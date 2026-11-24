@@ -64,9 +64,10 @@
                 {
                     <a asp-area="" asp-controller="Pos" asp-action="Index">Quầy bán hàng POS</a>
                 }
-                @if (cashier && User.HasClaim("quyen", MaQuyen.DoiTra))
+                @if ((cashier && User.HasClaim("quyen", MaQuyen.DoiTra))
+                    || (admin && User.HasClaim("quyen", MaQuyen.DoiTraDuyetCauHinh)))
                 {
-                    <a asp-area="" asp-controller="Returns" asp-action="Index">Đổi trả</a>
+                    <a asp-area="" asp-controller="ReturnSlips" asp-action="Index">Đổi trả</a>
                 }
                 @if (admin || cashier)
                 {

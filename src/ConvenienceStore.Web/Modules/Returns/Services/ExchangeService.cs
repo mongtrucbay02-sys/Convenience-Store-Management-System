@@ -215,7 +215,7 @@ public sealed class ExchangeService(CuaHangDbContext db, IDichVuKho stock,
             throw LoiNghiepVu.DuLieuKhongHopLe("cashConfirmed", "Cần xác nhận thu tiền chênh lệch.");
 
         string period = Now.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
-        await db.ChayAsync("INSERT INTO bo_dem_chung_tu (tien_to,ky,so_cuoi) VALUES ('TH',@ky,1) ON DUPLICATE KEY UPDATE so_cuoi=so_cuoi+1", ct, ("@ky", period));
+        await db.ChayAsync($"INSERT INTO bo_dem_chung_tu (tien_to,ky,so_cuoi) VALUES ('TH',@ky,1) {db.CounterUpsert()}", ct, ("@ky", period));
         long serial = Convert.ToInt64(await db.DocMotGiaTriAsync("SELECT so_cuoi FROM bo_dem_chung_tu WHERE tien_to='TH' AND ky=@ky", ct, ("@ky", period)));
         string code = $"DT-{period}-{serial:D3}";
         if (code.Length > 20) throw new LoiNghiepVu("DOI_TRA_XUNG_DOT", 409, "Mã phiếu đổi vượt giới hạn.");
@@ -235,7 +235,7 @@ public sealed class ExchangeService(CuaHangDbContext db, IDichVuKho stock,
             }
         }
 
-        await db.ChayAsync("""
+        long exchangeId = await db.InsertIdAsync("""
             INSERT INTO phieu_doi_tra (ma_phieu,loai,hoa_don_goc_id,hoa_don_moi_id,khach_hang_id,chinh_sach_id,
                 trang_thai,can_duyet_qua_han,can_duyet_danh_muc,can_duyet_vuot_nguong,gia_tri_hang_tra,tien_hoan,tien_thu_them,
                 thu_ngan_id,hoan_tat_luc)
@@ -244,7 +244,6 @@ public sealed class ExchangeService(CuaHangDbContext db, IDichVuKho stock,
             ("@cs", draft.Policy.Id), ("@status", status), ("@expired", preview.Expired), ("@forbidden", preview.Forbidden),
             ("@over", preview.OverThreshold), ("@return", preview.ReturnValue), ("@extra", preview.CashDue),
             ("@actor", actor), ("@done", preview.NeedsApproval ? null : Now));
-        long exchangeId = Convert.ToInt64(await db.DocMotGiaTriAsync("SELECT LAST_INSERT_ID()", ct));
         foreach (var l in preview.ReturnLines)
             await db.ChayAsync("""
                 INSERT INTO ct_phieu_doi_tra (phieu_doi_tra_id,san_pham_id,hoa_don_id,so_luong,don_gia_thuc_tra,

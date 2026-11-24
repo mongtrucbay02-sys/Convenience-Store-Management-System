@@ -15,14 +15,14 @@ public sealed class CategoryRemovalController(CategoryRemovalService service) : 
 {
     /// <summary>SP-09 Preview product/document references before removal.</summary>
     [HttpGet("removal")]
-    public async Task<IActionResult> Preview(uint id, CancellationToken ct) => Ok(await service.PreviewAsync(id, ct) ?? throw LoiNghiepVu.KhongTimThay("Danh mục không còn tồn tại."));
+    public async Task<IActionResult> Preview(long id, CancellationToken ct) => Ok(await service.PreviewAsync(id, ct) ?? throw LoiNghiepVu.KhongTimThay("Danh mục không còn tồn tại."));
     /// <summary>SP-09 Delete an empty, unreferenced category after confirmation.</summary>
     [HttpDelete]
-    public async Task<IActionResult> Delete(uint id, CategoryRemovalCommand input, CancellationToken ct) { Require(await service.DeleteAsync(id, input, ct), id); return NoContent(); }
+    public async Task<IActionResult> Delete(long id, CategoryRemovalCommand input, CancellationToken ct) { Require(await service.DeleteAsync(id, input, ct), id); return NoContent(); }
     /// <summary>SP-09 Hide a category without deleting products or history.</summary>
     [HttpPost("hide")]
-    public async Task<IActionResult> Hide(uint id, CategoryRemovalCommand input, CancellationToken ct) => Ok(Require(await service.HideAsync(id, input, ct), id));
-    internal static CategoryRemovalPreviewDto? Require(CategoryRemovalResult result, uint id) => result.Status switch {
+    public async Task<IActionResult> Hide(long id, CategoryRemovalCommand input, CancellationToken ct) => Ok(Require(await service.HideAsync(id, input, ct), id));
+    internal static CategoryRemovalPreviewDto? Require(CategoryRemovalResult result, long id) => result.Status switch {
         CategoryRemovalStatus.Success => result.Preview,
         CategoryRemovalStatus.Invalid => throw LoiNghiepVu.DuLieuKhongHopLe("id", "ID và phiên bản phải lớn hơn 0."),
         CategoryRemovalStatus.Conflict => throw LoiNghiepVu.XungDot(MaLoiChung.XungDotDuLieu, ThongBaoLoi.XungDotDuLieu),

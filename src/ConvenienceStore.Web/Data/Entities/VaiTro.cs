@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class VaiTro
 {
-    public byte Id { get; set; }
+    public short Id { get; set; }
 
     public string Ma { get; set; } = null!;
 

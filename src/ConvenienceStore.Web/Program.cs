@@ -46,6 +46,9 @@ builder.Services.AddSingleton(TimeProvider.System);
 
 // Report Filter
 builder.Services.AddScoped<ReportFilterService>();
+builder.Services.AddScoped<PromotionUsageStore>();
+builder.Services.AddScoped<IWeekEightReportDataSource, MySqlWeekEightReportDataSource>();
+builder.Services.AddScoped<WeekEightReportsService>();
 
 
 // ======================================================
@@ -94,10 +97,9 @@ builder.Services.AddScoped<
     IPromotionService,
     PromotionService>();
 
-
-// ======================================================
-// 5. KẾT NỐI MYSQL
-// ======================================================
+// ==========================================
+// 2. KẾT NỐI CSDL
+// ==========================================
 
 var connectionString = MySqlEnv.GetConnectionString(
     builder.Environment.ContentRootPath,
@@ -111,12 +113,16 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "cạnh project ConvenienceStore.Web hoặc truyền qua biến môi trường.");
 }
 
+var databaseProvider = MySqlEnv.GetProvider(builder.Environment.ContentRootPath, builder.Configuration);
+if (databaseProvider == "PostgreSql") connectionString = SqlDialect.PostgresConnectionString(connectionString);
 builder.Configuration["ConnectionStrings:CuaHang"] = connectionString;
-
+builder.Configuration["Database:Provider"] = databaseProvider;
 builder.Services.AddDbContext<CuaHangDbContext>(options =>
 {
-    options.UseMySQL(connectionString)
-        .AddInterceptors(new GioVietNamInterceptor());
+    if (databaseProvider == "PostgreSql")
+        options.UseNpgsql(connectionString, postgres => postgres.SetPostgresVersion(17, 0));
+    else
+        options.UseMySQL(connectionString).AddInterceptors(new GioVietNamInterceptor());
 });
 
 

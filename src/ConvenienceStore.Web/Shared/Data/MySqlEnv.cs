@@ -3,8 +3,18 @@ namespace ConvenienceStore.Web.Shared.Data;
 internal static class MySqlEnv
 {
     public static string? GetConnectionString(string contentRoot, IConfiguration configuration)
+        => GetValue(contentRoot, configuration, "ConnectionStrings__CuaHang", "ConnectionStrings:CuaHang");
+
+    public static string GetProvider(string contentRoot, IConfiguration configuration)
     {
-        const string key = "ConnectionStrings__CuaHang";
+        var value = GetValue(contentRoot, configuration, "Database__Provider", "Database:Provider") ?? "MySql";
+        if (value.Equals("PostgreSql", StringComparison.OrdinalIgnoreCase)) return "PostgreSql";
+        if (value.Equals("MySql", StringComparison.OrdinalIgnoreCase)) return "MySql";
+        throw new InvalidOperationException("Database:Provider phải là MySql hoặc PostgreSql.");
+    }
+
+    private static string? GetValue(string contentRoot, IConfiguration configuration, string key, string configurationKey)
+    {
         var environmentValue = Environment.GetEnvironmentVariable(key);
         if (!string.IsNullOrWhiteSpace(environmentValue))
             return environmentValue;
@@ -31,6 +41,6 @@ internal static class MySqlEnv
             }
         }
 
-        return configuration.GetConnectionString("CuaHang");
+        return configuration[configurationKey];
     }
 }

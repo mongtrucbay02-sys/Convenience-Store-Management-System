@@ -13,6 +13,8 @@ Hướng dẫn **đưa hệ thống lên môi trường chạy** (demo/staging/p
 
 | Tài liệu | Mô tả | Trạng thái |
 |---|---|---|
+| [`supabase-smoke-ci.md`](supabase-smoke-ci.md) | Workflow kiểm tra kết nối và SELECT qua EF trên Supabase thật, cấu hình GitHub Secret | Supabase thật đọc được 31 bảng + 3 view; đã cấu hình secret, chờ chạy GitHub |
+| [`postgresql-publish.md`](postgresql-publish.md) | Publish PostgreSQL, kiểm tra staging, cấu hình backend và rollback | Publish đã chạy cục bộ; chưa có URL staging |
 | `environments.md` | Danh sách môi trường, địa chỉ, CSDL (Aiven MySQL `cuahang_codefirst_dev`…) — **không ghi mật khẩu** | Chưa có |
 | `deployment-guide.md` | Các bước build, publish ASP.NET Core, áp migration, cấu hình biến môi trường | Chưa có |
 | `configuration.md` | Danh sách biến cấu hình (ví dụ `ConnectionStrings__DefaultConnection`) và ý nghĩa | Chưa có |

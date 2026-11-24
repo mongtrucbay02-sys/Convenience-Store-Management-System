@@ -67,7 +67,7 @@ public sealed class Sp09CategoryHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlM
         var target = await CreateCategory(client);
         foreach (var product in new[] { ids.Active, ids.Inactive }) {
             using var detail = JsonDocument.Parse(await client.GetStringAsync($"/api/v1/products/{product}")); var row = detail.RootElement;
-            var input = new { tenSanPham = row.GetProperty("tenSanPham").GetString(), danhMucId = target, donViTinh = row.GetProperty("donViTinh").GetString(), nguongToiThieu = row.GetProperty("nguongToiThieu").GetInt32(), phienBan = row.GetProperty("phienBan").GetUInt32() };
+            var input = new { tenSanPham = row.GetProperty("tenSanPham").GetString(), danhMucId = target, donViTinh = row.GetProperty("donViTinh").GetString(), nguongToiThieu = row.GetProperty("nguongToiThieu").GetInt32(), phienBan = row.GetProperty("phienBan").GetInt64() };
             Assert.Equal(HttpStatusCode.OK, (await client.PutAsJsonAsync($"/api/v1/products/{product}", input)).StatusCode);
             if (product == ids.Active) Assert.Equal(HttpStatusCode.Conflict, (await Delete(client, ids.Category, new { phienBan = 1, xacNhan = true })).StatusCode); // Inactive reference still blocks.
         }
@@ -89,12 +89,12 @@ public sealed class Sp09CategoryHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlM
         Assert.Equal(HttpStatusCode.BadRequest, (await client.SendAsync(malformed)).StatusCode);
     }
 
-    internal static async Task<uint> CreateCategory(HttpClient client)
+    internal static async Task<long> CreateCategory(HttpClient client)
     {
         using var response = await client.PostAsJsonAsync("/api/v1/categories", new { ten = "SP09-" + Guid.NewGuid().ToString("N") }); Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync()); return json.RootElement.GetProperty("id").GetUInt32();
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync()); return json.RootElement.GetProperty("id").GetInt64();
     }
-    internal static async Task<HttpResponseMessage> Delete(HttpClient client, uint id, object body)
+    internal static async Task<HttpResponseMessage> Delete(HttpClient client, long id, object body)
     { using var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/categories/{id}") { Content = JsonContent.Create(body) }; return await client.SendAsync(request); }
 
     [Fact]

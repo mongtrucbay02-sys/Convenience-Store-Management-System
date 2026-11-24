@@ -2,7 +2,7 @@
 @using ConvenienceStore.Web.Data.Entities
 @using ConvenienceStore.Web.Modules.Auth.Security
 @{
-    var id = (uint?)ViewBag.ReceiptId;
+    var id = (long?)ViewBag.ReceiptId;
     ViewData["Title"] = id is null ? "Lập phiếu nhập" : "Sửa phiếu nhập nháp";
     var suppliers = (IReadOnlyList<NhaCungCap>)ViewBag.Suppliers;
     var products = (IReadOnlyList<SanPham>)ViewBag.Products;

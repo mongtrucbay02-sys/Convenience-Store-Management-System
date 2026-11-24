@@ -13,8 +13,8 @@ namespace ConvenienceStore.Web.Modules.Purchasing;
 
 public sealed class SupplierInput
 {
-    public uint Id { get; set; }
-    public uint Version { get; set; }
+    public long Id { get; set; }
+    public long Version { get; set; }
     [Required, StringLength(200)] public string Name { get; set; } = "";
     [Required, RegularExpression("^0[0-9]{9,10}$")] public string Phone { get; set; } = "";
     [StringLength(100)] public string? Contact { get; set; }
@@ -53,7 +53,7 @@ public sealed class SuppliersController(CuaHangDbContext db) : Controller
     }
 
     [HttpGet("Sua/{id?}")]
-    public async Task<IActionResult> Edit(uint? id, CancellationToken ct)
+    public async Task<IActionResult> Edit(long? id, CancellationToken ct)
     {
         if (!id.HasValue) return Form(new());
         var row = await db.NhaCungCaps.AsNoTracking().SingleOrDefaultAsync(supplier => supplier.Id == id, ct);
@@ -73,9 +73,9 @@ public sealed class SuppliersController(CuaHangDbContext db) : Controller
         NhaCungCap row;
         if (input.Id == 0)
         {
-            await db.ChayAsync("""
+            await db.ChayAsync($"""
                 INSERT INTO bo_dem_chung_tu (tien_to,ky,so_cuoi) VALUES ('NCC','',1)
-                ON DUPLICATE KEY UPDATE so_cuoi=GREATEST(so_cuoi+1,1)
+                {db.CounterUpsert()}
                 """, ct);
             var number = Convert.ToInt64(await db.DocMotGiaTriAsync(
                 "SELECT so_cuoi FROM bo_dem_chung_tu WHERE tien_to='NCC' AND ky=''", ct));
@@ -87,7 +87,7 @@ public sealed class SuppliersController(CuaHangDbContext db) : Controller
             var version = await db.DocMotGiaTriAsync(
                 "SELECT phien_ban FROM nha_cung_cap WHERE id=@id FOR UPDATE", ct, ("@id", input.Id));
             if (version is null) return NotFound();
-            if (Convert.ToUInt32(version) != input.Version) return Conflict("Nhà cung cấp đã thay đổi. Tải lại trước khi lưu.");
+            if (Convert.ToInt64(version) != input.Version) return Conflict("Nhà cung cấp đã thay đổi. Tải lại trước khi lưu.");
             row = await db.NhaCungCaps.SingleAsync(supplier => supplier.Id == input.Id, ct);
             row.PhienBan++;
         }
@@ -116,7 +116,7 @@ public sealed class SuppliersController(CuaHangDbContext db) : Controller
 
     [HttpPost("{id}/Ngung")]
     [Authorize(Policy = MaQuyen.NhaCungCapNgung)]
-    public async Task<IActionResult> Stop(uint id, bool delete, CancellationToken ct)
+    public async Task<IActionResult> Stop(long id, bool delete, CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest();
         await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);

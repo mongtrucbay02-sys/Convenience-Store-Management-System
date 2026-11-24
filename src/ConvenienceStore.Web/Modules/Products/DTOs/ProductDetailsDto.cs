@@ -10,8 +10,8 @@ public sealed record ProductDetailsDto : ProductListItemDto
     public PagedResultDto<ProductPriceDto>? LichSuGia { get; init; }
 }
 
-public sealed record ProductPriceDto(uint Id, uint GiaBan, DateTimeOffset HieuLucTu,
-    uint? NguoiTaoId, DateTimeOffset? NgayTao, DateTimeOffset? HuyLuc, uint? NguoiHuyId);
+public sealed record ProductPriceDto(long Id, long GiaBan, DateTimeOffset HieuLucTu,
+    long? NguoiTaoId, DateTimeOffset? NgayTao, DateTimeOffset? HuyLuc, long? NguoiHuyId);
 
 public sealed record ProductPricesQuery
 {

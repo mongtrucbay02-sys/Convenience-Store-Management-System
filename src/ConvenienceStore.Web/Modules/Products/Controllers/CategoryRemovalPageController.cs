@@ -12,14 +12,14 @@ namespace ConvenienceStore.Web.Modules.Products.Controllers;
 public sealed class CategoryRemovalPageController(CategoryRemovalService service) : Controller
 {
     [HttpGet("/Categories/{id}/Delete")]
-    public Task<IActionResult> Delete(uint id, CancellationToken ct) => Render(id, false, null, ct);
+    public Task<IActionResult> Delete(long id, CancellationToken ct) => Render(id, false, null, ct);
     [HttpGet("/Categories/{id}/Hide")]
-    public Task<IActionResult> Hide(uint id, CancellationToken ct) => Render(id, true, null, ct);
+    public Task<IActionResult> Hide(long id, CancellationToken ct) => Render(id, true, null, ct);
     [HttpPost("/Categories/{id}/Delete"), ValidateAntiForgeryToken]
-    public Task<IActionResult> Delete(uint id, CategoryRemovalCommand input, CancellationToken ct) => Execute(id, false, input, ct);
+    public Task<IActionResult> Delete(long id, CategoryRemovalCommand input, CancellationToken ct) => Execute(id, false, input, ct);
     [HttpPost("/Categories/{id}/Hide"), ValidateAntiForgeryToken]
-    public Task<IActionResult> Hide(uint id, CategoryRemovalCommand input, CancellationToken ct) => Execute(id, true, input, ct);
-    private async Task<IActionResult> Execute(uint id, bool hide, CategoryRemovalCommand input, CancellationToken ct)
+    public Task<IActionResult> Hide(long id, CategoryRemovalCommand input, CancellationToken ct) => Execute(id, true, input, ct);
+    private async Task<IActionResult> Execute(long id, bool hide, CategoryRemovalCommand input, CancellationToken ct)
     {
         if (User.DangPhaiDoiMatKhau()) return Forbid();
         if (!ModelState.IsValid) Response.StatusCode = 422;
@@ -27,7 +27,7 @@ public sealed class CategoryRemovalPageController(CategoryRemovalService service
         catch (LoiNghiepVu ex) when (ex.MaHttp is 422 or 409 or 404) { Response.StatusCode = ex.MaHttp; ModelState.AddModelError(string.Empty, ex.Message); }
         return await Render(id, hide, input, ct);
     }
-    private async Task<IActionResult> Render(uint id, bool hide, CategoryRemovalCommand? input, CancellationToken ct)
+    private async Task<IActionResult> Render(long id, bool hide, CategoryRemovalCommand? input, CancellationToken ct)
     {
         if (User.DangPhaiDoiMatKhau()) return Forbid(); var row = await service.PreviewAsync(id, ct); if (row is null) return NotFound("Danh mục không còn tồn tại.");
         ViewData["Hide"] = hide; ViewData["Command"] = input ?? new() { PhienBan = row.PhienBan };

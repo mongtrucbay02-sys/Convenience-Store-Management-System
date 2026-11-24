@@ -5,7 +5,7 @@ namespace ConvenienceStore.Web.Tests.HaTang;
 
 public sealed class GeneratedColumnsMySqlTests(CsdlMySqlTam csdl) : IClassFixture<CsdlMySqlTam>
 {
-    private const uint FixtureId = 910001;
+    private const long FixtureId = 910001;
 
     [Fact]
     public async Task InsertAndUpdate_MutableRowsAndInsertImmutableRows_AreCalculatedByMySql()
@@ -25,11 +25,11 @@ public sealed class GeneratedColumnsMySqlTests(CsdlMySqlTam csdl) : IClassFixtur
         db.CtPhieuNhaps.Add(purchaseLine);
         await db.SaveChangesAsync();
         await db.Entry(purchaseLine).ReloadAsync();
-        Assert.Equal(600UL, purchaseLine.ThanhTien);
+        Assert.Equal(600L, purchaseLine.ThanhTien);
         purchaseLine.SoLuong = 3;
         await db.SaveChangesAsync();
         await db.Entry(purchaseLine).ReloadAsync();
-        Assert.Equal(900UL, purchaseLine.ThanhTien);
+        Assert.Equal(900L, purchaseLine.ThanhTien);
 
         var cart = new GioHang { ThuNganId = FixtureId, TrangThai = "DANG_BAN" };
         db.GioHangs.Add(cart);
@@ -64,7 +64,7 @@ public sealed class GeneratedColumnsMySqlTests(CsdlMySqlTam csdl) : IClassFixtur
         db.CtHoaDons.Add(invoiceLine);
         await db.SaveChangesAsync();
         await db.Entry(invoiceLine).ReloadAsync();
-        Assert.Equal(1000UL, invoiceLine.ThanhTien);
+        Assert.Equal(1000L, invoiceLine.ThanhTien);
 
         await csdl.ChayAsync("""
             INSERT INTO chinh_sach_doi_tra (id, hieu_luc_tu) VALUES (@id, NOW())
@@ -91,7 +91,7 @@ public sealed class GeneratedColumnsMySqlTests(CsdlMySqlTam csdl) : IClassFixtur
         db.CtPhieuDoiTras.Add(returnLine);
         await db.SaveChangesAsync();
         await db.Entry(returnLine).ReloadAsync();
-        Assert.Equal(800UL, returnLine.ThanhTien);
+        Assert.Equal(800L, returnLine.ThanhTien);
         Assert.Equal(240m, returnLine.GiaTriHuy);
     }
 

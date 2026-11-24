@@ -1,0 +1,510 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "version": "0.1.0",
+    "title": "Smart Mart - Week 8 BC/KM",
+    "description": "Draft for review. AD only; existing session authentication and XSRF. Dates use Vietnam UTC+7."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "security": [
+    {
+      "SessionCookie": []
+    }
+  ],
+  "paths": {
+    "/api/reports/returns": {
+      "get": {
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            },
+            "description": "Report, or E3 with empty rows/chart"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "summary": "BC-09",
+        "operationId": "GetreturnsReport",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Period"
+          },
+          {
+            "$ref": "#/components/parameters/From"
+          },
+          {
+            "$ref": "#/components/parameters/To"
+          },
+          {
+            "$ref": "#/components/parameters/ReturnReason"
+          },
+          {
+            "$ref": "#/components/parameters/CashierId"
+          }
+        ]
+      }
+    },
+    "/api/reports/customers": {
+      "get": {
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            },
+            "description": "Report, or E3 with empty rows/chart"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "summary": "BC-10",
+        "operationId": "GetcustomersReport",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Period"
+          },
+          {
+            "$ref": "#/components/parameters/From"
+          },
+          {
+            "$ref": "#/components/parameters/To"
+          }
+        ]
+      }
+    },
+    "/api/reports/promotions": {
+      "get": {
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            },
+            "description": "Report, or E3 with empty rows/chart"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "summary": "BC-11",
+        "operationId": "GetpromotionsReport",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Period"
+          },
+          {
+            "$ref": "#/components/parameters/From"
+          },
+          {
+            "$ref": "#/components/parameters/To"
+          },
+          {
+            "$ref": "#/components/parameters/PromotionId"
+          }
+        ]
+      }
+    },
+    "/api/promotions/{id}/usage": {
+      "get": {
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromotionHistory"
+                }
+              }
+            },
+            "description": "Paid invoices only; empty uses allowed"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "summary": "KM-06 promotion usage history",
+        "operationId": "GetPromotionUsage",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ]
+      }
+    },
+    "/api/promotions/{id}": {
+      "delete": {
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "204": {
+            "description": "Deleted"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "summary": "KM-05 delete an unreferenced promotion",
+        "operationId": "DeleteUnusedPromotion",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "$ref": "#/components/parameters/Xsrf"
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Report": {
+        "type": "object",
+        "properties": {
+          "chart": {
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "secondaryValue": {
+                  "type": "integer",
+                  "format": "int64",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "label",
+                "value"
+              ]
+            },
+            "type": "array"
+          },
+          "range": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "metrics": {
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "format": {
+                  "enum": [
+                    "currency",
+                    "number",
+                    "percent"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "label",
+                "value",
+                "format"
+              ]
+            },
+            "type": "array"
+          },
+          "title": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "cells": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "key",
+                "cells"
+              ]
+            },
+            "type": "array"
+          },
+          "query": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "message": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "range",
+          "metrics",
+          "columns",
+          "rows",
+          "chart",
+          "query"
+        ]
+      },
+      "PromotionUse": {
+        "type": "object",
+        "properties": {
+          "promotionName": {
+            "type": "string"
+          },
+          "promotionId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "invoiceNet": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "invoiceCode": {
+            "type": "string"
+          },
+          "cashierName": {
+            "type": "string"
+          },
+          "discount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "invoiceId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "paidAt": {
+            "description": "ISO local datetime in Vietnam UTC+7, no timezone suffix",
+            "type": "string"
+          }
+        },
+        "required": [
+          "promotionId",
+          "promotionName",
+          "invoiceId",
+          "invoiceCode",
+          "paidAt",
+          "cashierName",
+          "customerName",
+          "discount",
+          "invoiceNet"
+        ]
+      },
+      "PromotionHistory": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "uses": {
+            "items": {
+              "$ref": "#/components/schemas/PromotionUse"
+            },
+            "type": "array"
+          },
+          "totalDiscount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "uses",
+          "totalDiscount"
+        ]
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "401 - Not signed in"
+      },
+      "Forbidden": {
+        "description": "403 - Wrong role, forced password change or invalid XSRF"
+      },
+      "BadRequest": {
+        "description": "400 - Invalid range or filters"
+      },
+      "NotFound": {
+        "description": "404 - Promotion not found"
+      },
+      "Conflict": {
+        "description": "409 - Promotion referenced by a cart or historical invoice; use End instead"
+      }
+    },
+    "securitySchemes": {
+      "SessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cs_session"
+      }
+    },
+    "parameters": {
+      "Period": {
+        "in": "query",
+        "name": "Period",
+        "schema": {
+          "type": "string",
+          "default": "thisMonth",
+          "enum": [
+            "today",
+            "7days",
+            "last7days",
+            "thisMonth",
+            "lastMonth",
+            "custom"
+          ]
+        }
+      },
+      "From": {
+        "in": "query",
+        "name": "From",
+        "schema": {
+          "format": "date",
+          "type": "string"
+        }
+      },
+      "To": {
+        "in": "query",
+        "name": "To",
+        "schema": {
+          "format": "date",
+          "type": "string"
+        }
+      },
+      "ReturnReason": {
+        "in": "query",
+        "name": "ReturnReason",
+        "schema": {
+          "enum": [
+            "LOI_SAN_PHAM",
+            "HET_HAN",
+            "KHONG_DUNG_NHU_CAU",
+            "KHAC"
+          ],
+          "type": "string"
+        }
+      },
+      "CashierId": {
+        "in": "query",
+        "name": "CashierId",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "format": "int64"
+        }
+      },
+      "PromotionId": {
+        "in": "query",
+        "name": "PromotionId",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "format": "int64"
+        }
+      },
+      "Id": {
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "format": "int64"
+        },
+        "in": "path",
+        "name": "id",
+        "required": true
+      },
+      "Xsrf": {
+        "schema": {
+          "type": "string"
+        },
+        "description": "Session XSRF token from AUTH, not a role header",
+        "in": "header",
+        "name": "X-XSRF-TOKEN",
+        "required": true
+      }
+    }
+  }
+}

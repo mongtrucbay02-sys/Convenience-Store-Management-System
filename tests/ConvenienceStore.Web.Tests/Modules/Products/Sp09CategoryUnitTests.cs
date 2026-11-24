@@ -9,11 +9,11 @@ public sealed class Sp09CategoryUnitTests
     // Port PR #202's boundary tests; no old context/entities/test database target.
     private sealed class Repository : ICategoryRemovalRepository
     {
-        public uint LastId, LastVersion; public int Calls; public CancellationToken Token; public Exception? Failure;
-        public Task<CategoryRemovalPreviewDto?> PreviewAsync(uint id, CancellationToken ct = default) => Task.FromResult<CategoryRemovalPreviewDto?>(null);
-        public Task<CategoryRemovalResult> DeleteAsync(uint id, uint version, CancellationToken ct = default) => Complete(id, version, ct, CategoryRemovalStatus.Referenced);
-        public Task<CategoryRemovalResult> HideAsync(uint id, uint version, CancellationToken ct = default) => Complete(id, version, ct, CategoryRemovalStatus.Success);
-        private Task<CategoryRemovalResult> Complete(uint id, uint version, CancellationToken ct, CategoryRemovalStatus status)
+        public long LastId, LastVersion; public int Calls; public CancellationToken Token; public Exception? Failure;
+        public Task<CategoryRemovalPreviewDto?> PreviewAsync(long id, CancellationToken ct = default) => Task.FromResult<CategoryRemovalPreviewDto?>(null);
+        public Task<CategoryRemovalResult> DeleteAsync(long id, long version, CancellationToken ct = default) => Complete(id, version, ct, CategoryRemovalStatus.Referenced);
+        public Task<CategoryRemovalResult> HideAsync(long id, long version, CancellationToken ct = default) => Complete(id, version, ct, CategoryRemovalStatus.Success);
+        private Task<CategoryRemovalResult> Complete(long id, long version, CancellationToken ct, CategoryRemovalStatus status)
         { Calls++; LastId = id; LastVersion = version; Token = ct; return Failure is null ? Task.FromResult(new CategoryRemovalResult(status)) : Task.FromException<CategoryRemovalResult>(Failure); }
     }
     [Fact]
@@ -27,7 +27,7 @@ public sealed class Sp09CategoryUnitTests
     public async Task DeletePropagatesReferenceBlock()
     {
         var repo = new Repository(); var result = await new CategoryRemovalService(repo).DeleteAsync(9, 2);
-        Assert.Equal(CategoryRemovalStatus.Referenced, result.Status); Assert.Equal(9u, repo.LastId); Assert.Equal(2u, repo.LastVersion);
+        Assert.Equal(CategoryRemovalStatus.Referenced, result.Status); Assert.Equal(9L, repo.LastId); Assert.Equal(2L, repo.LastVersion);
     }
     [Fact]
     public async Task HideRequiresVersionAndDelegates()

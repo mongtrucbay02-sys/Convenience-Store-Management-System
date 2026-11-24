@@ -12,9 +12,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConvenienceStore.Web.Modules.Inventory.Controllers;
 
-public sealed record CountInput(uint ProductId, int? Quantity, string? Note);
-public sealed record DisposalInput(uint ProductId, int? Quantity, string? Reason, string? Note);
-public sealed record DisposalProduct(uint Id, string Name, int OnHand, decimal Cost);
+public sealed record CountInput(long ProductId, int? Quantity, string? Note);
+public sealed record DisposalInput(long ProductId, int? Quantity, string? Reason, string? Note);
+public sealed record DisposalProduct(long Id, string Name, int OnHand, decimal Cost);
 
 [Authorize(Policy = MaQuyen.TheKhoCanhBaoXem)]
 [AutoValidateAntiforgeryToken]
@@ -22,7 +22,7 @@ public sealed record DisposalProduct(uint Id, string Name, int OnHand, decimal C
 public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho stock, TimeProvider clock) : Controller
 {
     private DateTime Now => clock.GetUtcNow().ToOffset(TimeSpan.FromHours(7)).DateTime;
-    private uint Actor => checked((uint)User.LayTaiKhoanId());
+    private long Actor => checked((long)User.LayTaiKhoanId());
 
     [HttpGet("")]
     public async Task<IActionResult> Index(CancellationToken ct)
@@ -36,7 +36,7 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
 
     [HttpPost("KiemKe")]
     [Authorize(Policy = MaQuyen.KiemKeXuatHuyLap)]
-    public async Task<IActionResult> CreateCount(string scope, uint? categoryId, uint[] productIds, CancellationToken ct)
+    public async Task<IActionResult> CreateCount(string scope, long? categoryId, long[] productIds, CancellationToken ct)
     {
         if (!ModelState.IsValid || scope is not ("TOAN_BO" or "DANH_MUC" or "CHON_SAN_PHAM") ||
             (scope == "DANH_MUC" && categoryId is null) || (scope == "CHON_SAN_PHAM" && productIds.Length == 0))
@@ -61,7 +61,7 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
     }
 
     [HttpGet("KiemKe/{id}")]
-    public async Task<IActionResult> Count(uint id, CancellationToken ct)
+    public async Task<IActionResult> Count(long id, CancellationToken ct)
     {
         var row = await db.PhieuKiemKes.AsNoTracking().Include(p => p.CtKiemKes).ThenInclude(line => line.SanPham)
             .ThenInclude(product => product.TonKho).SingleOrDefaultAsync(p => p.Id == id, ct);
@@ -71,7 +71,7 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
 
     [HttpPost("KiemKe/{id}/Luu")]
     [Authorize(Policy = MaQuyen.KiemKeXuatHuyLap)]
-    public async Task<IActionResult> SaveCount(uint id, uint version, List<CountInput> lines, bool submit, CancellationToken ct)
+    public async Task<IActionResult> SaveCount(long id, long version, List<CountInput> lines, bool submit, CancellationToken ct)
     {
         if (!ModelState.IsValid || lines.Any(line => line.Quantity is < 0 || line.Note?.Length > 255) ||
             lines.Select(line => line.ProductId).Distinct().Count() != lines.Count || (submit && lines.Any(line => line.Quantity is null)))
@@ -103,7 +103,7 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
 
     [HttpPost("KiemKe/{id}/Duyet")]
     [Authorize(Policy = MaQuyen.KiemKeXuatHuyDuyet)]
-    public async Task<IActionResult> ReviewCount(uint id, bool approve, string? reason, CancellationToken ct)
+    public async Task<IActionResult> ReviewCount(long id, bool approve, string? reason, CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest();
         if (!approve && InvalidReason(reason)) return Issue("Nhập lý do từ chối.", nameof(Count), id);
@@ -119,7 +119,7 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
                 var result = await stock.GhiNhanBienDongAsync(new(LoaiBienDong.KIEM_KE, checked((int)id),
                     row.MaPhieu, User.LayTaiKhoanId(), row.CtKiemKes.Select(line => new DongBienDong(
                         checked((int)line.SanPhamId), SoLuongThucTe: line.SoLuongThucTe)).ToArray()), ct);
-                var changes = result.Dong.ToDictionary(line => checked((uint)line.SanPhamId));
+                var changes = result.Dong.ToDictionary(line => checked((long)line.SanPhamId));
                 foreach (var line in row.CtKiemKes)
                 {
                     var change = changes[line.SanPhamId];
@@ -171,7 +171,7 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
             GuiDuyetLuc = submit ? Now : null,
             CtXuatHuys = selected.Select(line => new CtXuatHuy
             {
-                SanPhamId = line.ProductId, SoLuong = checked((uint)line.Quantity!.Value), LyDo = line.Reason!,
+                SanPhamId = line.ProductId, SoLuong = checked((long)line.Quantity!.Value), LyDo = line.Reason!,
                 GhiChuLyDo = string.IsNullOrWhiteSpace(line.Note) ? null : line.Note.Trim()
             }).ToList()
         };
@@ -182,7 +182,7 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
     }
 
     [HttpGet("XuatHuy/{id}")]
-    public async Task<IActionResult> Disposal(uint id, CancellationToken ct)
+    public async Task<IActionResult> Disposal(long id, CancellationToken ct)
     {
         var row = await db.PhieuXuatHuys.AsNoTracking().Include(p => p.CtXuatHuys).ThenInclude(line => line.SanPham)
             .ThenInclude(product => product.TonKho).Include(p => p.NguoiLap).SingleOrDefaultAsync(p => p.Id == id, ct);
@@ -192,7 +192,7 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
 
     [HttpPost("XuatHuy/{id}/Gui")]
     [Authorize(Policy = MaQuyen.KiemKeXuatHuyLap)]
-    public async Task<IActionResult> SubmitDisposal(uint id, CancellationToken ct)
+    public async Task<IActionResult> SubmitDisposal(long id, CancellationToken ct)
     {
         await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
         if (await LockDisposalAsync(id, ct) != "NHAP") return Conflict("Phiếu không còn là nháp.");
@@ -207,7 +207,7 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
 
     [HttpPost("XuatHuy/{id}/Duyet")]
     [Authorize(Policy = MaQuyen.KiemKeXuatHuyDuyet)]
-    public async Task<IActionResult> ReviewDisposal(uint id, bool approve, string? reason, CancellationToken ct)
+    public async Task<IActionResult> ReviewDisposal(long id, bool approve, string? reason, CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest();
         if (!approve && InvalidReason(reason)) return Issue("Nhập lý do từ chối.", nameof(Disposal), id);
@@ -221,7 +221,7 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
                 var result = await stock.GhiNhanBienDongAsync(new(LoaiBienDong.XUAT_HUY, checked((int)id),
                     row.MaPhieu, User.LayTaiKhoanId(), row.CtXuatHuys.Select(line => new DongBienDong(
                         checked((int)line.SanPhamId), SoLuong: checked((int)line.SoLuong))).ToArray()), ct);
-                var changes = result.Dong.ToDictionary(line => checked((uint)line.SanPhamId));
+                var changes = result.Dong.ToDictionary(line => checked((long)line.SanPhamId));
                 foreach (var line in row.CtXuatHuys) line.GiaVonLucDuyet = changes[line.SanPhamId].GiaVonApDung;
             }
             catch (LoiDichVuKho ex) { return Issue(ex.Message, nameof(Disposal), id); }
@@ -236,18 +236,18 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
         return RedirectToAction(nameof(Disposal), new { id });
     }
 
-    private async Task<string?> LockCountAsync(uint id, CancellationToken ct) =>
+    private async Task<string?> LockCountAsync(long id, CancellationToken ct) =>
         (string?)await db.DocMotGiaTriAsync("SELECT trang_thai FROM phieu_kiem_ke WHERE id=@id FOR UPDATE", ct, ("@id", id));
 
-    private async Task<string?> LockDisposalAsync(uint id, CancellationToken ct) =>
+    private async Task<string?> LockDisposalAsync(long id, CancellationToken ct) =>
         (string?)await db.DocMotGiaTriAsync("SELECT trang_thai FROM phieu_xuat_huy WHERE id=@id FOR UPDATE", ct, ("@id", id));
 
     private async Task<string> NextCodeAsync(string prefix, CancellationToken ct)
     {
         var period = Now.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
-        await db.ChayAsync("""
+        await db.ChayAsync($"""
             INSERT INTO bo_dem_chung_tu (tien_to,ky,so_cuoi) VALUES (@prefix,@period,1)
-            ON DUPLICATE KEY UPDATE so_cuoi=so_cuoi+1
+            {db.CounterUpsert()}
             """, ct, ("@prefix", prefix), ("@period", period));
         var number = Convert.ToInt64(await db.DocMotGiaTriAsync(
             "SELECT so_cuoi FROM bo_dem_chung_tu WHERE tien_to=@prefix AND ky=@period",
@@ -255,7 +255,7 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
         return FormattableString.Invariant($"{prefix}-{period}-{number:D3}");
     }
 
-    private IActionResult Issue(string message, string action = nameof(Index), uint? id = null)
+    private IActionResult Issue(string message, string action = nameof(Index), long? id = null)
     {
         TempData["Loi"] = message;
         return RedirectToAction(action, new { id });

@@ -23,7 +23,7 @@ public sealed class CategoryMySqlTests(CsdlMySqlTam database) : IClassFixture<Cs
         Assert.Equal(3, first.Total);
         Assert.Equal(2, Assert.Single(first.Items).SoSanPham);
         Assert.Equal("DA_AN", Assert.Single(second.Items).TrangThai);
-        Assert.Equal(910002u, second.Items[0].Id);
+        Assert.Equal(910002L, second.Items[0].Id);
         var all = await repository.GetCategoriesAsync(new CategoryListQuery { Size = 101 });
         Assert.Equal(100, all.Size);
         Assert.Equal(0, all.Items[2].SoSanPham);

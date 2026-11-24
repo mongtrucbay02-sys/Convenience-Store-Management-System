@@ -17,10 +17,13 @@ public static class DocDuLieu
     public static string? ChuoiHoacNull(this DbDataReader doc, int cot) =>
         doc.IsDBNull(cot) ? null : Convert.ToString(doc.GetValue(cot));
 
-    public static DateTime NgayGio(this DbDataReader doc, int cot) => Convert.ToDateTime(doc.GetValue(cot));
+    public static DateTime NgayGio(this DbDataReader doc, int cot) =>
+        ConvenienceStore.Web.Shared.Api.GioVietNam.ThanhOffset(Convert.ToDateTime(doc.GetValue(cot))).DateTime;
+
+    public static DateTime VietnamDateTime(this DbDataReader doc, int cot) => doc.NgayGio(cot);
 
     public static DateTime? NgayGioHoacNull(this DbDataReader doc, int cot) =>
-        doc.IsDBNull(cot) ? null : Convert.ToDateTime(doc.GetValue(cot));
+        doc.IsDBNull(cot) ? null : doc.NgayGio(cot);
 
     public static long? SoNguyenDaiHoacNull(this DbDataReader doc, int cot) =>
         doc.IsDBNull(cot) ? null : Convert.ToInt64(doc.GetValue(cot));

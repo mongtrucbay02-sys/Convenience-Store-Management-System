@@ -13,6 +13,9 @@ Chứng minh hệ thống **làm đúng yêu cầu** ở `03` và **đúng thi�
 
 | Tài liệu | Mô tả | Trạng thái |
 |---|---|---|
+| [`test-reports/2026-11-24-supabase-smoke.md`](test-reports/2026-11-24-supabase-smoke.md) | Kiểm tra workflow Supabase chỉ đọc và các ca thiếu cấu hình/schema | PostgreSQL riêng và Supabase thật đều đọc được 34/34 đối tượng; GitHub workflow chưa chạy |
+| [`test-reports/2026-11-23-supabase-entities.md`](test-reports/2026-11-23-supabase-entities.md) | Catalog Supabase 31 bảng, SELECT chỉ đọc và hồi quy model MySQL | Ánh xạ đã kiểm tra; E2E PostgreSQL/staging chưa xác nhận |
+| [`test-reports/2026-11-23-postgresql-runtime.md`](test-reports/2026-11-23-postgresql-runtime.md) | Chuyển SQL PostgreSQL, test ghi/HTTP/publish và trạng thái Supabase/staging | 759/759 Release đạt cục bộ; CI mới/staging chưa xác nhận |
 | `test-plan.md` | Chiến lược: unit / integration / API / UI, môi trường, tiêu chí đạt | Chưa có |
 | `test-cases/` | Test case thủ công theo module, mã `TC-<module>-xx`, liên kết mã chức năng | Chưa có |
 | `automated-tests.md` | Mô tả bộ test tự động trong `tests/ConvenienceStore.Web.Tests/` và cách chạy `dotnet test` | Chưa có |
@@ -28,6 +31,8 @@ Nằm ở `tests/ConvenienceStore.Web.Tests/`: `DashboardServiceTests`, `Operati
 Ngày 23/11, commit `dc89ec5` thêm CI/gate TRX và ba test migration mở rộng; **700/700 test Release đạt cục bộ**. Xem [báo cáo CI/schema](test-reports/2026-11-23-ci-schema.md); chưa xác nhận workflow đã chạy trên GitHub.
 
 Cùng ngày, commit `ce06dff` sửa đồng bộ hủy/quỹ, thêm chốt số dư, lưu ảnh KM và bảy test; **707/707 test, 41/41 kiểm tra HTTP đạt cục bộ**. Xem [báo cáo sửa quỹ/ảnh](test-reports/2026-11-23-cash-promotion.md). Điện thoại để sau; migration chưa được duyệt, CI GitHub/staging/review độc lập chưa xác nhận.
+
+Tuần 8 bổ sung KM-05/06 và BC-09/10/11: 733/733 test đầy đủ đạt; sau thay đổi cuối 27/27 ca liên quan đạt; 53/53 HTTP và ảnh trình duyệt trên MySQL tạm. Xem [báo cáo tuần 8](test-reports/2026-11-23-week8.md) để phân biệt phiên bản đã kiểm thử; CI/staging/review vẫn chờ.
 
 ## Tiêu chí hoàn thành
 - [ ] Mỗi mã chức năng MVP có ít nhất một test case.

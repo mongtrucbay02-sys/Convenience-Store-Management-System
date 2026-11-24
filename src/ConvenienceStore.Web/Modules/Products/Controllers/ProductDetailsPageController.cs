@@ -12,7 +12,7 @@ namespace ConvenienceStore.Web.Modules.Products.Controllers;
 public sealed class ProductDetailsPageController(ProductDetailService service, ILogger<ProductDetailsPageController> logger) : Controller
 {
     [HttpGet("/Products/{id}")]
-    public async Task<IActionResult> Details(uint id, CancellationToken ct)
+    public async Task<IActionResult> Details(long id, CancellationToken ct)
     {
         if (User.DangPhaiDoiMatKhau()) return Forbid();
         try { return View("~/Modules/Products/Views/Management/Details.cshtml", await service.FindAsync(id, User.LayMaVaiTro(), ct)); }

@@ -4,7 +4,7 @@ namespace ConvenienceStore.Web.Modules.Products.Services;
 
 public interface ICategoryRemovalRepository
 {
-    Task<CategoryRemovalPreviewDto?> PreviewAsync(uint id, CancellationToken ct = default);
-    Task<CategoryRemovalResult> DeleteAsync(uint id, uint version, CancellationToken ct = default);
-    Task<CategoryRemovalResult> HideAsync(uint id, uint version, CancellationToken ct = default);
+    Task<CategoryRemovalPreviewDto?> PreviewAsync(long id, CancellationToken ct = default);
+    Task<CategoryRemovalResult> DeleteAsync(long id, long version, CancellationToken ct = default);
+    Task<CategoryRemovalResult> HideAsync(long id, long version, CancellationToken ct = default);
 }

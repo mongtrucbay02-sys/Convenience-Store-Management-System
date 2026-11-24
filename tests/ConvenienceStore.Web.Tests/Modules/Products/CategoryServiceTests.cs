@@ -70,12 +70,12 @@ public class CategoryServiceTests
         var expected = new PagedResultDto<CategoryListItemDto>(
             [
                 new CategoryListItemDto(
-                    1u,
+                    1L,
                     "Do uong",
                     false,
                     3,
                     "HOAT_DONG",
-                    1u)
+                    1L)
             ],
             1,
             1,

@@ -8,7 +8,7 @@ public static class ProductLifecycleRules
     public static void Validate(ProductLifecycleCommand input)
     {
         ArgumentNullException.ThrowIfNull(input); var errors = new List<LoiTruong>();
-        if (input.PhienBan == 0) errors.Add(new("phienBan", "Cần phiên bản hiện tại."));
+        if (input.PhienBan <= 0) errors.Add(new("phienBan", "Cần phiên bản hiện tại."));
         if (!input.XacNhan) errors.Add(new("xacNhan", "Cần xác nhận thao tác sau khi xem tồn kho và các cảnh báo."));
         if (errors.Count > 0) throw LoiNghiepVu.DuLieuKhongHopLe(errors);
     }
@@ -33,9 +33,9 @@ public static class ProductLifecycleRules
 public sealed class ProductLifecycleService(IProductLifecycleRepository products, ILogger<ProductLifecycleService> logger)
 {
     private static void Admin(string role) { if (role != "AD") throw new LoiNghiepVu(MaLoiChung.KhongDuQuyen, 403, "Chỉ AD được ngừng, mở bán lại hoặc xóa sản phẩm."); }
-    public async Task<ProductLifecyclePreview> PreviewAsync(uint id, string role, CancellationToken ct = default)
+    public async Task<ProductLifecyclePreview> PreviewAsync(long id, string role, CancellationToken ct = default)
     { Admin(role); return await products.PreviewAsync(id, ct) ?? throw LoiNghiepVu.KhongTimThay("Sản phẩm không còn tồn tại"); }
-    public async Task<ProductLifecyclePreview> ExecuteAsync(uint id, ProductLifecycleOperation operation, ProductLifecycleCommand input, uint actorId, string role, CancellationToken ct = default)
+    public async Task<ProductLifecyclePreview> ExecuteAsync(long id, ProductLifecycleOperation operation, ProductLifecycleCommand input, long actorId, string role, CancellationToken ct = default)
     {
         Admin(role); ProductLifecycleRules.Validate(input); ct.ThrowIfCancellationRequested();
         var result = await products.ExecuteAsync(id, operation, input, ct);

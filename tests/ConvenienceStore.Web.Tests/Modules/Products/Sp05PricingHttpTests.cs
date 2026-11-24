@@ -32,10 +32,10 @@ public sealed class Sp05PricingHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMy
         var ids = await ProductReadSeed.Create(db);
         await using var app = await ListFeatureHost.Start(db, s => { s.AddModuleProducts(); s.AddModuleInventory(); });
         using var client = await ListFeatureHost.Client(app, db, "AD"); Sp08CategoryHttpTests.AddXsrf(client);
-        using var scheduled = await client.PostAsJsonAsync($"/api/v1/products/{ids.Active}/prices", new { giaBan = 11000, hieuLucTu = DateTimeOffset.UtcNow.AddDays(2), phienBan = 1, nguoiTaoId = uint.MaxValue });
+        using var scheduled = await client.PostAsJsonAsync($"/api/v1/products/{ids.Active}/prices", new { giaBan = 11000, hieuLucTu = DateTimeOffset.UtcNow.AddDays(2), phienBan = 1, nguoiTaoId = 4294967295L });
         Assert.Equal(HttpStatusCode.Created, scheduled.StatusCode); using var schedule = JsonDocument.Parse(await scheduled.Content.ReadAsStringAsync());
-        var priceId = schedule.RootElement.GetProperty("id").GetUInt32(); Assert.Equal(2, schedule.RootElement.GetProperty("phienBan").GetInt32()); Assert.Equal(11000, schedule.RootElement.GetProperty("giaBan").GetInt32());
-        Assert.EndsWith("+07:00", schedule.RootElement.GetProperty("hieuLucTu").GetString()); Assert.NotEqual(uint.MaxValue, schedule.RootElement.GetProperty("nguoiTaoId").GetUInt32());
+        var priceId = schedule.RootElement.GetProperty("id").GetInt64(); Assert.Equal(2, schedule.RootElement.GetProperty("phienBan").GetInt32()); Assert.Equal(11000, schedule.RootElement.GetProperty("giaBan").GetInt32());
+        Assert.EndsWith("+07:00", schedule.RootElement.GetProperty("hieuLucTu").GetString()); Assert.NotEqual(4294967295L, schedule.RootElement.GetProperty("nguoiTaoId").GetInt64());
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync(scheduled.Headers.Location)).StatusCode);
         using (var detail = JsonDocument.Parse(await client.GetStringAsync($"/api/v1/products/{ids.Active}"))) Assert.Equal(10000, detail.RootElement.GetProperty("giaBan").GetInt32());
         using var cancelled = await client.PostAsJsonAsync($"/api/v1/products/{ids.Active}/prices/{priceId}/cancel", new { phienBan = 2 }); Assert.Equal(HttpStatusCode.OK, cancelled.StatusCode);

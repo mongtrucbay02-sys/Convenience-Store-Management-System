@@ -1,0 +1,53 @@
+name: Supabase smoke test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, develop, feature/supabase-entities-20261123]
+    paths:
+      - '.github/workflows/supabase-smoke.yml'
+      - 'tools/SupabaseSmoke/**'
+      - 'src/ConvenienceStore.Web/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-readonly-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  supabase-readonly:
+    name: Supabase - read-only connection and EF mapping
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore tools/SupabaseSmoke/SupabaseSmoke.csproj
+
+      - name: Build
+        run: dotnet build tools/SupabaseSmoke/SupabaseSmoke.csproj --configuration Release --no-restore
+
+      - name: Read 31 tables and 3 views from Supabase
+        env:
+          SUPABASE_DB_CONNECTION: ${{ secrets.SUPABASE_DB_CONNECTION }}
+        run: dotnet tools/SupabaseSmoke/bin/Release/net10.0/SupabaseSmoke.dll artifacts/supabase-smoke/result.json
+
+      - name: Upload read-only report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: supabase-readonly-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/supabase-smoke/result.json
+          if-no-files-found: warn
+          retention-days: 7

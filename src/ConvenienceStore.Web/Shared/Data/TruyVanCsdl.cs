@@ -15,10 +15,7 @@ public static class TruyVanCsdl
         lenh.Transaction = db.Database.CurrentTransaction?.GetDbTransaction();
         foreach (var (ten, giaTri) in thamSo)
         {
-            var p = lenh.CreateParameter();
-            p.ParameterName = ten;
-            p.Value = giaTri ?? DBNull.Value;
-            lenh.Parameters.Add(p);
+            lenh.AddValue(ten, giaTri);
         }
 
         return lenh;
@@ -68,6 +65,6 @@ public static class TruyVanCsdl
     }
 
     public static bool LaLoiTrungKhoa(DbException loi, string tenKhoa) =>
-        loi.Message.Contains("Duplicate entry", StringComparison.OrdinalIgnoreCase)
+        (SqlDialect.IsUniqueViolation(loi) || loi.Message.Contains("Duplicate entry", StringComparison.OrdinalIgnoreCase))
         && loi.Message.Contains(tenKhoa, StringComparison.OrdinalIgnoreCase);
 }

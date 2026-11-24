@@ -1,16 +1,18 @@
-﻿
+
 using ConvenienceStore.Web.Models.Pos;
-using MySqlConnector;
+using System.Data.Common;
+using ConvenienceStore.Web.Shared.Data;
 
 namespace ConvenienceStore.Web.Services.Pos;
 
 public sealed class MySqlPosCatalog
 {
-    private readonly string _connectionString;
+    private readonly IConfiguration _configuration;
 
     public MySqlPosCatalog(IConfiguration config)
     {
-        _connectionString =
+        _configuration = config;
+        _ =
             // Ưu tiên PosMySql nếu có; không thì dùng chung chuỗi kết nối
             // CuaHang của Program.cs để chỉ cần cấu hình MỘT chuỗi.
             config.GetConnectionString("PosMySql")
@@ -19,17 +21,18 @@ public sealed class MySqlPosCatalog
                 "Chưa cấu hình ConnectionStrings:CuaHang (hoặc PosMySql)");
     }
 
-    public MySqlConnection CreateConnection()
-        => new MySqlConnection(_connectionString);
+    private bool IsPostgres => string.Equals(_configuration["Database:Provider"],"PostgreSql",StringComparison.OrdinalIgnoreCase);
+    public DbConnection CreateConnection()
+        => SqlDialect.CreateConnection(_configuration);
 
     // The shared current-price view uses NOW(). Match CuaHangDbContext's +07:00
     // session so a just-effective price is visible to POS at the same instant.
-    private async Task<MySqlConnection> OpenPriceConnectionAsync()
+    private async Task<DbConnection> OpenPriceConnectionAsync()
     {
         var connection = CreateConnection();
         try {
             await connection.OpenAsync();
-            await using var command = new MySqlCommand(ConvenienceStore.Web.Data.GioVietNamInterceptor.CauLenhDatMuiGio, connection);
+            await using var command = SqlDialect.Command(connection.Sql(ConvenienceStore.Web.Data.GioVietNamInterceptor.CauLenhDatMuiGio, "SET TIME ZONE 'Asia/Ho_Chi_Minh'"), connection);
             await command.ExecuteNonQueryAsync(); return connection;
         }
         catch { await connection.DisposeAsync(); throw; }
@@ -38,7 +41,7 @@ public sealed class MySqlPosCatalog
     public async Task<List<PosProduct>> SearchAsync(
         string? keyword, int? categoryId = null)
     {
-        const string sql = """
+        var sql = $"""
             SELECT
                 sp.id,
                 sp.ma,
@@ -57,8 +60,8 @@ public sealed class MySqlPosCatalog
               AND dm.trang_thai = 'HOAT_DONG'
               AND (
                   @keyword = ''
-                  OR sp.ma LIKE @pattern
-                  OR sp.ten_san_pham LIKE @pattern
+                  OR {VietnameseSearch.Column(IsPostgres,"sp.ma")} LIKE @pattern
+                  OR {VietnameseSearch.Column(IsPostgres,"sp.ten_san_pham")} LIKE @pattern
               )
               AND (
                   @categoryId IS NULL
@@ -73,13 +76,14 @@ public sealed class MySqlPosCatalog
         await using var connection = await OpenPriceConnectionAsync();
 
         await using var command =
-            new MySqlCommand(sql, connection);
+            SqlDialect.Command(sql, connection);
 
         var search = keyword?.Trim() ?? "";
+        if(IsPostgres) search=VietnameseSearch.Fold(search);
 
-        command.Parameters.AddWithValue("@keyword", search);
-        command.Parameters.AddWithValue("@pattern", $"%{search}%");
-        command.Parameters.AddWithValue(
+        command.AddValue("@keyword", search);
+        command.AddValue("@pattern", $"%{search}%");
+        command.AddValue(
             "@categoryId", (object?)categoryId ?? DBNull.Value);
 
         await using var reader = await command.ExecuteReaderAsync();
@@ -102,14 +106,14 @@ public sealed class MySqlPosCatalog
 
     public async Task<List<PosCategory>> GetCategoriesAsync()
     {
-        const string sql = """
+        var sql = $"""
             SELECT id, ten FROM danh_muc
             WHERE trang_thai = 'HOAT_DONG'
             ORDER BY ten;
             """;
         var categories = new List<PosCategory>();
         await using var connection = await OpenPriceConnectionAsync();
-        await using var command = new MySqlCommand(sql, connection);
+        await using var command = SqlDialect.Command(sql, connection);
         await using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
@@ -125,7 +129,7 @@ public sealed class MySqlPosCatalog
     public async Task<PosProduct?> FindAsync(int productId)
     {
         if (productId <= 0) return null;
-        const string sql = """
+        var sql = $"""
             SELECT sp.id, sp.ma, sp.ten_san_pham, sp.anh_url,
                    g.gia_ban, tk.so_luong_ton
             FROM san_pham sp
@@ -138,8 +142,8 @@ public sealed class MySqlPosCatalog
             LIMIT 1;
             """;
         await using var connection = await OpenPriceConnectionAsync();
-        await using var command = new MySqlCommand(sql, connection);
-        command.Parameters.AddWithValue("@productId", productId);
+        await using var command = SqlDialect.Command(sql, connection);
+        command.AddValue("@productId", productId);
         await using var reader = await command.ExecuteReaderAsync();
         if (!await reader.ReadAsync()) return null;
         return new PosProduct

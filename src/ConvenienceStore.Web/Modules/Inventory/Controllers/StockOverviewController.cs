@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore;
 namespace ConvenienceStore.Web.Modules.Inventory.Controllers;
 
 public sealed record StockOverviewRow(
-    uint Id, string Code, string Name, string Category, int Quantity, decimal? Cost, int? Threshold, string Status);
+    long Id, string Code, string Name, string Category, int Quantity, decimal? Cost, int? Threshold, string Status);
 
 public sealed record StockMovementRow(DateTime Time, string Type, string Document, int Change, int Balance, string Actor);
-public sealed record StockAlertRow(uint Id, string Code, string Name, int Quantity, int Threshold, string? LatestSupplier);
+public sealed record StockAlertRow(long Id, string Code, string Name, int Quantity, int Threshold, string? LatestSupplier);
 
 [Authorize(Policy = MaQuyen.TonKhoXem)]
 [AutoValidateAntiforgeryToken]
@@ -18,7 +18,7 @@ public sealed record StockAlertRow(uint Id, string Code, string Name, int Quanti
 public sealed class StockOverviewController(CuaHangDbContext db) : Controller
 {
     [HttpGet("")]
-    public async Task<IActionResult> Index(string? q, uint? categoryId, string? status, int page = 1, CancellationToken ct = default)
+    public async Task<IActionResult> Index(string? q, long? categoryId, string? status, int page = 1, CancellationToken ct = default)
     {
         if (!ModelState.IsValid || page is < 1 or > 100000) return BadRequest();
         var showCost = User.IsInRole(BangQuyen.Admin);
@@ -59,7 +59,7 @@ public sealed class StockOverviewController(CuaHangDbContext db) : Controller
 
     [HttpGet("{id}/TheKho")]
     [Authorize(Policy = MaQuyen.TheKhoCanhBaoXem)]
-    public async Task<IActionResult> History(uint id, DateOnly? from, DateOnly? to, int page = 1, CancellationToken ct = default)
+    public async Task<IActionResult> History(long id, DateOnly? from, DateOnly? to, int page = 1, CancellationToken ct = default)
     {
         if (!ModelState.IsValid || page is < 1 or > 100000 ||
             from < new DateOnly(1000, 1, 1) || to == DateOnly.MaxValue || from > to)
@@ -118,7 +118,7 @@ public sealed class StockOverviewController(CuaHangDbContext db) : Controller
 
     [HttpPost("Nguong")]
     [Authorize(Policy = MaQuyen.NguongTonSua)]
-    public async Task<IActionResult> SaveThresholds(uint? categoryId, uint[] productIds, int? threshold, CancellationToken ct)
+    public async Task<IActionResult> SaveThresholds(long? categoryId, long[] productIds, int? threshold, CancellationToken ct)
     {
         if (!ModelState.IsValid || threshold is null or < 0 || (categoryId.HasValue == (productIds.Length > 0)))
         {

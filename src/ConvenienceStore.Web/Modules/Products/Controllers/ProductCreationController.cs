@@ -16,7 +16,7 @@ public sealed class ProductCreationController(ProductCreationService service) : 
     [HttpPost]
     public async Task<IActionResult> Create(ProductCreateDto input, CancellationToken ct)
     {
-        var row = await service.CreateAsync(input, checked((uint)User.LayTaiKhoanId()), User.LayMaVaiTro(), ct);
+        var row = await service.CreateAsync(input, checked((long)User.LayTaiKhoanId()), User.LayMaVaiTro(), ct);
         return Created("/api/v1/products/" + row.Id, row);
     }
 }

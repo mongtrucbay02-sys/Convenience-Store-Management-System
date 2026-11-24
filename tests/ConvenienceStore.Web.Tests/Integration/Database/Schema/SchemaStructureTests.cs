@@ -119,7 +119,13 @@ public sealed class SchemaStructureTests(CsdlMySqlTam database)
     {
         await using var db = database.TaoDbContext();
         Assert.Empty(await db.Database.GetPendingMigrationsAsync());
-        await db.Database.MigrateAsync();
+        await db.Database.OpenConnectionAsync();
+        try { await db.Database.MigrateAsync(); }
+        finally
+        {
+            try { await db.Database.ExecuteSqlRawAsync("DO RELEASE_LOCK('__EFMigrationsLock')"); }
+            finally { await db.Database.CloseConnectionAsync(); }
+        }
         Assert.Equal(
             db.Database.GetMigrations().Count(),
             (await db.Database.GetAppliedMigrationsAsync()).Count());

@@ -528,11 +528,11 @@ public sealed class ReturnOrderService(
             "yyyyMMdd",
             CultureInfo.InvariantCulture);
 
-        await db.ChayAsync("""
+        await db.ChayAsync($"""
             INSERT INTO bo_dem_chung_tu
                 (tien_to, ky, so_cuoi)
             VALUES ('TH', @ky, 1)
-            ON DUPLICATE KEY UPDATE so_cuoi = so_cuoi + 1
+            {db.CounterUpsert()}
             """,
             ct,
             ("@ky", period));
@@ -555,7 +555,7 @@ public sealed class ReturnOrderService(
                 "Đã vượt giới hạn mã phiếu trong ngày.");
         }
 
-        await db.ChayAsync("""
+        long id = await db.InsertIdAsync("""
             INSERT INTO phieu_doi_tra
             (
                 ma_phieu,
@@ -603,10 +603,6 @@ public sealed class ReturnOrderService(
             ("@tien", preview.Refund),
             ("@tn", actor),
             ("@done", preview.NeedsApproval ? null : Now));
-
-        long id = Convert.ToInt64(
-            await db.DocMotGiaTriAsync(
-                "SELECT LAST_INSERT_ID()", ct));
 
         // Ghi từng dòng trả hàng.
         // gia_tri_huy là cột GENERATED STORED do MySQL tự tính từ

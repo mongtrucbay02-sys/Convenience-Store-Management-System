@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class TaiKhoan
 {
-    public uint Id { get; set; }
+    public long Id { get; set; }
 
     public string TenDangNhap { get; set; } = null!;
 
@@ -17,21 +17,21 @@ public partial class TaiKhoan
 
     public string? Email { get; set; }
 
-    public byte VaiTroId { get; set; }
+    public short VaiTroId { get; set; }
 
     public string TrangThai { get; set; } = null!;
 
     public string? LyDoKhoa { get; set; }
 
-    public bool? BatBuocDoiMk { get; set; }
+    public bool BatBuocDoiMk { get; set; }
 
-    public byte SoLanSai { get; set; }
+    public short SoLanSai { get; set; }
 
     public DateTime? KhoaTamDen { get; set; }
 
     public DateTime? LanDangNhapCuoi { get; set; }
 
-    public uint PhienBan { get; set; }
+    public long PhienBan { get; set; }
 
     public DateTime NgayTao { get; set; }
 
@@ -41,11 +41,15 @@ public partial class TaiKhoan
 
     public virtual ICollection<ChuongTrinhKhuyenMai> ChuongTrinhKhuyenMais { get; set; } = new List<ChuongTrinhKhuyenMai>();
 
+    public virtual ICollection<GiaoDichTienMat> GiaoDichTienMats { get; set; } = new List<GiaoDichTienMat>();
+
     public virtual ICollection<GioHang> GioHangs { get; set; } = new List<GioHang>();
 
     public virtual ICollection<HoaDon> HoaDonNguoiHuys { get; set; } = new List<HoaDon>();
 
     public virtual ICollection<HoaDon> HoaDonThuNgans { get; set; } = new List<HoaDon>();
+
+    public virtual ICollection<HoanTienHoaDon> HoanTienHoaDons { get; set; } = new List<HoanTienHoaDon>();
 
     public virtual ICollection<KhachHang> KhachHangs { get; set; } = new List<KhachHang>();
 

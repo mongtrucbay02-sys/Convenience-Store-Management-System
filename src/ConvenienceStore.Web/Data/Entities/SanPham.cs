@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class SanPham
 {
-    public uint Id { get; set; }
+    public long Id { get; set; }
 
     public string Ma { get; set; } = null!;
 
     public string TenSanPham { get; set; } = null!;
 
-    public uint DanhMucId { get; set; }
+    public long DanhMucId { get; set; }
 
     public string DonViTinh { get; set; } = null!;
 
@@ -21,9 +21,9 @@ public partial class SanPham
 
     public string TrangThai { get; set; } = null!;
 
-    public uint NguoiTaoId { get; set; }
+    public long NguoiTaoId { get; set; }
 
-    public uint PhienBan { get; set; }
+    public long PhienBan { get; set; }
 
     public DateTime NgayTao { get; set; }
 

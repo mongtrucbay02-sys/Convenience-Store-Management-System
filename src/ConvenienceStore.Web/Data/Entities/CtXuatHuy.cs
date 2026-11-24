@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class CtXuatHuy
 {
-    public uint PhieuXuatHuyId { get; set; }
+    public long PhieuXuatHuyId { get; set; }
 
-    public uint SanPhamId { get; set; }
+    public long SanPhamId { get; set; }
 
-    public uint SoLuong { get; set; }
+    public long SoLuong { get; set; }
 
     public string LyDo { get; set; } = null!;
 

@@ -2,7 +2,7 @@
 
 Soạn 23/11/2026 · #1 Phạm Gia Thăng. Gộp mọi thay đổi đã ghi trong repo để sửa **một lần** tệp Word SRS v1.0.3 (thư mục tài liệu chung của nhóm, tuần 3) thành SRS bản cuối.
 
-Nguồn: `docs/srs/SRS_v1.1_danh-sach-thay-doi.md` (PR #231), `docs/srs/SRS_v1.2_danh-sach-thay-doi.md`, `docs/03-requirements/cash-promotion-change-proposal-20261123.md` (PR #232), ADR-002 (PR #231).
+Nguồn: `docs/srs/SRS_v1.1_danh-sach-thay-doi.md` (PR #231), `docs/srs/SRS_v1.2_danh-sach-thay-doi.md`, `docs/03-requirements/cash-promotion-change-proposal-20261123.md` (PR #232), ADR-002 (PR #231), ADR-003 (chuyển CSDL sang PostgreSQL/Supabase, 23/11).
 
 Cột "Trạng thái": **Đã cài đặt** = có code trên `develop`/PR #232; **Xn** = đề xuất chốt mã Xn đăng ở issue #257 ngày 23/11, **hạn phản hồi 20:00 ngày 25/11/2026** – quá hạn không ai phản đối thì ghi "Đã chốt" trong SRS; **Đã chốt** = đã có quyết định.
 
@@ -17,13 +17,13 @@ Cột "Trạng thái": **Đã cài đặt** = có code trên `develop`/PR #232; 
 | C5 | 6.x, POS-09 | Đơn hủy lưu trong `gio_hang` (`DA_HUY`), không bảng riêng | v1.2 | Đã cài đặt |
 | C6 | 4.x, 7.1 | Endpoint tra cứu hóa đơn cho DT-01 dùng quyền `DOI_TRA` | v1.2 | X2 |
 | S1 | 1.1, bảng module | KHO-01, 06, 07 thuộc #2; dự phòng #1 ↔ #2 (thực tế phần NH/KHO trên `develop` do #5 làm, PR #222) | v1.1 | Cập nhật theo thực tế |
-| S4 | 2.4 (môi trường) | Môi trường CSDL và CI: ghi đúng phiên bản MySQL nhóm chốt (ADR 9.7.2, CI 8.4) | v1.1 | X5: chốt MySQL 8.4 |
+| S4 | 2.4, 2.5, 6 (môi trường, ràng buộc, CSDL) | CSDL: **PostgreSQL 17 trên Supabase**, schema `smartmart`; truy cập bằng EF Core + Npgsql; CI dùng PostgreSQL tạm. Ghi kèm hiện trạng tại thời điểm nộp: bản nộp chạy trên CSDL nào (Supabase hay bản lùi MySQL 8.4) | v1.1; ADR-003 | **Đã chốt 23/11** (ADR-003, thay X5) |
 
 ## 2. Quy tắc bổ sung đã chốt khi lập trình
 
 | Mã | Mục SRS | Nội dung | Trạng thái |
 | --- | --- | --- | --- |
-| S2 | 2.4, 6 | `schema_v1.sql` chạy trên MySQL 9.7.2 (20/10) | Đã kiểm chứng |
+| S2 | 2.4, 6 | `schema_v1.sql` chạy trên MySQL 9.7.2 (20/10). Từ 23/11: schema `smartmart` trên PostgreSQL 17.12 (31 bảng, 62 FK, 89 CHECK, 17 trigger, 3 view) do #2 dựng, đã thử ở mức SQL | Đã kiểm chứng (MySQL); PostgreSQL: chưa chạy ứng dụng |
 | S3 | AUTH, 6 | Admin đầu tiên tạo khi khởi động từ biến môi trường, bắt buộc đổi mật khẩu | Đã cài đặt |
 | S6–S9 | AUTH-01 → 03, 06, 10, NFR-BM | Phiên `phien_dang_nhap`, cookie `cs_session` 30 phút; CSRF `X-XSRF-TOKEN`; 27 mã quyền; `403 PHAI_DOI_MAT_KHAU` | Đã cài đặt |
 | S10–S11 | AUTH-08, 09 | Khóa hủy mọi phiên, không khóa Admin cuối; mở khóa gỡ cả khóa tạm; đặt lại mật khẩu trả một lần, bắt buộc đổi | Đã cài đặt |

@@ -1,0 +1,171 @@
+{
+  "openApi": {
+    "paths": 5,
+    "validation": "JSON parse and local ref resolution only",
+    "localRefs": 36
+  },
+  "testRuns": [
+    {
+      "scope": "full suite before final top-product and Excel changes",
+      "folder": "week8-complete-20261123",
+      "counters": {
+        "passed": 733,
+        "notExecuted": 0,
+        "total": 733,
+        "failed": 0
+      },
+      "trxSha256": "C541A6D34BF022A9EBEFEA56F405A6703F629D38651CB6A3D64A3D6C9071AD6E"
+    },
+    {
+      "scope": "all 26 week-eight cases after top-product addition",
+      "folder": "week8-final-targeted-20261123",
+      "counters": {
+        "passed": 26,
+        "notExecuted": 0,
+        "total": 26,
+        "failed": 0
+      },
+      "trxSha256": "789145FB30B5698D7C63F6C01D32E60AD95F2B056EDCAB036F5BE10203EFC0EB"
+    },
+    {
+      "scope": "final source: 26 week-eight cases plus existing Excel test",
+      "folder": "week8-export-final-20261123",
+      "counters": {
+        "passed": 27,
+        "notExecuted": 0,
+        "total": 27,
+        "failed": 0
+      },
+      "trxSha256": "89C05F1AFC4883ABFCB5151D6FECE49B7473B2D0F6BF6A888F01BAC26E6F5617"
+    }
+  ],
+  "codeCommit": "1029459dadbd7c0e9583c6b323d2bf1b519d2425",
+  "external": {
+    "aivenWrites": false,
+    "staging": "not run",
+    "ciGitHub": "not verified",
+    "databaseApproval": "pending for baseline migrations",
+    "pushed": false,
+    "independentReview": "pending"
+  },
+  "sourceFiles": [
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Promotions/Controllers/PromotionHistoryApiController.cs",
+      "sha256": "C61B098E36A852955D6DDE51EF422F38D1C747F674B2FABB34286BA267BDD810"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Promotions/Controllers/PromotionsController.cs",
+      "sha256": "243FBAE2C095BAA2855C851091E0D4F4668BF0B8DF988A5571B08FC79B3B96C0"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Promotions/Services/PromotionUsageStore.cs",
+      "sha256": "BD9BF364B65CADAA39B9E73946D424FA8B7903BBCE46435F7073B8D313255377"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Promotions/Views/Promotions/Delete.cshtml",
+      "sha256": "97F8CC2FBEDEB39BC176E685B9E3DDEBCCCDA39B00F686812AA475E57372BC52"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Promotions/Views/Promotions/Index.cshtml",
+      "sha256": "16E23C452D270C8131F421EFE9163D97285FC84F7C135EDE2EE8A7E8527DBBB8"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Promotions/Views/Promotions/Usage.cshtml",
+      "sha256": "50C535463498C349A93F060281DB6206D66DA0820117EB299FC272204E71E3E8"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Controllers/OperationalReportsApiController.cs",
+      "sha256": "8372B37B39CA06DBC170785FF23C6E77542AAB5E4639AE0D985D5648E5A12DDC"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Controllers/ReportsController.cs",
+      "sha256": "8C9582913417A29E2817C323AE0695B2B8501D6CAA59591AC002F7D5FE1710B6"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Models/OperationalReportModels.cs",
+      "sha256": "03333B9FF54A40FA23A78132A6F99950AF1061D0A8161799C9C8D5459D3C7A63"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Services/ReportExcelExporter.cs",
+      "sha256": "24932FFB0CA532C996D87068D9048C2BCFF7A0DEB5CA2B4B7F295CB6C65A92D0"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Services/ReportFilterService.cs",
+      "sha256": "B04601835A0D6F20F91EDC9D37727E2AC12019E34C497D3A5032FBF63883E5A3"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Services/WeekEightReportDataSource.cs",
+      "sha256": "648C14DB383BD39866277F0BC8468515AA2DB651DF4F6447C78AA3582495E8F1"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Services/WeekEightReportsService.cs",
+      "sha256": "3DFEE20316F55EBF1DC06FB8F2A7BDF1C368DED1971557C1B8D5AF9F8118F158"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Views/Reports/Report.cshtml",
+      "sha256": "34979A9F1E0A3FFF84FFE42D45E134C09F0FEDF07E466F73E9310B2D8065053A"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Views/Reports/ReportDetail.cshtml",
+      "sha256": "91CB7BCDFDC2FAAB42C80280829D97BCFA71DA2B0049C28818BFF34CE54C884C"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Program.cs",
+      "sha256": "57274A9971AC4C7313BD433048B6C66876EF16C04BF2845E4E2FADB267DD830C"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Shared/Security/RequirePasswordChangedAttribute.cs",
+      "sha256": "CB41452203EB4112AC5321676A19C421655EB4FF27AB6FE86BFDE4217307227B"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Views/Shared/_AdminLayout.cshtml",
+      "sha256": "1F51EC446CFEBE482B12D2BAC4C1C6FFAD8F6F958598EB8545A88DE3CF199922"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/HaTang/CsdlMySqlTam.cs",
+      "sha256": "9AA7C2CCD9D35F3497D9BDF9C3BDEB29C214D04CC2845608719D229C3D707324"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/HaTang/TestAssembly.cs",
+      "sha256": "530B0EBE1BE26F2EA1E7AC69F0A4A9179108CA605237FFF71B98B8DF0CCC4595"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/Integration/Database/Schema/SchemaStructureTests.cs",
+      "sha256": "BA3F897F4F2C1FC6D0A33557ECC7B1DF0AD8D3CBD330BF2E98E052FF68378B7C"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/WeekEightMySqlTests.cs",
+      "sha256": "5DA4B02CEDD4BC634AA0C6CAAAA0B177BE0F9D16401E29FCA952ECBBD536B0B1"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/WeekEightReportsTests.cs",
+      "sha256": "EC35CDFF32B78E434872AC56E11BE8877E26A454C00D5009C474A8722C3D1078"
+    }
+  ],
+  "fixtureCommit": "068aca6",
+  "http": {
+    "scope": "real app/session, before final Excel metadata and percent formatting fix",
+    "checks": 53,
+    "errors": 0
+  },
+  "base": "ced1f36",
+  "branch": "feature/week8-bc-km-20261123",
+  "browser": {
+    "export": "BC-11 filtered campaign 1 downloaded; 20000 discount / 90000 net formatted as text; before final metadata fix",
+    "screenshots": "viewport captures; some right edges clipped by browser tool",
+    "mobile": "deferred",
+    "actions": [
+      "AD login",
+      "BC09 reason detail",
+      "BC10 ledger detail",
+      "BC11 campaign filter and download",
+      "KM06 history",
+      "KM05 confirmation without submitting",
+      "customers",
+      "dashboard"
+    ],
+    "source": "disposable MySQL fixture cuahang_test_c7f19610",
+    "reportDay": "2026-01-04"
+  },
+  "date": "2026-11-23"
+}

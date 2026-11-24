@@ -22,12 +22,12 @@ public sealed class CategoryMutationService
             input.Ten!.Trim(), input.MoTa?.Trim(), input.KhongDoiTra), cancellationToken);
     }
 
-    public Task<CategoryMutationResult> UpdateAsync(uint id, CategoryUpdateDto input,
+    public Task<CategoryMutationResult> UpdateAsync(long id, CategoryUpdateDto input,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         var error = Validate(input.Ten, input.MoTa);
-        if (id == 0 || input.PhienBan == 0)
+        if (id <= 0 || input.PhienBan <= 0)
             error = "Id and PhienBan must be positive.";
         if (error is not null)
             return Task.FromResult(new CategoryMutationResult(CategoryMutationStatus.Invalid, Error: error));
@@ -39,7 +39,7 @@ public sealed class CategoryMutationService
         }, cancellationToken);
     }
 
-    public Task<CategoryDetailsDto?> FindAsync(uint id, CancellationToken ct = default) => _repository.FindAsync(id, ct);
+    public Task<CategoryDetailsDto?> FindAsync(long id, CancellationToken ct = default) => _repository.FindAsync(id, ct);
 
     private static string? Validate(string? name, string? description)
     {

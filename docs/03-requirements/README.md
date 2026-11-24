@@ -9,6 +9,7 @@
 ## Đọc theo thứ tự
 | Tệp | Mục đích |
 |---|---|
+| [postgresql-runtime-change-20261123.md](postgresql-runtime-change-20261123.md) | Bổ sung kỹ thuật Supabase/UTC/CI, đã hiện thực cục bộ; chờ nhóm duyệt |
 | [srs.md](srs.md) | SRS bản nháp, phạm vi và phân loại |
 | [functional-requirements.md](functional-requirements.md) | FR-01…FR-15, điều kiện và nguồn |
 | [user-stories.md](user-stories.md) | US-01…US-12, vai trò/giá trị |
@@ -22,6 +23,7 @@
 | [change-log.md](change-log.md) | Lịch sử bản thảo; không tự nhận đã review |
 | [migration-srs-review-2026-11-23.md](migration-srs-review-2026-11-23.md) | Đề xuất cập nhật SRS theo migration runtime; phân biệt bản nháp và phần thiếu cần nhóm duyệt |
 | [cash-promotion-change-proposal-20261123.md](cash-promotion-change-proposal-20261123.md) | CP-01–04: đồng bộ hủy/quỹ, chốt số dư và ảnh khuyến mãi; chờ duyệt |
+| [week8-bc-km-clarifications.md](week8-bc-km-clarifications.md) | Làm rõ KM-05/06 và BC-09..11 theo issue tuần 8; chờ nhóm xác nhận |
 
 ## Đầu vào chính
 - [Product Vision](../02-product-definition/product-vision.md), [Feature Candidates](../02-product-definition/feature-candidates.md), [Scope D-01](../02-product-definition/scope.md), [Scenarios](../02-product-definition/scenarios.md), [Success Metrics](../02-product-definition/success-metrics.md).

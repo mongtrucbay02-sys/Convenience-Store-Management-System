@@ -26,7 +26,7 @@ public sealed class PostgreSqlTransactionalReportsDataSource(CuaHangDbContext db
             LEFT JOIN ton_kho k ON k.san_pham_id = p.id
             ORDER BY p.id
             """, reader => new ReportProductFact(Int64(reader, "product_id"), Text(reader, "product_name"),
-            Int32(reader, "category_id"), Text(reader, "category_name"), Convert.ToDecimal(reader["unit_cost"], CultureInfo.InvariantCulture),
+            Int64(reader, "category_id"), Text(reader, "category_name"), Convert.ToDecimal(reader["unit_cost"], CultureInfo.InvariantCulture),
             Int32(reader, "reorder_point"), Int32(reader, "current_stock")), cancellationToken);
 
     public Task<IReadOnlyList<ReportCancelledOrderFact>> GetCancelledOrdersAsync(
@@ -97,7 +97,7 @@ public sealed class PostgreSqlTransactionalReportsDataSource(CuaHangDbContext db
             var cashPaid = Int64(reader, "cash_paid");
             var productId = Int64(reader, "product_id");
             var productName = Text(reader, "product_name");
-            var categoryId = Int32(reader, "category_id");
+            var categoryId = Int64(reader, "category_id");
             var categoryName = Text(reader, "category_name");
             var quantity = Int32(reader, "quantity");
             var listPrice = Int64(reader, "list_price");
@@ -140,7 +140,7 @@ public sealed class PostgreSqlTransactionalReportsDataSource(CuaHangDbContext db
             """;
         var rows = await QueryAsync(sql, fromInclusive, toExclusive, reader =>
             (Id: Int64(reader, "receipt_id"), ReceivedAt: VietnamDateTimeOffset(reader, "received_at"),
-             SupplierId: Int32(reader, "supplier_id"), SupplierName: Text(reader, "supplier_name"),
+             SupplierId: Int64(reader, "supplier_id"), SupplierName: Text(reader, "supplier_name"),
              Line: new ReportPurchaseReceiptLineFact(Int64(reader, "product_id"), Text(reader, "product_name"),
                  Int32(reader, "quantity"), Int64(reader, "unit_cost"))), cancellationToken);
         return rows.GroupBy(x => x.Id).Select(group => new ReportPurchaseReceiptFact(
@@ -156,7 +156,7 @@ public sealed class PostgreSqlTransactionalReportsDataSource(CuaHangDbContext db
                    h.thu_ngan_id AS cashier_id, COALESCE(a.ho_ten, '') AS cashier_name,
                    l.san_pham_id AS product_id, COALESCE(p.ten_san_pham, '') AS product_name,
                    COALESCE(p.danh_muc_id, 0) AS category_id, COALESCE(c.ten, '') AS category_name,
-                   h.tien_hoan AS total_refund, l.so_luong AS quantity, l.gia_von AS unit_cost,
+                   l.so_luong AS quantity, l.gia_von AS unit_cost,
                    l.cach_xu_ly AS disposition, l.thanh_tien AS returned_value, l.gia_tri_huy AS destroyed_value
             FROM phieu_doi_tra h
             INNER JOIN ct_phieu_doi_tra l ON l.phieu_doi_tra_id = h.id
@@ -172,28 +172,19 @@ public sealed class PostgreSqlTransactionalReportsDataSource(CuaHangDbContext db
             var quantity = Int32(reader, "quantity");
             var disposition = Text(reader, "disposition");
             var line = new ReportReturnedLineFact(Int64(reader, "product_id"), Text(reader, "product_name"),
-                Int32(reader, "category_id"), Text(reader, "category_name"), quantity,
+                Int64(reader, "category_id"), Text(reader, "category_name"), quantity,
                 RoundedInt64(reader, "unit_cost"), disposition == "NHAP_LAI" ? quantity : 0,
                 Int64(reader, "returned_value"), RoundedInt64(reader, "destroyed_value"));
             return (Id: Int64(reader, "return_id"), InvoiceId: Int64(reader, "invoice_id"),
                 ReturnedAt: VietnamDateTimeOffset(reader, "returned_at"), CashierId: Int64(reader, "cashier_id"),
-                CashierName: Text(reader, "cashier_name"), TotalRefund: Int64(reader, "total_refund"), Line: line);
+                CashierName: Text(reader, "cashier_name"), Line: line);
         }, cancellationToken);
+        // Revenue reverses the returned line value, including an exchange paid by credit.
+        // Cash refunded is a separate measure, exposed by BC-09 and the cash ledger.
         return rows.GroupBy(x => x.Id).Select(group =>
         {
             var lines = group.ToArray();
-            var totalWeight = lines.Sum(x => x.Line.RefundAmount);
-            var allocated = 0L;
-            var allocatedLines = lines.Select((row, index) =>
-            {
-                var amount = index == lines.Length - 1
-                    ? row.TotalRefund - allocated
-                    : totalWeight <= 0 ? 0
-                    : (long)Math.Floor((decimal)row.TotalRefund * row.Line.RefundAmount / totalWeight);
-                allocated += amount;
-                return row.Line with { RefundAmount = amount };
-            }).ToArray();
-            return new ReportReturnFact(group.Key, lines[0].InvoiceId, lines[0].ReturnedAt, allocatedLines,
+            return new ReportReturnFact(group.Key, lines[0].InvoiceId, lines[0].ReturnedAt, lines.Select(x => x.Line).ToArray(),
                 lines[0].CashierId, lines[0].CashierName);
         }).ToArray();
     }
@@ -213,7 +204,7 @@ public sealed class PostgreSqlTransactionalReportsDataSource(CuaHangDbContext db
             """;
         return await QueryAsync(sql, fromInclusive, toExclusive, reader => new ReportWriteOffFact(
             Int64(reader, "writeoff_id"), VietnamDateTimeOffset(reader, "written_off_at"),
-            Int64(reader, "product_id"), Int32(reader, "category_id"), Int32(reader, "quantity"),
+            Int64(reader, "product_id"), Int64(reader, "category_id"), Int32(reader, "quantity"),
             RoundedInt64(reader, "unit_cost")), cancellationToken);
     }
 

@@ -172,6 +172,9 @@
                     {
                         <a asp-area="Reports" asp-controller="Reports" asp-action="Detail"
                            asp-route-code="@Model.Code" asp-route-key="@row.Key"
+                           asp-route-CategoryId="@Model.Query.CategoryId" asp-route-ProductId="@Model.Query.ProductId"
+                           asp-route-SupplierId="@Model.Query.SupplierId" asp-route-StockStatus="@Model.Query.StockStatus"
+                           asp-route-TopN="@Model.Query.TopN" asp-route-SortBy="@Model.Query.SortBy"
                            asp-route-ReturnReason="@Model.Query.ReturnReason" asp-route-CashierId="@Model.Query.CashierId" asp-route-PromotionId="@Model.Query.PromotionId"
                            asp-route-Period="@Model.Query.Period" asp-route-From="@Model.Query.From?.ToString("yyyy-MM-dd")"
                            asp-route-To="@Model.Query.To?.ToString("yyyy-MM-dd")" asp-route-GroupBy="@Model.Query.GroupBy">@row.Cells[columnIndex]</a>

@@ -126,7 +126,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
             ["Sản phẩm", "Số lượng", "Gộp", "Giảm trừ", "Thuần", "Tỷ trọng", "Mã hóa đơn"],
             allRows,
             chartRows.Select(x => new ReportChartPoint(x.Product.Name, x.Quantity, x.Net)).ToArray(),
-            invoices.Count + returns.Count == 0 ? "Không có dữ liệu trong khoảng đã chọn" : null);
+            rows.Count == 0 ? "Không có dữ liệu trong khoảng đã chọn" : null);
     }
 
     public async Task<OperationalReportResponse> GetCategoriesAsync(ReportQuery query, CancellationToken ct)
@@ -143,6 +143,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
             {
                 var line = invoice.Lines[i];
                 if (!products.TryGetValue(line.ProductId, out var product)) continue;
+                if (!MatchesProduct(product.Id, product.CategoryId, query)) continue;
                 if (!categories.TryGetValue(product.CategoryId, out var sale))
                     sale = new CategorySale(product.CategoryName);
                 sale.Quantity += line.Quantity;
@@ -156,7 +157,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
         foreach (var returned in returns)
         foreach (var line in returned.Lines)
         {
-            if (query.CategoryId.HasValue && query.CategoryId.Value != line.CategoryId) continue;
+            if (!MatchesProduct(line.ProductId, line.CategoryId, query)) continue;
             if (!categories.TryGetValue(line.CategoryId, out var sale)) sale = new CategorySale(line.CategoryName);
             sale.Deductions += line.RefundAmount;
             sale.InvoiceIds.Add(returned.InvoiceId);
@@ -176,7 +177,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
                     Money(data.Sum(x => x.Value.Gross)), Money(data.Sum(x => x.Value.Deductions)),
                     Money(netTotal), "100,0%", "")).ToArray(),
             data.Select(x => new ReportChartPoint(x.Value.Name, x.Value.Gross - x.Value.Deductions)).ToArray(),
-            invoices.Count + returns.Count == 0 ? "Không có dữ liệu trong khoảng đã chọn" : null);
+            data.Length == 0 ? "Không có dữ liệu trong khoảng đã chọn" : null);
     }
 
     public async Task<OperationalReportResponse> GetCashiersAsync(ReportQuery query, CancellationToken ct)
@@ -318,11 +319,13 @@ public sealed class OperationalReportsService : IOperationalReportsService
 
         foreach (var invoice in invoices)
         {
-            var lines = invoice.Lines.Where(line => MatchesProduct(line.ProductId, line.CategoryId, query)).ToArray();
+            var shares = AllocateDeductions(invoice);
+            var selected = invoice.Lines.Select((line, index) => (Line: line, Discount: shares[index]))
+                .Where(x => MatchesProduct(x.Line.ProductId, x.Line.CategoryId, query)).ToArray();
+            var lines = selected.Select(x => x.Line).ToArray();
             if (lines.Length == 0) continue;
-            var allGross = invoice.Lines.Sum(line => (long)line.Quantity * line.ListPriceSnapshot);
             var filteredGross = lines.Sum(line => (long)line.Quantity * line.ListPriceSnapshot);
-            var allocatedPromotion = allGross == 0 ? 0 : (long)Math.Floor((decimal)invoice.PromotionDiscount * filteredGross / allGross);
+            var allocatedPromotion = selected.Sum(x => x.Discount);
             var date = DateOnly.FromDateTime(invoice.PaidAt.ToOffset(ReportRangeResolver.VietnamOffset).DateTime);
             var bucket = For(date);
             bucket.GrossRevenue += filteredGross;
@@ -425,25 +428,13 @@ public sealed class OperationalReportsService : IOperationalReportsService
                 ["Mã", "Loại", "Thời điểm (UTC+7)", "Sản phẩm", "Số lượng", "Giá / hoàn tiền", "Giá vốn / xử lý"],
                 allRows, [], allRows.Length == 0 ? "Không có dữ liệu trong khoảng đã chọn" : null);
         }
-        var invoices = await _source.GetPaidInvoicesAsync(range!.FromInclusive, range.ToExclusive, ct);
-        var selectedInvoices = invoices.AsEnumerable();
-        if (normalizedCode == "BC-02" && DateOnly.TryParse(key, out var bucketDate))
-            selectedInvoices = selectedInvoices.Where(i => ReportRangeResolver.Bucket(
-                DateOnly.FromDateTime(i.PaidAt.ToOffset(ReportRangeResolver.VietnamOffset).DateTime), range.GroupBy) == bucketDate);
-        else if (normalizedCode == "BC-03" && key.StartsWith("product:", StringComparison.Ordinal) && long.TryParse(key[8..], out var productId))
-            selectedInvoices = selectedInvoices.Where(i => i.Lines.Any(l => l.ProductId == productId));
-        else if (normalizedCode == "BC-04" && key.StartsWith("category:", StringComparison.Ordinal) && long.TryParse(key[9..], out var categoryId))
-        {
-            var productsById = (await _source.GetProductsAsync(ct)).ToDictionary(p => p.Id);
-            selectedInvoices = selectedInvoices.Where(i => i.Lines.Any(l => productsById.TryGetValue(l.ProductId, out var p) && p.CategoryId == categoryId));
-        }
-        else if (normalizedCode == "BC-05" && key.StartsWith("cashier:", StringComparison.Ordinal) && long.TryParse(key[8..], out var cashierId))
-            selectedInvoices = selectedInvoices.Where(i => i.CashierId == cashierId);
-        else if (normalizedCode == "BC-06" && key.StartsWith("product:", StringComparison.Ordinal) && long.TryParse(key[8..], out var stockProductId))
+        if (normalizedCode is "BC-02" or "BC-03" or "BC-04" or "BC-05")
+            return await SalesDetailsAsync(normalizedCode, key, range!, query, ct);
+        if (normalizedCode == "BC-06" && key.StartsWith("product:", StringComparison.Ordinal) && long.TryParse(key[8..], out var stockProductId))
         {
             var todayEnd = new DateTimeOffset(DateOnly.FromDateTime(_clock.GetUtcNow().ToOffset(ReportRangeResolver.VietnamOffset).DateTime)
                 .AddDays(1).ToDateTime(TimeOnly.MinValue), ReportRangeResolver.VietnamOffset);
-            var moves = await _source.GetStockMovementsAsync(range.FromInclusive, todayEnd, ct);
+            var moves = await _source.GetStockMovementsAsync(range!.FromInclusive, todayEnd, ct);
             var rows = moves.Where(m => m.ProductId == stockProductId && m.OccurredAt >= range.FromInclusive && m.OccurredAt < range.ToExclusive)
                 .OrderBy(m => m.OccurredAt)
                 .Select(m => Row("movement", m.OccurredAt.ToOffset(ReportRangeResolver.VietnamOffset).ToString("dd/MM/yyyy HH:mm"),
@@ -453,26 +444,72 @@ public sealed class OperationalReportsService : IOperationalReportsService
                 [Metric("Số biến động", rows.Length, "number")], ["Thời điểm", "Loại", "Số lượng", "Ảnh hưởng tồn"], rows, [],
                 rows.Length == 0 ? "Không có dữ liệu trong khoảng đã chọn" : null);
         }
-        else
-            return Invalid(normalizedCode + " detail", "Chi tiết báo cáo", range, query, "Dòng báo cáo không hợp lệ.");
+        return Invalid(normalizedCode + " detail", "Chi tiết báo cáo", range!, query, "Dòng báo cáo không hợp lệ.");
+    }
 
-        var detailInvoices = selectedInvoices.OrderByDescending(i => i.PaidAt).ToArray();
-        var detailRows = detailInvoices.Select(i =>
+    private async Task<OperationalReportResponse> SalesDetailsAsync(string code, string key,
+        ResolvedReportRange range, ReportQuery query, CancellationToken ct)
+    {
+        var bucket = default(DateOnly);
+        long selectedId = 0;
+        var valid = code switch
         {
-            var gross = Gross(i);
-            return Row($"invoice:{i.Id}", $"HD-{i.Id:000000}",
-                i.PaidAt.ToOffset(ReportRangeResolver.VietnamOffset).ToString("dd/MM/yyyy HH:mm"),
-                i.CashierName,
-                string.Join("; ", i.Lines.Select(l => $"{l.ProductName} × {l.Quantity}")),
-                Money(gross), Money(Deductions(i)), Money(gross - Deductions(i)));
-        }).ToArray();
-        var detailGross = detailInvoices.Sum(Gross);
-        var detailDeductions = detailInvoices.Sum(Deductions);
-        return Build(normalizedCode + " detail", "Chi tiết hóa đơn", range, query,
-            [Metric("Số hóa đơn", detailInvoices.Length, "number"), Metric("Doanh thu gộp", detailGross),
-             Metric("Giảm trừ", detailDeductions), Metric("Doanh thu thuần", detailGross - detailDeductions)],
-            ["Hóa đơn", "Thanh toán lúc (UTC+7)", "Thu ngân", "Sản phẩm", "Gộp", "Giảm trừ", "Thuần"], detailRows, [],
-            detailRows.Length == 0 ? "Không có dữ liệu trong khoảng đã chọn" : null);
+            "BC-02" => DateOnly.TryParse(key, out bucket),
+            "BC-03" => key.StartsWith("product:", StringComparison.Ordinal) && long.TryParse(key[8..], out selectedId),
+            "BC-04" => key.StartsWith("category:", StringComparison.Ordinal) && long.TryParse(key[9..], out selectedId),
+            "BC-05" => key.StartsWith("cashier:", StringComparison.Ordinal) && long.TryParse(key[8..], out selectedId),
+            _ => false
+        };
+        if (!valid) return Invalid(code + " detail", "Chi tiết báo cáo", range, query, "Dòng báo cáo không hợp lệ.");
+        bool MatchesEvent(DateTimeOffset at, long cashierId) => code switch
+        {
+            "BC-02" => ReportRangeResolver.Bucket(DateOnly.FromDateTime(at.ToOffset(ReportRangeResolver.VietnamOffset).DateTime), range.GroupBy) == bucket,
+            "BC-05" => cashierId == selectedId && (!query.CashierId.HasValue || cashierId == query.CashierId),
+            _ => true
+        };
+        bool MatchesLine(long productId, long categoryId) => code switch
+        {
+            "BC-03" => productId == selectedId && MatchesProduct(productId, categoryId, query),
+            "BC-04" => categoryId == selectedId && MatchesProduct(productId, categoryId, query),
+            _ => true
+        };
+        var invoices = await _source.GetPaidInvoicesAsync(range.FromInclusive, range.ToExclusive, ct);
+        var returns = await _source.GetReturnsAsync(range.FromInclusive, range.ToExclusive, ct);
+        var events = new List<(DateTimeOffset At, ReportTableRow Row)>();
+        long grossTotal = 0, deductionsTotal = 0;
+        var invoiceCount = 0;
+        foreach (var invoice in invoices.Where(i => MatchesEvent(i.PaidAt, i.CashierId)))
+        {
+            var shares = AllocateDeductions(invoice);
+            var lines = invoice.Lines.Select((line, index) => (Line: line, Discount: shares[index]))
+                .Where(x => MatchesLine(x.Line.ProductId, x.Line.CategoryId)).ToArray();
+            if (lines.Length == 0) continue;
+            var gross = lines.Sum(x => (long)x.Line.Quantity * x.Line.ListPriceSnapshot);
+            var discount = lines.Sum(x => x.Discount);
+            grossTotal += gross;
+            deductionsTotal += discount;
+            invoiceCount++;
+            events.Add((invoice.PaidAt, Row($"invoice:{invoice.Id}", $"HD-{invoice.Id:000000}",
+                invoice.PaidAt.ToOffset(ReportRangeResolver.VietnamOffset).ToString("dd/MM/yyyy HH:mm"), invoice.CashierName,
+                string.Join("; ", lines.Select(x => $"{x.Line.ProductName} × {x.Line.Quantity}")),
+                Money(gross), Money(discount), Money(gross - discount))));
+        }
+        foreach (var returned in returns.Where(r => MatchesEvent(r.ReturnedAt, r.CashierId)))
+        {
+            var lines = returned.Lines.Where(l => MatchesLine(l.ProductId, l.CategoryId)).ToArray();
+            if (lines.Length == 0) continue;
+            var value = lines.Sum(l => l.RefundAmount);
+            deductionsTotal += value;
+            events.Add((returned.ReturnedAt, Row($"return:{returned.Id}", $"PT-{returned.Id:000000} (HD-{returned.InvoiceId:000000})",
+                returned.ReturnedAt.ToOffset(ReportRangeResolver.VietnamOffset).ToString("dd/MM/yyyy HH:mm"), returned.CashierName,
+                string.Join("; ", lines.Select(l => $"{l.ProductName} × {l.Quantity}")), Money(0), Money(value), Money(-value))));
+        }
+        return Build(code + " detail", "Chi tiết bán hàng và hoàn trả", range, query,
+            [Metric("Số hóa đơn", invoiceCount, "number"), Metric("Doanh thu gộp", grossTotal),
+             Metric("Giảm trừ", deductionsTotal), Metric("Doanh thu thuần", grossTotal - deductionsTotal)],
+            ["Chứng từ", "Thời điểm (UTC+7)", "Thu ngân", "Sản phẩm", "Gộp", "Giảm trừ", "Thuần"],
+            events.OrderByDescending(x => x.At).Select(x => x.Row).ToArray(), [],
+            events.Count == 0 ? "Không có dữ liệu trong khoảng đã chọn" : null);
     }
 
     private (ResolvedReportRange? Range, string? Error) Resolve(ReportQuery query)

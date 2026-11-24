@@ -1,0 +1,77 @@
+{
+  "date": "2026-11-24",
+  "timezone": "Asia/Bangkok",
+  "snapshot": "uncommitted working tree",
+  "base_sha": "770550c9fe76a811ec5db871d57482582852917c",
+  "branch": "fix/bc-kh-km-acceptance-20261124",
+  "environment": {
+    "dotnet_sdk": "10.0.401",
+    "postgresql": "17.12",
+    "host": "127.0.0.1",
+    "port": 55448,
+    "database_scope": "fixture-owned random loopback databases",
+    "runtime_packages": [
+      "Microsoft.EntityFrameworkCore/10.0.12",
+      "Microsoft.EntityFrameworkCore.Abstractions/10.0.12",
+      "Microsoft.EntityFrameworkCore.Relational/10.0.12",
+      "Npgsql/10.0.3",
+      "Npgsql.EntityFrameworkCore.PostgreSQL/10.0.3"
+    ]
+  },
+  "build": {
+    "configuration": "Release",
+    "warnings": 0,
+    "errors": 0,
+    "log_sha256": "6c4f018878d7ba37f8b1f0cf2f1af877ca44b71b654d5c5fb3cf907e0a1de0dd"
+  },
+  "final_test": {
+    "total": 819,
+    "executed": 819,
+    "passed": 819,
+    "failed": 0,
+    "skipped": 0,
+    "trx": "artifacts/acceptance-288/results/full-final.trx",
+    "trx_sha256": "f37dd952ea8f412d2fc4373e1073b6d9ce357dafdf41316d87951178e2a1cbef",
+    "duration": "5m25s"
+  },
+  "publish": {
+    "postgresql_only": true,
+    "mysql_dlls": 0,
+    "development_configuration_files": 0,
+    "web_dll_sha256": "e6bd30022606e073c23051d80034ca9197722b5dfe72f6f3a78f03501e1b9fda"
+  },
+  "files": [
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Services/OperationalReportsService.cs",
+      "sha256": "0825013a3670fcd57cbceb9c00f79282cda371cf5699b4054653821f1da733aa"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Services/PostgreSqlTransactionalReportsDataSource.cs",
+      "sha256": "8ad0a297346691f6121141a1bbf8f3750955092c226d8511e77af41a7a8ea66a"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Views/Reports/Report.cshtml",
+      "sha256": "f3d3ae29edddb0be5f30d0d7cc4157392c3a25b029d1e0c94f02019612e0f008"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Views/Reports/ReportDetail.cshtml",
+      "sha256": "e48d952fe4daca9ee3244eabeb46112b99d85e2c9d7fa797ec36f65323331d8d"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/OperationalReportsServiceTests.cs",
+      "sha256": "c5f52a3beccb2a3fa8e34edab1acac9ad37b5d91e78e6c163f8c431882311901"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/ReportPromotionPostgreSqlRegressionTests.cs",
+      "sha256": "ad276c269dbca6ce69fefbad711d6b2f81119da008bbfaa60119a84c70e91ff2"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/WeekEightPostgreSqlTests.cs",
+      "sha256": "075782bb44cd8b77e738463718c71984450efe879a30074246ddb506a7593ced"
+    }
+  ],
+  "github_ci": "NOT_RUN_FOR_THIS_WORKING_TREE",
+  "staging": "NOT_RUN",
+  "independent_review": "PENDING",
+  "shared_supabase_writes": false
+}

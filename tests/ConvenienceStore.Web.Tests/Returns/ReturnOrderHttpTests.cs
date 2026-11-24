@@ -10,6 +10,7 @@ using ConvenienceStore.Web.Modules.Returns;
 using ConvenienceStore.Web.Modules.Returns.Models;
 using ConvenienceStore.Web.Modules.Returns.Services;
 using ConvenienceStore.Web.Shared.Errors;
+using ConvenienceStore.Web.Services.Pos;
 using ConvenienceStore.Web.Tests.Inventory;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -52,6 +53,12 @@ public class ReturnOrderHttpTests(CsdlKhoFixture fixture)
         builder.Services.AddControllersWithViews(o=> { o.Filters.Add<KiemTraXsrfFilter>();o.Filters.Add<KiemTraDoiMatKhauFilter>(); }).AddApplicationPart(typeof(ReturnOrderService).Assembly);
         builder.Services.AddXuLyLoiApi();builder.Services.AddDbContext<CuaHangDbContext>(o=>o.UseMySQL(fixture.ChuoiKetNoi).AddInterceptors(new GioVietNamInterceptor()));
         builder.Services.AddModuleReturns();builder.Services.AddModuleInventory();
+        builder.Configuration["ConnectionStrings:PosMySql"] = fixture.ChuoiKetNoi;
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<MySqlPosCatalog>();
+        builder.Services.AddScoped<PosCartService>();
+        builder.Services.AddScoped<CashLedgerService>();
+        builder.Services.AddScoped<IPosCheckoutStore, MySqlPosCheckoutStore>();
         builder.Services.AddSingleton<TimeProvider>(new InvoiceLookupServiceTests.FixedTime(Now));
         builder.Services.AddAuthentication("test").AddScheme<AuthenticationSchemeOptions,TestAuth>("test",_=>{});
         builder.Services.AddAuthorization(o=>o.AddPolicy(MaQuyen.DoiTra,p=>p.RequireAuthenticatedUser().RequireClaim(ThongTinXacThuc.ClaimQuyen,MaQuyen.DoiTra)));
@@ -108,6 +115,12 @@ public class ReturnOrderHttpTests(CsdlKhoFixture fixture)
     public async Task ApiPreviewCreateAndReceipt_UsesServerAmountsAndNoStore()
     {
         var seed=await Seed();await using var app=await Start();using var client=Client(app);
+        await using (var db = fixture.TaoDbContext())
+        {
+            await using var transaction = await db.Database.BeginTransactionAsync();
+            await new CashLedgerService().RecordSaleAsync(db, seed.Invoice, fixture.TaiKhoanThuNganId, 50000, default);
+            await transaction.CommitAsync();
+        }
         var request=Request(seed.Invoice,seed.Product);
         var previewResponse=await client.PostAsJsonAsync("/api/v1/returns/preview",request);previewResponse.EnsureSuccessStatusCode();
         var preview=(await previewResponse.Content.ReadFromJsonAsync<ReturnPreview>())!;Assert.Equal(25000,preview.Refund);

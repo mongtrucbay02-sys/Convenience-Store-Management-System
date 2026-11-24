@@ -5,6 +5,7 @@ using ConvenienceStore.Web.Modules.Returns.Services;
 using ConvenienceStore.Web.Services.Pos;
 using ConvenienceStore.Web.Tests.HaTang;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,6 +18,7 @@ public sealed class PosPageAuthorizationTests(CsdlMySqlTam database) : IClassFix
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string, string?> { ["ConnectionStrings:CuaHang"] = database.ChuoiKetNoi }).Build());
         services.AddHttpContextAccessor();
+        services.AddDataProtection().UseEphemeralDataProtectionProvider();
         services.AddModuleInventory();
         services.AddModuleReturns();
         services.AddScoped<MySqlPosCatalog>();

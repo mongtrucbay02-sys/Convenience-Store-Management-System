@@ -4,6 +4,7 @@ namespace ConvenienceStore.Web.Modules.Promotions.Models;
 public sealed class PromotionFormModel
 {
     public long? Id { get; set; }
+    public long? Version { get; set; }
     public string? Code { get; set; }
     public string? Name { get; set; }
     public string? Description { get; set; }

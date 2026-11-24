@@ -8,7 +8,7 @@ namespace ConvenienceStore.Web.Modules.Promotions.Services;
 
 public sealed record PromotionUse(long PromotionId, string PromotionName, long InvoiceId, string InvoiceCode,
     DateTime PaidAt, string CashierName, string CustomerName, long Discount, long InvoiceNet);
-public sealed record PromotionHistory(long Id, string Code, string Name, IReadOnlyList<PromotionUse> Uses)
+public sealed record PromotionHistory(long Id, string Code, string Name, IReadOnlyList<PromotionUse> Uses, long Version = 1)
 {
     public long TotalDiscount => Uses.Sum(x => x.Discount);
 }
@@ -34,17 +34,18 @@ public sealed class PromotionUsageStore(CuaHangDbContext db)
 
     public async Task<PromotionHistory> HistoryAsync(long id, CancellationToken ct)
     {
-        var item=await db.DocMotDongAsync("SELECT id,ma,ten FROM chuong_trinh_khuyen_mai WHERE id=@id",
-            r=>new { Id=Convert.ToInt64(r[0]),Code=r.GetString(1),Name=r.GetString(2) },ct,("@id",id))
+        var item=await db.DocMotDongAsync("SELECT id,ma,ten,phien_ban FROM chuong_trinh_khuyen_mai WHERE id=@id",
+            r=>new { Id=Convert.ToInt64(r[0]),Code=r.GetString(1),Name=r.GetString(2),Version=r.GetInt64(3) },ct,("@id",id))
             ?? throw LoiNghiepVu.KhongTimThay("Không tìm thấy chương trình khuyến mãi.");
-        return new(item.Id,item.Code,item.Name,await ReadAsync(null,null,id,ct));
+        return new(item.Id,item.Code,item.Name,await ReadAsync(null,null,id,ct),item.Version);
     }
 
-    public async Task DeleteAsync(long id, CancellationToken ct)
+    public async Task DeleteAsync(long id, CancellationToken ct, long? version = null)
     {
         await using var tx=await db.Database.BeginTransactionAsync(ct);
-        var found=await db.DocMotGiaTriAsync("SELECT id FROM chuong_trinh_khuyen_mai WHERE id=@id FOR UPDATE",ct,("@id",id));
+        var found=await db.DocMotGiaTriAsync("SELECT phien_ban FROM chuong_trinh_khuyen_mai WHERE id=@id FOR UPDATE",ct,("@id",id));
         if(found is null) throw LoiNghiepVu.KhongTimThay("Không tìm thấy chương trình khuyến mãi.");
+        if(version != Convert.ToInt64(found)) throw LoiNghiepVu.XungDot("PROMOTION_CONFLICT","Chương trình đã thay đổi. Hãy tải lại trước khi xóa.");
         // A cancelled invoice is absent from KM-06, but its snapshot must never lose the promotion reference.
         var referenced=Convert.ToInt32(await db.DocMotGiaTriAsync("""
             SELECT EXISTS(SELECT 1 FROM ct_hoa_don WHERE khuyen_mai_id=@id)
@@ -55,7 +56,7 @@ public sealed class PromotionUsageStore(CuaHangDbContext db)
         try
         {
             await db.ChayAsync("DELETE FROM khuyen_mai_san_pham WHERE chuong_trinh_id=@id",ct,("@id",id));
-            await db.ChayAsync("DELETE FROM chuong_trinh_khuyen_mai WHERE id=@id",ct,("@id",id));
+            await db.ChayAsync("DELETE FROM chuong_trinh_khuyen_mai WHERE id=@id AND phien_ban=@version",ct,("@id",id),("@version",version));
             await tx.CommitAsync(ct);
         }
         catch(DbException e) when(SqlDialect.IsForeignKeyViolation(e))

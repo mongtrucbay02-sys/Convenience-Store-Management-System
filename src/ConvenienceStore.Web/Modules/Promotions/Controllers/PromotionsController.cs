@@ -104,6 +104,7 @@ public class PromotionsController : Controller
             MembersOnly = p.MembersOnly,
             ImageUrl = p.ImageUrl,
             UsageCount = p.UsageCount,
+            Version = p.Version,
         }, isEdit: true, cancellationToken);
     }
 
@@ -121,7 +122,7 @@ public class PromotionsController : Controller
                 form.DiscountValue, form.MaxDiscountAmount ?? 0,
                 form.ProductIds.Count > 0 ? form.ProductIds : null,
                 ToVietnamTime(form.StartAt), ToVietnamTime(form.EndAt),
-                form.MembersOnly, form.ImageUrl ?? string.Empty),
+                form.MembersOnly, form.ImageUrl ?? string.Empty, form.Version),
             cancellationToken);
 
         if (result.IsSuccess)
@@ -141,9 +142,9 @@ public class PromotionsController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     [Authorize(Roles = PromotionRoles.Admin)]
     public async Task<IActionResult> ChangeStatus(
-        long id, PromotionTargetStatus target, CancellationToken cancellationToken)
+        long id, PromotionTargetStatus target, CancellationToken cancellationToken, long? version = null)
     {
-        var result = await _promotionService.ChangeStatusAsync(id, target, cancellationToken);
+        var result = await _promotionService.ChangeStatusAsync(id, target, cancellationToken, version);
         if (result.IsSuccess)
             TempData["Message"] = $"Đã cập nhật trạng thái chương trình {result.Value!.Code}.";
         else
@@ -169,10 +170,10 @@ public class PromotionsController : Controller
 
     [HttpPost,ActionName("Delete"),ValidateAntiForgeryToken,Authorize(Roles=PromotionRoles.Admin)]
     [ConvenienceStore.Web.Shared.Security.RequirePasswordChanged]
-    public async Task<IActionResult> DeleteConfirmed(long id,bool confirmed,[FromServices] PromotionUsageStore store,CancellationToken ct)
+    public async Task<IActionResult> DeleteConfirmed(long id,bool confirmed,[FromServices] PromotionUsageStore store,CancellationToken ct,long? version = null)
     {
         if(!confirmed) return BadRequest("Cần xác nhận xóa chương trình.");
-        try {await store.DeleteAsync(id,ct);TempData["Message"]="Đã xóa chương trình chưa được sử dụng.";return RedirectToAction(nameof(Index));}
+        try {await store.DeleteAsync(id,ct,version);TempData["Message"]="Đã xóa chương trình chưa được sử dụng.";return RedirectToAction(nameof(Index));}
         catch(LoiNghiepVu e) when(e.MaHttp is 404 or 409) {TempData["Error"]=e.Message;return RedirectToAction(nameof(Index));}
     }
 

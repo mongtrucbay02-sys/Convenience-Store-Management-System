@@ -8,10 +8,12 @@ namespace ConvenienceStore.Web.Modules.Products.Services;
 
 public static class ProductPriceRules
 {
+    // Existing SRS price ceiling; changing this business policy requires a separate decision.
+    public const long MaximumPrice = 4_294_967_295;
     public static ProductPriceChangeDto Normalize(ProductPriceChangeDto input)
     {
         ArgumentNullException.ThrowIfNull(input); var errors = new List<LoiTruong>();
-        if (input.GiaBan is null or <= 0 or > uint.MaxValue || input.GiaBan % 100 != 0) errors.Add(new("giaBan", "Giá phải là số nguyên dương, bội số 100 đồng trong phạm vi lưu trữ."));
+        if (input.GiaBan is null or <= 0 or > MaximumPrice || input.GiaBan % 100 != 0) errors.Add(new("giaBan", "Giá phải là số nguyên dương, bội số 100 đồng trong phạm vi lưu trữ."));
         if (input.PhienBan <= 0) errors.Add(new("phienBan", "Cần phiên bản hiện tại."));
         if (!TryParse(input.HieuLucTu, out _)) errors.Add(new("hieuLucTu", "Thời điểm phải là ISO 8601 có múi giờ, trong phạm vi lưu trữ."));
         if (errors.Count > 0) throw LoiNghiepVu.DuLieuKhongHopLe(errors);
@@ -20,9 +22,9 @@ public static class ProductPriceRules
     public static DateTime ResolveEffectiveAt(string? requested, DateTime databaseNow)
     {
         if (!TryParse(requested, out var value)) throw LoiNghiepVu.DuLieuKhongHopLe("hieuLucTu", "Thời điểm không hợp lệ.");
-        var resolved = value?.ToOffset(GioVietNam.DoLech).DateTime ?? databaseNow;
-        resolved = new DateTime(resolved.Ticks / TimeSpan.TicksPerSecond * TimeSpan.TicksPerSecond, DateTimeKind.Unspecified);
-        if (resolved < databaseNow) throw LoiNghiepVu.DuLieuKhongHopLe("hieuLucTu", "Thời điểm hiệu lực không được ở quá khứ.");
+        var nowUtc = GioVietNam.ThanhOffset(databaseNow).UtcDateTime;
+        var resolved = value?.UtcDateTime ?? nowUtc;
+        if (resolved < nowUtc) throw LoiNghiepVu.DuLieuKhongHopLe("hieuLucTu", "Thời điểm hiệu lực không được ở quá khứ.");
         return resolved;
     }
     public static void EnsureCostConfirmed(long price, decimal cost, bool confirmed)

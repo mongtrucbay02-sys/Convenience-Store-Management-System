@@ -32,6 +32,7 @@
     async Task StatusButton(PromotionDto p, PromotionTargetStatus target, string label, string css)
     {
         <form method="post" asp-action="ChangeStatus" asp-route-id="@p.Id" class="d-inline" onsubmit="return confirm('@label chương trình @p.Code?');">
+            <input type="hidden" name="version" value="@p.Version" />
             <input type="hidden" name="target" value="@target" />
             <button type="submit" class="btn btn-sm @css">@label</button>
         </form>

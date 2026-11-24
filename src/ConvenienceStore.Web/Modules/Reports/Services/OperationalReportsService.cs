@@ -135,7 +135,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
         if (error is not null) return Invalid("BC-04", "Doanh thu theo danh mục", range!, query, error);
         var products = (await _source.GetProductsAsync(ct)).ToDictionary(p => p.Id);
         var invoices = await _source.GetPaidInvoicesAsync(range!.FromInclusive, range.ToExclusive, ct);
-        var categories = new Dictionary<int, CategorySale>();
+        var categories = new Dictionary<long, CategorySale>();
         foreach (var invoice in invoices)
         {
             var shares = AllocateDeductions(invoice);
@@ -369,7 +369,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
             data.Length == 0 ? "Không có dữ liệu trong khoảng đã chọn" : null);
     }
 
-    private static bool MatchesProduct(long productId, int categoryId, ReportQuery query) =>
+    private static bool MatchesProduct(long productId, long categoryId, ReportQuery query) =>
         (!query.ProductId.HasValue || query.ProductId.Value == productId) &&
         (!query.CategoryId.HasValue || query.CategoryId.Value == categoryId);
 
@@ -385,7 +385,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
             var detailReceipts = receipts.Where(receipt =>
                 (!query.SupplierId.HasValue || receipt.SupplierId == query.SupplierId.Value) &&
                 ((key.StartsWith("product:", StringComparison.Ordinal) && long.TryParse(key[8..], out var productId) && receipt.Lines.Any(line => line.ProductId == productId)) ||
-                 (key.StartsWith("supplier:", StringComparison.Ordinal) && int.TryParse(key[9..], out var supplierId) && receipt.SupplierId == supplierId))).ToArray();
+                 (key.StartsWith("supplier:", StringComparison.Ordinal) && long.TryParse(key[9..], out var supplierId) && receipt.SupplierId == supplierId))).ToArray();
             var purchaseRows = detailReceipts.SelectMany(receipt => receipt.Lines
                     .Where(line => (!query.ProductId.HasValue || line.ProductId == query.ProductId.Value) &&
                                    (!key.StartsWith("product:", StringComparison.Ordinal) || key == $"product:{line.ProductId}"))
@@ -432,7 +432,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
                 DateOnly.FromDateTime(i.PaidAt.ToOffset(ReportRangeResolver.VietnamOffset).DateTime), range.GroupBy) == bucketDate);
         else if (normalizedCode == "BC-03" && key.StartsWith("product:", StringComparison.Ordinal) && long.TryParse(key[8..], out var productId))
             selectedInvoices = selectedInvoices.Where(i => i.Lines.Any(l => l.ProductId == productId));
-        else if (normalizedCode == "BC-04" && key.StartsWith("category:", StringComparison.Ordinal) && int.TryParse(key[9..], out var categoryId))
+        else if (normalizedCode == "BC-04" && key.StartsWith("category:", StringComparison.Ordinal) && long.TryParse(key[9..], out var categoryId))
         {
             var productsById = (await _source.GetProductsAsync(ct)).ToDictionary(p => p.Id);
             selectedInvoices = selectedInvoices.Where(i => i.Lines.Any(l => productsById.TryGetValue(l.ProductId, out var p) && p.CategoryId == categoryId));

@@ -8,8 +8,7 @@ public sealed class KiemTraDoiMatKhauFilter : IAuthorizationFilter
     public void OnAuthorization(AuthorizationFilterContext nguCanh)
     {
         var http = nguCanh.HttpContext;
-        if (!XuLyLoiApiMiddleware.LaDuongDanApi(http.Request.Path)
-            || http.User.Identity?.IsAuthenticated != true
+        if (http.User.Identity?.IsAuthenticated != true
             || !http.User.DangPhaiDoiMatKhau()
             || nguCanh.ActionDescriptor.EndpointMetadata.OfType<ChoPhepKhiPhaiDoiMatKhauAttribute>().Any())
             return;

@@ -1,11 +1,11 @@
 namespace ConvenienceStore.Web.Modules.Reports.Services;
 
 public sealed record ReportProductFact(
-    long Id, string Name, int CategoryId, string CategoryName, decimal UnitCost, int ReorderPoint,
+    long Id, string Name, long CategoryId, string CategoryName, decimal UnitCost, int ReorderPoint,
     int CurrentStock);
 
 public sealed record ReportInvoiceLineFact(
-    long ProductId, string ProductName, int CategoryId, string CategoryName,
+    long ProductId, string ProductName, long CategoryId, string CategoryName,
     int Quantity, long ListPriceSnapshot, long UnitCostSnapshot);
 
 /// <summary>Only paid invoices are returned; the copied line prices are the report source of truth.</summary>
@@ -18,17 +18,17 @@ public sealed record ReportCancelledOrderFact(long Id, DateTimeOffset CancelledA
 public sealed record ReportVoidedInvoiceFact(long Id, DateTimeOffset VoidedAt, long CashierId, string CashierName);
 public sealed record StockMovementFact(long ProductId, DateTimeOffset OccurredAt, int Quantity, bool IsInbound);
 public sealed record ReportPurchaseReceiptLineFact(long ProductId, string ProductName, int Quantity, long UnitCost);
-public sealed record ReportPurchaseReceiptFact(long Id, DateTimeOffset ReceivedAt, int SupplierId, string SupplierName,
+public sealed record ReportPurchaseReceiptFact(long Id, DateTimeOffset ReceivedAt, long SupplierId, string SupplierName,
     IReadOnlyList<ReportPurchaseReceiptLineFact> Lines);
-public sealed record ReportReturnedLineFact(long ProductId, string ProductName, int CategoryId, string CategoryName,
+public sealed record ReportReturnedLineFact(long ProductId, string ProductName, long CategoryId, string CategoryName,
     int Quantity, long UnitCostSnapshot, int RestockedQuantity, long RefundAmount, long DestroyedValue = 0);
 public sealed record ReportReturnFact(long Id, long InvoiceId, DateTimeOffset ReturnedAt,
     IReadOnlyList<ReportReturnedLineFact> Lines, long CashierId = 0, string CashierName = "");
-public sealed record ReportWriteOffFact(long Id, DateTimeOffset WrittenOffAt, long ProductId, int CategoryId,
+public sealed record ReportWriteOffFact(long Id, DateTimeOffset WrittenOffAt, long ProductId, long CategoryId,
     int Quantity, long UnitCostSnapshot);
 
 /// <summary>
-/// Report input boundary for BC-02 through BC-08. The production adapter queries the shared MySQL schema;
+/// Report input boundary for BC-02 through BC-08. The production adapter queries the PostgreSQL schema;
 /// the sample adapter remains available for isolated deterministic tests.
 /// </summary>
 public interface IOperationalReportDataSource
@@ -50,7 +50,7 @@ public interface IOperationalReportDataSource
         Task.FromResult<IReadOnlyList<ReportReturnFact>>([]);
 }
 
-/// <summary>Live transactional tables used by BC-07/08 once the shared MySQL schema is available.</summary>
+/// <summary>Live transactional tables used by BC-07/08 once the PostgreSQL schema is available.</summary>
 public interface ITransactionalReportsDataSource
 {
     Task<IReadOnlyList<ReportPaidInvoiceFact>> GetPaidInvoicesAsync(

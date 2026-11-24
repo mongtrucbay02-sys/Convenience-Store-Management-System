@@ -1,7 +1,7 @@
 namespace ConvenienceStore.Web.Modules.Inventory.Models;
 
 public sealed record KetQuaDong(
-    int SanPhamId,
+    long SanPhamId,
     int SoLuongThayDoi,
     int TonTruoc,
     int TonSau,

@@ -1,4 +1,4 @@
-﻿using ConvenienceStore.Web.Data;
+using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Auth.Security;
 using ConvenienceStore.Web.Modules.Returns.Services;
 using ConvenienceStore.Web.Shared.Errors;
@@ -18,7 +18,7 @@ public sealed class ReturnRefundController(CuaHangDbContext db, ReturnRefundServ
     {
         try
         {
-            int cashier = User.LayTaiKhoanId();
+            long cashier = User.LayTaiKhoanId();
             var model = await refunds.ReceiptAsync(db, id, cashier, ct);
             return View("~/Modules/Returns/Views/RefundReceipt.cshtml", model);
         }

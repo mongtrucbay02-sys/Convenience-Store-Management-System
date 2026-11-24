@@ -6,7 +6,7 @@ public partial interface IDichVuTaiKhoan
 {
     Task<TaiKhoanDto> SuaAsync(long id, YeuCauSuaTaiKhoan yeuCau, CancellationToken ct = default);
 
-    Task<TaiKhoanDto> KhoaAsync(long id, YeuCauKhoaTaiKhoan yeuCau, int nguoiThucHienId, CancellationToken ct = default);
+    Task<TaiKhoanDto> KhoaAsync(long id, YeuCauKhoaTaiKhoan yeuCau, long nguoiThucHienId, CancellationToken ct = default);
 
     Task<TaiKhoanDto> MoKhoaAsync(long id, CancellationToken ct = default);
 

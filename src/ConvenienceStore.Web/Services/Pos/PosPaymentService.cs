@@ -1,4 +1,4 @@
-﻿
+
 using ConvenienceStore.Web.Models.Pos;
 
 namespace ConvenienceStore.Web.Services.Pos;

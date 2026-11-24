@@ -31,16 +31,16 @@ public sealed class ReturnOrderService(
         string Code,
         string Status,
         DateTime PurchasedAt,
-        int? CustomerId,
+        long? CustomerId,
         int PointsEarned);
 
     private sealed record Policy(
-        int Id,
+        long Id,
         int Days,
         long Threshold);
 
     private sealed record Line(
-        int Id,
+        long Id,
         string Name,
         string Unit,
         int Quantity,
@@ -81,13 +81,13 @@ public sealed class ReturnOrderService(
     // 1. KIỂM TRA QUYỀN THU NGÂN
     // =========================================================
 
-    private async Task<int> Actor(
+    private async Task<long> Actor(
         ClaimsPrincipal user,
         CancellationToken ct)
     {
         ReturnLookupAccess.Require(user);
 
-        int id = user.LayTaiKhoanId();
+        long id = user.LayTaiKhoanId();
 
         var found = await db.DocMotGiaTriAsync("""
             SELECT t.id
@@ -144,7 +144,7 @@ public sealed class ReturnOrderService(
                 r.Chuoi(1),
                 r.Chuoi(2),
                 r.NgayGio(3),
-                r.IsDBNull(4) ? null : r.SoNguyen(4),
+                r.IsDBNull(4) ? null : r.SoNguyenDai(4),
                 r.SoNguyen(5)),
             ct,
             ("@id", id));
@@ -210,7 +210,7 @@ public sealed class ReturnOrderService(
             ORDER BY d.san_pham_id
             """,
             r => new Line(
-                r.SoNguyen(0),
+                r.SoNguyenDai(0),
                 r.Chuoi(1),
                 r.Chuoi(2),
                 r.SoNguyen(3),
@@ -271,7 +271,7 @@ public sealed class ReturnOrderService(
 
     private async Task<Draft> Calculate(
         ReturnOrderRequest request,
-        int actor,
+        long actor,
         CancellationToken ct)
     {
         if (request.Lines is null
@@ -348,7 +348,7 @@ public sealed class ReturnOrderService(
             FOR SHARE
             """,
             r => new Policy(
-                r.SoNguyen(0),
+                r.SoNguyenDai(0),
                 r.SoNguyen(1),
                 r.SoNguyenDai(2)),
             ct,
@@ -476,7 +476,7 @@ public sealed class ReturnOrderService(
         ClaimsPrincipal user,
         CancellationToken ct = default)
     {
-        int actor = await Actor(user, ct);
+        long actor = await Actor(user, ct);
 
         await using var tx =
             await db.Database.BeginTransactionAsync(
@@ -493,7 +493,7 @@ public sealed class ReturnOrderService(
     // 7. TẠO PHIẾU TRẢ
     // DT-05:
     // - NHAP_LAI: ghi biến động kho TRA_HANG.
-    // - HUY: không nhập kho; MySQL tự tính gia_tri_huy từ giá vốn và số lượng.
+    // - HUY: không nhập kho; PostgreSQL tự tính gia_tri_huy từ giá vốn và số lượng.
     // =========================================================
 
     public async Task<long> CreateAsync(
@@ -501,7 +501,7 @@ public sealed class ReturnOrderService(
         ClaimsPrincipal user,
         CancellationToken ct = default)
     {
-        int actor = await Actor(user, ct);
+        long actor = await Actor(user, ct);
 
         await using var tx =
             await db.Database.BeginTransactionAsync(
@@ -605,7 +605,7 @@ public sealed class ReturnOrderService(
             ("@done", preview.NeedsApproval ? null : Now));
 
         // Ghi từng dòng trả hàng.
-        // gia_tri_huy là cột GENERATED STORED do MySQL tự tính từ
+        // gia_tri_huy là cột GENERATED STORED do PostgreSQL tự tính từ
         // cach_xu_ly, gia_von và so_luong; tuyệt đối không INSERT trực tiếp.
         foreach (var l in preview.Lines)
         {
@@ -671,7 +671,7 @@ public sealed class ReturnOrderService(
                 await stock.GhiNhanBienDongAsync(
                     new(
                         LoaiBienDong.TRA_HANG,
-                        checked((int)id),
+                        id,
                         code,
                         actor,
                         restock),
@@ -724,7 +724,7 @@ public sealed class ReturnOrderService(
         ClaimsPrincipal user,
         CancellationToken ct = default)
     {
-        int actor = await Actor(user, ct);
+        long actor = await Actor(user, ct);
 
         var receipt = await db.DocMotDongAsync("""
             SELECT
@@ -791,7 +791,7 @@ public sealed class ReturnOrderService(
             ORDER BY c.san_pham_id
             """,
             r => new ReturnPreviewLine(
-                r.SoNguyen(0),
+                r.SoNguyenDai(0),
                 r.Chuoi(1),
                 r.SoNguyen(2),
                 r.SoNguyenDai(3),

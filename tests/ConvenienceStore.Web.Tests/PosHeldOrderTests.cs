@@ -29,12 +29,12 @@ public class PosHeldOrderTests(CsdlKhoFixture fixture)
             new Claim(ThongTinXacThuc.ClaimBatBuocDoiMatKhau,changePassword?"true":"false") }, "Test")) };
         var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> {
             ["ConnectionStrings:CuaHang"]=fixture.ChuoiKetNoi }).Build();
-        return new(new MySqlPosCatalog(config),new HttpContextAccessor { HttpContext=context });
+        return new(new PostgreSqlPosCatalog(config),new HttpContextAccessor { HttpContext=context });
     }
     private async Task<int> Product(int stock=10)
     {
         int product=await new BoTroGoiDichVuKho(fixture).TaoSanPhamCoTonAsync("POS08",stock,10000);
-        await fixture.ChayAsync("INSERT INTO lich_su_gia (san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id) VALUES (@p,25000,NOW()-INTERVAL 1 DAY,@a)",("@p",product),("@a",fixture.TaiKhoanAdminId));
+        await fixture.ChayAsync("INSERT INTO lich_su_gia (san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id) VALUES (@p,25000,NOW()-INTERVAL '1 day',@a)",("@p",product),("@a",fixture.TaiKhoanAdminId));
         return product;
     }
     private async Task<int> Cart(int cashier,int? product=null,int quantity=2,bool held=false)
@@ -43,7 +43,7 @@ public class PosHeldOrderTests(CsdlKhoFixture fixture)
         await using var command=CsdlKhoFixture.TaoLenh(connection,"""
             INSERT INTO gio_hang (thu_ngan_id,trang_thai,tam_giu_luc) VALUES (@t,@s,@time)
             """,("@t",cashier),("@s",held?"TAM_GIU":"DANG_BAN"),("@time",held?DateTime.UtcNow.AddHours(7):null));
-        await command.ExecuteNonQueryAsync();int id=(int)command.LastInsertedId;
+        command.CommandText += " RETURNING id";int id=Convert.ToInt32(await command.ExecuteScalarAsync());
         if(product.HasValue)await fixture.ChayAsync("INSERT INTO ct_gio_hang (gio_hang_id,san_pham_id,so_luong,don_gia) VALUES (@g,@p,@q,25000)",("@g",id),("@p",product),("@q",quantity));
         return id;
     }
@@ -82,7 +82,7 @@ public class PosHeldOrderTests(CsdlKhoFixture fixture)
     {
         int cashier=await Cashier(),other=await Cashier(),product=await Product();
         int old=await Cart(cashier,product,held:true),foreign=await Cart(other,product,held:true);
-        await fixture.ChayAsync("UPDATE gio_hang SET tam_giu_luc=CURDATE()-INTERVAL 1 SECOND WHERE id IN (@g,@f)",("@g",old),("@f",foreign));
+        await fixture.ChayAsync("UPDATE gio_hang SET tam_giu_luc=CURRENT_DATE-INTERVAL '1 second' WHERE id IN (@g,@f)",("@g",old),("@f",foreign));
         var result=await Service(cashier).ListAsync();Assert.Equal(1,result.ExpiredCount);Assert.Empty(result.Orders);
         Assert.Equal("DA_HUY",await State(old));Assert.Equal("TAM_GIU",await State(foreign));
         Assert.Equal("HET_HAN_TAM_GIU",await fixture.DocMotGiaTriAsync("SELECT ly_do_huy FROM gio_hang WHERE id=@g",("@g",old)));
@@ -116,7 +116,7 @@ public class PosHeldOrderTests(CsdlKhoFixture fixture)
         string code="HOLD"+Guid.NewGuid().ToString("N")[..10];
         await fixture.ChayAsync("""
             INSERT INTO chuong_trinh_khuyen_mai (ma,ten,loai_giam,gia_tri,bat_dau_luc,ket_thuc_luc,trang_thai,nguoi_tao_id)
-            VALUES (@ma,'KM POS08','PHAN_TRAM',15,NOW()-INTERVAL 1 DAY,NOW()+INTERVAL 1 DAY,'DA_KICH_HOAT',@a)
+            VALUES (@ma,'KM POS08','PHAN_TRAM',15,NOW()-INTERVAL '1 day',NOW()+INTERVAL '1 day','DA_KICH_HOAT',@a)
             """,("@ma",code),("@a",fixture.TaiKhoanAdminId));
         int promotion=Convert.ToInt32(await fixture.DocMotGiaTriAsync("SELECT id FROM chuong_trinh_khuyen_mai WHERE ma=@ma",("@ma",code)));
         await fixture.ChayAsync("INSERT INTO khuyen_mai_san_pham VALUES (@km,@p)",("@km",promotion),("@p",product));
@@ -149,7 +149,7 @@ public class PosHeldOrderTests(CsdlKhoFixture fixture)
         string code="HOLD"+Guid.NewGuid().ToString("N")[..10];
         await fixture.ChayAsync("""
             INSERT INTO chuong_trinh_khuyen_mai (ma,ten,loai_giam,gia_tri,bat_dau_luc,ket_thuc_luc,trang_thai,nguoi_tao_id)
-            VALUES (@ma,'KM cũ','SO_TIEN',1000,NOW()-INTERVAL 1 DAY,NOW()+INTERVAL 1 DAY,'TAM_DUNG',@a)
+            VALUES (@ma,'KM cũ','SO_TIEN',1000,NOW()-INTERVAL '1 day',NOW()+INTERVAL '1 day','TAM_DUNG',@a)
             """,("@ma",code),("@a",fixture.TaiKhoanAdminId));
         int promotion=Convert.ToInt32(await fixture.DocMotGiaTriAsync("SELECT id FROM chuong_trinh_khuyen_mai WHERE ma=@ma",("@ma",code)));
         await fixture.ChayAsync("INSERT INTO khuyen_mai_san_pham VALUES (@km,@p)",("@km",promotion),("@p",product));

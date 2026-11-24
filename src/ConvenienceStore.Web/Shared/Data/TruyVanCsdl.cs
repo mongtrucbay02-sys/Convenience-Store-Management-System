@@ -58,13 +58,13 @@ public static class TruyVanCsdl
     }
 
     public static (string DanhSachThamSo, (string Ten, object? GiaTri)[] ThamSo) TaoThamSoIn(
-        string tienTo, IEnumerable<int> giaTri)
+        string tienTo, IEnumerable<long> giaTri)
     {
         var thamSo = giaTri.Select((g, i) => ($"@{tienTo}{i}", (object?)g)).ToArray();
         return (string.Join(", ", thamSo.Select(t => t.Item1)), thamSo);
     }
 
     public static bool LaLoiTrungKhoa(DbException loi, string tenKhoa) =>
-        (SqlDialect.IsUniqueViolation(loi) || loi.Message.Contains("Duplicate entry", StringComparison.OrdinalIgnoreCase))
-        && loi.Message.Contains(tenKhoa, StringComparison.OrdinalIgnoreCase);
+        loi is Npgsql.PostgresException { SqlState: Npgsql.PostgresErrorCodes.UniqueViolation } pg
+        && string.Equals(pg.ConstraintName,tenKhoa,StringComparison.OrdinalIgnoreCase);
 }

@@ -14,7 +14,7 @@ public static class DangKyModuleReturns
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
 
         // Đăng ký dịch vụ tra cứu hóa đơn
-        services.AddScoped<IInvoiceLookupStore, MySqlInvoiceLookupStore>();
+        services.AddScoped<IInvoiceLookupStore, PostgreSqlInvoiceLookupStore>();
         services.AddScoped<InvoiceLookupService>();
 
         // Đăng ký dịch vụ quản lý quỹ tiền mặt

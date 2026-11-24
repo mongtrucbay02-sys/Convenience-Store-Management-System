@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ConvenienceStore.Web.Tests.Modules.Products;
 
-public sealed class ProductsIntegrationHttpTests(CsdlMySqlTam database) : IClassFixture<CsdlMySqlTam>
+public sealed class ProductsIntegrationHttpTests(CsdlPostgreSqlTam database) : IClassFixture<CsdlPostgreSqlTam>
 {
     [Theory]
     [InlineData(null, 401)]

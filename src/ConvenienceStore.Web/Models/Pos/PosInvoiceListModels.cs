@@ -1,4 +1,4 @@
-﻿namespace ConvenienceStore.Web.Models.Pos;
+namespace ConvenienceStore.Web.Models.Pos;
 
 // POS-10: Bộ lọc danh sách hóa đơn (đã được dịch vụ chuẩn hóa và áp quy tắc BR-POS-11).
 public sealed class PosInvoiceListFilter
@@ -14,7 +14,7 @@ public sealed class PosInvoiceListFilter
     public string? Status { get; set; }
 
     // null = tất cả thu ngân. Với người chỉ có quyền "của mình", dịch vụ luôn ép bằng ID của chính họ.
-    public int? CashierId { get; set; }
+    public long? CashierId { get; set; }
 
     // Tìm theo một phần mã hóa đơn.
     public string? Code { get; set; }
@@ -54,7 +54,7 @@ public sealed record PosInvoiceListResult(
     int Page,
     int TotalPages);
 
-public sealed record PosCashierOption(int Id, string Name);
+public sealed record PosCashierOption(long Id, string Name);
 
 // Dữ liệu cho màn hình "Hóa đơn".
 public sealed class PosInvoiceListViewModel

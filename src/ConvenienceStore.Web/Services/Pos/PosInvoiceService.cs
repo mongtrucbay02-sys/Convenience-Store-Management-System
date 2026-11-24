@@ -1,4 +1,4 @@
-﻿
+
 using ConvenienceStore.Web.Models.Pos;
 using Microsoft.Extensions.Logging;
 

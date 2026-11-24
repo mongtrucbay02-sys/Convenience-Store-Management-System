@@ -3,7 +3,7 @@ using Xunit;
 
 namespace ConvenienceStore.Web.Tests.Auth;
 
-public sealed class CsdlXacThucFixture : CsdlMySqlTam;
+public sealed class CsdlXacThucFixture : CsdlPostgreSqlTam;
 
 [CollectionDefinition(Ten)]
 public sealed class CsdlXacThucCollection : ICollectionFixture<CsdlXacThucFixture>

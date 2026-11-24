@@ -13,13 +13,15 @@ Chứng minh hệ thống **làm đúng yêu cầu** ở `03` và **đúng thi�
 
 | Tài liệu | Mô tả | Trạng thái |
 |---|---|---|
+| [test-reports/2026-11-24-commit-preparation.md](test-reports/2026-11-24-commit-preparation.md) | Commit theo nhóm, kiểm tra source/secret/archive và provenance test | Commit cục bộ; build chạy lại; test trước được tái sử dụng; chưa push/CI |
+| [test-reports/2026-11-24-postgresql-integration.md](test-reports/2026-11-24-postgresql-integration.md) | PostgreSQL-only, SM-01/02/03/06/07/08/10/13, RLS và publish | 763/763 PASS cục bộ trên working tree baseline 2e8d94b; CI commit mới NOT RUN |
 | [`test-reports/2026-11-24-supabase-smoke.md`](test-reports/2026-11-24-supabase-smoke.md) | Kiểm tra workflow Supabase chỉ đọc và các ca thiếu cấu hình/schema | PostgreSQL riêng và Supabase thật đều đọc được 34/34 đối tượng; GitHub workflow chưa chạy |
 | [`test-reports/2026-11-23-supabase-entities.md`](test-reports/2026-11-23-supabase-entities.md) | Catalog Supabase 31 bảng, SELECT chỉ đọc và hồi quy model MySQL | Ánh xạ đã kiểm tra; E2E PostgreSQL/staging chưa xác nhận |
 | [`test-reports/2026-11-23-postgresql-runtime.md`](test-reports/2026-11-23-postgresql-runtime.md) | Chuyển SQL PostgreSQL, test ghi/HTTP/publish và trạng thái Supabase/staging | 759/759 Release đạt cục bộ; CI mới/staging chưa xác nhận |
 | `test-plan.md` | Chiến lược: unit / integration / API / UI, môi trường, tiêu chí đạt | Chưa có |
 | `test-cases/` | Test case thủ công theo module, mã `TC-<module>-xx`, liên kết mã chức năng | Chưa có |
 | `automated-tests.md` | Mô tả bộ test tự động trong `tests/ConvenienceStore.Web.Tests/` và cách chạy `dotnet test` | Chưa có |
-| [`ci-github-actions.md`](ci-github-actions.md) | CI .NET 10/MySQL riêng cho PR, kết quả TRX và cách bật check bắt buộc sau khi chạy thật | Đã viết workflow; chờ run GitHub/review |
+| [`ci-github-actions.md`](ci-github-actions.md) | CI .NET 10/PostgreSQL 17 riêng cho PR, kết quả TRX và cách bật check bắt buộc sau khi chạy thật | Đã viết workflow; chờ run GitHub/review |
 | [`test-reports/`](test-reports/2026-11-22-integration-ui-e2e.md) | Kết quả từng đợt kiểm thử (`YYYY-MM-DD-<dot>.md`) | Có báo cáo tích hợp/UI ngày 22/11/2026, đang review |
 | `defects.md` | Danh sách lỗi (hoặc liên kết tới GitHub Issues gắn nhãn bug) | Chưa có |
 

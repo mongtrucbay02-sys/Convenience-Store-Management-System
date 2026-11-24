@@ -19,7 +19,7 @@ public sealed class ReturnSlipLookupService(CuaHangDbContext db)
         JOIN tai_khoan t ON t.id = p.thu_ngan_id
         """;
 
-    public async Task<ReturnSlipList> ListAsync(ReturnSlipQuery query, int? cashier, CancellationToken ct)
+    public async Task<ReturnSlipList> ListAsync(ReturnSlipQuery query, long? cashier, CancellationToken ct)
     {
         var conditions = new List<string>();
         var args = new List<(string, object?)>();
@@ -66,7 +66,7 @@ public sealed class ReturnSlipLookupService(CuaHangDbContext db)
         return new(query, rows.Take(PageSize).ToArray(), rows.Count > PageSize);
     }
 
-    public async Task<ReturnSlipDetails?> FindAsync(long id, int? cashier, CancellationToken ct)
+    public async Task<ReturnSlipDetails?> FindAsync(long id, long? cashier, CancellationToken ct)
     {
         var conditions = new List<string> { "p.id = @id" };
         var args = new List<(string, object?)> { ("@id", id) };
@@ -97,7 +97,7 @@ public sealed class ReturnSlipLookupService(CuaHangDbContext db)
         return detail with { Lines = lines };
     }
 
-    private static void RestrictToCashier(int? cashier, List<string> conditions, List<(string, object?)> args)
+    private static void RestrictToCashier(long? cashier, List<string> conditions, List<(string, object?)> args)
     {
         if (cashier.HasValue)
         {

@@ -18,6 +18,7 @@ public sealed class ReturnSlipHttpTests(CsdlKhoFixture database) : IClassFixture
             services.AddModuleReturns();
             services.AddDataProtection().UseEphemeralDataProtectionProvider();
         });
+        await database.ChayAsync("ALTER TABLE tai_khoan ALTER COLUMN id RESTART WITH 2147483648");
         using var cashier = await ListFeatureHost.Client(app, database, "TN");
         using var other = await ListFeatureHost.Client(app, database, "TN");
         using var admin = await ListFeatureHost.Client(app, database, "AD");
@@ -78,26 +79,26 @@ public sealed class ReturnSlipHttpTests(CsdlKhoFixture database) : IClassFixture
     private static async Task<string> PageAsync(HttpClient client, string path) =>
         WebUtility.HtmlDecode(await client.GetStringAsync(path));
 
-    private async Task<int> ActorAsync(HttpClient client)
+    private async Task<long> ActorAsync(HttpClient client)
     {
         string cookie = client.DefaultRequestHeaders.GetValues("Cookie").Single();
-        return Convert.ToInt32(await database.DocMotGiaTriAsync(
+        return Convert.ToInt64(await database.DocMotGiaTriAsync(
             "SELECT tai_khoan_id FROM phien_dang_nhap WHERE token_bam=@token",
             ("@token", TokenPhien.Bam(cookie[(cookie.IndexOf('=') + 1)..]))));
     }
 
-    private async Task<long> SeedAsync(int cashier, string code, string invoiceCode, bool exchange)
+    private async Task<long> SeedAsync(long cashier, string code, string invoiceCode, bool exchange)
     {
         int product = await new DuLieuTestKho(database).TaoSanPhamAsync("DT07");
         var at = new DateTime(2026, 11, 24, 14, 0, 0);
         long cart = await InsertAsync("""
             INSERT INTO gio_hang (thu_ngan_id, trang_thai, hoan_tat_luc)
-            VALUES (@cashier, 'DA_HOAN_TAT', @at); SELECT LAST_INSERT_ID();
+            VALUES (@cashier, 'DA_HOAN_TAT', @at) RETURNING id;
             """, ("@cashier", cashier), ("@at", at));
         long invoice = await InsertAsync("""
             INSERT INTO hoa_don (ma_hoa_don, gio_hang_id, thu_ngan_id, thanh_toan_luc,
                 tong_tien_hang, tong_giam, tong_thanh_toan, tien_khach_dua, tien_thua)
-            VALUES (@code, @cart, @cashier, @at, 10000, 0, 10000, 10000, 0); SELECT LAST_INSERT_ID();
+            VALUES (@code, @cart, @cashier, @at, 10000, 0, 10000, 10000, 0) RETURNING id;
             """, ("@code", invoiceCode), ("@cart", cart), ("@cashier", cashier), ("@at", at));
         await database.ChayAsync("""
             INSERT INTO ct_hoa_don (hoa_don_id, san_pham_id, ten_san_pham, don_vi_tinh, so_luong, don_gia, gia_von)
@@ -107,11 +108,11 @@ public sealed class ReturnSlipHttpTests(CsdlKhoFixture database) : IClassFixture
             INSERT INTO phieu_doi_tra (ma_phieu, loai, hoa_don_goc_id, chinh_sach_id, trang_thai,
                 can_duyet_danh_muc, gia_tri_hang_tra, tien_hoan, tien_thu_them, thu_ngan_id, ngay_lap, hoan_tat_luc)
             VALUES (@code, @kind, @invoice, (SELECT MIN(id) FROM chinh_sach_doi_tra), @status,
-                @exception, 10000, @refund, @cash, @cashier, @at, @done); SELECT LAST_INSERT_ID();
+                @exception, 10000, @refund, @cash, @cashier, @at, CASE WHEN @exception THEN NULL ELSE @at END) RETURNING id;
             """, ("@code", code), ("@kind", exchange ? "DOI_HANG" : "TRA_HANG"), ("@invoice", invoice),
             ("@status", exchange ? "CHO_DUYET" : "HOAN_TAT"), ("@exception", exchange),
             ("@refund", exchange ? 0 : 10000), ("@cash", exchange ? 5000 : 0), ("@cashier", cashier),
-            ("@at", at), ("@done", exchange ? null : at));
+            ("@at", at));
         await database.ChayAsync("""
             INSERT INTO ct_phieu_doi_tra (phieu_doi_tra_id, san_pham_id, hoa_don_id, so_luong,
                 don_gia_thuc_tra, ly_do, cach_xu_ly, ngoai_le, gia_von)

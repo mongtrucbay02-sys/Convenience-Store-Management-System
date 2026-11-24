@@ -13,7 +13,7 @@ namespace ConvenienceStore.Web.Tests.HaTang;
 // Real production session authentication; only domain dependencies may be replaced.
 public static class ListFeatureHost
 {
-    public static async Task<WebApplication> Start(CsdlMySqlTam database, Action<IServiceCollection> register)
+    public static async Task<WebApplication> Start(CsdlPostgreSqlTam database, Action<IServiceCollection> register)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions {
             ApplicationName = typeof(ConvenienceStore.Web.Data.CuaHangDbContext).Assembly.GetName().Name,
@@ -39,7 +39,7 @@ public static class ListFeatureHost
         return app;
     }
 
-    public static async Task<HttpClient> Client(WebApplication app, CsdlMySqlTam database, string? actor)
+    public static async Task<HttpClient> Client(WebApplication app, CsdlPostgreSqlTam database, string? actor)
     {
         var client = new HttpClient(new HttpClientHandler { UseCookies = false, AllowAutoRedirect = false }) {
             BaseAddress = new Uri(app.Services.GetRequiredService<IServer>()
@@ -52,9 +52,9 @@ public static class ListFeatureHost
         await database.ChayAsync("""
             INSERT INTO tai_khoan (ten_dang_nhap,mat_khau_bam,ho_ten,vai_tro_id,bat_buoc_doi_mk,trang_thai,ly_do_khoa)
             SELECT @name,'unused','HTTP feature',id,@forced,@status,
-                IF(@status='DA_KHOA','Test lock',NULL) FROM vai_tro WHERE ma=@role;
-            INSERT INTO phien_dang_nhap (tai_khoan_id,token_bam,hoat_dong_cuoi,huy_luc)
-            SELECT id,@token,IF(@expired,NOW()-INTERVAL 1 HOUR,NOW()),IF(@revoked,NOW(),NULL)
+                (CASE WHEN @status='DA_KHOA' THEN 'Test lock' ELSE NULL END) FROM vai_tro WHERE ma=@role;
+            INSERT INTO phien_dang_nhap (tai_khoan_id,token_bam,hoat_dong_cuoi,huy_luc,het_han_luc,ngay_tao)
+            SELECT id,@token,(CASE WHEN @expired THEN NOW()-INTERVAL '1 hour' ELSE NOW() END),(CASE WHEN @revoked THEN NOW() ELSE NULL END),(CASE WHEN @expired THEN NOW()-INTERVAL '1 hour' ELSE NOW()+INTERVAL '30 minutes' END),(CASE WHEN @expired THEN NOW()-INTERVAL '2 hours' ELSE NOW() END)
             FROM tai_khoan WHERE ten_dang_nhap=@name;
             """, ("@name", name), ("@role", role), ("@forced", actor == "FORCED"),
             ("@status", actor == "LOCKED" ? "DA_KHOA" : "HOAT_DONG"),

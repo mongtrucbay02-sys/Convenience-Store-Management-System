@@ -20,7 +20,7 @@ public sealed class Sp01ProductUnitTests
         var page = await service.ListAsync(new() { Size = 1000 }, role, cancellation.Token);
         Assert.Equal(activeOnly, repository.ActiveOnly); Assert.Equal(100, repository.Query!.Size);
         Assert.Equal(cancellation.Token, repository.Token); Assert.Equal(cancellation.Token, inventory.Token);
-        Assert.Equal(1, inventory.Calls); Assert.Equal(new[] { 1, 2 }, inventory.Ids);
+        Assert.Equal(1, inventory.Calls); Assert.Equal(new long[] { 1, 2 }, inventory.Ids);
         Assert.Equal(7, page.Items[0].TonKho); Assert.Equal(0, page.Items[1].TonKho);
         Assert.Equal(cost ? 8000m : null, page.Items[0].GiaVon); Assert.Null(page.Items[1].GiaVon);
     }
@@ -53,11 +53,11 @@ public sealed class Sp01ProductUnitTests
 
     private sealed class FakeInventory : IDichVuKho
     {
-        public int Calls; public int[] Ids = []; public CancellationToken Token;
-        public Task<IReadOnlyList<TonKhoHienTai>> LayTonKhoAsync(IReadOnlyCollection<int> ids, CancellationToken ct = default)
+        public int Calls; public long[] Ids = []; public CancellationToken Token;
+        public Task<IReadOnlyList<TonKhoHienTai>> LayTonKhoAsync(IReadOnlyCollection<long> ids, CancellationToken ct = default)
         { Calls++; Ids = ids.ToArray(); Token = ct; return Task.FromResult<IReadOnlyList<TonKhoHienTai>>([new(1, 7, 8000, 5)]); }
         public Task<KetQuaBienDong> GhiNhanBienDongAsync(YeuCauBienDong input, CancellationToken ct = default) => throw new NotSupportedException();
-        public Task KhoiTaoTonKhoAsync(int id, int threshold = 5, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task KhoiTaoTonKhoAsync(long id, int threshold = 5, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<int> DemSanPhamDuoiNguongAsync(CancellationToken ct = default) => throw new NotSupportedException();
     }
     [Theory]

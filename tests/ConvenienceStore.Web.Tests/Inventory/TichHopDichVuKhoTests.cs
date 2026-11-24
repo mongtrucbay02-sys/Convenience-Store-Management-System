@@ -156,7 +156,7 @@ public sealed class TichHopDichVuKhoTests(CsdlKhoFixture csdl)
         await csdl.ChayAsync(
             """
             INSERT INTO phieu_nhap (ma_phieu, nha_cung_cap_id, ngay_nhap, nguoi_lap_id)
-            VALUES (@ma, (SELECT id FROM nha_cung_cap WHERE ma = @ncc), CURDATE(), @nguoi)
+            VALUES (@ma, (SELECT id FROM nha_cung_cap WHERE ma = @ncc), CURRENT_DATE, @nguoi)
             """,
             ("@ma", maPhieu), ("@ncc", maNcc), ("@nguoi", csdl.TaiKhoanKhoId));
         var phieuId = Convert.ToInt32(await csdl.DocMotGiaTriAsync(
@@ -178,14 +178,13 @@ public sealed class TichHopDichVuKhoTests(CsdlKhoFixture csdl)
             "WHERE thu_ngan_id = @tn AND trang_thai = 'DANG_BAN'",
             default, ("@tn", csdl.TaiKhoanThuNganId));
         var gioId = Convert.ToInt32(await db.DocMotGiaTriAsync(
-            "INSERT INTO gio_hang (thu_ngan_id) VALUES (@tn); SELECT LAST_INSERT_ID();",
+            "INSERT INTO gio_hang (thu_ngan_id) VALUES (@tn) RETURNING id;",
             default, ("@tn", csdl.TaiKhoanThuNganId)));
         var hoaDonId = Convert.ToInt32(await db.DocMotGiaTriAsync(
             """
             INSERT INTO hoa_don (ma_hoa_don, gio_hang_id, thu_ngan_id, thanh_toan_luc, tong_tien_hang, tong_thanh_toan,
                                  tien_khach_dua, tien_thua)
-            VALUES (@ma, @gio, @tn, NOW(), @tong, @tong, @tong, 0);
-            SELECT LAST_INSERT_ID();
+            VALUES (@ma, @gio, @tn, NOW(), @tong, @tong, @tong, 0) RETURNING id;
             """,
             default, ("@ma", maHoaDon), ("@gio", gioId), ("@tn", csdl.TaiKhoanThuNganId), ("@tong", tongTien)));
         return (gioId, hoaDonId);

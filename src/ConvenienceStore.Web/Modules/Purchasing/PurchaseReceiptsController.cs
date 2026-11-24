@@ -1,6 +1,7 @@
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Auth.Security;
 using ConvenienceStore.Web.Modules.Inventory.Services;
+using ConvenienceStore.Web.Shared.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,17 +15,32 @@ public sealed class PurchaseReceiptsController(CuaHangDbContext db, PurchaseRece
 {
     [HttpGet("")]
     [Authorize(Policy = MaQuyen.PhieuNhapXem)]
-    public async Task<IActionResult> Index(string? q, string? status, int page = 1, CancellationToken ct = default)
+    public async Task<IActionResult> Index(string? q, string? status, int page = 1, CancellationToken ct = default,
+        long? supplierId = null, DateOnly? from = null, DateOnly? to = null)
     {
         if (!ModelState.IsValid || page is < 1 or > 100000) return BadRequest();
+        status = string.IsNullOrWhiteSpace(status) ? null : status.Trim();
+        if (supplierId is <= 0 || (from.HasValue && to.HasValue && from > to)
+            || (status is not null and not ("NHAP" or "DA_NHAP_KHO" or "DA_HUY"))) return BadRequest();
         var term = q?.Trim();
         var query = db.PhieuNhaps.AsNoTracking().AsQueryable();
         if (!string.IsNullOrEmpty(term))
-            query = query.Where(row => row.MaPhieu.Contains(term) || row.NhaCungCap.Ten.Contains(term));
+        {
+            var folded=VietnameseSearch.Fold(term);
+            query = query.Where(row => VietnameseSearch.Fold(row.MaPhieu).Contains(folded)
+                || VietnameseSearch.Fold(row.NhaCungCap.Ten).Contains(folded));
+        }
+        if (supplierId.HasValue) query=query.Where(row=>row.NhaCungCapId==supplierId.Value);
+        if (from.HasValue) query=query.Where(row=>row.NgayNhap>=from.Value);
+        if (to.HasValue) query=query.Where(row=>row.NgayNhap<=to.Value);
         if (status is "NHAP" or "DA_NHAP_KHO" or "DA_HUY")
             query = query.Where(row => row.TrangThai == status);
         var rows = await query.Include(row => row.NhaCungCap).Include(row => row.NguoiLap)
-            .OrderByDescending(row => row.Id).Skip((page - 1) * 50).Take(51).ToListAsync(ct);
+            .OrderByDescending(row => row.NgayNhap).ThenByDescending(row => row.Id).Skip((page - 1) * 50).Take(51).ToListAsync(ct);
+        ViewBag.SupplierId = supplierId;
+        ViewBag.From = from?.ToString("yyyy-MM-dd",System.Globalization.CultureInfo.InvariantCulture);
+        ViewBag.To = to?.ToString("yyyy-MM-dd",System.Globalization.CultureInfo.InvariantCulture);
+        ViewBag.Suppliers = await db.NhaCungCaps.AsNoTracking().OrderBy(row=>row.Ten).ThenBy(row=>row.Id).ToListAsync(ct);
         ViewBag.Term = term;
         ViewBag.Status = status;
         ViewBag.Page = page;

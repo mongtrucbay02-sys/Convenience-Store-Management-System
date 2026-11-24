@@ -1,3 +1,7 @@
+Implementation update 2026-11-24: the integration branch now uses PostgreSQL/Npgsql only; the dual-provider transition described below is historical. PostgreSQL baseline/snapshot, role-specific RLS and invoker views are tracked in the repository. The existing price ceiling remains a business rule; no broader price policy or SRS approval is claimed. See [current migration contract](../db/POSTGRESQL-MIGRATIONS.md) and [integration evidence](../06-testing/test-reports/2026-11-24-postgresql-integration.md).
+
+---
+
 # Bổ sung kỹ thuật SRS — PostgreSQL / Supabase, 23/11/2026
 
 Trạng thái: đã hiện thực/kiểm thử cục bộ; chờ nhóm duyệt cập nhật SRS/ADR. Căn cứ: nhóm yêu cầu chuyển từ MySQL/Aiven sang PostgreSQL 17/Supabase và bản catalog 31 bảng do nhóm cung cấp. Không tự gắn trạng thái Approved cho ADR-003 hay thay thế bộ đặc tả nghiệp vụ gốc.

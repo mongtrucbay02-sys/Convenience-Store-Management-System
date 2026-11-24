@@ -32,8 +32,8 @@ public sealed class DuLieuTestKho(CsdlKhoFixture csdl)
             VALUES (@ma, @ten, @dm, 'Cái', @nguoi)
             """,
             ("@ma", ma), ("@ten", "Sản phẩm " + ma), ("@dm", csdl.DanhMucId), ("@nguoi", csdl.TaiKhoanKhoId));
-        await lenh.ExecuteNonQueryAsync();
-        return checked((int)lenh.LastInsertedId);
+        lenh.CommandText += " RETURNING id";
+        return Convert.ToInt32(await lenh.ExecuteScalarAsync());
     }
 
     /// <summary>Mã chứng từ giả không trùng, ví dụ <c>PN-TEST-0001</c> (the_kho không có khóa ngoại tới chứng từ).</summary>
@@ -61,7 +61,7 @@ public sealed class DuLieuTestKho(CsdlKhoFixture csdl)
     public async Task<int> DemTheKhoAsync(int sanPhamId, string? loaiBienDong = null)
     {
         var kq = await csdl.DocMotGiaTriAsync(
-            "SELECT COUNT(*) FROM the_kho WHERE san_pham_id = @sp AND (@loai IS NULL OR loai_bien_dong = @loai)",
+            "SELECT COUNT(*) FROM the_kho WHERE san_pham_id = @sp AND (CAST(@loai AS text) IS NULL OR loai_bien_dong = @loai)",
             ("@sp", sanPhamId), ("@loai", loaiBienDong));
         return Convert.ToInt32(kq);
     }

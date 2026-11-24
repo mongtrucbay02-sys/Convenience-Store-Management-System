@@ -67,7 +67,7 @@ public sealed class CustomerDatabaseTests(CsdlKhoFixture fixture)
         var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string,string?> { ["ConnectionStrings:CuaHang"] = fixture.ChuoiKetNoi }).Build();
         var cart = new ConvenienceStore.Web.Services.Pos.PosCartService(new Microsoft.AspNetCore.Http.HttpContextAccessor { HttpContext = http },
-            new ConvenienceStore.Web.Services.Pos.MySqlPosCatalog(config));
+            new ConvenienceStore.Web.Services.Pos.PostgreSqlPosCatalog(config));
         await cart.GetCartAsync();
         int product = await new DuLieuTestKho(fixture).TaoSanPhamAsync("POS03");
         await fixture.ChayAsync("""
@@ -78,7 +78,7 @@ public sealed class CustomerDatabaseTests(CsdlKhoFixture fixture)
         await fixture.ChayAsync("""
             INSERT INTO chuong_trinh_khuyen_mai
             (ma,ten,loai_giam,gia_tri,bat_dau_luc,ket_thuc_luc,trang_thai,chi_thanh_vien,nguoi_tao_id)
-            VALUES (@ma,'Thành viên','SO_TIEN',1000,NOW()-INTERVAL 1 DAY,NOW()+INTERVAL 1 DAY,'DA_KICH_HOAT',TRUE,@a)
+            VALUES (@ma,'Thành viên','SO_TIEN',1000,NOW()-INTERVAL '1 day',NOW()+INTERVAL '1 day','DA_KICH_HOAT',TRUE,@a)
             """, ("@ma", code), ("@a", fixture.TaiKhoanAdminId));
         await fixture.ChayAsync("INSERT INTO khuyen_mai_san_pham SELECT id,@p FROM chuong_trinh_khuyen_mai WHERE ma=@ma", ("@p", product), ("@ma", code));
         Assert.Equal(0, (await cart.GetCartAsync()).Discount);

@@ -10,7 +10,7 @@ Toàn bộ tài liệu dự án nằm trong [`docs/`](docs/README.md), tổ ch�
 Quy trình thay đổi yêu cầu và danh sách người dự phòng: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Chạy thử
-Cấu hình MySQL cho Báo cáo và Khuyến mãi: [`docs/05-implementation/setup/mysql-reports-setup.md`](docs/05-implementation/setup/mysql-reports-setup.md).
+Runtime: .NET 10 MVC/Razor, EF Core/Npgsql, PostgreSQL 17. See [configuration and migrations](docs/db/POSTGRESQL-MIGRATIONS.md). Tests require an isolated loopback PostgreSQL 17 connection via `ConnectionStrings__CuaHangPostgreSqlTest`. Never use shared Supabase for write tests.
 
 ```bash
 dotnet run --project src/ConvenienceStore.Web

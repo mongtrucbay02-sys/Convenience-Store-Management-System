@@ -1,10 +1,10 @@
-﻿using ConvenienceStore.Web.Models.Pos;
+using ConvenienceStore.Web.Models.Pos;
 namespace ConvenienceStore.Web.Services.Pos;
 
 public interface IPosCatalog
 {
     IReadOnlyList<PosProduct> Search(string? keyword);
-    PosProduct? Find(int id);
+    PosProduct? Find(long id);
 }
 // Dữ liệu mẫu chỉ phục vụ demo tuần 4. Thay bằng repository SQL khi tích hợp.
 public sealed class DemoPosCatalog : IPosCatalog
@@ -22,5 +22,5 @@ public sealed class DemoPosCatalog : IPosCatalog
         string.IsNullOrWhiteSpace(keyword) ? Products : Products.Where(x =>
             x.Name.Contains(keyword.Trim(), StringComparison.OrdinalIgnoreCase) ||
             x.Code.Contains(keyword.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
-    public PosProduct? Find(int id) => Products.FirstOrDefault(x => x.Id == id);
+    public PosProduct? Find(long id) => Products.FirstOrDefault(x => x.Id == id);
 }

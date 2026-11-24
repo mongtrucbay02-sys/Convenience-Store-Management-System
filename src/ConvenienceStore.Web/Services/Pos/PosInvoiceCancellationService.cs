@@ -27,26 +27,26 @@ public sealed class PosInvoiceCancellationService(
 {
     // Thông tin hóa đơn lấy từ bảng hoa_don.
     private sealed record InvoiceRow(
-        uint Id,
+        long Id,
         string Code,
         string Status,
-        uint? CustomerId,
-        uint PointsEarned,
-        ulong CashReceived,
-        ulong Change);
+        long? CustomerId,
+        long PointsEarned,
+        long CashReceived,
+        long Change);
 
     private sealed record InvoiceLine(
-        int ProductId,
+        long ProductId,
         int Quantity,
         decimal Cost);
 
     public sealed record CancellationResult(
-        uint InvoiceId,
+        long InvoiceId,
         string InvoiceCode,
-        ulong CashRefund,
-        uint PointsEarned,
-        uint PointsReversed,
-        uint PointsNotReversed,
+        long CashRefund,
+        long PointsEarned,
+        long PointsReversed,
+        long PointsNotReversed,
         DateTime CancelledAt,
         string Reason);
 
@@ -57,7 +57,7 @@ public sealed class PosInvoiceCancellationService(
         CancellationToken ct = default)
     {
         // 1. Kiểm tra dữ liệu đầu vào.
-        if (invoiceId <= 0 || invoiceId > uint.MaxValue)
+        if (invoiceId <= 0)
         {
             throw LoiNghiepVu.DuLieuKhongHopLe(
                 "invoiceId",
@@ -73,7 +73,7 @@ public sealed class PosInvoiceCancellationService(
                 "Lý do hủy bắt buộc, tối đa 255 ký tự.");
         }
 
-        int actor = GetActorId(user);
+        long actor = GetActorId(user);
 
         // 2. Mở transaction.
         await using var tx =
@@ -121,17 +121,17 @@ public sealed class PosInvoiceCancellationService(
             FOR UPDATE
             """,
             r => new InvoiceRow(
-                Convert.ToUInt32(r[0]),
+                Convert.ToInt64(r[0]),
                 r.GetString(1),
                 r.GetString(2),
                 r.IsDBNull(3)
                     ? null
-                    : Convert.ToUInt32(r[3]),
+                    : Convert.ToInt64(r[3]),
                 r.IsDBNull(4)
                     ? 0
-                    : Convert.ToUInt32(r[4]),
-                Convert.ToUInt64(r[5]),
-                Convert.ToUInt64(r[6])),
+                    : Convert.ToInt64(r[4]),
+                Convert.ToInt64(r[5]),
+                Convert.ToInt64(r[6])),
             ct,
             ("@id", invoiceId));
 
@@ -191,7 +191,7 @@ public sealed class PosInvoiceCancellationService(
             ORDER BY san_pham_id
             """,
             r => new InvoiceLine(
-                Convert.ToInt32(r[0]),
+                Convert.ToInt64(r[0]),
                 Convert.ToInt32(r[1]),
                 Convert.ToDecimal(r[2])),
             ct,
@@ -222,7 +222,7 @@ public sealed class PosInvoiceCancellationService(
                 "Tiền khách đưa và tiền thừa không hợp lệ.");
         }
 
-        ulong cashRefund =
+        long cashRefund =
             invoice.CashReceived - invoice.Change;
 
 
@@ -231,7 +231,7 @@ public sealed class PosInvoiceCancellationService(
         await stock.GhiNhanBienDongAsync(
             new YeuCauBienDong(
                 LoaiBienDong.HUY_HOA_DON,
-                checked((int)invoice.Id),
+                invoice.Id,
                 invoice.Code,
                 actor,
                 lines.Select(x =>
@@ -243,8 +243,8 @@ public sealed class PosInvoiceCancellationService(
             ct);
 
         // 9. E2: Thu hồi điểm tích lũy.
-        uint pointsReversed = 0;
-        uint pointsNotReversed = 0;
+        long pointsReversed = 0;
+        long pointsNotReversed = 0;
 
         if (invoice.CustomerId.HasValue &&
             invoice.PointsEarned > 0)
@@ -267,7 +267,7 @@ public sealed class PosInvoiceCancellationService(
                     "không thể thu hồi điểm an toàn.");
             }
 
-            uint balance = Convert.ToUInt32(current);
+            long balance = Convert.ToInt64(current);
 
             // Chỉ thu hồi số điểm khách đang có.
             // Không để số dư điểm bị âm.
@@ -292,7 +292,7 @@ public sealed class PosInvoiceCancellationService(
                 await CustomerPoints.ChangeAsync(
                     db,
                     invoice.CustomerId.Value,
-                    -checked((int)pointsReversed),
+                    -pointsReversed,
                     "THU_HOI_HUY_HOA_DON",
                     actor,
                     invoice.Id,
@@ -381,13 +381,13 @@ public sealed class PosInvoiceCancellationService(
             reason);
     }
 
-    private static int GetActorId(ClaimsPrincipal user)
+    private static long GetActorId(ClaimsPrincipal user)
     {
         var raw =
             user.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? user.FindFirstValue("sub");
 
-        if (!int.TryParse(raw, out int id) || id <= 0)
+        if (!long.TryParse(raw, out long id) || id <= 0)
         {
             throw new LoiNghiepVu(
                 "KHONG_DU_QUYEN",

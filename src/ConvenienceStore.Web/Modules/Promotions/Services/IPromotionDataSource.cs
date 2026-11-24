@@ -17,10 +17,11 @@ public sealed record PromotionRecord(
     bool MembersOnly,
     PromotionStatus Status,
     int UsageCount,
-    string? ImageUrl = null);
+    string? ImageUrl = null,
+    long Version = 1);
 
 /// <summary>
-/// Hợp đồng lưu khuyến mãi. Runtime dùng MySqlPromotionDataSource và CuaHangDbContext;
+/// Hợp đồng lưu khuyến mãi. Runtime dùng PostgreSqlPromotionDataSource và CuaHangDbContext;
 /// bản trong bộ nhớ chỉ dùng cho kiểm thử.
 /// </summary>
 public interface IPromotionDataSource

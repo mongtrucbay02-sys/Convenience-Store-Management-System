@@ -54,7 +54,7 @@ public sealed class ReturnSlipsController(ReturnSlipLookupService lookup) : Cont
         return View(Views + (print ? "SlipPrint.cshtml" : "SlipDetails.cshtml"), result);
     }
 
-    private bool TryGetScope(out int? cashier)
+    private bool TryGetScope(out long? cashier)
     {
         cashier = null;
         if (User.IsInRole(BangQuyen.Admin) && User.HasClaim(ThongTinXacThuc.ClaimQuyen, MaQuyen.DoiTraDuyetCauHinh))

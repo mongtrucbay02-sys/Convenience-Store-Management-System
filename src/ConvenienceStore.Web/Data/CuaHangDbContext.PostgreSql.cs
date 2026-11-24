@@ -89,7 +89,7 @@ public partial class CuaHangDbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("ngay_tao");
             entity.Property(e => e.NguoiTaoId).HasColumnName("nguoi_tao_id");
-            entity.Property(e => e.PhienBan)
+            entity.Property(e => e.PhienBan).IsConcurrencyToken()
                 .HasDefaultValue(1L)
                 .HasColumnName("phien_ban");
             entity.Property(e => e.Ten)

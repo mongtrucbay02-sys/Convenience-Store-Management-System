@@ -1,6 +1,7 @@
 using System.Net;
 using ConvenienceStore.Web.Modules.Inventory;
 using ConvenienceStore.Web.Modules.Returns;
+using ConvenienceStore.Web.Modules.Returns.Services;
 using ConvenienceStore.Web.Services.Pos;
 using ConvenienceStore.Web.Tests.HaTang;
 using Microsoft.AspNetCore.Builder;
@@ -23,6 +24,7 @@ public sealed class PosPageAuthorizationTests(CsdlMySqlTam database) : IClassFix
         services.AddScoped<PosHeldOrderService>();
         services.AddScoped<PosPaymentService>();
         services.AddScoped<PosCheckoutService>();
+        services.AddScoped<CashLedgerService>();
         services.AddScoped<IPosCheckoutStore, MySqlPosCheckoutStore>();
         services.AddScoped<PosInvoiceService>();
         services.AddScoped<IPosInvoiceStore, MySqlPosInvoiceStore>();

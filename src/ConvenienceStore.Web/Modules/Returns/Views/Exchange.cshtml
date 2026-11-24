@@ -1,26 +1,223 @@
+@model ConvenienceStore.Web.Modules.Returns.Models.ExchangePage
 @using ConvenienceStore.Web.Modules.Returns.Models
-@model ExchangePage
-@{ Layout="_AdminLayout"; ViewData["Title"]="Đổi hàng — DT-03"; }
-<link rel="stylesheet" href="~/css/return-order.css" asp-append-version="true" />
-<section class="hero"><div><p class="eyebrow">SMART MART / ĐỔI TRẢ</p><h1>Đổi hàng — DT-03</h1><p>Chọn hàng trả và dùng giỏ POS hiện tại làm hàng mới.</p></div></section>
-@if (Model.Error is { } error) { <div class="ret-alert ret-danger" role="alert">@error</div> }
-<form method="post" asp-controller="ReturnOrders" asp-action="ExchangePreview">
-    @Html.AntiForgeryToken()
-    <input type="hidden" name="InvoiceId" value="@Model.Request.InvoiceId" />
-    <section class="panel"><h2>Hàng trả từ hóa đơn @Model.Invoice?.InvoiceCode</h2>
-        <p class="muted">Chọn số lượng lớn hơn 0 ở đúng dòng sản phẩm. Số lượng tối đa là số hàng còn được trả.</p>
-        @for (var i=0; i<(Model.Invoice?.Lines.Count ?? 0); i++)
-        { var product=Model.Invoice!.Lines[i]; var line=Model.Request.Lines.FirstOrDefault(x=>x.ProductId==product.ProductId) ?? new ExchangeLineRequest { ProductId=product.ProductId };
-          <div class="ret-table-wrap"><table class="ret-table"><tbody><tr>
-            <td><strong>@product.Name</strong><small>ProductId: @product.ProductId · Giá thực trả: @product.UnitPaid.ToString("N0") đ · Còn được trả: @product.Remaining</small><input name="Lines[@i].ProductId" type="hidden" value="@product.ProductId" /></td>
-            <td><label>Số lượng trả</label><input name="Lines[@i].Quantity" type="number" min="0" max="@product.Remaining" value="@line.Quantity" /></td>
-            <td><label>Lý do</label><select name="Lines[@i].Reason"><option value="LOI_SAN_PHAM">Lỗi sản phẩm</option><option value="HET_HAN">Hết hạn</option><option value="KHONG_DUNG_NHU_CAU">Không đúng nhu cầu</option><option value="KHAC">Khác</option></select></td>
-            <td><label>Tình trạng</label><input name="Lines[@i].Condition" value="@line.Condition" maxlength="255" /></td>
-          </tr></tbody></table></div> }
-        @if (Model.Invoice?.Lines.Count > 0) { <button type="submit">Tính chênh lệch</button> } else { <div class="ret-alert ret-danger">Hóa đơn không có dòng hàng hợp lệ.</div> } <a href="/Returns">Quay lại tra cứu</a>
-    </section>
-</form>
-@if (Model.Preview is { } preview)
-{ <section class="panel"><h2>Kết quả tính đổi</h2><p>Hàng trả: <strong>@preview.ReturnValue.ToString("N0") đ</strong></p><p>Hàng mới trong giỏ POS: <strong>@preview.NewOrderTotal.ToString("N0") đ</strong></p><p>Chênh lệch: <strong>@Math.Max(0,preview.Difference).ToString("N0") đ</strong></p>
-  @if(preview.CanComplete){<form method="post" asp-controller="ReturnOrders" asp-action="ExchangeComplete">@Html.AntiForgeryToken()<input type="hidden" name="InvoiceId" value="@Model.Request.InvoiceId" />@for(var i=0;i<Model.Request.Lines.Count;i++){var line=Model.Request.Lines[i];<input type="hidden" name="Lines[@i].ProductId" value="@line.ProductId"/><input type="hidden" name="Lines[@i].Quantity" value="@line.Quantity"/><input type="hidden" name="Lines[@i].Reason" value="@line.Reason"/><input type="hidden" name="Lines[@i].Condition" value="@line.Condition"/>}<label>Tiền khách đưa thêm <input name="CashReceived" type="number" min="@preview.Difference" value="@preview.Difference" /></label><button type="submit">Hoàn tất đổi hàng</button></form>}else{<div class="ret-alert ret-warning">@preview.Error</div>}
-  </section> }
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Đổi hàng DT-03";
+}
+<style>
+    .dt3-wrap {
+        max-width: 1200px;
+        margin: auto
+    }
+
+    .dt3-card {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        padding: 18px;
+        margin: 16px 0
+    }
+
+    .dt3-table {
+        width: 100%;
+        border-collapse: collapse
+    }
+
+        .dt3-table th, .dt3-table td {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 9px;
+            vertical-align: middle
+        }
+
+        .dt3-table input, .dt3-table select {
+            max-width: 170px
+        }
+
+    .dt3-total {
+        font-size: 1.15rem;
+        font-weight: 700
+    }
+
+    .dt3-warn {
+        padding: 12px;
+        background: #fff3cd;
+        border: 1px solid #ffecb5;
+        border-radius: 8px
+    }
+
+    .dt3-ok {
+        padding: 12px;
+        background: #d1e7dd;
+        border: 1px solid #badbcc;
+        border-radius: 8px
+    }
+</style>
+<div class="dt3-wrap">
+    @if (Model.Receipt is ExchangeReceipt receipt)
+    {
+        <h1>Phiếu đổi hàng — DT-03</h1>
+        <div class="dt3-card">
+            <h2>@receipt.Code</h2>
+            <p><strong>Trạng thái:</strong> @receipt.Status</p>
+            <p><strong>Hóa đơn gốc:</strong> @receipt.OriginalInvoiceCode</p>
+            @if (receipt.Status == "CHO_DUYET")
+            {
+                <div class="dt3-warn">Phiếu đã được gửi chờ Admin duyệt. Chưa tạo hóa đơn mới, chưa thu tiền, chưa thay đổi tồn kho hoặc điểm. Luồng hoàn tất sau duyệt thuộc DT-06 và hiện chưa có trong project.</div>
+            }
+            else
+            {
+                <p><strong>Hóa đơn mới:</strong> @receipt.NewInvoiceCode</p>
+                <p><strong>Giá trị hàng trả:</strong> @receipt.ReturnValue.ToString("N0") đ</p>
+                <p><strong>Giá trị hóa đơn mới:</strong> @receipt.NewInvoiceTotal.ToString("N0") đ</p>
+                <p><strong>Trừ hàng đổi:</strong> @receipt.ExchangeCredit.ToString("N0") đ</p>
+                <p><strong>Khách trả thêm:</strong> @receipt.CashDue.ToString("N0") đ</p>
+                <p><strong>Tiền khách đưa:</strong> @receipt.CashReceived.ToString("N0") đ</p>
+                <p><strong>Tiền thừa:</strong> @receipt.Change.ToString("N0") đ</p>
+                <p><strong>Điểm thu hồi:</strong> @receipt.PointsRecovered · <strong>Điểm tích mới:</strong> @receipt.PointsEarned</p>
+            }
+            <h3>Hàng trả</h3>
+            <table class="dt3-table">
+                <thead><tr><th>Sản phẩm</th><th>SL</th><th>Giá thực trả</th><th>Lý do</th><th>Xử lý</th></tr></thead>
+                <tbody>
+                    @foreach (var l in receipt.ReturnLines)
+                    {
+                        <tr><td>@l.Name</td><td>@l.Quantity</td><td>@l.UnitPaid.ToString("N0") đ</td><td>@l.Reason</td><td>@l.Handling</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <a class="btn btn-primary" href="/Returns">Quay lại quản lý đổi trả</a>
+    }
+    else if (Model.Invoice is ReturnForm invoice)
+    {
+        <h1>Đổi hàng — DT-03</h1>
+        <p>Hóa đơn gốc: <strong>@invoice.InvoiceCode</strong> · Ngày mua: @invoice.PurchasedAt.ToString("dd/MM/yyyy HH:mm")</p>
+        @if (!string.IsNullOrWhiteSpace(Model.Error))
+        {
+            <div class="alert alert-danger">@Model.Error</div>
+        }
+        <div class="dt3-card">
+            <h2>Chọn hàng mới trong POS</h2>
+            <p>DT-03 sử dụng giỏ POS đang bán của thu ngân. Hãy mở POS, thêm hàng khách muốn đổi, rồi bấm Quay lại đổi hàng để tính chênh lệch.</p>
+            <a class="btn btn-outline-primary" href="@Url.Action("Index", "Pos", new { exchangeInvoiceId = invoice.InvoiceId })">Mở POS để chọn hàng mới</a>
+            @if (Model.NewItems.Any())
+            {
+                <h3 class="mt-3">Giỏ hàng mới hiện tại</h3>
+                <table class="dt3-table">
+                    <thead><tr><th>Sản phẩm</th><th>SL</th><th>Giá</th><th>Giảm</th><th>Thành tiền</th></tr></thead>
+                    <tbody>
+                        @foreach (var item in Model.NewItems)
+                        {
+                            <tr><td>@item.Name</td><td>@item.Quantity</td><td>@item.UnitPrice.ToString("N0") đ</td><td>@item.Discount.ToString("N0") đ</td><td>@item.LineTotal.ToString("N0") đ</td></tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="dt3-total">Tổng hàng mới: @Model.NewItems.Sum(x => x.LineTotal).ToString("N0") đ</div>
+            }
+            else
+            {
+
+                <p class="text-muted">Giỏ POS hiện chưa có hàng mới.</p>
+            }
+        </div>
+        @if (Model.Preview is ExchangePreview preview)
+        {
+            <div class="dt3-card">
+                <h2>Kiểm tra chênh lệch</h2>
+                @if (preview.NeedsApproval)
+                {
+                    <div class="dt3-warn">Phiếu thuộc trường hợp cần Admin duyệt theo DT-06. Phiếu sẽ ở trạng thái CHỜ DUYỆT; hiện project chưa có luồng hoàn tất sau duyệt.</div>
+                }
+                <table class="dt3-table">
+                    <tbody>
+                        <tr><th>Giá trị hàng trả</th><td>@preview.ReturnValue.ToString("N0") đ</td></tr>
+                        <tr><th>Giá trị hàng mới</th><td>@preview.NewInvoiceTotal.ToString("N0") đ</td></tr>
+                        <tr><th>Trừ hàng đổi</th><td>@preview.ExchangeCredit.ToString("N0") đ</td></tr>
+                        <tr><th>Khách phải trả thêm</th><td class="dt3-total">@preview.CashDue.ToString("N0") đ</td></tr>
+                    </tbody>
+                </table>
+                <h3>Hàng trả được chọn</h3>
+                <table class="dt3-table">
+                    <thead><tr><th>Sản phẩm</th><th>SL</th><th>Giá thực trả</th><th>Giá trị</th><th>Xử lý</th></tr></thead>
+                    <tbody>
+                        @foreach (var l in preview.ReturnLines)
+                        {
+                            <tr><td>@l.Name</td><td>@l.Quantity</td><td>@l.UnitPaid.ToString("N0") đ</td><td>@((l.Quantity * l.UnitPaid).ToString("N0")) đ</td><td>@l.Handling</td></tr>
+                        }
+                    </tbody>
+                </table>
+                <form action="@Url.Action("ExchangeCreate", "ReturnOrders")" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Request.InvoiceId" value="@Model.Request.InvoiceId" />
+                    <input type="hidden" name="Request.ConfirmationToken" value="@preview.ConfirmationToken" />
+                    @for (int i = 0; i < Model.Request.Lines.Count; i++)
+                    {
+                        <input type="hidden" name="Request.Lines[@i].ProductId" value="@Model.Request.Lines[i].ProductId" />
+                        <input type="hidden" name="Request.Lines[@i].Quantity" value="@Model.Request.Lines[i].Quantity" />
+                        <input type="hidden" name="Request.Lines[@i].Reason" value="@Model.Request.Lines[i].Reason" />
+                        <input type="hidden" name="Request.Lines[@i].Note" value="@Model.Request.Lines[i].Note" />
+                        <input type="hidden" name="Request.Lines[@i].Condition" value="@Model.Request.Lines[i].Condition" />
+                        <input type="hidden" name="Request.Lines[@i].Handling" value="@Model.Request.Lines[i].Handling" />
+                    }
+                    @if (!preview.NeedsApproval)
+                    {
+                        @if (preview.CashDue > 0)
+                        {
+                            <label class="form-label mt-3" for="dt3-cash">Tiền mặt khách đưa</label>
+                            <input id="dt3-cash" class="form-control" type="number" min="@preview.CashDue" step="1" name="Request.CashReceived" required />
+                            <label class="form-check mt-3"><input class="form-check-input" type="checkbox" name="Request.CashConfirmed" value="true" required /> Tôi xác nhận đã nhận tiền chênh lệch của khách.</label>
+                        }
+                        else
+                        {
+                            <p class="mt-3">Không cần thu thêm tiền.</p>
+                        }
+                        <button class="btn btn-success mt-3" type="submit">Hoàn tất đổi hàng</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-warning mt-3" type="submit">Tạo phiếu chờ Admin duyệt</button>
+                    }
+                </form>
+            </div>
+        }
+        else
+        {
+            <div class="dt3-card">
+                <h2>Chọn hàng trả</h2>
+                <form action="@Url.Action("ExchangePreview", "ReturnOrders")" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Request.InvoiceId" value="@invoice.InvoiceId" />
+                    <table class="dt3-table">
+                        <thead><tr><th>Sản phẩm</th><th>Đã mua</th><th>Còn được đổi</th><th>SL đổi</th><th>Lý do</th><th>Ghi chú</th><th>Tình trạng</th><th>Xử lý</th></tr></thead>
+                        <tbody>
+                            @for (int i = 0; i < invoice.Lines.Count; i++)
+                            {
+                                var l = invoice.Lines[i];
+                                var entered = Model.Request.Lines.FirstOrDefault(x => x.ProductId == l.ProductId);
+                                <tr>
+                                    <td>
+                                        @l.Name @if(l.Forbidden){
+                                        <span class="text-danger">(không đổi trả)</span>
+                                    }
+                                </td>
+                                <td>@l.Purchased</td>
+                                <td>@l.Remaining</td>
+                                <td><input class="form-control" type="number" min="0" max="@l.Remaining" name="Request.Lines[@i].Quantity" value="@(entered?.Quantity ?? 0)" /><input type="hidden" name="Request.Lines[@i].ProductId" value="@l.ProductId" /></td>
+                                <td><select class="form-select" name="Request.Lines[@i].Reason"><option value="LOI_SAN_PHAM" selected="@(entered?.Reason == "LOI_SAN_PHAM")">Lỗi sản phẩm</option><option value="HET_HAN" selected="@(entered?.Reason == "HET_HAN")">Hết hạn</option><option value="KHONG_DUNG_NHU_CAU" selected="@(entered?.Reason == "KHONG_DUNG_NHU_CAU")">Không đúng nhu cầu</option><option value="KHAC" selected="@(entered?.Reason == "KHAC")">Khác</option></select></td>
+                                <td><input class="form-control" name="Request.Lines[@i].Note" value="@entered?.Note" maxlength="255" /></td>
+                                <td><input class="form-control" name="Request.Lines[@i].Condition" value="@(entered?.Condition ?? "Nguyên trạng")" maxlength="255" /></td>
+                                <td><select class="form-select" name="Request.Lines[@i].Handling"><option value="NHAP_LAI" selected="@(entered?.Handling == "NHAP_LAI")">Nhập lại kho</option><option value="HUY" selected="@(entered?.Handling == "HUY")">Hủy</option></select></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <button class="btn btn-primary mt-3" type="submit">Tính giá trị đổi và chênh lệch</button>
+            </form>
+        </div>
+    }
+}
+else
+{
+    <div class="alert alert-danger">Không có dữ liệu hóa đơn để đổi hàng.</div>
+}
+</div>

@@ -1,7 +1,5 @@
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Auth.Security;
-using ConvenienceStore.Web.Modules.Customers;
-using ConvenienceStore.Web.Modules.Customers.Services;
 using ConvenienceStore.Web.Modules.Inventory.Models;
 using ConvenienceStore.Web.Modules.Inventory.Services;
 using ConvenienceStore.Web.Modules.Returns.Models;
@@ -26,10 +24,10 @@ namespace ConvenienceStore.Web.Modules.Returns.Services;
 /// the exchange slip, returned stock and points recovery.
 /// </summary>
 public sealed class ExchangeService(CuaHangDbContext db, IDichVuKho stock,
-    IPosCheckoutStore checkoutStore, PosCartService posCart, TimeProvider time)
+    IPosCheckoutStore checkoutStore, PosCartService posCart, TimeProvider time, IReturnPointsGateway points)
 {
     private sealed record Header(long Id, string Code, string Status, DateTime PaidAt,
-        int? CustomerId, int PointsEarned, long TotalPaid);
+        int? CustomerId);
     private sealed record Policy(int Id, int Days, long Threshold);
     private sealed record OriginalLine(int Id, string Name, string Unit, int Purchased,
         long Price, long Discount, decimal Cost, bool Forbidden, long Reserved);
@@ -59,10 +57,10 @@ public sealed class ExchangeService(CuaHangDbContext db, IDichVuKho stock,
     {
         if (id <= 0) throw LoiNghiepVu.DuLieuKhongHopLe("invoiceId", "Mã hóa đơn không hợp lệ.");
         var h = await db.DocMotDongAsync("""
-            SELECT id,ma_hoa_don,trang_thai,thanh_toan_luc,khach_hang_id,diem_cong,tong_thanh_toan
+            SELECT id,ma_hoa_don,trang_thai,thanh_toan_luc,khach_hang_id
             FROM hoa_don WHERE id=@id FOR UPDATE
             """, r => new Header(r.SoNguyenDai(0), r.Chuoi(1), r.Chuoi(2), r.NgayGio(3),
-                r.IsDBNull(4) ? null : r.SoNguyen(4), r.SoNguyen(5), r.SoNguyenDai(6)), ct, ("@id", id));
+                r.IsDBNull(4) ? null : r.SoNguyen(4)), ct, ("@id", id));
         if (h is null) throw LoiNghiepVu.KhongTimThay("Không tìm thấy hóa đơn gốc.");
         if (h.Status != "DA_THANH_TOAN" || h.PaidAt > Now)
             throw new LoiNghiepVu("DOI_TRA_XUNG_DOT", 409, "Hóa đơn gốc không hợp lệ hoặc đã bị hủy.");
@@ -253,7 +251,6 @@ public sealed class ExchangeService(CuaHangDbContext db, IDichVuKho stock,
                 ("@price", l.UnitPaid), ("@reason", l.Reason), ("@note", l.Note), ("@condition", l.Condition),
                 ("@handling", l.Handling), ("@exception", l.Exception), ("@cost", l.Cost));
 
-        int pointsRecovered = 0;
         if (!preview.NeedsApproval && newInvoice is not null)
         {
             var restock = preview.ReturnLines.Where(l => l.Handling == "NHAP_LAI")
@@ -261,19 +258,7 @@ public sealed class ExchangeService(CuaHangDbContext db, IDichVuKho stock,
             if (restock.Count > 0)
                 await stock.GhiNhanBienDongAsync(new(LoaiBienDong.TRA_HANG, checked((int)exchangeId), code, actor, restock), ct);
 
-            if (draft.Invoice.CustomerId is int customerId && draft.Invoice.PointsEarned > 0 && preview.ReturnValue > 0)
-            {
-                // Return-earned points are reversed proportionally to the original invoice value.
-                // A full return reverses all earned points; partial returns use integer floor.
-                int recover = checked((int)Math.Min(draft.Invoice.PointsEarned,
-                    (long)draft.Invoice.PointsEarned * preview.ReturnValue / Math.Max(1, draft.Invoice.TotalPaid)));
-                if (recover > 0)
-                {
-                    await CustomerPoints.ChangeAsync(db, checked((uint)customerId), -recover, "THU_HOI_TRA_HANG", actor,
-                        checked((uint)draft.Invoice.Id), checked((uint)exchangeId), "Thu hồi điểm theo giá trị hàng đổi", ct);
-                    pointsRecovered = recover;
-                }
-            }
+            int pointsRecovered = await points.RecoverAsync(db, draft.Invoice.Id, exchangeId, actor, preview.ReturnValue, ct);
             await db.ChayAsync("UPDATE phieu_doi_tra SET diem_thu_hoi=@d WHERE id=@id", ct, ("@d", pointsRecovered), ("@id", exchangeId));
         }
         await tx.CommitAsync(ct);

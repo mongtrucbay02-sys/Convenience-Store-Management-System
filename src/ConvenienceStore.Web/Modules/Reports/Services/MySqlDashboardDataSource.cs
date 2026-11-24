@@ -36,7 +36,7 @@ public sealed class MySqlDashboardDataSource(CuaHangDbContext db) : IDashboardDa
 
         // Refunds are dated on return completion, not retroactively on the original sale date.
         var returns = await QueryAsync("""
-            SELECT h.id return_id, h.hoan_tat_luc returned_at, h.tien_hoan refund_amount
+            SELECT h.id return_id, h.hoan_tat_luc returned_at, h.gia_tri_hang_tra refund_amount
             FROM phieu_doi_tra h
             WHERE h.trang_thai = 'HOAN_TAT' AND h.hoan_tat_luc >= @from AND h.hoan_tat_luc < @to
             ORDER BY h.id

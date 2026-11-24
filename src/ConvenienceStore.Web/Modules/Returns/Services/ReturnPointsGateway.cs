@@ -23,7 +23,7 @@ public sealed class ReturnPointsGateway : IReturnPointsGateway
             throw new InvalidOperationException("Thu hồi điểm phải cùng giao dịch đổi trả.");
 
         var invoice = await db.DocMotDongAsync("""
-            SELECT khach_hang_id, diem_cong, so_tien_mot_diem, tong_thanh_toan
+            SELECT khach_hang_id, diem_cong, so_tien_mot_diem, tong_thanh_toan, tien_tru_hang_doi
             FROM hoa_don WHERE id=@id FOR UPDATE
             """,
             r => new
@@ -31,7 +31,8 @@ public sealed class ReturnPointsGateway : IReturnPointsGateway
                 Customer = r.IsDBNull(0) ? (uint?)null : Convert.ToUInt32(r[0]),
                 Earned = Convert.ToInt32(r[1]),
                 Rate = r.IsDBNull(2) ? 0u : Convert.ToUInt32(r[2]),
-                Paid = Convert.ToInt64(r[3])
+                Paid = Convert.ToInt64(r[3]),
+                ExchangeCredit = Convert.ToInt64(r[4])
             }, ct, ("@id", invoiceId));
         if (invoice is null)
             throw LoiNghiepVu.KhongTimThay("Không tìm thấy hóa đơn.");
@@ -46,7 +47,7 @@ public sealed class ReturnPointsGateway : IReturnPointsGateway
             return -Convert.ToInt32(existing);
 
         var previous = await db.DocMotDongAsync("""
-            SELECT COALESCE(SUM(p.tien_hoan),0), COALESCE(SUM(p.diem_thu_hoi),0)
+            SELECT COALESCE(SUM(p.gia_tri_hang_tra),0), COALESCE(SUM(p.diem_thu_hoi),0)
             FROM phieu_doi_tra p
             WHERE p.id<>@return AND p.trang_thai='HOAN_TAT'
                 AND p.hoa_don_goc_id=@invoice
@@ -55,7 +56,7 @@ public sealed class ReturnPointsGateway : IReturnPointsGateway
 
         var refunded = Math.Min(invoice.Paid, (decimal)(previous?.Refunded ?? 0) + refund);
         // Reverse the points the customer would no longer earn on the retained sale.
-        var retained = invoice.Paid - refunded;
+        var retained = Math.Max(0m, invoice.Paid - refunded - invoice.ExchangeCredit);
         var remainingPoints = invoice.Rate > 0
             ? decimal.Floor(retained / invoice.Rate)
             : decimal.Ceiling(retained * invoice.Earned / invoice.Paid);

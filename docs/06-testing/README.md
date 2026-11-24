@@ -13,6 +13,7 @@ Chứng minh hệ thống **làm đúng yêu cầu** ở `03` và **đúng thi�
 
 | Tài liệu | Mô tả | Trạng thái |
 |---|---|---|
+| [`test-reports/2026-11-24-supabase-smoke.md`](test-reports/2026-11-24-supabase-smoke.md) | Kiểm tra workflow Supabase chỉ đọc và các ca thiếu cấu hình/schema | PostgreSQL riêng và Supabase thật đều đọc được 34/34 đối tượng; GitHub workflow chưa chạy |
 | [`test-reports/2026-11-23-supabase-entities.md`](test-reports/2026-11-23-supabase-entities.md) | Catalog Supabase 31 bảng, SELECT chỉ đọc và hồi quy model MySQL | Ánh xạ đã kiểm tra; E2E PostgreSQL/staging chưa xác nhận |
 | [`test-reports/2026-11-23-postgresql-runtime.md`](test-reports/2026-11-23-postgresql-runtime.md) | Chuyển SQL PostgreSQL, test ghi/HTTP/publish và trạng thái Supabase/staging | 759/759 Release đạt cục bộ; CI mới/staging chưa xác nhận |
 | `test-plan.md` | Chiến lược: unit / integration / API / UI, môi trường, tiêu chí đạt | Chưa có |

@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class KhachHang
 {
-    public uint Id { get; set; }
+    public long Id { get; set; }
 
     public string? HoTen { get; set; }
 
@@ -13,19 +13,19 @@ public partial class KhachHang
 
     public string? Email { get; set; }
 
-    public DateTime? NgaySinh { get; set; }
+    public DateOnly? NgaySinh { get; set; }
 
     public string? GioiTinh { get; set; }
 
-    public uint DiemHienCo { get; set; }
+    public long DiemHienCo { get; set; }
 
     public string TrangThai { get; set; } = null!;
 
     public DateTime? XoaDuLieuLuc { get; set; }
 
-    public uint NguoiTaoId { get; set; }
+    public long NguoiTaoId { get; set; }
 
-    public uint PhienBan { get; set; }
+    public long PhienBan { get; set; }
 
     public DateTime NgayTao { get; set; }
 

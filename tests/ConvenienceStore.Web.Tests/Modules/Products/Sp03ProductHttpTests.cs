@@ -35,7 +35,7 @@ public sealed class Sp03ProductHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMy
         var code = "NEW-" + Guid.NewGuid().ToString("N")[..12];
         var input = new { ma = code, tenSanPham = " New product ", danhMucId = ids.Category, donViTinh = " Hộp ", giaBan = 10000, nguongToiThieu = 3, moTa = "<script>test</script>", tonKho = 999, nguoiTaoId = 4294967295, trangThai = "NGUNG_KINH_DOANH", giaVon = 999 };
         using var response = await client.PostAsJsonAsync("/api/v1/products", input); Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync()); var row = json.RootElement; var id = row.GetProperty("id").GetUInt32();
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync()); var row = json.RootElement; var id = row.GetProperty("id").GetInt64();
         Assert.Equal("/api/v1/products/" + id, response.Headers.Location!.OriginalString); Assert.Equal(0, row.GetProperty("tonKho").GetInt32());
         Assert.Equal(10000, row.GetProperty("giaBan").GetInt32()); Assert.Equal(3, row.GetProperty("nguongToiThieu").GetInt32());
         Assert.Equal("New product", row.GetProperty("tenSanPham").GetString()); Assert.Equal("Hộp", row.GetProperty("donViTinh").GetString());
@@ -65,7 +65,7 @@ public sealed class Sp03ProductHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMy
         Assert.Equal(new[] { 201, 409 }, responses.Select(x => (int)x.StatusCode).Order().ToArray()); foreach(var response in responses) response.Dispose();
         await db.ChayAsync("UPDATE danh_muc SET trang_thai='DA_AN' WHERE id=@id", ("@id", ids.Category));
         Assert.Equal(HttpStatusCode.UnprocessableEntity, (await client.PostAsJsonAsync("/api/v1/products", body with { ma = "HIDDEN-" + Guid.NewGuid().ToString("N")[..10] })).StatusCode);
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await client.PostAsJsonAsync("/api/v1/products", body with { danhMucId = uint.MaxValue })).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await client.PostAsJsonAsync("/api/v1/products", body with { danhMucId = 4294967295L })).StatusCode);
     }
 
     [Theory]

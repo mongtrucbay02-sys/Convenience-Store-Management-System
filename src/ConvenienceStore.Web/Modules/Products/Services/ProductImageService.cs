@@ -8,12 +8,12 @@ namespace ConvenienceStore.Web.Modules.Products.Services;
 
 public interface IProductImageRepository
 {
-    Task SetAsync(uint id, uint version, string imageUrl, CancellationToken ct = default);
+    Task SetAsync(long id, long version, string imageUrl, CancellationToken ct = default);
 }
 
 public sealed class EfProductImageRepository(CuaHangDbContext db) : IProductImageRepository
 {
-    public async Task SetAsync(uint id, uint version, string imageUrl, CancellationToken ct = default)
+    public async Task SetAsync(long id, long version, string imageUrl, CancellationToken ct = default)
     {
         var changed = await db.ChayAsync("UPDATE san_pham SET anh_url=@image,phien_ban=phien_ban+1 WHERE id=@id AND phien_ban=@version", ct,
             ("@id", id), ("@version", version), ("@image", imageUrl));
@@ -28,10 +28,10 @@ public sealed class ProductImageService(IProductImageStore store, IProductImageR
     public async Task<string> StoreAsync(IFormFile file, CancellationToken ct = default) => await store.SaveAsync(await ProductImageValidation.ReadAsync(file, ct), ct);
     public void Remove(string url) => store.Remove(url);
 
-    public async Task<ProductDetailsDto> SetAsync(uint id, uint version, IFormFile? image, string role, CancellationToken ct = default)
+    public async Task<ProductDetailsDto> SetAsync(long id, long version, IFormFile? image, string role, CancellationToken ct = default)
     {
         if (role is not ("AD" or "NK")) throw new LoiNghiepVu(MaLoiChung.KhongDuQuyen, 403, "Chỉ AD và NK được sửa ảnh.");
-        if (version == 0) throw LoiNghiepVu.DuLieuKhongHopLe("phienBan", "Cần phiên bản hiện tại.");
+        if (version <= 0) throw LoiNghiepVu.DuLieuKhongHopLe("phienBan", "Cần phiên bản hiện tại.");
         var validated = await ProductImageValidation.ReadAsync(image, ct);
         var url = await store.SaveAsync(validated, ct);
         try { await products.SetAsync(id, version, url, ct); }

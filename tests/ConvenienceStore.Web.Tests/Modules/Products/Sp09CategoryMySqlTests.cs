@@ -17,13 +17,13 @@ public sealed class Sp09CategoryMySqlTests(CsdlMySqlTam database) : IClassFixtur
         await using var db = database.TaoDbContext(); var first = new DanhMuc { Ten = "SP09-A-" + Guid.NewGuid().ToString("N"), KhongDoiTra = true }; var other = new DanhMuc { Ten = "SP09-B-" + Guid.NewGuid().ToString("N") };
         db.DanhMucs.AddRange(first, other); await db.SaveChangesAsync(); var repo = new EfCategoryRemovalRepository(db);
         Assert.True(db.Model.FindEntityType(typeof(DanhMuc))!.FindProperty(nameof(DanhMuc.PhienBan))!.IsConcurrencyToken);
-        Assert.Equal(CategoryRemovalStatus.Success, (await repo.HideAsync(first.Id, 1)).Status); Assert.Equal(2u, first.PhienBan); Assert.Equal("DA_AN", first.TrangThai); Assert.True(first.KhongDoiTra);
+        Assert.Equal(CategoryRemovalStatus.Success, (await repo.HideAsync(first.Id, 1)).Status); Assert.Equal(2L, first.PhienBan); Assert.Equal("DA_AN", first.TrangThai); Assert.True(first.KhongDoiTra);
         Assert.Equal(CategoryRemovalStatus.Conflict, (await repo.DeleteAsync(first.Id, 1)).Status);
-        Assert.Equal(CategoryRemovalStatus.Success, (await repo.HideAsync(first.Id, 2)).Status); Assert.Equal(2u, first.PhienBan);
+        Assert.Equal(CategoryRemovalStatus.Success, (await repo.HideAsync(first.Id, 2)).Status); Assert.Equal(2L, first.PhienBan);
         Assert.Equal(CategoryRemovalStatus.Success, (await repo.DeleteAsync(first.Id, 2)).Status); Assert.False(await db.DanhMucs.AnyAsync(x => x.Id == first.Id)); Assert.True(await db.DanhMucs.AnyAsync(x => x.Id == other.Id));
         await database.ChayAsync("UPDATE danh_muc SET mo_ta='External edit',phien_ban=phien_ban+1 WHERE id=@id", ("@id", other.Id));
-        Assert.Equal(CategoryRemovalStatus.Conflict, (await repo.HideAsync(other.Id, 1)).Status); Assert.Equal(2u, other.PhienBan); Assert.Equal("External edit", other.MoTa);
-        Assert.Equal(CategoryRemovalStatus.Success, (await repo.HideAsync(other.Id, 2)).Status); Assert.Equal(3u, other.PhienBan);
+        Assert.Equal(CategoryRemovalStatus.Conflict, (await repo.HideAsync(other.Id, 1)).Status); Assert.Equal(2L, other.PhienBan); Assert.Equal("External edit", other.MoTa);
+        Assert.Equal(CategoryRemovalStatus.Success, (await repo.HideAsync(other.Id, 2)).Status); Assert.Equal(3L, other.PhienBan);
         using var cancel = new CancellationTokenSource(); cancel.Cancel(); await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repo.HideAsync(other.Id, 3, cancel.Token));
     }
 
@@ -67,7 +67,7 @@ public sealed class Sp09CategoryMySqlTests(CsdlMySqlTam database) : IClassFixtur
     [InlineData(false)]
     public async Task UnexpectedDatabaseErrorsRemainFailuresAndRollBack(bool hide)
     {
-        uint id;
+        long id;
         await using(var seed = database.TaoDbContext()) { var row = new DanhMuc { Ten = "SP09-ROLLBACK-" + Guid.NewGuid().ToString("N") }; seed.DanhMucs.Add(row); await seed.SaveChangesAsync(); id = row.Id; }
         var operation = hide ? "UPDATE" : "DELETE";
         await database.ChayAsync($"CREATE TRIGGER sp09_reject BEFORE {operation} ON danh_muc FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Injected category failure'");

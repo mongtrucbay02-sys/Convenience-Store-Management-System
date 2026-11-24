@@ -71,7 +71,7 @@ builder.Services.AddScoped<
     PromotionService>();
 
 // ==========================================
-// 2. KẾT NỐI MYSQL
+// 2. KẾT NỐI CSDL
 // ==========================================
 
 var connectionString = MySqlEnv.GetConnectionString(
@@ -85,11 +85,16 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "ConvenienceStore.Web hoặc truyền qua biến môi trường.");
 }
 
+var databaseProvider = MySqlEnv.GetProvider(builder.Environment.ContentRootPath, builder.Configuration);
+if (databaseProvider == "PostgreSql") connectionString = SqlDialect.PostgresConnectionString(connectionString);
 builder.Configuration["ConnectionStrings:CuaHang"] = connectionString;
+builder.Configuration["Database:Provider"] = databaseProvider;
 builder.Services.AddDbContext<CuaHangDbContext>(options =>
 {
-    options.UseMySQL(connectionString)
-        .AddInterceptors(new GioVietNamInterceptor());
+    if (databaseProvider == "PostgreSql")
+        options.UseNpgsql(connectionString, postgres => postgres.SetPostgresVersion(17, 0));
+    else
+        options.UseMySQL(connectionString).AddInterceptors(new GioVietNamInterceptor());
 });
 
 // ==========================================

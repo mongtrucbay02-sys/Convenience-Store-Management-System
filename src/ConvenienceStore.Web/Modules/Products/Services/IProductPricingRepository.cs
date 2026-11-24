@@ -4,7 +4,7 @@ namespace ConvenienceStore.Web.Modules.Products.Services;
 
 public interface IProductPricingRepository
 {
-    Task<ProductPriceResult?> FindAsync(uint id, uint priceId, CancellationToken ct = default);
-    Task<ProductPriceResult> CreateAsync(uint id, ProductPriceChangeDto input, uint actorId, CancellationToken ct = default);
-    Task<ProductPriceResult> CancelAsync(uint id, uint priceId, uint version, uint actorId, CancellationToken ct = default);
+    Task<ProductPriceResult?> FindAsync(long id, long priceId, CancellationToken ct = default);
+    Task<ProductPriceResult> CreateAsync(long id, ProductPriceChangeDto input, long actorId, CancellationToken ct = default);
+    Task<ProductPriceResult> CancelAsync(long id, long priceId, long version, long actorId, CancellationToken ct = default);
 }

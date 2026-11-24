@@ -1,3 +1,4 @@
+using ConvenienceStore.Web.Shared.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.Security.Claims;
@@ -51,12 +52,11 @@ public sealed class MySqlPromotionDataSource(CuaHangDbContext db, IHttpContextAc
                 var creatorId = GetCreatorId();
                 var createParams = Params(record with { Code = "KM-PENDING" });
                 createParams["@creator"] = creatorId;
-                await ExecuteAsync(connection,tx,"""
+                var id = await SqlDialect.InsertIdAsync(connection,tx,"""
                     INSERT INTO chuong_trinh_khuyen_mai
                       (ma,ten,mo_ta,anh_url,loai_giam,gia_tri,giam_toi_da,bat_dau_luc,ket_thuc_luc,chi_thanh_vien,trang_thai,nguoi_tao_id,phien_ban,ngay_tao,ngay_cap_nhat)
                     VALUES (@code,@name,@description,@image,@type,@value,@max,@start,@end,@members,@status,@creator,1,NOW(),NOW())
                     """, ct, createParams);
-                var id=Convert.ToInt64(await ScalarAsync(connection,tx,"SELECT LAST_INSERT_ID()",ct),CultureInfo.InvariantCulture);
                 await ExecuteAsync(connection,tx,"UPDATE chuong_trinh_khuyen_mai SET ma=@code WHERE id=@id",ct,
                     new Dictionary<string,object?>{{"@code",Code(id)},{"@id",id}});
                 await ReplaceProductsAsync(connection,tx,id,record.Products,ct);
@@ -129,11 +129,9 @@ public sealed class MySqlPromotionDataSource(CuaHangDbContext db, IHttpContextAc
     }
     private static async Task<int> ExecuteAsync(DbConnection c,DbTransaction tx,string sql,CancellationToken ct,Dictionary<string,object?>? values=null)
     { await using var cmd=c.CreateCommand();cmd.Transaction=tx;cmd.CommandText=sql;Add(cmd,values);return await cmd.ExecuteNonQueryAsync(ct); }
-    private static async Task<object?> ScalarAsync(DbConnection c,DbTransaction tx,string sql,CancellationToken ct)
-    { await using var cmd=c.CreateCommand();cmd.Transaction=tx;cmd.CommandText=sql;return await cmd.ExecuteScalarAsync(ct); }
-    private static void Add(DbCommand c,Dictionary<string,object?>? values){if(values is null)return;foreach(var pair in values){var p=c.CreateParameter();p.ParameterName=pair.Key;p.Value=pair.Value??DBNull.Value;c.Parameters.Add(p);}}
+    private static void Add(DbCommand c,Dictionary<string,object?>? values){if(values is null)return;foreach(var pair in values){var p=c.CreateParameter();p.ParameterName=pair.Key;p.Value=SqlDialect.Normalize(c.Connection!,pair.Value)??DBNull.Value;c.Parameters.Add(p);}}
     private static DateTime DbDate(DateTimeOffset d)=>DateTime.SpecifyKind(d.ToOffset(VietnamOffset).DateTime,DateTimeKind.Unspecified);
-    private static DateTimeOffset VietnamDate(DbDataReader r,string n)=>new(DateTime.SpecifyKind(Convert.ToDateTime(r[n],CultureInfo.InvariantCulture),DateTimeKind.Unspecified),VietnamOffset);
+    private static DateTimeOffset VietnamDate(DbDataReader r,string n)=>ConvenienceStore.Web.Shared.Api.GioVietNam.ThanhOffset(Convert.ToDateTime(r[n],CultureInfo.InvariantCulture));
     private static long Long(DbDataReader r,string n)=>r[n] is DBNull?0:Convert.ToInt64(r[n],CultureInfo.InvariantCulture);
     private static long? NullableLong(DbDataReader r,string n)=>r[n] is DBNull?null:Convert.ToInt64(r[n],CultureInfo.InvariantCulture);
     private static int Int(DbDataReader r,string n)=>r[n] is DBNull?0:Convert.ToInt32(r[n],CultureInfo.InvariantCulture);
@@ -152,10 +150,10 @@ public sealed class MySqlProductLookup(CuaHangDbContext db) : IProductLookup
         var c=_db.Database.GetDbConnection();var close=c.State!=System.Data.ConnectionState.Open;if(close)await c.OpenAsync(ct);
         try
         {
-            var term=string.IsNullOrWhiteSpace(keyword)?null:"%"+keyword.Trim()+"%";
-            await using var count=c.CreateCommand();count.CommandText="SELECT COUNT(*) FROM san_pham WHERE (@term IS NULL OR ma LIKE @term OR ten_san_pham LIKE @term)";
+            var term=string.IsNullOrWhiteSpace(keyword)?null:"%"+(_db.IsPostgres()?VietnameseSearch.Fold(keyword.Trim()):keyword.Trim())+"%";
+            await using var count=c.CreateCommand();count.CommandText="SELECT COUNT(*) FROM san_pham WHERE (@term IS NULL OR "+VietnameseSearch.Column(_db.IsPostgres(),"ma")+" LIKE @term OR "+VietnameseSearch.Column(_db.IsPostgres(),"ten_san_pham")+" LIKE @term)";
             AddParam(count,"@term",term);var total=Convert.ToInt32(await count.ExecuteScalarAsync(ct),CultureInfo.InvariantCulture);
-            await using var cmd=c.CreateCommand();cmd.CommandText="SELECT id,ma,ten_san_pham FROM san_pham WHERE (@term IS NULL OR ma LIKE @term OR ten_san_pham LIKE @term) ORDER BY ten_san_pham,id LIMIT @take OFFSET @skip";
+            await using var cmd=c.CreateCommand();cmd.CommandText="SELECT id,ma,ten_san_pham FROM san_pham WHERE (@term IS NULL OR "+VietnameseSearch.Column(_db.IsPostgres(),"ma")+" LIKE @term OR "+VietnameseSearch.Column(_db.IsPostgres(),"ten_san_pham")+" LIKE @term) ORDER BY ten_san_pham,id LIMIT @take OFFSET @skip";
             AddParam(cmd,"@term",term);AddParam(cmd,"@take",pageSize);AddParam(cmd,"@skip",(page-1)*pageSize);
             await using var r=await cmd.ExecuteReaderAsync(ct);var products=new List<ProductRefDto>();while(await r.ReadAsync(ct))products.Add(new ProductRefDto(Convert.ToInt64(r["id"],CultureInfo.InvariantCulture),Convert.ToString(r["ma"],CultureInfo.InvariantCulture)??"",Convert.ToString(r["ten_san_pham"],CultureInfo.InvariantCulture)??""));
             return new ProductPage(products,page,pageSize,total,(int)Math.Ceiling(total/(double)pageSize));
@@ -175,5 +173,5 @@ public sealed class MySqlProductLookup(CuaHangDbContext db) : IProductLookup
         }
         finally {if(close)await c.CloseAsync();}
     }
-    private static void AddParam(DbCommand c,string name,object? value){var p=c.CreateParameter();p.ParameterName=name;p.Value=value??DBNull.Value;c.Parameters.Add(p);}
+    private static void AddParam(DbCommand c,string name,object? value) => c.AddValue(name,value);
 }

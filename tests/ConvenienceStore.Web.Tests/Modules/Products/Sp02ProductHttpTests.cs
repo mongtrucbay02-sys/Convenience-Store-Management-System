@@ -41,7 +41,7 @@ public sealed class Sp02ProductHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMy
         using var response = await client.GetAsync($"/api/v1/products/{ids.Active}");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode); Assert.True(response.Headers.CacheControl!.NoStore);
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync()); var item = json.RootElement;
-        Assert.Equal(ids.Active, item.GetProperty("id").GetUInt32()); Assert.Equal(10000, item.GetProperty("giaBan").GetInt32());
+        Assert.Equal(ids.Active, item.GetProperty("id").GetInt64()); Assert.Equal(10000, item.GetProperty("giaBan").GetInt32());
         Assert.Equal(7, item.GetProperty("tonKho").GetInt32()); Assert.Equal(5, item.GetProperty("nguongToiThieu").GetInt32());
         Assert.Equal(admin ? JsonValueKind.Number : JsonValueKind.Null, item.GetProperty("giaVon").ValueKind);
         Assert.Equal(admin ? JsonValueKind.Object : JsonValueKind.Null, item.GetProperty("lichSuGia").ValueKind);

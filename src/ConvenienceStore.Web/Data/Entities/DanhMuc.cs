@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class DanhMuc
 {
-    public uint Id { get; set; }
+    public long Id { get; set; }
 
     public string Ten { get; set; } = null!;
 
@@ -15,7 +15,7 @@ public partial class DanhMuc
 
     public string TrangThai { get; set; } = null!;
 
-    public uint PhienBan { get; set; }
+    public long PhienBan { get; set; }
 
     public DateTime NgayTao { get; set; }
 

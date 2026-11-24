@@ -14,7 +14,7 @@ public sealed class ProductDetailService(IProductDetailRepository products, IDic
         return query with { Size = Math.Min(query.Size, 100) };
     }
 
-    public async Task<ProductDetailsDto> FindAsync(uint id, string role, CancellationToken ct = default)
+    public async Task<ProductDetailsDto> FindAsync(long id, string role, CancellationToken ct = default)
     {
         CheckRole(role); ct.ThrowIfCancellationRequested();
         var row = await products.FindAsync(id, role == "TN", ct) ?? throw Missing();
@@ -28,7 +28,7 @@ public sealed class ProductDetailService(IProductDetailRepository products, IDic
         };
     }
 
-    public async Task<PagedResultDto<ProductPriceDto>> PricesAsync(uint id, ProductPricesQuery query, string role, CancellationToken ct = default)
+    public async Task<PagedResultDto<ProductPriceDto>> PricesAsync(long id, ProductPricesQuery query, string role, CancellationToken ct = default)
     {
         CheckRole(role); query = Normalize(query); ct.ThrowIfCancellationRequested();
         if (!query.DaLenLich && role != "AD") throw new LoiNghiepVu(MaLoiChung.KhongDuQuyen, 403, "Chỉ AD được xem lịch sử giá.");

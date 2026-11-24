@@ -1,27 +1,27 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class LichSuDiem
 {
-    public ulong Id { get; set; }
+    public long Id { get; set; }
 
-    public uint KhachHangId { get; set; }
+    public long KhachHangId { get; set; }
 
     public string Loai { get; set; } = null!;
 
     public int SoDiem { get; set; }
 
-    public uint DiemSau { get; set; }
+    public long DiemSau { get; set; }
 
-    public uint? HoaDonId { get; set; }
+    public long? HoaDonId { get; set; }
 
-    public uint? PhieuDoiTraId { get; set; }
+    public long? PhieuDoiTraId { get; set; }
 
     public string? LyDo { get; set; }
 
-    public uint NguoiThucHienId { get; set; }
+    public long NguoiThucHienId { get; set; }
 
     public DateTime ThoiDiem { get; set; }
 

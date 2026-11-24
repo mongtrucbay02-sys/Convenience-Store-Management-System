@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class TonKho
 {
-    public uint SanPhamId { get; set; }
+    public long SanPhamId { get; set; }
 
     public int SoLuongTon { get; set; }
 

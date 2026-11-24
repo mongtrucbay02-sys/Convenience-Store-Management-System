@@ -42,7 +42,7 @@ public sealed class Sp01ProductHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMy
         Assert.All(list.EnumerateArray(), row => {
             Assert.Equal(7, row.GetProperty("tonKho").GetInt32());
             Assert.Equal(seesCost ? JsonValueKind.Number : JsonValueKind.Null, row.GetProperty("giaVon").ValueKind);
-            Assert.Equal(ids.Category, row.GetProperty("danhMuc").GetProperty("id").GetUInt32());
+            Assert.Equal(ids.Category, row.GetProperty("danhMuc").GetProperty("id").GetInt64());
         });
         Assert.Equal(role == "TN" ? 10000 : 20000, list[0].GetProperty("giaBan").GetInt32());
         using var bounded = JsonDocument.Parse(await client.GetStringAsync($"/api/v1/products?danhMucId={ids.Category}&giaBanTu=10000&giaBanDen=10000&size=999"));
@@ -84,7 +84,7 @@ public sealed class Sp01ProductHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMy
 
 internal static class ProductReadSeed
 {
-    public static async Task<(uint Category, uint Active, uint Inactive)> Create(CsdlMySqlTam db)
+    public static async Task<(long Category, long Active, long Inactive)> Create(CsdlMySqlTam db)
     {
         var key = Guid.NewGuid().ToString("N");
         await db.ChayAsync("""

@@ -140,7 +140,7 @@ public sealed class DichVuKho(
 
                 // Ghi thẻ kho trong cùng transaction
                 var theKhoId = Convert.ToInt64(
-                    await db.DocMotGiaTriAsync(
+                    await db.InsertIdAsync(
                         """
                         INSERT INTO the_kho
                         (
@@ -166,7 +166,7 @@ public sealed class DichVuKho(
                             @giaVonSau,
                             @nguoi
                         );
-                        SELECT LAST_INSERT_ID();
+
                         """,
                         ct,
                         ("@sp", dong.SanPhamId),

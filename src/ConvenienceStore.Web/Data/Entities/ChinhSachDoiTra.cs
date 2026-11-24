@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class ChinhSachDoiTra
 {
-    public uint Id { get; set; }
+    public long Id { get; set; }
 
-    public ushort SoNgayDoiTra { get; set; }
+    public short SoNgayDoiTra { get; set; }
 
-    public ulong NguongTienCanDuyet { get; set; }
+    public long NguongTienCanDuyet { get; set; }
 
     public DateTime HieuLucTu { get; set; }
 
-    public uint? NguoiTaoId { get; set; }
+    public long? NguoiTaoId { get; set; }
 
     public DateTime NgayTao { get; set; }
 

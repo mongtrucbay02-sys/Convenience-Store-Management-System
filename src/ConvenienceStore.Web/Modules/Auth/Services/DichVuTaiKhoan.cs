@@ -135,12 +135,12 @@ public sealed partial class DichVuTaiKhoan(CuaHangDbContext db) : IDichVuTaiKhoa
         long id;
         try
         {
-            id = Convert.ToInt64(await db.DocMotGiaTriAsync(
+            id = Convert.ToInt64(await db.InsertIdAsync(
                 """
                 INSERT INTO tai_khoan (ten_dang_nhap, mat_khau_bam, ho_ten, so_dien_thoai, email, vai_tro_id,
                                        trang_thai, bat_buoc_doi_mk)
                 VALUES (@ten, @bam, @hoTen, @sdt, @email, (SELECT id FROM vai_tro WHERE ma = @vaiTro), 'HOAT_DONG', TRUE);
-                SELECT LAST_INSERT_ID();
+
                 """,
                 ct,
                 ("@ten", tenDangNhap), ("@bam", BamMatKhau.Bam(yeuCau.MatKhauTam!)), ("@hoTen", hoTen),

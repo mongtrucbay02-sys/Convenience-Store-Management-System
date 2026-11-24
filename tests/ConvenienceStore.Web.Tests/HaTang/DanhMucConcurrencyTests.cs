@@ -13,7 +13,7 @@ public sealed class DanhMucConcurrencyCollection : ICollectionFixture<CsdlMySqlT
 [Collection(DanhMucConcurrencyCollection.Ten)]
 public sealed class DanhMucConcurrencyTests(CsdlMySqlTam csdl) : IAsyncLifetime
 {
-    private uint _danhMucId;
+    private long _danhMucId;
 
     public async Task InitializeAsync()
     {
@@ -44,7 +44,7 @@ public sealed class DanhMucConcurrencyTests(CsdlMySqlTam csdl) : IAsyncLifetime
     {
         await using var db = csdl.TaoDbContext();
         var danhMuc = await db.DanhMucs.SingleAsync(x => x.Id == _danhMucId);
-        Assert.Equal(1u, danhMuc.PhienBan);
+        Assert.Equal(1L, danhMuc.PhienBan);
     }
 
     [Fact]

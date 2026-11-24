@@ -16,7 +16,7 @@ public sealed class PurchaseReceiptFlowTests(CsdlKhoFixture fixture)
     public async Task ApprovingCountAndDisposalChangesStockOnlyAfterApproval()
     {
         var helper = new BoTroGoiDichVuKho(fixture);
-        var productId = checked((uint)await helper.TaoSanPhamCoTonAsync("KHOAPP", 10, 8000m));
+        var productId = checked((long)await helper.TaoSanPhamCoTonAsync("KHOAPP", 10, 8000m));
         var data = new DuLieuTestKho(fixture);
 
         var countId = await Act(async controller => GetId(await controller.CreateCount("CHON_SAN_PHAM", null, [productId], default)));
@@ -37,7 +37,7 @@ public sealed class PurchaseReceiptFlowTests(CsdlKhoFixture fixture)
         Assert.Equal(1, await data.DemTheKhoAsync((int)productId, "XUAT_HUY"));
     }
 
-    private static uint GetId(IActionResult result) => Convert.ToUInt32(
+    private static long GetId(IActionResult result) => Convert.ToUInt32(
         Assert.IsType<RedirectToActionResult>(result).RouteValues!["id"]);
 
     private async Task<T> Act<T>(Func<StockDocumentsController, Task<T>> action)
@@ -65,14 +65,14 @@ public sealed class PurchaseReceiptFlowTests(CsdlKhoFixture fixture)
         var supplierId = Convert.ToUInt32(await fixture.DocMotGiaTriAsync(
             "SELECT id FROM nha_cung_cap WHERE ma='NCC-NHREAL'"));
 
-        uint receiptId;
+        long receiptId;
         await using (var db = fixture.TaoDbContext())
         {
             var service = new PurchaseReceiptService(db, BoTroGoiDichVuKho.TaoDichVu(db), TimeProvider.System);
             receiptId = await service.CreateAsync(new PurchaseReceiptInput
             {
                 SupplierId = supplierId,
-                Lines = [new((uint)productId, 12, 9500), new((uint)productId, 8, 9500)]
+                Lines = [new((long)productId, 12, 9500), new((long)productId, 8, 9500)]
             }, fixture.TaiKhoanKhoId, default);
         }
 
@@ -80,8 +80,8 @@ public sealed class PurchaseReceiptFlowTests(CsdlKhoFixture fixture)
         {
             var receipt = await db.PhieuNhaps.Include(row => row.CtPhieuNhaps).SingleAsync(row => row.Id == receiptId);
             Assert.Equal("NHAP", receipt.TrangThai);
-            Assert.Equal(20u, Assert.Single(receipt.CtPhieuNhaps).SoLuong);
-            Assert.Equal(190000ul, receipt.TongTien);
+            Assert.Equal(20L, Assert.Single(receipt.CtPhieuNhaps).SoLuong);
+            Assert.Equal(190000L, receipt.TongTien);
         }
 
         await using (var db = fixture.TaoDbContext())

@@ -8,17 +8,17 @@ namespace ConvenienceStore.Web.Modules.Products.Services;
 
 public sealed class EfProductDetailRepository(CuaHangDbContext db) : IProductDetailRepository
 {
-    public Task<ProductDetailsDto?> FindAsync(uint id, bool activeOnly, CancellationToken ct = default) =>
+    public Task<ProductDetailsDto?> FindAsync(long id, bool activeOnly, CancellationToken ct = default) =>
         db.SanPhams.AsNoTracking().Where(x => x.Id == id && (!activeOnly || x.TrangThai == "DANG_KINH_DOANH"))
         .Select(x => new ProductDetailsDto {
             Id = x.Id, Ma = x.Ma, TenSanPham = x.TenSanPham, DanhMucId = x.DanhMucId,
             DanhMuc = new(x.DanhMucId, x.DanhMuc.Ten), DonViTinh = x.DonViTinh,
-            GiaBan = db.VGiaBanHienHanhs.Where(p => p.SanPhamId == x.Id).Select(p => (uint?)p.GiaBan).FirstOrDefault(),
+            GiaBan = db.VGiaBanHienHanhs.Where(p => p.SanPhamId == x.Id).Select(p => (long?)p.GiaBan).FirstOrDefault(),
             TrangThai = x.TrangThai, PhienBan = x.PhienBan, AnhUrl = x.AnhUrl, MoTa = x.MoTa,
             NgayCapNhat = GioVietNam.ThanhOffset(x.NgayCapNhat)
         }).SingleOrDefaultAsync(ct);
 
-    public async Task<PagedResultDto<ProductPriceDto>> PricesAsync(uint id, ProductPricesQuery query, CancellationToken ct = default)
+    public async Task<PagedResultDto<ProductPriceDto>> PricesAsync(long id, ProductPricesQuery query, CancellationToken ct = default)
     {
         query = ProductDetailService.Normalize(query);
         var rows = db.LichSuGia.AsNoTracking().Where(x => x.SanPhamId == id);

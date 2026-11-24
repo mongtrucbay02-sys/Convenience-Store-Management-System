@@ -6,7 +6,7 @@
     var pageNumber = (int)ViewBag.Page;
     var showCost = (bool)ViewBag.ShowCost;
     var showThreshold = (bool)ViewBag.ShowThreshold;
-    var categoryId = (uint?)ViewBag.CategoryId;
+    var categoryId = (long?)ViewBag.CategoryId;
     var status = (string?)ViewBag.Status;
     var categories = (IReadOnlyList<DanhMuc>)ViewBag.Categories;
     var showHistory = User.HasClaim("quyen", MaQuyen.TheKhoCanhBaoXem);

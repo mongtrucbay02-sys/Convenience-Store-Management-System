@@ -32,7 +32,7 @@ public sealed class Sp08CategoryHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlM
         var name = "SP08-" + Guid.NewGuid().ToString("N");
         var created = await client.PostAsJsonAsync("/api/v1/categories", new { ten = " " + name + " ", moTa = "Description", khongDoiTra = true, trangThai = "DA_AN" });
         Assert.Equal(HttpStatusCode.Created, created.StatusCode);
-        using var json = JsonDocument.Parse(await created.Content.ReadAsStringAsync()); var id = json.RootElement.GetProperty("id").GetUInt32(); var version = json.RootElement.GetProperty("phienBan").GetUInt32();
+        using var json = JsonDocument.Parse(await created.Content.ReadAsStringAsync()); var id = json.RootElement.GetProperty("id").GetInt64(); var version = json.RootElement.GetProperty("phienBan").GetInt64();
         Assert.Equal("HOAT_DONG", json.RootElement.GetProperty("trangThai").GetString()); Assert.Equal(name, json.RootElement.GetProperty("ten").GetString());
         Assert.NotNull(created.Headers.Location);
         Assert.Equal(HttpStatusCode.Conflict, (await client.PostAsJsonAsync("/api/v1/categories", new { ten = name.ToUpperInvariant() })).StatusCode);
@@ -40,7 +40,7 @@ public sealed class Sp08CategoryHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlM
         Assert.Equal(HttpStatusCode.OK, (await client.PutAsJsonAsync("/api/v1/categories/" + id, input)).StatusCode);
         Assert.Equal(HttpStatusCode.Conflict, (await client.PutAsJsonAsync("/api/v1/categories/" + id, input)).StatusCode);
         using var saved = JsonDocument.Parse(await client.GetStringAsync("/api/v1/categories/" + id));
-        Assert.Equal(version + 1, saved.RootElement.GetProperty("phienBan").GetUInt32()); Assert.False(saved.RootElement.GetProperty("khongDoiTra").GetBoolean());
+        Assert.Equal(version + 1, saved.RootElement.GetProperty("phienBan").GetInt64()); Assert.False(saved.RootElement.GetProperty("khongDoiTra").GetBoolean());
     }
     [Fact]
     public async Task MissingXsrfAndInvalidInputAreRejected()

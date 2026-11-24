@@ -1,0 +1,65 @@
+@using System.Globalization
+@model ConvenienceStore.Web.Modules.Returns.Models.ReturnSlipDetails
+@{
+    var slip = Model.Slip;
+    var vi = CultureInfo.GetCultureInfo("vi-VN");
+    string Money(long amount) => amount.ToString("N0", vi) + " đ";
+    string Date(DateTimeOffset at) => at.ToString("dd/MM/yyyy HH:mm", vi);
+    bool completed = slip.Status == "HOAN_TAT";
+}
+<article class="return-receipt">
+    <h1>SMART MART</h1>
+    <h2>Phiếu @(slip.Kind == "DOI_HANG" ? "đổi hàng" : "trả hàng")</h2>
+    @if (ViewData["Print"] is true)
+    {
+        <p><strong>BẢN IN LẠI</strong></p>
+    }
+    <p><strong>@slip.Code</strong> · @slip.StatusLabel</p>
+    <p>Hóa đơn gốc: @slip.InvoiceCode</p>
+    @if (Model.NewInvoiceCode is not null)
+    {
+        <p>Hóa đơn mới: @Model.NewInvoiceCode</p>
+    }
+    <p>Lập lúc: @Date(slip.CreatedAt) · Thu ngân: @slip.CashierName</p>
+    @if (Model.ApprovedAt is DateTimeOffset approvedAt)
+    {
+        <p>Xử lý duyệt lúc: @Date(approvedAt) · Người xử lý: @Model.ApproverName</p>
+    }
+    @if (Model.CompletedAt is DateTimeOffset completedAt)
+    {
+        <p>Hoàn tất lúc: @Date(completedAt)</p>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.ApprovalNote))
+    {
+        <p>Ghi chú duyệt: @Model.ApprovalNote</p>
+    }
+    <h2>Hàng trả</h2>
+    @foreach (var line in Model.Lines)
+    {
+        <div class="return-line">
+            <strong>@line.ProductName</strong>
+            <p>@line.Quantity × @Money(line.UnitPaid) = @Money(line.Quantity * line.UnitPaid)</p>
+            <p>Lý do: @line.ReasonLabel</p>
+            @if (!string.IsNullOrWhiteSpace(line.Note))
+            {
+                <p>Ghi chú: @line.Note</p>
+            }
+            @if (!string.IsNullOrWhiteSpace(line.Condition))
+            {
+                <p>Tình trạng: @line.Condition</p>
+            }
+            <p>Xử lý: @(line.Handling == "NHAP_LAI" ? "Nhập lại kho" : "Hủy")</p>
+        </div>
+    }
+    <p>Giá trị hàng trả: <strong>@Money(Model.ReturnValue)</strong></p>
+    <p>@(completed ? "Tiền hoàn" : "Tiền hoàn dự kiến"): <strong>@Money(slip.Refund)</strong></p>
+    <p>@(completed ? "Thu thêm" : "Thu thêm dự kiến"): <strong>@Money(slip.CashDue)</strong></p>
+    @if (completed)
+    {
+        <p>Điểm đã thu hồi: @Model.RecoveredPoints</p>
+    }
+    else
+    {
+        <p>Phiếu chưa hoàn tất. Số tiền dự kiến chưa được giao dịch.</p>
+    }
+</article>

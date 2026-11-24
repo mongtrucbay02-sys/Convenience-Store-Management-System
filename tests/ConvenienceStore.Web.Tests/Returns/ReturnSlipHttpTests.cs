@@ -34,7 +34,13 @@ public sealed class ReturnSlipHttpTests(CsdlKhoFixture database) : IClassFixture
         Assert.Contains("TH-DT07-OWN", cashierList);
         Assert.DoesNotContain("DT-DT07-OTHER", cashierList);
         Assert.Equal(HttpStatusCode.NotFound, (await cashier.GetAsync($"/Returns/Slips/{foreign}")).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await cashier.GetAsync($"/Returns/Slips/{foreign}/Print")).StatusCode);
+        using var deniedPrint = await cashier.GetAsync($"/Returns/Slips/{foreign}/Print");
+        using var missingPrint = await cashier.GetAsync("/Returns/Slips/999999/Print");
+        Assert.Equal(HttpStatusCode.NotFound, deniedPrint.StatusCode);
+        Assert.Equal(missingPrint.StatusCode, deniedPrint.StatusCode);
+        var deniedPage = WebUtility.HtmlDecode(await deniedPrint.Content.ReadAsStringAsync());
+        Assert.Contains("Không tìm thấy phiếu đổi trả", deniedPage);
+        Assert.DoesNotContain("DT-DT07-OTHER", deniedPage);
         Assert.Contains("BẢN IN LẠI", await PageAsync(cashier, $"/Returns/Slips/{own}/Print"));
 
         var adminList = await PageAsync(admin, "/Returns/Slips");
@@ -56,7 +62,17 @@ public sealed class ReturnSlipHttpTests(CsdlKhoFixture database) : IClassFixture
         Assert.Contains("Hết hạn", detail);
         Assert.Contains("Sản phẩm kiểm thử DT-07", detail);
         Assert.Contains("HD-DT07-OTHER", detail);
-        Assert.Contains("BẢN IN LẠI", await PageAsync(admin, $"/Returns/Slips/{foreign}/Print"));
+        Assert.Contains("Thu thêm dự kiến", detail);
+        using var print = await admin.GetAsync($"/Returns/Slips/{foreign}/Print");
+        print.EnsureSuccessStatusCode();
+        Assert.True(print.Headers.CacheControl?.NoStore);
+        var printed = WebUtility.HtmlDecode(await print.Content.ReadAsStringAsync());
+        Assert.Contains("BẢN IN LẠI", printed);
+        Assert.Contains("slip-print", printed);
+        Assert.Contains("window.print()", printed);
+        Assert.Contains("HD-DT07-OTHER", printed);
+        Assert.Contains("Thu thêm dự kiến", printed);
+        Assert.DoesNotContain("sidebar-account", printed);
     }
 
     private static async Task<string> PageAsync(HttpClient client, string path) =>

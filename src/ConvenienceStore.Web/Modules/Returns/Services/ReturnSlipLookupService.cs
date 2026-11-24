@@ -72,12 +72,15 @@ public sealed class ReturnSlipLookupService(CuaHangDbContext db)
         var args = new List<(string, object?)> { ("@id", id) };
         RestrictToCashier(cashier, conditions, args);
         var detail = await db.DocMotDongAsync($"""
-            {Columns}, hm.ma_hoa_don, p.gia_tri_hang_tra, p.diem_thu_hoi, p.ghi_chu_duyet
+            {Columns}, hm.ma_hoa_don, p.gia_tri_hang_tra, p.diem_thu_hoi,
+                ad.ho_ten, p.duyet_luc, p.ghi_chu_duyet, p.hoan_tat_luc
             {Tables}
             LEFT JOIN hoa_don hm ON hm.id = p.hoa_don_moi_id
+            LEFT JOIN tai_khoan ad ON ad.id = p.nguoi_duyet_id
             WHERE {string.Join(" AND ", conditions)}
             """, r => new ReturnSlipDetails(ReadRow(r), r.ChuoiHoacNull(9), r.SoNguyenDai(10),
-            r.SoNguyen(11), r.ChuoiHoacNull(12), []), ct, args.ToArray());
+            r.SoNguyen(11), r.ChuoiHoacNull(12), GioVietNam.ThanhOffset(r.NgayGioHoacNull(13)),
+            r.ChuoiHoacNull(14), GioVietNam.ThanhOffset(r.NgayGioHoacNull(15)), []), ct, args.ToArray());
 
         if (detail is null)
             return null;

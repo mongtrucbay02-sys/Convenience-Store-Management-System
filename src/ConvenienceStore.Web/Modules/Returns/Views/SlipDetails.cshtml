@@ -1,63 +1,14 @@
-@using System.Globalization
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model ConvenienceStore.Web.Modules.Returns.Models.ReturnSlipDetails
 @{
     Layout = "_AdminLayout";
     ViewData["Title"] = "Chi tiết phiếu đổi trả";
-    var print = ViewData["Print"] is true;
-    var slip = Model.Slip;
-    var vi = CultureInfo.GetCultureInfo("vi-VN");
-    string Money(long amount) => amount.ToString("N0", vi) + " đ";
 }
 <link rel="stylesheet" href="~/css/return-order.css" asp-append-version="true" />
 <div class="return-order">
     <div class="return-no-print d-flex flex-wrap gap-3 align-items-center">
         <a asp-action="Index">Về danh sách phiếu</a>
-        @if (print)
-        {
-            <a asp-action="Details" asp-route-id="@slip.Id">Về chi tiết phiếu</a>
-            <button type="button" onclick="window.print()">In phiếu K80</button>
-        }
-        else
-        {
-            <a class="btn btn-primary" asp-action="Print" asp-route-id="@slip.Id">In lại phiếu K80</a>
-        }
+        <a class="btn btn-primary" asp-action="Print" asp-route-id="@Model.Slip.Id">In lại phiếu K80</a>
     </div>
-    <article class="return-receipt">
-        <h1>SMART MART</h1>
-        <h2>Phiếu @(slip.Kind == "DOI_HANG" ? "đổi hàng" : "trả hàng")</h2>
-        @if (print) { <p><strong>BẢN IN LẠI</strong></p> }
-        <p><strong>@slip.Code</strong> · @slip.StatusLabel</p>
-        <p>Hóa đơn gốc: @slip.InvoiceCode</p>
-        @if (Model.NewInvoiceCode is not null)
-        {
-            <p>Hóa đơn mới: @Model.NewInvoiceCode</p>
-        }
-        <p>@slip.CreatedAt.ToString("dd/MM/yyyy HH:mm") · Thu ngân: @slip.CashierName</p>
-        <h2>Hàng trả</h2>
-        @foreach (var line in Model.Lines)
-        {
-            <div class="return-line">
-                <strong>@line.ProductName</strong>
-                <p>@line.Quantity × @Money(line.UnitPaid) = @Money(line.Quantity * line.UnitPaid)</p>
-                <p>Lý do: @line.ReasonLabel @line.Note</p>
-                <p>@line.Condition · @(line.Handling == "NHAP_LAI" ? "Nhập lại kho" : "Hủy")</p>
-            </div>
-        }
-        <p>Giá trị hàng trả: <strong>@Money(Model.ReturnValue)</strong></p>
-        <p>Tiền hoàn: <strong>@Money(slip.Refund)</strong></p>
-        <p>Thu thêm: <strong>@Money(slip.CashDue)</strong></p>
-        @if (slip.Status == "HOAN_TAT")
-        {
-            <p>Điểm đã thu hồi: @Model.RecoveredPoints</p>
-        }
-        else
-        {
-            <p>Số tiền trên phiếu là số tiền dự kiến. Phiếu chưa hoàn tất.</p>
-        }
-        @if (!string.IsNullOrWhiteSpace(Model.ApprovalNote))
-        {
-            <p>Ghi chú duyệt: @Model.ApprovalNote</p>
-        }
-    </article>
+    @await Html.PartialAsync("~/Modules/Returns/Views/_SlipReceipt.cshtml", Model)
 </div>

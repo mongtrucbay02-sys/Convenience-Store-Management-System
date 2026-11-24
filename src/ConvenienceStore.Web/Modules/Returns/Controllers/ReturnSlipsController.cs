@@ -46,10 +46,12 @@ public sealed class ReturnSlipsController(ReturnSlipLookupService lookup) : Cont
 
         var result = await lookup.FindAsync(id, cashier, ct);
         if (result is null)
-            return NotFound("Không tìm thấy phiếu đổi trả.");
+        {
+            Response.StatusCode = StatusCodes.Status404NotFound;
+            return View(Views + "SlipNotFound.cshtml");
+        }
 
-        ViewData["Print"] = print;
-        return View(Views + "SlipDetails.cshtml", result);
+        return View(Views + (print ? "SlipPrint.cshtml" : "SlipDetails.cshtml"), result);
     }
 
     private bool TryGetScope(out int? cashier)

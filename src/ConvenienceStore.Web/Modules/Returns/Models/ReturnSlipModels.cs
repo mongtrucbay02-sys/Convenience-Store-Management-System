@@ -43,7 +43,8 @@ public sealed record ReturnSlipLine(string ProductName, int Quantity, long UnitP
 }
 
 public sealed record ReturnSlipDetails(ReturnSlipRow Slip, string? NewInvoiceCode, long ReturnValue,
-    int RecoveredPoints, string? ApprovalNote, IReadOnlyList<ReturnSlipLine> Lines);
+    int RecoveredPoints, string? ApproverName, DateTimeOffset? ApprovedAt, string? ApprovalNote,
+    DateTimeOffset? CompletedAt, IReadOnlyList<ReturnSlipLine> Lines);
 
 public sealed record ReturnSlipList(ReturnSlipQuery Query, IReadOnlyList<ReturnSlipRow> Items,
     bool HasNext, string? Error = null);

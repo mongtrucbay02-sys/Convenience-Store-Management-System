@@ -7,6 +7,7 @@ using ConvenienceStore.Web.Shared.Errors;
 using ConvenienceStore.Web.Tests.HaTang;
 using ConvenienceStore.Web.Tests.Inventory;
 using ConvenienceStore.Web.Tests.Modules.Products;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -125,6 +126,7 @@ public sealed class WeekEightMySqlTests(CsdlKhoFixture db) : IClassFixture<CsdlK
     {
         s.AddHttpContextAccessor();s.AddModuleInventory();s.AddSingleton(TimeProvider.System);
         s.AddAuthorization(o=>o.AddPolicy("AdminOnly",p=>p.RequireAuthenticatedUser().RequireRole("AD")));
+        s.AddDataProtection().UseEphemeralDataProtectionProvider();
         s.AddControllersWithViews().AddRazorOptions(o=>o.AreaViewLocationFormats.Insert(0,"/Modules/{2}/Views/{1}/{0}.cshtml"));
         s.AddScoped<PromotionUsageStore>();s.AddScoped<IWeekEightReportDataSource,MySqlWeekEightReportDataSource>();s.AddScoped<WeekEightReportsService>();
         s.AddScoped<ReportFilterService>();s.AddScoped<IOperationalReportDataSource,MySqlTransactionalReportsDataSource>();

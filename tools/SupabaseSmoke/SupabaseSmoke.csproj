@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="ConvenienceStore.Web.Tests" />
     <ProjectReference Include="../../src/ConvenienceStore.Web/ConvenienceStore.Web.csproj" />
   </ItemGroup>
 </Project>

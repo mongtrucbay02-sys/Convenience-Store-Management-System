@@ -61,9 +61,9 @@ public sealed class Sp02ProductUnitTests
 
     private sealed class StockStub : IDichVuKho
     {
-        public Task<IReadOnlyList<TonKhoHienTai>> LayTonKhoAsync(IReadOnlyCollection<int> ids, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<TonKhoHienTai>>([new(1, 7, 8000, 5)]);
+        public Task<IReadOnlyList<TonKhoHienTai>> LayTonKhoAsync(IReadOnlyCollection<long> ids, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<TonKhoHienTai>>([new(1, 7, 8000, 5)]);
         public Task<KetQuaBienDong> GhiNhanBienDongAsync(YeuCauBienDong request, CancellationToken ct = default) => throw new NotSupportedException();
-        public Task KhoiTaoTonKhoAsync(int id, int threshold = 5, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task KhoiTaoTonKhoAsync(long id, int threshold = 5, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<int> DemSanPhamDuoiNguongAsync(CancellationToken ct = default) => throw new NotSupportedException();
     }
 }

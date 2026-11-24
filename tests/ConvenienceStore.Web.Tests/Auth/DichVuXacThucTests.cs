@@ -96,7 +96,7 @@ public sealed class DichVuXacThucTests(CsdlXacThucFixture csdl) : IAsyncLifetime
         Assert.Equal(423, lan5.MaHttp);
         Assert.Contains("15 phút", lan5.Message);
         var conLai = Convert.ToInt64(await csdl.DocMotGiaTriAsync(
-            "SELECT TIMESTAMPDIFF(SECOND, NOW(), khoa_tam_den) FROM tai_khoan WHERE id = @id", ("@id", tk.Id)));
+            "SELECT CAST(EXTRACT(EPOCH FROM (khoa_tam_den-NOW())) AS bigint) FROM tai_khoan WHERE id = @id", ("@id", tk.Id)));
         Assert.InRange(conLai, 14 * 60L, 15 * 60L);
     }
 
@@ -105,7 +105,7 @@ public sealed class DichVuXacThucTests(CsdlXacThucFixture csdl) : IAsyncLifetime
     {
         var tk = await _duLieu.TaoTaiKhoanAsync("TN");
         await csdl.ChayAsync(
-            "UPDATE tai_khoan SET khoa_tam_den = NOW() + INTERVAL 10 MINUTE, so_lan_sai = 0 WHERE id = @id", ("@id", tk.Id));
+            "UPDATE tai_khoan SET khoa_tam_den = NOW() + INTERVAL '10 minute', so_lan_sai = 0 WHERE id = @id", ("@id", tk.Id));
 
         var loi = await Assert.ThrowsAsync<LoiNghiepVu>(() => DangNhapAsync(tk.TenDangNhap, tk.MatKhau));
         await Assert.ThrowsAsync<LoiNghiepVu>(() => DangNhapAsync(tk.TenDangNhap, "SaiMatKhau1"));
@@ -120,7 +120,7 @@ public sealed class DichVuXacThucTests(CsdlXacThucFixture csdl) : IAsyncLifetime
     {
         var tk = await _duLieu.TaoTaiKhoanAsync("TN");
         await csdl.ChayAsync(
-            "UPDATE tai_khoan SET khoa_tam_den = NOW() - INTERVAL 1 MINUTE, so_lan_sai = 3 WHERE id = @id", ("@id", tk.Id));
+            "UPDATE tai_khoan SET khoa_tam_den = NOW() - INTERVAL '1 minute', so_lan_sai = 3 WHERE id = @id", ("@id", tk.Id));
 
         await DangNhapAsync(tk.TenDangNhap, tk.MatKhau);
 
@@ -158,7 +158,7 @@ public sealed class DichVuXacThucTests(CsdlXacThucFixture csdl) : IAsyncLifetime
         var tk = await _duLieu.TaoTaiKhoanAsync("TN", batBuocDoiMatKhau: true);
         var token = (await DangNhapAsync(tk.TenDangNhap, tk.MatKhau)).TokenPhien;
         await csdl.ChayAsync(
-            "UPDATE phien_dang_nhap SET hoat_dong_cuoi = NOW() - INTERVAL 20 MINUTE WHERE token_bam = @bam",
+            "UPDATE phien_dang_nhap SET hoat_dong_cuoi = NOW() - INTERVAL '20 minute' WHERE token_bam = @bam",
             ("@bam", TokenPhien.Bam(token)));
 
         var kq = await TaoDichVu().XacThucPhienAsync(token);
@@ -169,7 +169,7 @@ public sealed class DichVuXacThucTests(CsdlXacThucFixture csdl) : IAsyncLifetime
         Assert.Equal("TN", kq.NguoiDung.MaVaiTro);
         Assert.True(kq.NguoiDung.BatBuocDoiMatKhau);
         var giayTuLanCuoi = Convert.ToInt64(await csdl.DocMotGiaTriAsync(
-            "SELECT TIMESTAMPDIFF(SECOND, hoat_dong_cuoi, NOW()) FROM phien_dang_nhap WHERE token_bam = @bam",
+            "SELECT CAST(EXTRACT(EPOCH FROM (NOW()-hoat_dong_cuoi)) AS bigint) FROM phien_dang_nhap WHERE token_bam = @bam",
             ("@bam", TokenPhien.Bam(token))));
         Assert.InRange(giayTuLanCuoi, 0L, 60L);
     }
@@ -188,7 +188,7 @@ public sealed class DichVuXacThucTests(CsdlXacThucFixture csdl) : IAsyncLifetime
         var tk = await _duLieu.TaoTaiKhoanAsync("TN");
         var token = (await DangNhapAsync(tk.TenDangNhap, tk.MatKhau)).TokenPhien;
         await csdl.ChayAsync(
-            "UPDATE phien_dang_nhap SET hoat_dong_cuoi = NOW() - INTERVAL 31 MINUTE WHERE token_bam = @bam",
+            "UPDATE phien_dang_nhap SET hoat_dong_cuoi = NOW() - INTERVAL '31 minute' WHERE token_bam = @bam",
             ("@bam", TokenPhien.Bam(token)));
 
         var kq = await TaoDichVu().XacThucPhienAsync(token);
@@ -205,7 +205,7 @@ public sealed class DichVuXacThucTests(CsdlXacThucFixture csdl) : IAsyncLifetime
         var tk = await _duLieu.TaoTaiKhoanAsync("TN");
         var token = (await DangNhapAsync(tk.TenDangNhap, tk.MatKhau)).TokenPhien;
         await csdl.ChayAsync(
-            "UPDATE phien_dang_nhap SET hoat_dong_cuoi = NOW() - INTERVAL 1790 SECOND WHERE token_bam = @bam",
+            "UPDATE phien_dang_nhap SET hoat_dong_cuoi = NOW() - INTERVAL '1790 second' WHERE token_bam = @bam",
             ("@bam", TokenPhien.Bam(token)));
 
         var kq = await TaoDichVu().XacThucPhienAsync(token);
@@ -338,7 +338,7 @@ public sealed class DichVuXacThucTests(CsdlXacThucFixture csdl) : IAsyncLifetime
         }
         if (directCancel)
         {
-            await using var connection = new MySqlConnector.MySqlConnection(csdl.ChuoiKetNoi);
+            await using var connection = new Npgsql.NpgsqlConnection(csdl.ChuoiKetNoi);
             await connection.OpenAsync();
             await using var transaction = await connection.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
             await ConvenienceStore.Web.Services.Pos.HuyGioDangBan.HuyAsync(connection, transaction, tk.Id);

@@ -50,7 +50,7 @@ public class ReturnOrderHttpTests(CsdlKhoFixture fixture)
         builder.WebHost.UseUrls("http://127.0.0.1:0");builder.Logging.ClearProviders();
         builder.Services.AddSingleton(fixture);builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
         builder.Services.AddControllersWithViews(o=> { o.Filters.Add<KiemTraXsrfFilter>();o.Filters.Add<KiemTraDoiMatKhauFilter>(); }).AddApplicationPart(typeof(ReturnOrderService).Assembly);
-        builder.Services.AddXuLyLoiApi();builder.Services.AddDbContext<CuaHangDbContext>(o=>o.UseMySQL(fixture.ChuoiKetNoi).AddInterceptors(new GioVietNamInterceptor()));
+        builder.Services.AddXuLyLoiApi();builder.Services.AddDbContext<CuaHangDbContext>(o=>o.UseNpgsql(fixture.ChuoiKetNoi));
         builder.Services.AddModuleReturns();builder.Services.AddModuleInventory();
         builder.Services.AddSingleton<TimeProvider>(new InvoiceLookupServiceTests.FixedTime(Now));
         builder.Services.AddAuthentication("test").AddScheme<AuthenticationSchemeOptions,TestAuth>("test",_=>{});
@@ -69,10 +69,10 @@ public class ReturnOrderHttpTests(CsdlKhoFixture fixture)
     {
         int product=await new DuLieuTestKho(fixture).TaoSanPhamAsync("DT02HTTP");
         await fixture.ChayAsync("INSERT INTO chinh_sach_doi_tra (hieu_luc_tu) VALUES (@now)",("@now",Now.DateTime.AddHours(-1)));
-        long cart=Convert.ToInt64(await fixture.DocMotGiaTriAsync("INSERT INTO gio_hang (thu_ngan_id,trang_thai,hoan_tat_luc) VALUES (@tn,'DA_HOAN_TAT',@now); SELECT LAST_INSERT_ID();",("@tn",fixture.TaiKhoanThuNganId),("@now",Now.DateTime.AddDays(-1))));
+        long cart=Convert.ToInt64(await fixture.DocMotGiaTriAsync("INSERT INTO gio_hang (thu_ngan_id,trang_thai,hoan_tat_luc) VALUES (@tn,'DA_HOAN_TAT',@now) RETURNING id;",("@tn",fixture.TaiKhoanThuNganId),("@now",Now.DateTime.AddDays(-1))));
         long invoice=Convert.ToInt64(await fixture.DocMotGiaTriAsync("""
             INSERT INTO hoa_don (ma_hoa_don,gio_hang_id,thu_ngan_id,thanh_toan_luc,tong_tien_hang,tong_giam,tong_thanh_toan,tien_khach_dua,tien_thua)
-            VALUES (@ma,@g,@tn,@now,50000,0,50000,50000,0); SELECT LAST_INSERT_ID();
+            VALUES (@ma,@g,@tn,@now,50000,0,50000,50000,0) RETURNING id;
             """,("@ma","HD"+Guid.NewGuid().ToString("N")[..12]),("@g",cart),("@tn",fixture.TaiKhoanThuNganId),("@now",Now.DateTime.AddDays(-1))));
         await fixture.ChayAsync("""
             INSERT INTO ct_hoa_don (hoa_don_id,san_pham_id,ten_san_pham,don_vi_tinh,so_luong,don_gia,gia_von)

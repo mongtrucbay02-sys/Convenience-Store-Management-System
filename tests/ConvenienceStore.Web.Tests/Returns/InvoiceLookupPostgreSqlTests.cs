@@ -9,13 +9,13 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace ConvenienceStore.Web.Tests.Returns;
 
 [Collection(CsdlKhoCollection.Ten)]
-public sealed class InvoiceLookupMySqlTests(CsdlKhoFixture fixture)
+public sealed class InvoiceLookupPostgreSqlTests(CsdlKhoFixture fixture)
 {
     private sealed record Invoice(long Id, string Code, int ProductId);
     private sealed class Scenario(CsdlKhoFixture fixture, CuaHangDbContext db, IDbContextTransaction transaction) : IAsyncDisposable
     {
         public CuaHangDbContext Db => db;
-        public MySqlInvoiceLookupStore Store => new(db);
+        public PostgreSqlInvoiceLookupStore Store => new(db);
         public string Phone { get; } = "0" + Random.Shared.Next(100000000, 999999999);
         public int CustomerId, OtherCashierId;
         public static async Task<Scenario> Create(CsdlKhoFixture fixture)
@@ -23,13 +23,11 @@ public sealed class InvoiceLookupMySqlTests(CsdlKhoFixture fixture)
             var db = fixture.TaoDbContext();
             var scenario = new Scenario(fixture, db, await db.Database.BeginTransactionAsync());
             scenario.CustomerId = checked((int)await scenario.Insert("""
-                INSERT INTO khach_hang (ho_ten, so_dien_thoai, nguoi_tao_id) VALUES ('Khách DT01', @phone, @tn);
-                SELECT LAST_INSERT_ID();
+                INSERT INTO khach_hang (ho_ten, so_dien_thoai, nguoi_tao_id) VALUES ('Khách DT01', @phone, @tn) RETURNING id;
                 """, ("@phone", scenario.Phone), ("@tn", fixture.TaiKhoanThuNganId)));
             scenario.OtherCashierId = checked((int)await scenario.Insert("""
                 INSERT INTO tai_khoan (ten_dang_nhap, mat_khau_bam, ho_ten, vai_tro_id, bat_buoc_doi_mk)
-                VALUES (@name, 'khong-dang-nhap', 'Thu ngân khác', (SELECT id FROM vai_tro WHERE ma = 'TN'), FALSE);
-                SELECT LAST_INSERT_ID();
+                VALUES (@name, 'khong-dang-nhap', 'Thu ngân khác', (SELECT id FROM vai_tro WHERE ma = 'TN'), FALSE) RETURNING id;
                 """, ("@name", "dt" + Guid.NewGuid().ToString("N"))));
             return scenario;
         }
@@ -38,28 +36,27 @@ public sealed class InvoiceLookupMySqlTests(CsdlKhoFixture fixture)
         public async Task<Invoice> AddInvoice(DateTime? purchased = null, bool cancelled = false, bool forbidden = false, int? cashier = null)
         {
             var category = forbidden ? checked((int)await Insert("""
-                INSERT INTO danh_muc (ten, khong_doi_tra) VALUES (@name, TRUE); SELECT LAST_INSERT_ID();
+                INSERT INTO danh_muc (ten, khong_doi_tra) VALUES (@name, TRUE) RETURNING id;
                 """, ("@name", "DT-" + Guid.NewGuid().ToString("N")))) : fixture.DanhMucId;
             var product = checked((int)await Insert("""
                 INSERT INTO san_pham (ma, ten_san_pham, don_vi_tinh, danh_muc_id, nguoi_tao_id)
-                VALUES (@ma, 'Tên hiện tại', 'Hộp', @dm, @tn); SELECT LAST_INSERT_ID();
+                VALUES (@ma, 'Tên hiện tại', 'Hộp', @dm, @tn) RETURNING id;
                 """, ("@ma", "SP" + Guid.NewGuid().ToString("N")[..12]), ("@dm", category), ("@tn", fixture.TaiKhoanThuNganId)));
             var tn = cashier ?? OtherCashierId;
             var when = purchased ?? InvoiceLookupServiceTests.Now.DateTime.AddDays(-1);
             var cart = await Insert("""
                 INSERT INTO gio_hang (thu_ngan_id, khach_hang_id, trang_thai, hoan_tat_luc)
-                VALUES (@tn, @kh, 'DA_HOAN_TAT', @time); SELECT LAST_INSERT_ID();
+                VALUES (@tn, @kh, 'DA_HOAN_TAT', @time) RETURNING id;
                 """, ("@tn", tn), ("@kh", CustomerId), ("@time", when));
             var code = "HD" + Guid.NewGuid().ToString("N")[..12];
             var id = await Insert("""
                 INSERT INTO hoa_don (ma_hoa_don, gio_hang_id, thu_ngan_id, khach_hang_id, thanh_toan_luc,
                     tong_tien_hang, tong_giam, tong_thanh_toan, tien_khach_dua, tien_thua, so_tien_mot_diem, diem_cong)
-                VALUES (@ma, @gio, @tn, @kh, @time, 100000, 10000, 90000, 90000, 0, 10000, 9);
-                SELECT LAST_INSERT_ID();
+                VALUES (@ma, @gio, @tn, @kh, @time, 100000, 10000, 90000, 90000, 0, 10000, 9) RETURNING id;
                 """, ("@ma", code), ("@gio", cart), ("@tn", tn), ("@kh", CustomerId), ("@time", when));
             var promotion = await Insert("""
                 INSERT INTO chuong_trinh_khuyen_mai (ma, ten, loai_giam, gia_tri, bat_dau_luc, ket_thuc_luc, nguoi_tao_id)
-                VALUES (@ma, 'KM test', 'SO_TIEN', 1000, '2026-01-01', '2027-01-01', @ad); SELECT LAST_INSERT_ID();
+                VALUES (@ma, 'KM test', 'SO_TIEN', 1000, '2026-01-01', '2027-01-01', @ad) RETURNING id;
                 """, ("@ma", "KM" + Guid.NewGuid().ToString("N")[..10]), ("@ad", fixture.TaiKhoanAdminId));
             await db.ChayAsync("""
                 INSERT INTO ct_hoa_don (hoa_don_id, san_pham_id, ten_san_pham, don_vi_tinh, so_luong, don_gia, giam_don_vi, khuyen_mai_id, gia_von)
@@ -79,7 +76,7 @@ public sealed class InvoiceLookupMySqlTests(CsdlKhoFixture fixture)
                 INSERT INTO phieu_doi_tra (ma_phieu, loai, hoa_don_goc_id, chinh_sach_id, trang_thai,
                     can_duyet_qua_han, gia_tri_hang_tra, tien_hoan, thu_ngan_id, nguoi_duyet_id, duyet_luc, hoan_tat_luc)
                 VALUES (@ma, @loai, @hd, (SELECT MIN(id) FROM chinh_sach_doi_tra), @status,
-                    TRUE, @value, @refund, @tn, @ad, @approvedAt, @completedAt); SELECT LAST_INSERT_ID();
+                    TRUE, @value, @refund, @tn, @ad, @approvedAt, @completedAt) RETURNING id;
                 """, ("@ma", "DT" + Guid.NewGuid().ToString("N")[..12]), ("@loai", status == "DA_DUYET" ? "DOI_HANG" : "TRA_HANG"),
                 ("@hd", invoice.Id), ("@status", status), ("@value", value), ("@refund", status == "DA_DUYET" ? 0L : value),
                 ("@tn", fixture.TaiKhoanThuNganId), ("@ad", approved ? fixture.TaiKhoanAdminId : null),

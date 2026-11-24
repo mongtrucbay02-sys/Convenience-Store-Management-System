@@ -5,11 +5,11 @@ using ConvenienceStore.Web.Services.Pos;
 using ConvenienceStore.Web.Tests.HaTang;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using MySql.Data.MySqlClient;
+using Npgsql;
 
 namespace ConvenienceStore.Web.Tests.Modules.Products;
 
-public sealed class Sp09CategoryMySqlTests(CsdlMySqlTam database) : IClassFixture<CsdlMySqlTam>
+public sealed class Sp09CategoryPostgreSqlTests(CsdlPostgreSqlTam database) : IClassFixture<CsdlPostgreSqlTam>
 {
     [Fact]
     public async Task HideDeleteNoOpAndTrackedRefreshReuseCentralCategoryVersion()
@@ -54,8 +54,8 @@ public sealed class Sp09CategoryMySqlTests(CsdlMySqlTam database) : IClassFixtur
         var seed = await ProductReferenceSeed.Unused(database);
         await using var context = database.TaoDbContext(); var category = new DanhMuc { Ten = "SP09-FK-" + Guid.NewGuid().ToString("N") }; context.DanhMucs.Add(category); await context.SaveChangesAsync();
         await using var connection = await database.MoKetNoiAsync(); await using var transaction = await connection.BeginTransactionAsync();
-        await using(var command = CsdlMySqlTam.TaoLenh(connection, "INSERT INTO san_pham(ma,ten_san_pham,danh_muc_id,don_vi_tinh,nguoi_tao_id) VALUES(@code,'Concurrent product',@category,'Hộp',@actor)",
-            ("@code", "FK-" + Guid.NewGuid().ToString("N")[..12]), ("@category", category.Id), ("@actor", seed.Actor))) { command.Transaction = (MySqlTransaction)transaction; await command.ExecuteNonQueryAsync(); }
+        await using(var command = CsdlPostgreSqlTam.TaoLenh(connection, "INSERT INTO san_pham(ma,ten_san_pham,danh_muc_id,don_vi_tinh,nguoi_tao_id) VALUES(@code,'Concurrent product',@category,'Hộp',@actor)",
+            ("@code", "FK-" + Guid.NewGuid().ToString("N")[..12]), ("@category", category.Id), ("@actor", seed.Actor))) { command.Transaction = (NpgsqlTransaction)transaction; await command.ExecuteNonQueryAsync(); }
         await using var db = database.TaoDbContext(); var deletion = new EfCategoryRemovalRepository(db).DeleteAsync(category.Id, 1);
         await transaction.CommitAsync(); Assert.Equal(CategoryRemovalStatus.Referenced, (await deletion).Status);
         Assert.Equal(1, Convert.ToInt32(await database.DocMotGiaTriAsync("SELECT COUNT(*) FROM danh_muc WHERE id=@id", ("@id", category.Id))));
@@ -70,9 +70,9 @@ public sealed class Sp09CategoryMySqlTests(CsdlMySqlTam database) : IClassFixtur
         long id;
         await using(var seed = database.TaoDbContext()) { var row = new DanhMuc { Ten = "SP09-ROLLBACK-" + Guid.NewGuid().ToString("N") }; seed.DanhMucs.Add(row); await seed.SaveChangesAsync(); id = row.Id; }
         var operation = hide ? "UPDATE" : "DELETE";
-        await database.ChayAsync($"CREATE TRIGGER sp09_reject BEFORE {operation} ON danh_muc FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Injected category failure'");
+        await database.ChayAsync($"CREATE OR REPLACE FUNCTION sp09_reject_fn() RETURNS trigger LANGUAGE plpgsql AS $test$ BEGIN RAISE EXCEPTION 'Injected category failure'; END $test$; CREATE TRIGGER sp09_reject BEFORE {operation} ON danh_muc FOR EACH ROW EXECUTE FUNCTION sp09_reject_fn()");
         try { await using var db = database.TaoDbContext(); var repo = new EfCategoryRemovalRepository(db); await Assert.ThrowsAsync<DbUpdateException>(() => hide ? repo.HideAsync(id, 1) : repo.DeleteAsync(id, 1)); }
-        finally { await database.ChayAsync("DROP TRIGGER sp09_reject"); }
+        finally { await database.ChayAsync("DROP TRIGGER sp09_reject ON danh_muc"); }
         Assert.Equal("HOAT_DONG", Convert.ToString(await database.DocMotGiaTriAsync("SELECT trang_thai FROM danh_muc WHERE id=@id", ("@id", id))));
         Assert.Equal(1, Convert.ToInt32(await database.DocMotGiaTriAsync("SELECT phien_ban FROM danh_muc WHERE id=@id", ("@id", id))));
     }
@@ -81,7 +81,7 @@ public sealed class Sp09CategoryMySqlTests(CsdlMySqlTam database) : IClassFixtur
     public async Task HidePreservesProductHistoryAndExistingPosCategoryFilters()
     {
         var ids = await ProductReadSeed.Create(database); var invoice = await ProductReferenceSeed.Invoice(database, ids.Active);
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> { ["ConnectionStrings:CuaHang"] = database.ChuoiKetNoi }).Build(); var pos = new MySqlPosCatalog(config);
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> { ["ConnectionStrings:CuaHang"] = database.ChuoiKetNoi }).Build(); var pos = new PostgreSqlPosCatalog(config);
         Assert.NotNull(await pos.FindAsync((int)ids.Active));
         await using var db = database.TaoDbContext(); Assert.Equal(CategoryRemovalStatus.Success, (await new EfCategoryRemovalRepository(db).HideAsync(ids.Category, 1)).Status);
         Assert.Null(await pos.FindAsync((int)ids.Active)); Assert.Empty(await pos.SearchAsync(null, (int)ids.Category)); Assert.DoesNotContain(await pos.GetCategoriesAsync(), x => x.Id == ids.Category);

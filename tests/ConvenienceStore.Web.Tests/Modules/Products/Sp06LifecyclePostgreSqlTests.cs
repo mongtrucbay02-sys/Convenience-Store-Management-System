@@ -4,11 +4,11 @@ using ConvenienceStore.Web.Services.Pos;
 using ConvenienceStore.Web.Shared.Errors;
 using ConvenienceStore.Web.Tests.HaTang;
 using Microsoft.Extensions.Configuration;
-using MySql.Data.MySqlClient;
+using Npgsql;
 
 namespace ConvenienceStore.Web.Tests.Modules.Products;
 
-public sealed class Sp06LifecycleMySqlTests(CsdlMySqlTam database) : IClassFixture<CsdlMySqlTam>
+public sealed class Sp06LifecyclePostgreSqlTests(CsdlPostgreSqlTam database) : IClassFixture<CsdlPostgreSqlTam>
 {
     [Theory]
     [InlineData("invoice")]
@@ -39,7 +39,7 @@ public sealed class Sp06LifecycleMySqlTests(CsdlMySqlTam database) : IClassFixtu
                 """, ("@key", key), ("@id", ids.Product), ("@actor", ids.Actor)); break;
             case "promotion": await database.ChayAsync("""
                 INSERT INTO chuong_trinh_khuyen_mai(ma,ten,loai_giam,gia_tri,bat_dau_luc,ket_thuc_luc,nguoi_tao_id)
-                VALUES(@key,'Reference promotion','SO_TIEN',100,NOW(),NOW()+INTERVAL 1 DAY,@actor);
+                VALUES(@key,'Reference promotion','SO_TIEN',100,NOW(),NOW()+INTERVAL '1 day',@actor);
                 INSERT INTO khuyen_mai_san_pham(chuong_trinh_id,san_pham_id) SELECT id,@id FROM chuong_trinh_khuyen_mai WHERE ma=@key
                 """, ("@key", key), ("@id", ids.Product), ("@actor", ids.Actor)); break;
         }
@@ -54,7 +54,7 @@ public sealed class Sp06LifecycleMySqlTests(CsdlMySqlTam database) : IClassFixtu
     public async Task DiscontinueAndReactivateKeepInvoiceSnapshotAndPosFilterCompatible()
     {
         var ids = await ProductReferenceSeed.Unused(database); var invoice = await ProductReferenceSeed.Invoice(database, ids.Product);
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> { ["ConnectionStrings:CuaHang"] = database.ChuoiKetNoi }).Build(); var catalog = new MySqlPosCatalog(config);
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> { ["ConnectionStrings:CuaHang"] = database.ChuoiKetNoi }).Build(); var catalog = new PostgreSqlPosCatalog(config);
         Assert.NotNull(await catalog.FindAsync((int)ids.Product));
         await using var db = database.TaoDbContext(); var repo = new EfProductLifecycleRepository(db);
         await repo.ExecuteAsync(ids.Product, ProductLifecycleOperation.Discontinue, new() { PhienBan = 1, XacNhan = true }); Assert.Null(await catalog.FindAsync((int)ids.Product));
@@ -68,12 +68,12 @@ public sealed class Sp06LifecycleMySqlTests(CsdlMySqlTam database) : IClassFixtu
     public async Task DeleteFailureRestoresProductPriceAndStockRows()
     {
         var ids = await ProductReferenceSeed.Unused(database);
-        await database.ChayAsync("CREATE TRIGGER sp06_reject_delete BEFORE DELETE ON san_pham FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Injected delete failure'");
+        await database.ChayAsync("CREATE OR REPLACE FUNCTION sp06_reject_delete_fn() RETURNS trigger LANGUAGE plpgsql AS $test$ BEGIN RAISE EXCEPTION 'Injected delete failure'; END $test$; CREATE TRIGGER sp06_reject_delete BEFORE DELETE ON san_pham FOR EACH ROW EXECUTE FUNCTION sp06_reject_delete_fn()");
         try {
             await using var db = database.TaoDbContext(); var repo = new EfProductLifecycleRepository(db);
-            await Assert.ThrowsAsync<MySqlException>(() => repo.ExecuteAsync(ids.Product, ProductLifecycleOperation.Delete, new() { PhienBan = 1, XacNhan = true }));
+            await Assert.ThrowsAsync<PostgresException>(() => repo.ExecuteAsync(ids.Product, ProductLifecycleOperation.Delete, new() { PhienBan = 1, XacNhan = true }));
         }
-        finally { await database.ChayAsync("DROP TRIGGER sp06_reject_delete"); }
+        finally { await database.ChayAsync("DROP TRIGGER sp06_reject_delete ON san_pham"); }
         foreach(var table in new[] { "lich_su_gia", "ton_kho" }) Assert.Equal(1, Convert.ToInt32(await database.DocMotGiaTriAsync($"SELECT COUNT(*) FROM {table} WHERE san_pham_id=@id", ("@id", ids.Product))));
         Assert.Equal(1, Convert.ToInt32(await database.DocMotGiaTriAsync("SELECT phien_ban FROM san_pham WHERE id=@id", ("@id", ids.Product))));
         await using var context = database.TaoDbContext(); using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
@@ -87,7 +87,7 @@ public sealed class Sp06LifecycleMySqlTests(CsdlMySqlTam database) : IClassFixtu
         await database.ChayAsync("INSERT INTO tai_khoan(ten_dang_nhap,mat_khau_bam,ho_ten,vai_tro_id) SELECT @key,'unused','Race cashier',id FROM vai_tro WHERE ma='TN'; INSERT INTO gio_hang(thu_ngan_id) SELECT id FROM tai_khoan WHERE ten_dang_nhap=@key", ("@key", key));
         var cart = Convert.ToUInt32(await database.DocMotGiaTriAsync("SELECT g.id FROM gio_hang g JOIN tai_khoan t ON t.id=g.thu_ngan_id WHERE t.ten_dang_nhap=@key", ("@key", key)));
         await using var connection = await database.MoKetNoiAsync(); await using var transaction = await connection.BeginTransactionAsync();
-        await using(var command = CsdlMySqlTam.TaoLenh(connection, "INSERT INTO ct_gio_hang(gio_hang_id,san_pham_id,so_luong,don_gia) VALUES(@cart,@product,1,10000)", ("@cart", cart), ("@product", ids.Product))) { command.Transaction = (MySqlTransaction)transaction; await command.ExecuteNonQueryAsync(); }
+        await using(var command = CsdlPostgreSqlTam.TaoLenh(connection, "INSERT INTO ct_gio_hang(gio_hang_id,san_pham_id,so_luong,don_gia) VALUES(@cart,@product,1,10000)", ("@cart", cart), ("@product", ids.Product))) { command.Transaction = (NpgsqlTransaction)transaction; await command.ExecuteNonQueryAsync(); }
         await using var db = database.TaoDbContext(); var deletion = new EfProductLifecycleRepository(db).ExecuteAsync(ids.Product, ProductLifecycleOperation.Delete, new() { PhienBan = 1, XacNhan = true });
         await transaction.CommitAsync(); Assert.Equal(409, (await Assert.ThrowsAsync<LoiNghiepVu>(() => deletion)).MaHttp);
         Assert.Equal(1, Convert.ToInt32(await database.DocMotGiaTriAsync("SELECT COUNT(*) FROM ct_gio_hang WHERE gio_hang_id=@cart AND san_pham_id=@id", ("@cart", cart), ("@id", ids.Product))));
@@ -97,7 +97,7 @@ public sealed class Sp06LifecycleMySqlTests(CsdlMySqlTam database) : IClassFixtu
     [Fact]
     public async Task ExternalProductForeignKeysNeverCascadeDeleteHistory()
     {
-        Assert.Equal(0, Convert.ToInt32(await database.DocMotGiaTriAsync("SELECT COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND REFERENCED_TABLE_NAME='san_pham' AND DELETE_RULE='CASCADE'")));
-        Assert.Equal(7, Convert.ToInt32(await database.DocMotGiaTriAsync("SELECT COUNT(DISTINCT TABLE_NAME) FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND REFERENCED_TABLE_NAME='san_pham' AND TABLE_NAME IN('the_kho','ct_hoa_don','ct_phieu_nhap','ct_kiem_ke','ct_xuat_huy','ct_gio_hang','khuyen_mai_san_pham')")));
+        Assert.Equal(0, Convert.ToInt32(await database.DocMotGiaTriAsync("SELECT COUNT(*) FROM pg_constraint WHERE connamespace='smartmart'::regnamespace AND contype='f' AND confrelid='smartmart.san_pham'::regclass AND confdeltype='c'")));
+        Assert.Equal(7, Convert.ToInt32(await database.DocMotGiaTriAsync("SELECT COUNT(DISTINCT conrelid) FROM pg_constraint WHERE connamespace='smartmart'::regnamespace AND contype='f' AND confrelid='smartmart.san_pham'::regclass AND conrelid::regclass::text IN('the_kho','ct_hoa_don','ct_phieu_nhap','ct_kiem_ke','ct_xuat_huy','ct_gio_hang','khuyen_mai_san_pham')")));
     }
 }

@@ -117,23 +117,14 @@ public sealed class SupabaseModelMappingTests
     }
 
     [Fact]
-    public async Task PostgreSql_RejectsMySqlMigrationBeforeOpeningConnection()
+    public void Baseline_IsPostgreSqlOnlyAndMatchesCurrentSnapshot()
     {
-        using var db = Create();
-        Assert.Contains("baseline PostgreSQL", Assert.Throws<InvalidOperationException>(() => db.Database.Migrate()).Message);
-        Assert.Contains("baseline PostgreSQL", (await Assert.ThrowsAsync<InvalidOperationException>(() => db.Database.MigrateAsync())).Message);
-        Assert.Contains("baseline PostgreSQL", Assert.Throws<InvalidOperationException>(() => db.GetService<Microsoft.EntityFrameworkCore.Migrations.IMigrator>().GenerateScript()).Message);
-    }
-
-    [Fact]
-    public void LegacyMySql_TemporaryIdentityFitsUnsignedStorage()
-    {
-        using var db = new CuaHangDbContext(new DbContextOptionsBuilder<CuaHangDbContext>()
-            .UseMySQL("Server=127.0.0.1;Database=unused;User ID=unused").Options);
-        var entry = db.Add(new KhachHang { HoTen = "Offline mapping test", SoDienThoai = "0901234567" });
-        var key = entry.Property(e => e.Id);
-        Assert.True(key.IsTemporary);
-        Assert.InRange(key.CurrentValue, 1L, (long)uint.MaxValue);
-        Assert.NotNull(key.Metadata.GetValueConverter()!.ConvertToProvider(key.CurrentValue));
+        using var db=Create();
+        Assert.Single(db.Database.GetMigrations());
+        Assert.EndsWith("_PostgreSqlBaseline",db.Database.GetMigrations().Single());
+        Assert.False(db.Database.HasPendingModelChanges());
+        var script=db.GetService<Microsoft.EntityFrameworkCore.Migrations.IMigrator>().GenerateScript();
+        Assert.Contains("CREATE VIEW smartmart.v_gia_ban_hien_hanh",script);
+        Assert.DoesNotContain("ENGINE=",script);
     }
 }

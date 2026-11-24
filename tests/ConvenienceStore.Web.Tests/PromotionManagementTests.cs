@@ -184,8 +184,8 @@ public class PromotionManagementTests
 
     private static UpdatePromotionRequest Update(
         string? name = null, DiscountType? type = null, long? value = null,
-        DateTimeOffset? end = null, string? imageUrl = null, long? max = null) =>
-        new(name, null, type, value, max, null, null, end, null, imageUrl);
+        DateTimeOffset? end = null, string? imageUrl = null, long? max = null, long? version = 1) =>
+        new(name, null, type, value, max, null, null, end, null, imageUrl, version);
 
     [Fact]
     public async Task Update_ChangesOnlyProvidedFields()
@@ -242,7 +242,7 @@ public class PromotionManagementTests
         // gửi lại cùng giá trị giảm không bị coi là thay đổi
         var r = await svc.UpdateAsync(
             1, new UpdatePromotionRequest("Tên mới", "mô tả mới", DiscountType.Percent, 10, 5_000,
-                null, null, newEnd, null, null), default);
+                null, null, newEnd, null, null, 1), default);
 
         Assert.True(r.IsSuccess);
         Assert.Equal("Tên mới", r.Value!.Name);
@@ -276,8 +276,8 @@ public class PromotionManagementTests
         var (svc, _) = Create(Record(1, PromotionStatus.Draft));
 
         var set = await svc.UpdateAsync(1, Update(imageUrl: "https://example.com/x.jpg"), default);
-        var cleared = await svc.UpdateAsync(1, Update(imageUrl: ""), default);
-        var bad = await svc.UpdateAsync(1, Update(imageUrl: "javascript:alert(1)"), default);
+        var cleared = await svc.UpdateAsync(1, Update(imageUrl: "",version: set.Value!.Version), default);
+        var bad = await svc.UpdateAsync(1, Update(imageUrl: "javascript:alert(1)",version: cleared.Value!.Version), default);
 
         Assert.Equal("https://example.com/x.jpg", set.Value!.ImageUrl);
         Assert.Null(cleared.Value!.ImageUrl);
@@ -291,10 +291,10 @@ public class PromotionManagementTests
     {
         var (svc, _) = Create(Record(1, PromotionStatus.Draft));
 
-        var active = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Active, default);
-        var paused = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Paused, default);
-        var resumed = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Active, default);
-        var ended = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Ended, default);
+        var active = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Active, default, 1);
+        var paused = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Paused, default, active.Value!.Version);
+        var resumed = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Active, default, paused.Value!.Version);
+        var ended = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Ended, default, resumed.Value!.Version);
 
         Assert.Equal(PromotionDisplayStatus.Running, active.Value!.DisplayStatus);
         Assert.Equal(PromotionDisplayStatus.Paused, paused.Value!.DisplayStatus);
@@ -307,7 +307,7 @@ public class PromotionManagementTests
     {
         var (svc, _) = Create(Record(1, PromotionStatus.Ended));
 
-        var r = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Active, default);
+        var r = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Active, default, 1);
 
         Assert.Equal("PROMOTION_ENDED", r.Error!.Code);
         Assert.Equal(PromotionErrorKind.Conflict, r.Error.Kind);
@@ -318,7 +318,7 @@ public class PromotionManagementTests
     {
         var (svc, _) = Create(Record(1, PromotionStatus.Active, start: Now.AddDays(-9), end: Now.AddDays(-1)));
 
-        var r = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Paused, default);
+        var r = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Paused, default, 1);
 
         Assert.Equal("PROMOTION_ENDED", r.Error!.Code);
     }
@@ -328,7 +328,7 @@ public class PromotionManagementTests
     {
         var (svc, _) = Create(Record(1, PromotionStatus.Paused, start: Now.AddDays(-9), end: Now.AddDays(-1)));
 
-        var r = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Active, default);
+        var r = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Active, default, 1);
 
         Assert.Equal("PROMOTION_PAST_END_TIME", r.Error!.Code);
         Assert.Equal(PromotionErrorKind.Unprocessable, r.Error.Kind);
@@ -339,7 +339,7 @@ public class PromotionManagementTests
     {
         var (svc, _) = Create(Record(1, PromotionStatus.Draft));
 
-        var r = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Paused, default);
+        var r = await svc.ChangeStatusAsync(1, PromotionTargetStatus.Paused, default, 1);
 
         Assert.Equal("PROMOTION_INVALID_TRANSITION", r.Error!.Code);
     }
@@ -349,7 +349,7 @@ public class PromotionManagementTests
     {
         var (svc, _) = Create();
 
-        var r = await svc.ChangeStatusAsync(7, PromotionTargetStatus.Ended, default);
+        var r = await svc.ChangeStatusAsync(7, PromotionTargetStatus.Ended, default, 1);
 
         Assert.Equal(PromotionErrorKind.NotFound, r.Error!.Kind);
     }

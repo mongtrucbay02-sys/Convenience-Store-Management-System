@@ -3,22 +3,22 @@ using ConvenienceStore.Web.Services.Pos;
 using ConvenienceStore.Web.Tests.HaTang;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
+using Npgsql;
 using ConvenienceStore.Web.Shared.Errors;
 
 namespace ConvenienceStore.Web.Tests.Modules.Products;
 
-public sealed class Sp05PricingMySqlTests(CsdlMySqlTam database) : IClassFixture<CsdlMySqlTam>
+public sealed class Sp05PricingPostgreSqlTests(CsdlPostgreSqlTam database) : IClassFixture<CsdlPostgreSqlTam>
 {
     [Fact]
     public async Task DatabasePriceCheckCancellationPairAndForeignKeysAreEnforced()
     {
         var ids = await ProductReadSeed.Create(database); var actor = Convert.ToUInt32(await database.DocMotGiaTriAsync("SELECT nguoi_tao_id FROM san_pham WHERE id=@id", ("@id", ids.Active)));
-        var badPrice = await Assert.ThrowsAsync<MySqlException>(() => database.ChayAsync("INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id) VALUES(@id,101,NOW(),@actor)", ("@id", ids.Active), ("@actor", actor)));
+        var badPrice = await Assert.ThrowsAsync<PostgresException>(() => database.ChayAsync("INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id) VALUES(@id,101,NOW(),@actor)", ("@id", ids.Active), ("@actor", actor)));
         Assert.Contains("ck_lsg_gia", badPrice.Message);
-        var badPair = await Assert.ThrowsAsync<MySqlException>(() => database.ChayAsync("INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id,huy_luc) VALUES(@id,10000,NOW(),@actor,NOW())", ("@id", ids.Active), ("@actor", actor)));
+        var badPair = await Assert.ThrowsAsync<PostgresException>(() => database.ChayAsync("INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id,huy_luc) VALUES(@id,10000,NOW(),@actor,NOW())", ("@id", ids.Active), ("@actor", actor)));
         Assert.Contains("ck_lsg_huy", badPair.Message);
-        var badProduct = await Assert.ThrowsAsync<MySqlException>(() => database.ChayAsync("INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id) VALUES(4294967295,10000,NOW(),@actor)", ("@actor", actor)));
+        var badProduct = await Assert.ThrowsAsync<PostgresException>(() => database.ChayAsync("INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id) VALUES(4294967295,10000,NOW(),@actor)", ("@actor", actor)));
         Assert.Contains("fk_lsg_san_pham", badProduct.Message);
         Assert.Equal(2, Convert.ToInt32(await database.DocMotGiaTriAsync("SELECT COUNT(*) FROM lich_su_gia WHERE san_pham_id=@id", ("@id", ids.Active))));
     }
@@ -30,7 +30,7 @@ public sealed class Sp05PricingMySqlTests(CsdlMySqlTam database) : IClassFixture
         await database.ChayAsync("INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id) SELECT id,10100,NOW(),nguoi_tao_id FROM san_pham WHERE id=@id", ("@id", ids.Active));
         await using var db = database.TaoDbContext(); Assert.Equal(10100L, (await new EfProductDetailRepository(db).FindAsync(ids.Active, false))!.GiaBan);
         var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> { ["ConnectionStrings:CuaHang"] = database.ChuoiKetNoi }).Build();
-        Assert.Equal(10100L, (await new MySqlPosCatalog(config).FindAsync((int)ids.Active))!.Price);
+        Assert.Equal(10100L, (await new PostgreSqlPosCatalog(config).FindAsync((int)ids.Active))!.Price);
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public sealed class Sp05PricingMySqlTests(CsdlMySqlTam database) : IClassFixture
         await using var db = database.TaoDbContext(); var repo = new EfProductPricingRepository(db);
         var immediate = await repo.CreateAsync(ids.Active, new() { GiaBan = 12000, PhienBan = 1 }, actor);
         Assert.Equal(2L, immediate.PhienBan); Assert.Equal(actor, immediate.NguoiTaoId); Assert.True(immediate.NgayTao.Year >= 2026);
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> { ["ConnectionStrings:CuaHang"] = database.ChuoiKetNoi }).Build(); var catalog = new MySqlPosCatalog(config);
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> { ["ConnectionStrings:CuaHang"] = database.ChuoiKetNoi }).Build(); var catalog = new PostgreSqlPosCatalog(config);
         Assert.Equal(12000L, (await catalog.FindAsync((int)ids.Active))!.Price); Assert.Equal(12000L, Assert.Single(await catalog.SearchAsync(null, (int)ids.Category)).Price);
         Assert.Equal(10000, Convert.ToInt32(await database.DocMotGiaTriAsync("SELECT don_gia FROM ct_gio_hang WHERE san_pham_id=@id", ("@id", ids.Active))));
         Assert.Equal(409, (await Assert.ThrowsAsync<LoiNghiepVu>(() => repo.CancelAsync(ids.Active, immediate.Id, 2, actor))).MaHttp);
@@ -65,12 +65,12 @@ public sealed class Sp05PricingMySqlTests(CsdlMySqlTam database) : IClassFixture
     public async Task HistoryInsertFailureRollsBackProductVersion()
     {
         var ids = await ProductReadSeed.Create(database); var actor = Convert.ToUInt32(await database.DocMotGiaTriAsync("SELECT nguoi_tao_id FROM san_pham WHERE id=@id", ("@id", ids.Active)));
-        await database.ChayAsync("CREATE TRIGGER sp05_reject_price BEFORE INSERT ON lich_su_gia FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Injected history failure'");
+        await database.ChayAsync("CREATE OR REPLACE FUNCTION sp05_reject_price_fn() RETURNS trigger LANGUAGE plpgsql AS $test$ BEGIN RAISE EXCEPTION 'Injected history failure'; END $test$; CREATE TRIGGER sp05_reject_price BEFORE INSERT ON lich_su_gia FOR EACH ROW EXECUTE FUNCTION sp05_reject_price_fn()");
         try {
             await using var db = database.TaoDbContext();
             await Assert.ThrowsAsync<DbUpdateException>(() => new EfProductPricingRepository(db).CreateAsync(ids.Active, new() { GiaBan = 12000, PhienBan = 1 }, actor));
         }
-        finally { await database.ChayAsync("DROP TRIGGER sp05_reject_price"); }
+        finally { await database.ChayAsync("DROP TRIGGER sp05_reject_price ON lich_su_gia"); }
         Assert.Equal(1, Convert.ToInt32(await database.DocMotGiaTriAsync("SELECT phien_ban FROM san_pham WHERE id=@id", ("@id", ids.Active))));
         Assert.Equal(2, Convert.ToInt32(await database.DocMotGiaTriAsync("SELECT COUNT(*) FROM lich_su_gia WHERE san_pham_id=@id", ("@id", ids.Active))));
     }
@@ -81,9 +81,9 @@ public sealed class Sp05PricingMySqlTests(CsdlMySqlTam database) : IClassFixture
         var ids = await ProductReadSeed.Create(database); var actor = Convert.ToUInt32(await database.DocMotGiaTriAsync("SELECT nguoi_tao_id FROM san_pham WHERE id=@id", ("@id", ids.Active)));
         await using var db = database.TaoDbContext(); var repo = new EfProductPricingRepository(db);
         var price = await repo.CreateAsync(ids.Active, new() { GiaBan = 12000, PhienBan = 1, HieuLucTu = DateTimeOffset.UtcNow.AddDays(2).ToString("O") }, actor);
-        await database.ChayAsync("CREATE TRIGGER sp05_reject_version BEFORE UPDATE ON san_pham FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Injected version failure'");
-        try { await Assert.ThrowsAsync<MySqlException>(() => repo.CancelAsync(ids.Active, price.Id, 2, actor)); }
-        finally { await database.ChayAsync("DROP TRIGGER sp05_reject_version"); }
+        await database.ChayAsync("CREATE OR REPLACE FUNCTION sp05_reject_version_fn() RETURNS trigger LANGUAGE plpgsql AS $test$ BEGIN RAISE EXCEPTION 'Injected version failure'; END $test$; CREATE TRIGGER sp05_reject_version BEFORE UPDATE ON san_pham FOR EACH ROW EXECUTE FUNCTION sp05_reject_version_fn()");
+        try { await Assert.ThrowsAsync<PostgresException>(() => repo.CancelAsync(ids.Active, price.Id, 2, actor)); }
+        finally { await database.ChayAsync("DROP TRIGGER sp05_reject_version ON san_pham"); }
         var unchanged = await repo.FindAsync(ids.Active, price.Id); Assert.NotNull(unchanged); Assert.Null(unchanged.HuyLuc); Assert.Null(unchanged.NguoiHuyId); Assert.Equal(2L, unchanged.PhienBan);
     }
 }

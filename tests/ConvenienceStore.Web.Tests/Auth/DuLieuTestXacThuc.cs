@@ -5,7 +5,7 @@ namespace ConvenienceStore.Web.Tests.Auth;
 
 public sealed record TaiKhoanTest(int Id, string TenDangNhap, string MatKhau);
 
-public sealed class DuLieuTestXacThuc(CsdlMySqlTam csdl)
+public sealed class DuLieuTestXacThuc(CsdlPostgreSqlTam csdl)
 {
     public const string MatKhauMacDinh = "MatKhau123";
 

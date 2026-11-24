@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
+using Npgsql;
 using Xunit;
 
 namespace ConvenienceStore.Web.Tests.Inventory;
@@ -17,21 +17,10 @@ public sealed class HaTangTestKhoTests(CsdlKhoFixture csdl)
     [Fact]
     public async Task Migration_TaoDu28Bang_3View_10Trigger()
     {
-        var soBang = await DemAsync(
-            "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() " +
-            "AND table_type = 'BASE TABLE' " +
-            "AND table_name <> '__EFMigrationsHistory' " +
-            "AND table_name NOT IN ('hoan_tien_hoa_don','quy_tien_mat','giao_dich_tien_mat')");
-        var soView = await DemAsync(
-            "SELECT COUNT(*) FROM information_schema.views WHERE table_schema = DATABASE()");
-        var soTrigger = await DemAsync(
-            "SELECT COUNT(*) FROM information_schema.triggers " +
-            "WHERE trigger_schema = DATABASE() " +
-            "AND event_object_table NOT IN ('hoan_tien_hoa_don','giao_dich_tien_mat')");
-
-        Assert.Equal(28, soBang);
-        Assert.Equal(3, soView);
-        Assert.Equal(10, soTrigger);
+        var soBang = await DemAsync("SELECT COUNT(*) FROM pg_tables WHERE schemaname='smartmart'");
+        var soView = await DemAsync("SELECT COUNT(*) FROM pg_views WHERE schemaname='smartmart'");
+        var soTrigger = await DemAsync("SELECT COUNT(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid WHERE c.relnamespace='smartmart'::regnamespace AND NOT t.tgisinternal");
+        Assert.Equal(31,soBang);Assert.Equal(3,soView);Assert.Equal(17,soTrigger);
     }
 
     [Fact]
@@ -39,7 +28,7 @@ public sealed class HaTangTestKhoTests(CsdlKhoFixture csdl)
     {
         await using var db = csdl.TaoDbContext();
         var daChay = await db.Database.GetAppliedMigrationsAsync();
-        Assert.Contains(daChay, m => m.EndsWith("_InitialCreate", StringComparison.Ordinal));
+        Assert.Contains(daChay, m => m.EndsWith("_PostgreSqlBaseline", StringComparison.Ordinal));
         Assert.Empty(await db.Database.GetPendingMigrationsAsync());
     }
 
@@ -50,11 +39,11 @@ public sealed class HaTangTestKhoTests(CsdlKhoFixture csdl)
         {
             await db.Database.OpenConnectionAsync();
             await using var lenh = db.Database.GetDbConnection().CreateCommand();
-            lenh.CommandText = "SELECT @@session.time_zone";
-            Assert.Equal("+07:00", await lenh.ExecuteScalarAsync());
+            lenh.CommandText = "SELECT current_setting('TimeZone')";
+            Assert.Equal("Asia/Ho_Chi_Minh", await lenh.ExecuteScalarAsync());
         }
 
-        Assert.Equal("+07:00", await csdl.DocMotGiaTriAsync("SELECT @@session.time_zone"));
+        Assert.Equal("Asia/Ho_Chi_Minh", await csdl.DocMotGiaTriAsync("SELECT current_setting('TimeZone')"));
     }
 
     [Fact]
@@ -88,7 +77,7 @@ public sealed class HaTangTestKhoTests(CsdlKhoFixture csdl)
         var sp = await _duLieu.TaoSanPhamAsync("HTCHECK");
         await csdl.ChayAsync("INSERT INTO ton_kho (san_pham_id) VALUES (@sp)", ("@sp", sp));
 
-        var loi = await Assert.ThrowsAsync<MySqlException>(() => csdl.ChayAsync(
+        var loi = await Assert.ThrowsAsync<PostgresException>(() => csdl.ChayAsync(
             "UPDATE ton_kho SET so_luong_ton = -1 WHERE san_pham_id = @sp", ("@sp", sp)));
         Assert.Contains("ck_ton_khong_am", loi.Message);
     }
@@ -106,9 +95,9 @@ public sealed class HaTangTestKhoTests(CsdlKhoFixture csdl)
             ("@sp", sp), ("@ma", DuLieuTestKho.MaChungTuGia()), ("@ct", DuLieuTestKho.IdChungTuGia()),
             ("@nguoi", csdl.TaiKhoanKhoId));
 
-        await Assert.ThrowsAsync<MySqlException>(() => csdl.ChayAsync(
+        await Assert.ThrowsAsync<PostgresException>(() => csdl.ChayAsync(
             "UPDATE the_kho SET ton_sau = 6 WHERE san_pham_id = @sp", ("@sp", sp)));
-        await Assert.ThrowsAsync<MySqlException>(() => csdl.ChayAsync(
+        await Assert.ThrowsAsync<PostgresException>(() => csdl.ChayAsync(
             "DELETE FROM the_kho WHERE san_pham_id = @sp", ("@sp", sp)));
         Assert.Equal(1, await _duLieu.DemTheKhoAsync(sp, "NHAP_HANG"));
     }
@@ -123,7 +112,7 @@ public sealed class HaTangTestKhoTests(CsdlKhoFixture csdl)
 
         await using var quay1 = await csdl.MoKetNoiAsync();
         await using var quay2 = await csdl.MoKetNoiAsync();
-        await using (var lenh = CsdlKhoFixture.TaoLenh(quay2, "SET SESSION innodb_lock_wait_timeout = 1"))
+        await using (var lenh = CsdlKhoFixture.TaoLenh(quay2, "SET lock_timeout = '1s'"))
             await lenh.ExecuteNonQueryAsync();
 
         await using var giaoTac1 = await quay1.BeginTransactionAsync();
@@ -137,8 +126,8 @@ public sealed class HaTangTestKhoTests(CsdlKhoFixture csdl)
         await using (var lenh = CsdlKhoFixture.TaoLenh(quay2, khoaDong, ("@sp", sp)))
         {
             lenh.Transaction = giaoTac2;
-            var loi = await Assert.ThrowsAsync<MySqlException>(() => lenh.ExecuteScalarAsync());
-            Assert.Equal(1205, loi.Number); // Lock wait timeout: dịch vụ kho trả LOI_GHI_DU_LIEU
+            var loi = await Assert.ThrowsAsync<PostgresException>(() => lenh.ExecuteScalarAsync());
+            Assert.Equal("55P03", loi.SqlState); // Lock wait timeout: dịch vụ kho trả LOI_GHI_DU_LIEU
         }
 
         await giaoTac2.RollbackAsync();

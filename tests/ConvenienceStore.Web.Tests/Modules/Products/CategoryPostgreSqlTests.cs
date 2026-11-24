@@ -4,7 +4,7 @@ using ConvenienceStore.Web.Tests.HaTang;
 
 namespace ConvenienceStore.Web.Tests.Modules.Products;
 
-public sealed class CategoryMySqlTests(CsdlMySqlTam database) : IClassFixture<CsdlMySqlTam>
+public sealed class CategoryPostgreSqlTests(CsdlPostgreSqlTam database) : IClassFixture<CsdlPostgreSqlTam>
 {
     [Fact]
     public async Task StablePagesCountAllAssignedProductsAndDoNotTrackEntities()

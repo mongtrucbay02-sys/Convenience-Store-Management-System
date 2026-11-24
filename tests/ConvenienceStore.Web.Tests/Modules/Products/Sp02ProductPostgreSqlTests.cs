@@ -3,7 +3,7 @@ using ConvenienceStore.Web.Tests.HaTang;
 
 namespace ConvenienceStore.Web.Tests.Modules.Products;
 
-public sealed class Sp02ProductMySqlTests(CsdlMySqlTam database) : IClassFixture<CsdlMySqlTam>
+public sealed class Sp02ProductPostgreSqlTests(CsdlPostgreSqlTam database) : IClassFixture<CsdlPostgreSqlTam>
 {
     [Fact]
     public async Task CurrentPriceAndFutureHistoryRespectBoundaryCancellationAndPaging()
@@ -13,7 +13,7 @@ public sealed class Sp02ProductMySqlTests(CsdlMySqlTam database) : IClassFixture
             INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id)
             SELECT id,10100,NOW(),nguoi_tao_id FROM san_pham WHERE id=@id;
             INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id,huy_luc,nguoi_huy_id)
-            SELECT id,88800,NOW()+INTERVAL 2 DAY,nguoi_tao_id,NOW(),nguoi_tao_id FROM san_pham WHERE id=@id;
+            SELECT id,88800,NOW()+INTERVAL '2 day',nguoi_tao_id,NOW(),nguoi_tao_id FROM san_pham WHERE id=@id;
             """, ("@id", ids.Active));
         await using var db = database.TaoDbContext(); var repo = new EfProductDetailRepository(db);
         var detail = await repo.FindAsync(ids.Active, false); Assert.NotNull(detail); Assert.Equal(10100L, detail.GiaBan);

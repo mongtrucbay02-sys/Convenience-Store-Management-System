@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ConvenienceStore.Web.Tests.Modules.Products;
 
-public sealed class Sp03ProductMySqlTests(CsdlMySqlTam database) : IClassFixture<CsdlMySqlTam>
+public sealed class Sp03ProductPostgreSqlTests(CsdlPostgreSqlTam database) : IClassFixture<CsdlPostgreSqlTam>
 {
     [Fact]
     public async Task CreationPersistsAllThreeRecordsAndCurrentPrice()
@@ -43,8 +43,8 @@ public sealed class Sp03ProductMySqlTests(CsdlMySqlTam database) : IClassFixture
 
     private sealed class FailingStock(ConvenienceStore.Web.Data.CuaHangDbContext db) : IDichVuKho
     {
-        public bool SawAllThreeRecordsInTransaction; public int Id;
-        public async Task KhoiTaoTonKhoAsync(int id, int threshold = 5, CancellationToken ct = default)
+        public bool SawAllThreeRecordsInTransaction; public long Id;
+        public async Task KhoiTaoTonKhoAsync(long id, int threshold = 5, CancellationToken ct = default)
         {
             Id = id;
             await new DichVuKho(db, NullLogger<DichVuKho>.Instance).KhoiTaoTonKhoAsync(id, threshold, ct);
@@ -53,7 +53,7 @@ public sealed class Sp03ProductMySqlTests(CsdlMySqlTam database) : IClassFixture
             throw new InvalidOperationException("Injected inventory boundary failure after all three writes.");
         }
         public Task<KetQuaBienDong> GhiNhanBienDongAsync(YeuCauBienDong input, CancellationToken ct = default) => throw new NotSupportedException();
-        public Task<IReadOnlyList<TonKhoHienTai>> LayTonKhoAsync(IReadOnlyCollection<int> ids, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<TonKhoHienTai>> LayTonKhoAsync(IReadOnlyCollection<long> ids, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<int> DemSanPhamDuoiNguongAsync(CancellationToken ct = default) => throw new NotSupportedException();
     }
 }

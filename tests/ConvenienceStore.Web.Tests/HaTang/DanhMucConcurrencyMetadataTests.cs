@@ -10,7 +10,7 @@ public sealed class DanhMucConcurrencyMetadataTests
     public void DanhMucVersion_IsConcurrencyToken()
     {
         var options = new DbContextOptionsBuilder<CuaHangDbContext>()
-            .UseMySQL("server=localhost;database=metadata_only")
+            .UseNpgsql("Host=127.0.0.1;Database=metadata_only;Username=unused")
             .Options;
         using var db = new CuaHangDbContext(options);
 
@@ -25,7 +25,7 @@ public sealed class DanhMucConcurrencyMetadataTests
     public void PromotionsVersion_RetainsExistingMapping()
     {
         var options = new DbContextOptionsBuilder<CuaHangDbContext>()
-            .UseMySQL("server=localhost;database=metadata_only")
+            .UseNpgsql("Host=127.0.0.1;Database=metadata_only;Username=unused")
             .Options;
         using var db = new CuaHangDbContext(options);
 

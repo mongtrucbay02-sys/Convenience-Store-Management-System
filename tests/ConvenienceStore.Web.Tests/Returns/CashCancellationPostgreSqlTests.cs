@@ -6,12 +6,12 @@ using ConvenienceStore.Web.Shared.Data;
 using ConvenienceStore.Web.Shared.Errors;
 using ConvenienceStore.Web.Tests.Inventory;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
+using Npgsql;
 
 namespace ConvenienceStore.Web.Tests.Returns;
 
 // A separate fixture prevents cash totals leaking into existing warehouse/returns tests.
-public sealed class CashCancellationMySqlTests(CsdlKhoFixture database) : IClassFixture<CsdlKhoFixture>
+public sealed class CashCancellationPostgreSqlTests(CsdlKhoFixture database) : IClassFixture<CsdlKhoFixture>
 {
     private readonly CashLedgerService ledger = new();
     private ClaimsPrincipal Admin => new(new ClaimsIdentity([
@@ -25,13 +25,13 @@ public sealed class CashCancellationMySqlTests(CsdlKhoFixture database) : IClass
         var product = await new BoTroGoiDichVuKho(database).TaoSanPhamCoTonAsync("CASH", 8, 10000);
         var customer = await Scalar("""
             INSERT INTO khach_hang(ho_ten,so_dien_thoai,diem_hien_co,nguoi_tao_id)
-            VALUES ('Khách hủy',@phone,5,@actor); SELECT LAST_INSERT_ID();
+            VALUES ('Khách hủy',@phone,5,@actor) RETURNING id;
             """, ("@phone", "0" + Random.Shared.Next(100000000, 999999999)), ("@actor", database.TaiKhoanAdminId));
-        var cart = await Scalar("INSERT INTO gio_hang(thu_ngan_id,trang_thai) VALUES (@actor,'DA_HOAN_TAT'); SELECT LAST_INSERT_ID();", ("@actor", database.TaiKhoanThuNganId));
+        var cart = await Scalar("INSERT INTO gio_hang(thu_ngan_id,trang_thai) VALUES (@actor,'DA_HOAN_TAT') RETURNING id;", ("@actor", database.TaiKhoanThuNganId));
         var invoice = await Scalar("""
             INSERT INTO hoa_don(ma_hoa_don,gio_hang_id,thu_ngan_id,khach_hang_id,thanh_toan_luc,
               tong_tien_hang,tong_thanh_toan,tien_khach_dua,tien_thua,diem_cong,so_tien_mot_diem)
-            VALUES (@code,@cart,@actor,@customer,NOW(),50000,50000,100000,50000,5,10000); SELECT LAST_INSERT_ID();
+            VALUES (@code,@cart,@actor,@customer,NOW(),50000,50000,100000,50000,5,10000) RETURNING id;
             """, ("@code", "HD" + Guid.NewGuid().ToString("N")[..12]), ("@cart", cart), ("@actor", database.TaiKhoanThuNganId), ("@customer", customer));
         await database.ChayAsync("""
             INSERT INTO ct_hoa_don(hoa_don_id,san_pham_id,ten_san_pham,don_vi_tinh,so_luong,don_gia,gia_von)
@@ -53,7 +53,7 @@ public sealed class CashCancellationMySqlTests(CsdlKhoFixture database) : IClass
         var before = await Scalar("SELECT so_du FROM quy_tien_mat WHERE id=1");
         var seed = await Seed();
         await using (var db = database.TaoDbContext())
-            Assert.Equal(50000UL, (await Service(db).CancelAsync(seed.Invoice, "Khách đổi ý", Admin)).CashRefund);
+            Assert.Equal(50000L, (await Service(db).CancelAsync(seed.Invoice, "Khách đổi ý", Admin)).CashRefund);
         Assert.Equal(before, await Scalar("SELECT so_du FROM quy_tien_mat WHERE id=1"));
         Assert.Equal(10, await Scalar("SELECT so_luong_ton FROM ton_kho WHERE san_pham_id=@id", ("@id", seed.Product)));
         Assert.Equal(0, await Scalar("SELECT diem_hien_co FROM khach_hang WHERE id=@id", ("@id", seed.Customer)));
@@ -83,15 +83,14 @@ public sealed class CashCancellationMySqlTests(CsdlKhoFixture database) : IClass
         var seed = await Seed();
         var before = await Scalar("SELECT so_du FROM quy_tien_mat WHERE id=1");
         await database.ChayAsync("""
-            CREATE TRIGGER test_fail_cancel BEFORE INSERT ON hoan_tien_hoa_don
-            FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='injected audit failure'
+            CREATE OR REPLACE FUNCTION test_fail_cancel_fn() RETURNS trigger LANGUAGE plpgsql AS $test$ BEGIN RAISE EXCEPTION 'injected audit failure'; END $test$; CREATE TRIGGER test_fail_cancel BEFORE INSERT ON hoan_tien_hoa_don FOR EACH ROW EXECUTE FUNCTION test_fail_cancel_fn()
             """);
         try
         {
             await using var db = database.TaoDbContext();
-            await Assert.ThrowsAsync<MySqlException>(() => Service(db).CancelAsync(seed.Invoice, "Rollback", Admin));
+            await Assert.ThrowsAsync<PostgresException>(() => Service(db).CancelAsync(seed.Invoice, "Rollback", Admin));
         }
-        finally { await database.ChayAsync("DROP TRIGGER test_fail_cancel"); }
+        finally { await database.ChayAsync("DROP TRIGGER test_fail_cancel ON hoan_tien_hoa_don"); }
         Assert.Equal(before, await Scalar("SELECT so_du FROM quy_tien_mat WHERE id=1"));
         Assert.Equal(0, await Scalar("SELECT COUNT(*) FROM giao_dich_tien_mat WHERE loai='CHI_HUY_HOA_DON' AND hoa_don_id=@id", ("@id", seed.Invoice)));
         Assert.Equal(8, await Scalar("SELECT so_luong_ton FROM ton_kho WHERE san_pham_id=@id", ("@id", seed.Product)));
@@ -125,18 +124,18 @@ public sealed class CashCancellationMySqlTests(CsdlKhoFixture database) : IClass
         Assert.Equal(new CashLedgerService.Balance(100000, true), await ledger.GetBalanceAsync(db, default));
         Assert.Equal("DA_CHOT_SO_DU_DAU", (await Assert.ThrowsAsync<LoiNghiepVu>(() => ledger.ConfirmOpeningAsync(db, database.TaiKhoanAdminId, 200000, 100000, "Again", default))).Ma);
         Assert.Equal(1, await Scalar("SELECT COUNT(*) FROM giao_dich_tien_mat WHERE loai='CHOT_SO_DU_DAU'"));
-        Assert.Equal(1644, (await Assert.ThrowsAsync<MySqlException>(() => database.ChayAsync("UPDATE giao_dich_tien_mat SET so_tien=1 WHERE loai='CHOT_SO_DU_DAU'"))).Number);
-        Assert.Equal(1644, (await Assert.ThrowsAsync<MySqlException>(() => database.ChayAsync("DELETE FROM giao_dich_tien_mat WHERE loai='CHOT_SO_DU_DAU'"))).Number);
+        Assert.Equal("23514", (await Assert.ThrowsAsync<PostgresException>(() => database.ChayAsync("UPDATE giao_dich_tien_mat SET so_tien=1 WHERE loai='CHOT_SO_DU_DAU'"))).SqlState);
+        Assert.Equal("23514", (await Assert.ThrowsAsync<PostgresException>(() => database.ChayAsync("DELETE FROM giao_dich_tien_mat WHERE loai='CHOT_SO_DU_DAU'"))).SqlState);
     }
 
     [Fact]
     public async Task DatabaseRejectsDuplicateCashEvents()
     {
         var seed = await Seed();
-        Assert.Equal(1062, (await Assert.ThrowsAsync<MySqlException>(() => database.ChayAsync("""
+        Assert.Equal("23505", (await Assert.ThrowsAsync<PostgresException>(() => database.ChayAsync("""
             INSERT INTO giao_dich_tien_mat(loai,hoa_don_id,so_tien,so_du_truoc,so_du_sau,nguoi_thuc_hien_id)
             SELECT loai,hoa_don_id,so_tien,so_du_truoc,so_du_sau,nguoi_thuc_hien_id
             FROM giao_dich_tien_mat WHERE hoa_don_id=@id AND loai='THU_BAN_HANG'
-            """, ("@id", seed.Invoice)))).Number);
+            """, ("@id", seed.Invoice)))).SqlState);
     }
 }

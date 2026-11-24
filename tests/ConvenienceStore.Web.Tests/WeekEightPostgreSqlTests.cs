@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ConvenienceStore.Web.Tests;
 
-public sealed class WeekEightMySqlTests(CsdlKhoFixture db) : IClassFixture<CsdlKhoFixture>
+public sealed class WeekEightPostgreSqlTests(CsdlKhoFixture db) : IClassFixture<CsdlKhoFixture>
 {
     private static int sequence;
     private sealed record Seeded(long Promo,long OtherPromo,long Unused,long Invoice,long Cancelled,long Return,long Customer,DateTime At)
@@ -25,20 +25,20 @@ public sealed class WeekEightMySqlTests(CsdlKhoFixture db) : IClassFixture<CsdlK
     {
         var n=Interlocked.Increment(ref sequence);var at=new DateTime(2026,1,1,12,0,0).AddDays(n*3);
         var returnAt=returnNextDay?at.AddDays(1):at;
-        var customer=await Scalar("INSERT INTO khach_hang(ho_ten,so_dien_thoai,ngay_tao,nguoi_tao_id) VALUES('Khách tuần 8',@phone,@at,@actor); SELECT LAST_INSERT_ID();",
+        var customer=await Scalar("INSERT INTO khach_hang(ho_ten,so_dien_thoai,ngay_tao,nguoi_tao_id) VALUES('Khách tuần 8',@phone,@at,@actor) RETURNING id;",
             ("@phone","09"+n.ToString("D8")),("@at",at),("@actor",db.TaiKhoanAdminId));
         var first=await new DuLieuTestKho(db).TaoSanPhamAsync("W8A");var second=await new DuLieuTestKho(db).TaoSanPhamAsync("W8B");
         async Task<long> Promotion()=>await Scalar("""
             INSERT INTO chuong_trinh_khuyen_mai(ma,ten,loai_giam,gia_tri,bat_dau_luc,ket_thuc_luc,nguoi_tao_id)
-            VALUES(@code,'Ưu đãi tuần 8','PHAN_TRAM',10,'2025-01-01','2027-01-01',@actor); SELECT LAST_INSERT_ID();
+            VALUES(@code,'Ưu đãi tuần 8','PHAN_TRAM',10,'2025-01-01','2027-01-01',@actor) RETURNING id;
             """,("@code","W8-"+Guid.NewGuid().ToString("N")[..8]),("@actor",db.TaiKhoanAdminId));
         var promo=await Promotion();var other=await Promotion();var unused=await Promotion();
         async Task<long> Invoice(long? kh,bool guest=false)
         {
-            var cart=await Scalar("INSERT INTO gio_hang(thu_ngan_id,trang_thai,khach_hang_id) VALUES(@tn,'DA_HOAN_TAT',@kh); SELECT LAST_INSERT_ID();",("@tn",db.TaiKhoanThuNganId),("@kh",kh));
+            var cart=await Scalar("INSERT INTO gio_hang(thu_ngan_id,trang_thai,khach_hang_id) VALUES(@tn,'DA_HOAN_TAT',@kh) RETURNING id;",("@tn",db.TaiKhoanThuNganId),("@kh",kh));
             var invoice=await Scalar("""
                 INSERT INTO hoa_don(ma_hoa_don,gio_hang_id,thu_ngan_id,khach_hang_id,thanh_toan_luc,tong_tien_hang,tong_giam,tong_thanh_toan,tien_khach_dua,tien_thua)
-                VALUES(@code,@cart,@tn,@kh,@at,@gross,@discount,@net,@net,0); SELECT LAST_INSERT_ID();
+                VALUES(@code,@cart,@tn,@kh,@at,@gross,@discount,@net,@net,0) RETURNING id;
                 """,("@code","HDW8-"+Guid.NewGuid().ToString("N")[..12]),("@cart",cart),("@tn",db.TaiKhoanThuNganId),("@kh",kh),("@at",at),
                 ("@gross",guest?10000:250000),("@discount",guest?0:25000),("@net",guest?10000:225000));
             await db.ChayAsync("""
@@ -56,7 +56,7 @@ public sealed class WeekEightMySqlTests(CsdlKhoFixture db) : IClassFixture<CsdlK
             ("@actor",db.TaiKhoanAdminId),("@at",at),("@id",cancelled));
         var returned=await Scalar("""
             INSERT INTO phieu_doi_tra(ma_phieu,loai,hoa_don_goc_id,khach_hang_id,chinh_sach_id,trang_thai,gia_tri_hang_tra,tien_hoan,thu_ngan_id,hoan_tat_luc)
-            VALUES(@code,'TRA_HANG',@hd,@kh,(SELECT id FROM chinh_sach_doi_tra ORDER BY id LIMIT 1),'HOAN_TAT',135000,135000,@tn,@at); SELECT LAST_INSERT_ID();
+            VALUES(@code,'TRA_HANG',@hd,@kh,(SELECT id FROM chinh_sach_doi_tra ORDER BY id LIMIT 1),'HOAN_TAT',135000,135000,@tn,@at) RETURNING id;
             """,("@code","PTW8-"+Guid.NewGuid().ToString("N")[..12]),("@hd",paid),("@kh",customer),("@tn",db.TaiKhoanThuNganId),("@at",returnAt));
         await db.ChayAsync("""
             INSERT INTO ct_phieu_doi_tra(phieu_doi_tra_id,san_pham_id,hoa_don_id,so_luong,don_gia_thuc_tra,ly_do,ghi_chu_ly_do,tinh_trang,cach_xu_ly,gia_von)
@@ -68,7 +68,7 @@ public sealed class WeekEightMySqlTests(CsdlKhoFixture db) : IClassFixture<CsdlK
         return new(promo,other,unused,paid,cancelled,returned,customer,at);
     }
     private WeekEightReportsService Service(ConvenienceStore.Web.Data.CuaHangDbContext context)=>
-        new(new MySqlWeekEightReportDataSource(context,new PromotionUsageStore(context)),TimeProvider.System);
+        new(new PostgreSqlWeekEightReportDataSource(context,new PromotionUsageStore(context)),TimeProvider.System);
     private static long Metric(OperationalReportResponse report,string label)=>report.Metrics.Single(x=>x.Label==label).Value;
 
     [Fact]
@@ -81,7 +81,7 @@ public sealed class WeekEightMySqlTests(CsdlKhoFixture db) : IClassFixture<CsdlK
         var customer=await service.GetAsync("BC-10",next,default);Assert.Equal(0,Metric(customer,"Điểm đã cộng"));Assert.Equal(13,Metric(customer,"Điểm đã thu hồi"));
         var promo=await service.GetAsync("BC-11",next,default);Assert.Equal(-135000,Metric(promo,"Doanh thu thuần đơn có KM"));
         Assert.Contains(promo.Rows,x=>x.Key==$"promotion:{seed.Promo}" && x.Cells[0]=="Ưu đãi tuần 8");
-        var data=new MySqlWeekEightReportDataSource(context,new PromotionUsageStore(context));
+        var data=new PostgreSqlWeekEightReportDataSource(context,new PromotionUsageStore(context));
         var facts=await data.ReturnsAsync(seed.At.Date.AddDays(1),seed.At.Date.AddDays(2),default);
         Assert.Equal(new long[]{90000,45000},facts.OrderBy(x=>x.CashRefund).Reverse().Select(x=>x.CashRefund));
     }
@@ -103,7 +103,7 @@ public sealed class WeekEightMySqlTests(CsdlKhoFixture db) : IClassFixture<CsdlK
     public async Task UnusedPromotionCanBeDeletedAndMissingPromotionReturns404()
     {
         var seed=await Seed();await using var context=db.TaoDbContext();var store=new PromotionUsageStore(context);
-        Assert.Empty((await store.HistoryAsync(seed.Unused,default)).Uses);await store.DeleteAsync(seed.Unused,default);
+        Assert.Empty((await store.HistoryAsync(seed.Unused,default)).Uses);await store.DeleteAsync(seed.Unused,default,1);
         Assert.Equal(404,(await Assert.ThrowsAsync<LoiNghiepVu>(()=>store.HistoryAsync(seed.Unused,default))).MaHttp);
     }
     [Fact]
@@ -126,10 +126,10 @@ public sealed class WeekEightMySqlTests(CsdlKhoFixture db) : IClassFixture<CsdlK
         s.AddHttpContextAccessor();s.AddModuleInventory();s.AddSingleton(TimeProvider.System);
         s.AddAuthorization(o=>o.AddPolicy("AdminOnly",p=>p.RequireAuthenticatedUser().RequireRole("AD")));
         s.AddControllersWithViews().AddRazorOptions(o=>o.AreaViewLocationFormats.Insert(0,"/Modules/{2}/Views/{1}/{0}.cshtml"));
-        s.AddScoped<PromotionUsageStore>();s.AddScoped<IWeekEightReportDataSource,MySqlWeekEightReportDataSource>();s.AddScoped<WeekEightReportsService>();
-        s.AddScoped<ReportFilterService>();s.AddScoped<IOperationalReportDataSource,MySqlTransactionalReportsDataSource>();
-        s.AddScoped<IOperationalReportsService,OperationalReportsService>();s.AddScoped<IDashboardDataSource,MySqlDashboardDataSource>();s.AddScoped<IDashboardService,DashboardService>();
-        s.AddScoped<IPromotionService,PromotionService>();s.AddScoped<IPromotionDataSource,MySqlPromotionDataSource>();s.AddScoped<IProductLookup,MySqlProductLookup>();
+        s.AddScoped<PromotionUsageStore>();s.AddScoped<IWeekEightReportDataSource,PostgreSqlWeekEightReportDataSource>();s.AddScoped<WeekEightReportsService>();
+        s.AddScoped<ReportFilterService>();s.AddScoped<IOperationalReportDataSource,PostgreSqlTransactionalReportsDataSource>();
+        s.AddScoped<IOperationalReportsService,OperationalReportsService>();s.AddScoped<IDashboardDataSource,PostgreSqlDashboardDataSource>();s.AddScoped<IDashboardService,DashboardService>();
+        s.AddScoped<IPromotionService,PromotionService>();s.AddScoped<IPromotionDataSource,PostgreSqlPromotionDataSource>();s.AddScoped<IProductLookup,PostgreSqlProductLookup>();
     });
     [Theory] [InlineData(null,401)] [InlineData("TN",403)] [InlineData("NK",403)] [InlineData("FORCED",403)]
     public async Task OnlyAdminCanAccessEveryWeekEightEndpoint(string? actor,int status)
@@ -141,7 +141,7 @@ public sealed class WeekEightMySqlTests(CsdlKhoFixture db) : IClassFixture<CsdlK
         Sp08CategoryHttpTests.AddXsrf(client);Assert.Equal(status,(int)(await client.DeleteAsync("/api/promotions/1")).StatusCode);
     }
     [Fact]
-    public async Task AdminPagesDetailsExportsCsrfAndApiErrorsWorkAgainstRealMySql()
+    public async Task AdminPagesDetailsExportsCsrfAndApiErrorsWorkAgainstRealPostgreSql()
     {
         var seed=await Seed();await using var app=await Host();using var client=await ListFeatureHost.Client(app,db,"AD");
         foreach(var report in new[]{("Returns","BC-09","reason:KHAC"),("Customers","BC-10",$"customer:{seed.Customer}"),("Promotions","BC-11",$"promotion:{seed.Promo}")})
@@ -153,10 +153,10 @@ public sealed class WeekEightMySqlTests(CsdlKhoFixture db) : IClassFixture<CsdlK
         }
         Assert.Contains("Lịch sử sử dụng",await client.GetStringAsync($"/Promotions/Promotions/Usage/{seed.Promo}"));
         Assert.Contains("__RequestVerificationToken",await client.GetStringAsync($"/Promotions/Promotions/Delete/{seed.Unused}"));
-        Assert.Equal(HttpStatusCode.Forbidden,(await client.DeleteAsync($"/api/promotions/{seed.Unused}")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden,(await client.DeleteAsync($"/api/promotions/{seed.Unused}?version=1")).StatusCode);
         Sp08CategoryHttpTests.AddXsrf(client);
-        Assert.Equal(HttpStatusCode.NoContent,(await client.DeleteAsync($"/api/promotions/{seed.Unused}")).StatusCode);
-        Assert.Equal(HttpStatusCode.Conflict,(await client.DeleteAsync($"/api/promotions/{seed.Promo}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent,(await client.DeleteAsync($"/api/promotions/{seed.Unused}?version=1")).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict,(await client.DeleteAsync($"/api/promotions/{seed.Promo}?version=1")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound,(await client.GetAsync("/api/promotions/4294967295/usage")).StatusCode);
         foreach(var report in new[]{"returns","customers","promotions"})
         {

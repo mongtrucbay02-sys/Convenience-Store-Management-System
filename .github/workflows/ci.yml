@@ -31,20 +31,6 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=12
-      mysql:
-        image: mysql:8.4
-        env:
-          # Disposable CI service only; never an Aiven/deployment credential.
-          MYSQL_ROOT_PASSWORD: ci-only-password
-          MYSQL_ROOT_HOST: '%'
-          TZ: Asia/Ho_Chi_Minh
-        ports:
-          - 3306/tcp
-        options: >-
-          --health-cmd="mysqladmin ping --host=127.0.0.1 --user=root --password=ci-only-password --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=12
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: 'true'
@@ -66,10 +52,16 @@ jobs:
       - name: Build
         run: dotnet build ConvenienceStoreManagement.slnx --configuration Release --no-restore
 
-      - name: Test with isolated MySQL and PostgreSQL
+      - name: Publish and verify PostgreSQL-only runtime
+        run: dotnet publish src/ConvenienceStore.Web -c Release --no-build --no-restore -o artifacts/publish
+
+      - name: Verify release dependencies
+        shell: pwsh
+        run: ./scripts/ci/verify-postgresql-runtime.ps1 -PublishPath artifacts/publish
+
+      - name: Test with isolated PostgreSQL 17
         env:
-          # Fixtures create/migrate/drop their own cuahang_test_* databases.
-          ConnectionStrings__CuaHangTest: "Server=127.0.0.1;Port=${{ job.services.mysql.ports['3306'] }};User ID=root;Password=ci-only-password;SslMode=Preferred;AllowPublicKeyRetrieval=True;"
+          # Fixtures refuse non-loopback hosts and create/drop only their random smartmart_test_* databases.
           ConnectionStrings__CuaHangPostgreSqlTest: "Host=127.0.0.1;Port=${{ job.services.postgres.ports['5432'] }};Database=postgres;Username=postgres;Password=ci-only-postgres-password;Pooling=false;"
         run: >-
           dotnet test tests/ConvenienceStore.Web.Tests/ConvenienceStore.Web.Tests.csproj

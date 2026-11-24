@@ -3,12 +3,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConvenienceStore.Web.Tests.HaTang;
 
-public sealed class GeneratedColumnsMySqlTests(CsdlMySqlTam csdl) : IClassFixture<CsdlMySqlTam>
+public sealed class GeneratedColumnsPostgreSqlTests(CsdlPostgreSqlTam csdl) : IClassFixture<CsdlPostgreSqlTam>
 {
     private const long FixtureId = 910001;
 
     [Fact]
-    public async Task InsertAndUpdate_MutableRowsAndInsertImmutableRows_AreCalculatedByMySql()
+    public async Task InsertAndUpdate_MutableRowsAndInsertImmutableRows_AreCalculatedByPostgreSql()
     {
         await SeedParentsAsync();
 

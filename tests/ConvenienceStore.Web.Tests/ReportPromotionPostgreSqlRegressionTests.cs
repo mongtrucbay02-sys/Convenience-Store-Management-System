@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace ConvenienceStore.Web.Tests;
 
-public sealed class ReportPromotionMySqlRegressionTests(CsdlMySqlTam database) : IClassFixture<CsdlMySqlTam>
+public sealed class ReportPromotionPostgreSqlRegressionTests(CsdlPostgreSqlTam database) : IClassFixture<CsdlPostgreSqlTam>
 {
     [Theory]
     [InlineData(DiscountType.Percent, null)]
@@ -18,7 +18,7 @@ public sealed class ReportPromotionMySqlRegressionTests(CsdlMySqlTam database) :
         var suffix = Guid.NewGuid().ToString("N")[..8];
         await database.ChayAsync("""
             INSERT INTO tai_khoan(ten_dang_nhap,mat_khau_bam,ho_ten,vai_tro_id,bat_buoc_doi_mk)
-            SELECT @name,'unused','Promotion test',id,0 FROM vai_tro WHERE ma='AD';
+            SELECT @name,'unused','Promotion test',id,FALSE FROM vai_tro WHERE ma='AD';
             INSERT INTO danh_muc(ten) VALUES(@name);
             """, ("@name", "km_" + suffix));
         var actor = Convert.ToInt64(await database.DocMotGiaTriAsync(
@@ -33,7 +33,7 @@ public sealed class ReportPromotionMySqlRegressionTests(CsdlMySqlTam database) :
         var http = new HttpContextAccessor { HttpContext = new DefaultHttpContext {
             User = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, actor.ToString())], "test"))
         } };
-        var source = new MySqlPromotionDataSource(context, http);
+        var source = new PostgreSqlPromotionDataSource(context, http);
         var now = DateTimeOffset.UtcNow;
         var created = await source.CreateAsync(new PromotionRecord(0, "", "Test " + suffix, null,
             type, type == DiscountType.Percent ? 10 : 1000, cap,
@@ -58,7 +58,7 @@ public sealed class ReportPromotionMySqlRegressionTests(CsdlMySqlTam database) :
     {
         await database.ChayAsync("""
             INSERT INTO tai_khoan(ten_dang_nhap,mat_khau_bam,ho_ten,vai_tro_id,bat_buoc_doi_mk)
-            SELECT 'cost_test','unused','Cost test',id,0 FROM vai_tro WHERE ma='AD';
+            SELECT 'cost_test','unused','Cost test',id,FALSE FROM vai_tro WHERE ma='AD';
             INSERT INTO danh_muc(ten) VALUES('Cost regression');
             INSERT INTO san_pham(ma,ten_san_pham,danh_muc_id,don_vi_tinh,nguoi_tao_id)
             SELECT 'COST-TEST','Cost regression',d.id,'Hộp',a.id
@@ -69,7 +69,7 @@ public sealed class ReportPromotionMySqlRegressionTests(CsdlMySqlTam database) :
         var product = Convert.ToInt64(await database.DocMotGiaTriAsync(
             "SELECT id FROM san_pham WHERE ma='COST-TEST'"));
         using var context = database.TaoDbContext();
-        var source = new MySqlTransactionalReportsDataSource(context);
+        var source = new PostgreSqlTransactionalReportsDataSource(context);
         var products = await source.GetProductsAsync(default);
         Assert.Equal(10416.67m, products.Single(x => x.Id == product).UnitCost);
         var report = await new OperationalReportsService(source, TimeProvider.System)

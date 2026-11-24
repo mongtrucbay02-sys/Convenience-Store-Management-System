@@ -6,7 +6,7 @@ using ConvenienceStore.Web.Tests.HaTang;
 
 namespace ConvenienceStore.Web.Tests.Modules.Products;
 
-public sealed class Sp02ProductHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMySqlTam>
+public sealed class Sp02ProductHttpTests(CsdlPostgreSqlTam db) : IClassFixture<CsdlPostgreSqlTam>
 {
     [Theory]
     [InlineData(null, 401)]
@@ -34,7 +34,7 @@ public sealed class Sp02ProductHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMy
         await db.ChayAsync("""
             UPDATE san_pham SET mo_ta='<img src=x onerror=alert(2)>',anh_url='javascript:alert(3)' WHERE id=@id;
             INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id,huy_luc,nguoi_huy_id)
-            SELECT id,12300,NOW()+INTERVAL 2 DAY,nguoi_tao_id,NOW(),nguoi_tao_id FROM san_pham WHERE id=@id;
+            SELECT id,12300,NOW()+INTERVAL '2 day',nguoi_tao_id,NOW(),nguoi_tao_id FROM san_pham WHERE id=@id;
             """, ("@id", ids.Active));
         await using var app = await ListFeatureHost.Start(db, s => { s.AddModuleProducts(); s.AddModuleInventory(); });
         using var client = await ListFeatureHost.Client(app, db, role);

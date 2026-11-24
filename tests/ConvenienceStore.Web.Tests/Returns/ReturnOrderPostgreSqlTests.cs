@@ -16,7 +16,7 @@ using Xunit;
 namespace ConvenienceStore.Web.Tests.Returns;
 
 [Collection(CsdlKhoCollection.Ten)]
-public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
+public sealed class ReturnOrderPostgreSqlTests(CsdlKhoFixture fixture)
 {
     /// <summary>
     /// Gateway giả lập KH-06 chưa được tích hợp.
@@ -29,7 +29,7 @@ public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
             CuaHangDbContext db,
             long invoiceId,
             long returnId,
-            int cashierId,
+            long cashierId,
             long refund,
             CancellationToken ct)
         {
@@ -94,7 +94,7 @@ public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
         {
             int category = (int)await Insert(
                 "INSERT INTO danh_muc (ten,khong_doi_tra) " +
-                "VALUES (@n,TRUE); SELECT LAST_INSERT_ID();",
+                "VALUES (@n,TRUE) RETURNING id;",
                 ("@n", "DT02" + Guid.NewGuid().ToString("N")));
 
             await fixture.ChayAsync(
@@ -116,8 +116,8 @@ public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
             customer = (int)await Insert(
                 "INSERT INTO khach_hang " +
                 "(ho_ten,so_dien_thoai,diem_hien_co,nguoi_tao_id) " +
-                "VALUES ('Khách DT02',@phone,@d,@tn); " +
-                "SELECT LAST_INSERT_ID();",
+                "VALUES ('Khách DT02',@phone,@d,@tn) RETURNING id;" +
+                "",
                 ("@phone", "0" + Random.Shared.Next(100000000, 999999999)),
                 ("@d", points),
                 ("@tn", fixture.TaiKhoanThuNganId));
@@ -126,8 +126,8 @@ public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
         long cart = await Insert(
             "INSERT INTO gio_hang " +
             "(thu_ngan_id,trang_thai,hoan_tat_luc,khach_hang_id) " +
-            "VALUES (@tn,'DA_HOAN_TAT',@time,@kh); " +
-            "SELECT LAST_INSERT_ID();",
+            "VALUES (@tn,'DA_HOAN_TAT',@time,@kh) RETURNING id;" +
+            "",
             ("@tn", fixture.TaiKhoanThuNganId),
             ("@time", Now.DateTime.AddDays(-age)),
             ("@kh", customer));
@@ -151,8 +151,7 @@ public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
             VALUES (
                 @ma,@g,@tn,@kh,@time,
                 @subtotal,@giam,@total,@total,0,@d,@rate
-            );
-            SELECT LAST_INSERT_ID();
+            ) RETURNING id;
             """,
             ("@ma", "HD" + Guid.NewGuid().ToString("N")[..12]),
             ("@g", cart),
@@ -180,8 +179,7 @@ public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
                 VALUES (
                     @ma,'KM snapshot','SO_TIEN',@d,
                     '2026-01-01','2026-01-02',@ad
-                );
-                SELECT LAST_INSERT_ID();
+                ) RETURNING id;
                 """,
                 ("@ma", "KM" + Guid.NewGuid().ToString("N")[..12]),
                 ("@d", discount),
@@ -645,7 +643,7 @@ public sealed class ReturnOrderMySqlTests(CsdlKhoFixture fixture)
             CuaHangDbContext db,
             long invoice,
             long slip,
-            int actor,
+            long actor,
             long refund,
             CancellationToken ct)
         {

@@ -27,7 +27,7 @@ using Npgsql;
 namespace ConvenienceStore.Web.Tests.PostgreSql;
 
 [Trait("Database", "PostgreSql")]
-public sealed class PostgreSqlRuntimeTests : IAsyncLifetime
+public sealed partial class PostgreSqlRuntimeTests : IAsyncLifetime
 {
     private string _server = "";
     private string _connection = "";
@@ -47,7 +47,7 @@ public sealed class PostgreSqlRuntimeTests : IAsyncLifetime
     private CuaHangDbContext Db() => new(new DbContextOptionsBuilder<CuaHangDbContext>()
         .UseNpgsql(_connection,p=>p.SetPostgresVersion(17,0)).Options);
     private static DichVuKho Stock(CuaHangDbContext db) => new(db,NullLogger<DichVuKho>.Instance);
-    private PosCartService Cart() => new(Http(),new MySqlPosCatalog(Configuration));
+    private PosCartService Cart() => new(Http(),new PostgreSqlPosCatalog(Configuration));
 
     public async Task InitializeAsync()
     {
@@ -81,8 +81,8 @@ public sealed class PostgreSqlRuntimeTests : IAsyncLifetime
         {
             if(!_web.HasExited)_web.Kill(entireProcessTree:true);
             await _web.WaitForExitAsync();
-            if(_webOutput is not null)await _webOutput;
-            if(_webError is not null)await _webError;
+            if(_webOutput is not null)await Task.WhenAny(_webOutput,Task.Delay(1000));
+            if(_webError is not null)await Task.WhenAny(_webError,Task.Delay(1000));
             _web.Dispose();
         }
         if(string.IsNullOrEmpty(_server))return;
@@ -107,7 +107,7 @@ public sealed class PostgreSqlRuntimeTests : IAsyncLifetime
         Assert.Null(await cart.UpdateAsync(product,quantity));
         await using var db=Db();
         if(customer){var id=await new CustomerService(db).SaveAsync(null,new CustomerInput {Name="Khách PG",Phone="0901234567"},1,default);Assert.Null(await cart.SetCustomerAsync((int)id));}
-        var checkout=new PosCheckoutService(db,new MySqlPosCheckoutStore(db,Stock(db),new CashLedgerService(),NullLogger<MySqlPosCheckoutStore>.Instance),NullLogger<PosCheckoutService>.Instance);
+        var checkout=new PosCheckoutService(db,new PostgreSqlPosCheckoutStore(db,Stock(db),new CashLedgerService(),NullLogger<PostgreSqlPosCheckoutStore>.Instance),NullLogger<PosCheckoutService>.Instance);
         var result=await checkout.CompleteAsync(100000,User(2,"TN"));
         Assert.True(result.Success,result.ErrorMessage);
         return result.InvoiceId!.Value;
@@ -120,9 +120,9 @@ public sealed class PostgreSqlRuntimeTests : IAsyncLifetime
         var products=await new ConvenienceStore.Web.Modules.Products.Services.EfProductReadRepository(db)
             .ListAsync(new(){Keyword="SUA TUOI"},false);
         Assert.Single(products.Items);
-        Assert.Single(await new MySqlPosCatalog(Configuration).SearchAsync("sua TUOI"));
-        Assert.Single((await new MySqlProductLookup(db).SearchAsync("SUA",1,10,default)).Items);
-        Assert.Single((await new MySqlProductLookup(db).SearchAsync(null,1,10,default)).Items);
+        Assert.Single(await new PostgreSqlPosCatalog(Configuration).SearchAsync("sua TUOI"));
+        Assert.Single((await new PostgreSqlProductLookup(db).SearchAsync("SUA",1,10,default)).Items);
+        Assert.Single((await new PostgreSqlProductLookup(db).SearchAsync(null,1,10,default)).Items);
         var customers=new CustomerService(db);
         await customers.SaveAsync(null,new(){Name="Nguyễn Tiến Trung",Phone="0901234567"},1,default);
         Assert.Single(await customers.SearchAsync("NGUYEN TIEN",true,default));
@@ -145,10 +145,10 @@ public sealed class PostgreSqlRuntimeTests : IAsyncLifetime
                 VALUES(@invoice,@product,'Sữa tươi','Hộp',1,20000,0,5000)
                 """,default,("@invoice",invoice),("@product",product));
         }
-        var service=new OperationalReportsService(new MySqlTransactionalReportsDataSource(db),TimeProvider.System);
+        var service=new OperationalReportsService(new PostgreSqlTransactionalReportsDataSource(db),TimeProvider.System);
         var report=await service.GetRevenueAsync(new(){Period="custom",From=new(2026,11,1),To=new(2026,11,1)},default);
         Assert.Equal(1,report.Metrics[0].Value);Assert.Equal(20000,report.Metrics[3].Value);
-        var facts=await new MySqlDashboardDataSource(db).GetPaidInvoicesAsync(new DateTimeOffset(2026,11,1,0,0,0,TimeSpan.FromHours(7)),new DateTimeOffset(2026,11,2,0,0,0,TimeSpan.FromHours(7)),default);
+        var facts=await new PostgreSqlDashboardDataSource(db).GetPaidInvoicesAsync(new DateTimeOffset(2026,11,1,0,0,0,TimeSpan.FromHours(7)),new DateTimeOffset(2026,11,2,0,0,0,TimeSpan.FromHours(7)),default);
         Assert.Single(facts);
     }
 
@@ -175,7 +175,7 @@ public sealed class PostgreSqlRuntimeTests : IAsyncLifetime
     public async Task HeldOrder_HoldRecallAndCancelKeepStockUnchanged()
     {
         var product=await Product();var cart=Cart();Assert.Null(await cart.AddAsync(product));
-        var service=new PosHeldOrderService(new MySqlPosCatalog(Configuration),Http());
+        var service=new PosHeldOrderService(new PostgreSqlPosCatalog(Configuration),Http());
         Assert.True((await service.HoldAsync("Khách quay lại")).Success);
         await service.ListAsync();
         await using var db=Db();var held=await db.GioHangs.Where(g=>g.TrangThai=="TAM_GIU").Select(g=>g.Id).SingleAsync();
@@ -210,11 +210,11 @@ public sealed class PostgreSqlRuntimeTests : IAsyncLifetime
         var product=await Product(1);
         await using(var db=Db())await db.ChayAsync("INSERT INTO tai_khoan(id,ten_dang_nhap,mat_khau_bam,ho_ten,vai_tro_id,bat_buoc_doi_mk) VALUES(3,'other_cashier','unused','Thu ngân khác',2,FALSE)",default);
         Assert.Null(await Cart().AddAsync(product));
-        var other=new PosCartService(Http(3),new MySqlPosCatalog(Configuration));Assert.Null(await other.AddAsync(product));
+        var other=new PosCartService(Http(3),new PostgreSqlPosCatalog(Configuration));Assert.Null(await other.AddAsync(product));
         async Task<PosCheckoutResult> Pay(int actor)
         {
             await using var db=Db();
-            return await new PosCheckoutService(db,new MySqlPosCheckoutStore(db,Stock(db),new CashLedgerService(),NullLogger<MySqlPosCheckoutStore>.Instance),NullLogger<PosCheckoutService>.Instance).CompleteAsync(20000,User(actor,"TN"));
+            return await new PosCheckoutService(db,new PostgreSqlPosCheckoutStore(db,Stock(db),new CashLedgerService(),NullLogger<PostgreSqlPosCheckoutStore>.Instance),NullLogger<PosCheckoutService>.Instance).CompleteAsync(20000,User(actor,"TN"));
         }
         var results=await Task.WhenAll(Pay(2),Pay(3));Assert.Single(results,r=>r.Success);
         await using var verify=Db();Assert.Equal(0,(await verify.TonKhos.SingleAsync()).SoLuongTon);
@@ -231,6 +231,7 @@ public sealed class PostgreSqlRuntimeTests : IAsyncLifetime
             CreateNoWindow=true,WindowStyle=ProcessWindowStyle.Hidden,RedirectStandardOutput=true,RedirectStandardError=true};
         var configuration=AppContext.BaseDirectory.Contains(Path.DirectorySeparatorChar+"Release"+Path.DirectorySeparatorChar)?"Release":"Debug";
         start.ArgumentList.Add(Path.Combine(root,"bin",configuration,"net10.0","ConvenienceStore.Web.dll"));
+        start.Environment["Logging__EventLog__LogLevel__Default"]="None";
         start.Environment["ASPNETCORE_URLS"]=address.ToString();
         start.Environment["ASPNETCORE_ENVIRONMENT"]="Development";
         start.Environment["DOTNET_ENVIRONMENT"]="Development";
@@ -242,7 +243,7 @@ public sealed class PostgreSqlRuntimeTests : IAsyncLifetime
         using var probe=new HttpClient {Timeout=TimeSpan.FromSeconds(1)};
         for(var i=0;i<100;i++)
         {
-            if(_web.HasExited)throw new InvalidOperationException("Production app exited before HTTP test.");
+            if(_web.HasExited)throw new InvalidOperationException("Production app exited before HTTP test. " + await _webOutput + await _webError);
             try{var response=await probe.GetAsync(new Uri(address,"/login.html"));if(response.IsSuccessStatusCode)return address;}
             catch(HttpRequestException){}catch(TaskCanceledException){}
             await Task.Delay(150);
@@ -355,7 +356,7 @@ public sealed class PostgreSqlRuntimeTests : IAsyncLifetime
         Assert.Single(await db.GiaoDichTienMats.ToListAsync());
         Assert.Equal(40000,(await db.CtHoaDons.SingleAsync()).ThanhTien);
         await using var tx=await db.Database.BeginTransactionAsync();
-        await Assert.ThrowsAsync<PosCheckoutException>(()=>new MySqlPosCheckoutStore(db,Stock(db),new CashLedgerService(),NullLogger<MySqlPosCheckoutStore>.Instance).SaveOrderAsync(2,100000,default));
+        await Assert.ThrowsAsync<PosCheckoutException>(()=>new PostgreSqlPosCheckoutStore(db,Stock(db),new CashLedgerService(),NullLogger<PostgreSqlPosCheckoutStore>.Instance).SaveOrderAsync(2,100000,default));
         await tx.RollbackAsync();
     }
 
@@ -393,16 +394,16 @@ public sealed class PostgreSqlRuntimeTests : IAsyncLifetime
     public async Task Promotions_MemberSelectionAndReportsUseSamePaidSnapshot()
     {
         var product=await Product();await using var db=Db();
-        var source=new MySqlPromotionDataSource(db,Http(1,"AD"));
+        var source=new PostgreSqlPromotionDataSource(db,Http(1,"AD"));
         var now=DateTimeOffset.UtcNow;
         var promotion=await source.CreateAsync(new(0,"","Giảm thành viên",null,DiscountType.FixedAmount,2000,null,[new(product,"PG01","Sữa tươi")],now.AddHours(-1),now.AddDays(1),true,PromotionStatus.Active,0),default);
         var cart=Cart();Assert.Null(await cart.AddAsync(product));
         var customer=await new CustomerService(db).SaveAsync(null,new(){Name="Thành viên",Phone="0901234567"},1,default);
         Assert.Null(await cart.SetCustomerAsync((int)customer));
-        var checkout=new PosCheckoutService(db,new MySqlPosCheckoutStore(db,Stock(db),new CashLedgerService(),NullLogger<MySqlPosCheckoutStore>.Instance),NullLogger<PosCheckoutService>.Instance);
+        var checkout=new PosCheckoutService(db,new PostgreSqlPosCheckoutStore(db,Stock(db),new CashLedgerService(),NullLogger<PostgreSqlPosCheckoutStore>.Instance),NullLogger<PosCheckoutService>.Instance);
         var sale=await checkout.CompleteAsync(20000,User(2,"TN"));Assert.True(sale.Success,sale.ErrorMessage);
         Assert.Equal(18000,sale.Total);
-        var facts=new MySqlTransactionalReportsDataSource(db);
+        var facts=new PostgreSqlTransactionalReportsDataSource(db);
         var query=new ReportQuery {Period="custom",From=DateOnly.FromDateTime(DateTime.UtcNow.AddHours(7).AddDays(-1)),To=DateOnly.FromDateTime(DateTime.UtcNow.AddHours(7).AddDays(1))};
         var service=new OperationalReportsService(facts,TimeProvider.System);
         var revenue=await service.GetRevenueAsync(query,default);
@@ -411,7 +412,7 @@ public sealed class PostgreSqlRuntimeTests : IAsyncLifetime
         await service.GetCashiersAsync(query,default);await service.GetInventoryAsync(query,default);
         await service.GetPurchasesAsync(query,default);await service.GetGrossProfitAsync(query,default);
         Assert.Single(await new PromotionUsageStore(db).ReadAsync(null,null,promotion.Id,default));
-        var week=new WeekEightReportsService(new MySqlWeekEightReportDataSource(db,new PromotionUsageStore(db)),TimeProvider.System);
+        var week=new WeekEightReportsService(new PostgreSqlWeekEightReportDataSource(db,new PromotionUsageStore(db)),TimeProvider.System);
         foreach(var code in new[]{"BC-09","BC-10","BC-11"})await week.GetAsync(code,query,default);
     }
 }

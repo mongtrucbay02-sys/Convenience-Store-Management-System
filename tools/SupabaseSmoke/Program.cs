@@ -27,7 +27,8 @@ try
         Options = "-c default_transaction_read_only=on", IncludeErrorDetail = false,
         ApplicationName = "SmartMart-Supabase-ReadOnly-Smoke"
     };
-    if (settings.Host is not ("localhost" or "127.0.0.1" or "::1"))
+    if (settings.Host is not ("localhost" or "127.0.0.1" or "::1")
+        && settings.SslMode is SslMode.Disable or SslMode.Allow or SslMode.Prefer)
         settings.SslMode = SslMode.Require;
     await using var connection = new NpgsqlConnection(settings.ConnectionString);
     await connection.OpenAsync();

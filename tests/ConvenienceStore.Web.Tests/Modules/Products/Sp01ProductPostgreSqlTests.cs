@@ -4,10 +4,10 @@ using ConvenienceStore.Web.Tests.HaTang;
 
 namespace ConvenienceStore.Web.Tests.Modules.Products;
 
-public sealed class Sp01ProductMySqlTests(CsdlMySqlTam database) : IClassFixture<CsdlMySqlTam>
+public sealed class Sp01ProductPostgreSqlTests(CsdlPostgreSqlTam database) : IClassFixture<CsdlPostgreSqlTam>
 {
     [Fact]
-    public async Task AccentsStablePagesCurrentPriceAndCancellationTranslateOnMySql()
+    public async Task AccentsStablePagesCurrentPriceAndCancellationTranslateOnPostgreSql()
     {
         var ids = await ProductReadSeed.Create(database);
         await using var db = database.TaoDbContext(); var repo = new EfProductReadRepository(db);

@@ -1,3 +1,7 @@
+Current integration update 2026-11-24: Release is now PostgreSQL-only. Run `scripts/ci/verify-postgresql-runtime.ps1` against publish output; MySQL packages and development configuration must be absent. Follow [baseline adoption and runtime-role requirements](../db/POSTGRESQL-MIGRATIONS.md). The evidence below is dated 2026-11-23 and does not certify the current working tree or a deployment.
+
+---
+
 # Publish và bàn giao PostgreSQL
 
 Trạng thái 23/11/2026: gói publish Release đã chạy thử đăng nhập, đổi mật khẩu tạm và báo cáo trên PostgreSQL test riêng. Chưa triển khai cloud/staging.

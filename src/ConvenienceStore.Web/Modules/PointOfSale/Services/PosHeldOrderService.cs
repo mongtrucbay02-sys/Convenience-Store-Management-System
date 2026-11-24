@@ -3,7 +3,8 @@ using System.Data;
 using System.Security.Claims;
 using ConvenienceStore.Web.Modules.Auth;
 using ConvenienceStore.Web.Modules.Auth.Security;
-using MySqlConnector;
+using System.Data.Common;
+using ConvenienceStore.Web.Shared.Data;
 
 namespace ConvenienceStore.Web.Services.Pos;
 
@@ -60,16 +61,16 @@ public sealed class PosHeldOrderService(
 
     // Thực thi câu lệnh SQL có tham số.
     private static async Task<object?> Execute(
-        MySqlConnection conn,
-        MySqlTransaction tx,
+        DbConnection conn,
+        DbTransaction tx,
         string sql,
         params (string Name, object? Value)[] parameters)
     {
-        await using var cmd = new MySqlCommand(sql, conn, tx);
+        await using var cmd = SqlDialect.Command(sql, conn, tx);
 
         foreach (var (name, value) in parameters)
         {
-            cmd.Parameters.AddWithValue(
+            cmd.AddValue(
                 name,
                 value ?? DBNull.Value);
         }
@@ -79,8 +80,8 @@ public sealed class PosHeldOrderService(
 
     // Mở kết nối và transaction, kiểm tra tài khoản thu ngân.
     private async Task<(
-        MySqlConnection Connection,
-        MySqlTransaction Transaction,
+        DbConnection Connection,
+        DbTransaction Transaction,
         int AccountId)> Begin()
     {
         var accountId = AccountId;
@@ -90,8 +91,8 @@ public sealed class PosHeldOrderService(
         {
             await conn.OpenAsync();
 
-            await using (var zone = new MySqlCommand(
-                "SET time_zone = '+07:00'", conn))
+            await using (var zone = SqlDialect.Command(
+                conn.Sql("SET time_zone = '+07:00'", "SET TIME ZONE 'Asia/Ho_Chi_Minh'"), conn))
             {
                 await zone.ExecuteNonQueryAsync();
             }
@@ -140,17 +141,17 @@ public sealed class PosHeldOrderService(
     // Tự động hủy các đơn tạm giữ đã hết hạn.
     // Chỉ xử lý đơn thuộc tài khoản đang đăng nhập.
     private static async Task<int> Expire(
-        MySqlConnection conn,
-        MySqlTransaction tx,
+        DbConnection conn,
+        DbTransaction tx,
         int accountId)
     {
-        await using var cmd = new MySqlCommand("""
+        await using var cmd = SqlDialect.Command("""
             UPDATE gio_hang g
             SET
-                g.trang_thai = 'DA_HUY',
-                g.huy_luc = NOW(),
-                g.ly_do_huy = 'HET_HAN_TAM_GIU',
-                g.gia_tri_khi_huy = COALESCE(
+                trang_thai = 'DA_HUY',
+                huy_luc = NOW(),
+                ly_do_huy = 'HET_HAN_TAM_GIU',
+                gia_tri_khi_huy = COALESCE(
                     (
                         SELECT SUM(
                             ct.so_luong *
@@ -161,13 +162,13 @@ public sealed class PosHeldOrderService(
                     ),
                     0
                 ),
-                g.phien_ban = g.phien_ban + 1
+                phien_ban = g.phien_ban + 1
             WHERE g.thu_ngan_id = @t
-              AND g.trang_thai = 'TAM_GIU'
-              AND g.tam_giu_luc < CURDATE()
+              AND trang_thai = 'TAM_GIU'
+              AND g.tam_giu_luc < CURRENT_DATE
             """, conn, tx);
 
-        cmd.Parameters.AddWithValue("@t", accountId);
+        cmd.AddValue("@t", accountId);
 
         return await cmd.ExecuteNonQueryAsync();
     }
@@ -190,7 +191,7 @@ public sealed class PosHeldOrderService(
 
         var orders = new List<PosHeldOrder>();
 
-        await using (var cmd = new MySqlCommand("""
+        await using (var cmd = SqlDialect.Command("""
             SELECT
                 g.id,
                 g.tam_giu_luc,
@@ -207,7 +208,7 @@ public sealed class PosHeldOrderService(
             LEFT JOIN ct_gio_hang ct
                 ON ct.gio_hang_id = g.id
             WHERE g.thu_ngan_id = @t
-              AND g.trang_thai = 'TAM_GIU'
+              AND trang_thai = 'TAM_GIU'
             GROUP BY
                 g.id,
                 g.tam_giu_luc,
@@ -215,7 +216,7 @@ public sealed class PosHeldOrderService(
             ORDER BY g.tam_giu_luc, g.id
             """, conn, tx))
         {
-            cmd.Parameters.AddWithValue(
+            cmd.AddValue(
                 "@t",
                 scope.AccountId);
 
@@ -226,7 +227,7 @@ public sealed class PosHeldOrderService(
             {
                 orders.Add(new PosHeldOrder(
                     Convert.ToInt32(reader[0]),
-                    reader.GetDateTime(1),
+                    reader.VietnamDateTime(1),
                     reader.GetString(2),
                     Convert.ToInt32(reader[3]),
                     Convert.ToInt64(reader[4])));
@@ -407,7 +408,7 @@ public sealed class PosHeldOrderService(
             WHERE id = @g
               AND thu_ngan_id = @t
               AND trang_thai = 'TAM_GIU'
-              AND tam_giu_luc >= CURDATE()
+              AND tam_giu_luc >= CURRENT_DATE
             FOR UPDATE
             """,
             ("@g", orderId),
@@ -422,7 +423,7 @@ public sealed class PosHeldOrderService(
 
         var lines = new List<Line>();
 
-        await using (var cmd = new MySqlCommand("""
+        await using (var cmd = SqlDialect.Command($"""
             SELECT
                 ct.san_pham_id,
                 sp.ten_san_pham,
@@ -447,10 +448,10 @@ public sealed class PosHeldOrderService(
                 ON tk.san_pham_id = sp.id
             WHERE ct.gio_hang_id = @g
             ORDER BY ct.san_pham_id
-            FOR SHARE
+            {conn.Sql("FOR SHARE", "FOR SHARE OF ct,sp,dm")}
             """, conn, tx))
         {
-            cmd.Parameters.AddWithValue("@g", orderId);
+            cmd.AddValue("@g", orderId);
 
             await using var reader =
                 await cmd.ExecuteReaderAsync();

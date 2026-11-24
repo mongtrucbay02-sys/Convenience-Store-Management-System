@@ -4,5 +4,5 @@ namespace ConvenienceStore.Web.Modules.Products.Services;
 
 public interface IProductCreationRepository
 {
-    Task<uint> CreateAsync(ProductCreateDto input, uint actorId, string? imageUrl = null, CancellationToken ct = default);
+    Task<long> CreateAsync(ProductCreateDto input, long actorId, string? imageUrl = null, CancellationToken ct = default);
 }

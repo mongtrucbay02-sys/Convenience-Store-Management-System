@@ -6,7 +6,7 @@ public sealed class ProductCreateModel
 {
     public string? Ma { get; set; }
     public string? TenSanPham { get; set; }
-    public uint DanhMucId { get; set; }
+    public long DanhMucId { get; set; }
     public string? DonViTinh { get; set; }
     public long? GiaBan { get; set; }
     public int NguongToiThieu { get; set; } = 5;

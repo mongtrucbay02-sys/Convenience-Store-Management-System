@@ -15,11 +15,11 @@ public sealed class ProductDetailsController(ProductDetailService service) : Con
 {
     /// <summary>SP-02 Product details; cost/history restricted to AD.</summary>
     [HttpGet]
-    public async Task<IActionResult> Get(uint id, CancellationToken ct) => Ok(await service.FindAsync(id, User.LayMaVaiTro(), ct));
+    public async Task<IActionResult> Get(long id, CancellationToken ct) => Ok(await service.FindAsync(id, User.LayMaVaiTro(), ct));
 
     /// <summary>SP-02 Bounded scheduled prices, or AD-only price history.</summary>
     [HttpGet("prices")]
-    public async Task<IActionResult> Prices(uint id, [FromQuery] ProductPricesQuery query, CancellationToken ct)
+    public async Task<IActionResult> Prices(long id, [FromQuery] ProductPricesQuery query, CancellationToken ct)
     {
         if (Request.Query.Keys.Any(x => !new[] { "page", "size", "daLenLich" }.Contains(x, StringComparer.OrdinalIgnoreCase)))
             throw LoiNghiepVu.DuLieuKhongHopLe("query", "Bộ lọc không được hỗ trợ.");

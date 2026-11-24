@@ -235,7 +235,7 @@ public sealed class MySqlPosCheckoutStore(
 
         // 7. Lưu hóa đơn.
         var hoaDonId = Convert.ToInt64(
-            await db.DocMotGiaTriAsync(
+            await db.InsertIdAsync(
                 """
                 INSERT INTO hoa_don
                 (
@@ -259,7 +259,7 @@ public sealed class MySqlPosCheckoutStore(
                  @tth, @giam, @ttt, @tru,
                     @khach, @thua, @stmd, @diem
                 );
-                SELECT LAST_INSERT_ID();
+
                 """,
                 cancellationToken,
                 ("@ma", maHoaDon),
@@ -419,12 +419,11 @@ public sealed class MySqlPosCheckoutStore(
         CancellationToken ct)
     {
         await db.ChayAsync(
-            """
+            $"""
             INSERT INTO bo_dem_chung_tu
                 (tien_to, ky, so_cuoi)
             VALUES ('HD', @ky, 1)
-            ON DUPLICATE KEY UPDATE
-                so_cuoi = so_cuoi + 1
+            {db.CounterUpsert()}
             """,
             ct,
             ("@ky", ky));

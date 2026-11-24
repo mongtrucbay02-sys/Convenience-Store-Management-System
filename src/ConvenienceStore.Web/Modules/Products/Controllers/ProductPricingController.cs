@@ -14,15 +14,15 @@ public sealed class ProductPricingController(ProductPricingService service) : Co
 {
     /// <summary>SP-05 Read one price and its product version for cancellation.</summary>
     [HttpGet("{priceId}")]
-    public async Task<IActionResult> Get(uint id, uint priceId, CancellationToken ct) => Ok(await service.FindAsync(id, priceId, User.LayMaVaiTro(), ct));
+    public async Task<IActionResult> Get(long id, long priceId, CancellationToken ct) => Ok(await service.FindAsync(id, priceId, User.LayMaVaiTro(), ct));
     /// <summary>SP-05 Append an immediate or scheduled price with audit metadata.</summary>
     [HttpPost]
-    public async Task<IActionResult> Create(uint id, ProductPriceChangeDto input, CancellationToken ct)
+    public async Task<IActionResult> Create(long id, ProductPriceChangeDto input, CancellationToken ct)
     {
-        var row = await service.CreateAsync(id, input, checked((uint)User.LayTaiKhoanId()), User.LayMaVaiTro(), ct);
+        var row = await service.CreateAsync(id, input, checked((long)User.LayTaiKhoanId()), User.LayMaVaiTro(), ct);
         return Created($"/api/v1/products/{id}/prices/{row.Id}", row);
     }
     /// <summary>SP-05 Cancel an unexpired scheduled price, preserving history.</summary>
     [HttpPost("{priceId}/cancel")]
-    public async Task<IActionResult> Cancel(uint id, uint priceId, ProductPriceCancelDto input, CancellationToken ct) => Ok(await service.CancelAsync(id, priceId, input, checked((uint)User.LayTaiKhoanId()), User.LayMaVaiTro(), ct));
+    public async Task<IActionResult> Cancel(long id, long priceId, ProductPriceCancelDto input, CancellationToken ct) => Ok(await service.CancelAsync(id, priceId, input, checked((long)User.LayTaiKhoanId()), User.LayMaVaiTro(), ct));
 }

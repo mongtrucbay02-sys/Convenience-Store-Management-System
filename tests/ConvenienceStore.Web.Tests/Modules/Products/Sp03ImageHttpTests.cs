@@ -51,7 +51,7 @@ public sealed class Sp03ImageHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMySq
         Assert.Equal(1, Convert.ToInt32(await db.DocMotGiaTriAsync("SELECT phien_ban FROM san_pham WHERE id=@id", ("@id", ids.Active))));
     }
 
-    internal static MultipartFormDataContent Upload(byte[] bytes, string type, uint version)
+    internal static MultipartFormDataContent Upload(byte[] bytes, string type, long version)
     {
         var content = new MultipartFormDataContent(); var file = new ByteArrayContent(bytes); file.Headers.ContentType = new MediaTypeHeaderValue(type);
         content.Add(file, "image", "../../unsafe.html"); content.Add(new StringContent(version.ToString()), "phienBan"); return content;

@@ -11,14 +11,14 @@ public sealed class Sp08CategoryMySqlTests(CsdlMySqlTam database) : IClassFixtur
     {
         await using var db = database.TaoDbContext(); var service = new CategoryMutationService(new EfCategoryMutationRepository(db));
         var created = await service.CreateAsync(new("SP08-Sua", null, true)); Assert.Equal(CategoryMutationStatus.Success, created.Status);
-        var row = created.Category!; Assert.Equal(1u, row.PhienBan); Assert.True(row.KhongDoiTra);
+        var row = created.Category!; Assert.Equal(1L, row.PhienBan); Assert.True(row.KhongDoiTra);
         Assert.Equal(CategoryMutationStatus.Duplicate, (await service.CreateAsync(new("sp08-sua", null, false))).Status);
         async Task<CategoryMutationResult> Write(string name)
         { await using var other = database.TaoDbContext(); return await new CategoryMutationService(new EfCategoryMutationRepository(other)).UpdateAsync(row.Id, new(name, null, false, row.PhienBan)); }
         var results = await Task.WhenAll(Write("SP08 winner A"), Write("SP08 winner B"));
         Assert.Single(results, x => x.Status == CategoryMutationStatus.Success); Assert.Single(results, x => x.Status == CategoryMutationStatus.Conflict);
-        await using var read = database.TaoDbContext(); var saved = await read.DanhMucs.FindAsync(row.Id); Assert.Equal(2u, saved!.PhienBan);
-        Assert.Equal(CategoryMutationStatus.NotFound, (await service.UpdateAsync(uint.MaxValue, new("Missing", null, false, 1))).Status);
+        await using var read = database.TaoDbContext(); var saved = await read.DanhMucs.FindAsync(row.Id); Assert.Equal(2L, saved!.PhienBan);
+        Assert.Equal(CategoryMutationStatus.NotFound, (await service.UpdateAsync(4294967295L, new("Missing", null, false, 1))).Status);
         using var ct = new CancellationTokenSource(); ct.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.FindAsync(row.Id, ct.Token));
     }

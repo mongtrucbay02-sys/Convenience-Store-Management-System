@@ -26,14 +26,14 @@ public sealed class CustomersController(CustomerService customers, PosCartServic
         View("~/Modules/Customers/Views/Customers/Edit.cshtml", new CustomerInput { Phone = phone ?? "", AttachToCart = attachToCart });
 
     [HttpGet]
-    public async Task<IActionResult> Edit(uint id, CancellationToken ct)
+    public async Task<IActionResult> Edit(long id, CancellationToken ct)
     {
         ViewData["Id"] = id;
         return View("~/Modules/Customers/Views/Customers/Edit.cshtml", await customers.GetInputAsync(id, ct));
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Save(uint? id, CustomerInput input, CancellationToken ct)
+    public async Task<IActionResult> Save(long? id, CustomerInput input, CancellationToken ct)
     {
         ViewData["Id"] = id;
         if (input.AttachToCart && !User.IsInRole(CustomerRoles.Cashier)) return Forbid();
@@ -75,11 +75,11 @@ public sealed class CustomersController(CustomerService customers, PosCartServic
     }
 
     [HttpGet]
-    public async Task<IActionResult> History(uint id, CancellationToken ct) =>
+    public async Task<IActionResult> History(long id, CancellationToken ct) =>
         View("~/Modules/Customers/Views/Customers/History.cshtml", await customers.HistoryAsync(id, User.IsInRole(CustomerRoles.Admin), ct));
 
     [Authorize(Roles = CustomerRoles.Admin), HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(uint id, CancellationToken ct)
+    public async Task<IActionResult> Delete(long id, CancellationToken ct)
     {
         try { await customers.DeleteAsync(id, ct); TempData["Success"] = "Đã xóa/ẩn khách hàng và thông tin cá nhân."; }
         catch (LoiNghiepVu ex) { TempData["Error"] = ex.Message; }
@@ -87,7 +87,7 @@ public sealed class CustomersController(CustomerService customers, PosCartServic
     }
 
     [Authorize(Roles = CustomerRoles.Admin), HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Adjust(uint id, PointAdjustment input, CancellationToken ct)
+    public async Task<IActionResult> Adjust(long id, PointAdjustment input, CancellationToken ct)
     {
         try
         {

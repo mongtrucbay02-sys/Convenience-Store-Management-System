@@ -23,6 +23,7 @@ Mô tả **hệ thống được thiết kế ra sao** để đáp ứng yêu c�
 
 | Tài liệu | Mô tả | Module |
 |---|---|---|
+| [`supabase-entity-mapping-20261123.md`](supabase-entity-mapping-20261123.md) | Ánh xạ 31 bảng Supabase từ catalog thật; chỉ đọc đã xác minh, chuyển SQL/E2E còn chờ | Toàn hệ thống |
 | [`database/product-purchase/`](database/product-purchase/) | T3-09 — ERD, từ điển dữ liệu, ghi chú thiết kế Sản phẩm & Nhập hàng | SP, NH, KHO |
 | [`database/invoice-returns/`](database/invoice-returns/) | Issue #9 — ERD (drawio/mmd/dot/svg), từ điển dữ liệu Hóa đơn & Đổi trả | POS, DT |
 | [`database/reconciliation-20261123/`](database/reconciliation-20261123/) | Đối chiếu ba migration với schema/ERD/SRS; ERD bổ sung, từ điển và DDL tham chiếu **chờ duyệt** | POS, DT, BC, CSDL |

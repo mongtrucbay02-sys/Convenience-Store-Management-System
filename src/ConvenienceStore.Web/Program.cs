@@ -1,5 +1,4 @@
 using ConvenienceStore.Web.Modules.Products;
-
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Auth;
 using ConvenienceStore.Web.Modules.Auth.Security;
@@ -50,7 +49,6 @@ builder.Services.AddScoped<PromotionUsageStore>();
 builder.Services.AddScoped<IWeekEightReportDataSource, MySqlWeekEightReportDataSource>();
 builder.Services.AddScoped<WeekEightReportsService>();
 
-
 // ======================================================
 // 2. DASHBOARD
 // ======================================================
@@ -62,7 +60,6 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     IDashboardService,
     DashboardService>();
-
 
 // ======================================================
 // 3. BÁO CÁO
@@ -80,7 +77,6 @@ builder.Services.AddScoped<
     IOperationalReportsService,
     OperationalReportsService>();
 
-
 // ======================================================
 // 4. KHUYẾN MÃI
 // ======================================================
@@ -97,9 +93,8 @@ builder.Services.AddScoped<
     IPromotionService,
     PromotionService>();
 
-
 // ======================================================
-// 5. KẾT NỐI MYSQL
+// 5. KẾT NỐI CƠ SỞ DỮ LIỆU
 // ======================================================
 
 var connectionString = MySqlEnv.GetConnectionString(
@@ -114,14 +109,34 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "cạnh project ConvenienceStore.Web hoặc truyền qua biến môi trường.");
 }
 
+var databaseProvider = MySqlEnv.GetProvider(
+    builder.Environment.ContentRootPath,
+    builder.Configuration);
+
+if (databaseProvider == "PostgreSql")
+{
+    connectionString = SqlDialect.PostgresConnectionString(connectionString);
+}
+
 builder.Configuration["ConnectionStrings:CuaHang"] = connectionString;
+
+// Lưu provider để các module khác có thể sử dụng
+builder.Configuration["Database:Provider"] = databaseProvider;
 
 builder.Services.AddDbContext<CuaHangDbContext>(options =>
 {
-    options.UseMySQL(connectionString)
-        .AddInterceptors(new GioVietNamInterceptor());
+    if (databaseProvider == "PostgreSql")
+    {
+        options.UseNpgsql(
+            connectionString,
+            postgres => postgres.SetPostgresVersion(17, 0));
+    }
+    else
+    {
+        options.UseMySQL(connectionString)
+            .AddInterceptors(new GioVietNamInterceptor());
+    }
 });
-
 
 // ======================================================
 // 6. POS-01, POS-02, POS-05, POS-07, POS-09
@@ -159,7 +174,6 @@ builder.Services.AddScoped<
     IPosInvoiceStore,
     MySqlPosInvoiceStore>();
 
-
 // ======================================================
 // 7. POS-10, POS-11: TRA CỨU HÓA ĐƠN
 // ======================================================
@@ -170,7 +184,6 @@ builder.Services.AddScoped<PosInvoiceListService>();
 builder.Services.AddScoped<
     IPosInvoiceListStore,
     MySqlPosInvoiceListStore>();
-
 
 // ======================================================
 // 8. CÁC MODULE CỦA HỆ THỐNG
@@ -194,16 +207,21 @@ builder.Services.AddScoped<PurchaseReceiptService>();
 // RETURNS: Quản lý trả hàng và đổi hàng
 builder.Services.AddModuleReturns();
 
-
 // ======================================================
 // 9. PHÂN QUYỀN
 // ======================================================
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy(MaQuyen.DoiTraDuyetCauHinh, policy =>
-        policy.RequireRole(BangQuyen.Admin)
-            .RequireClaim(ThongTinXacThuc.ClaimQuyen, MaQuyen.DoiTraDuyetCauHinh));
+    // DT-06: Duyệt đổi trả / cấu hình
+    options.AddPolicy(
+        MaQuyen.DoiTraDuyetCauHinh,
+        policy =>
+            policy.RequireRole(BangQuyen.Admin)
+                .RequireClaim(
+                    ThongTinXacThuc.ClaimQuyen,
+                    MaQuyen.DoiTraDuyetCauHinh));
+
     // --------------------------------------------------
     // ADMIN
     // --------------------------------------------------
@@ -217,7 +235,6 @@ builder.Services.AddAuthorization(options =>
             policy.RequireRole(
                 AuthorizationPolicies.AdminRole);
         });
-
 
     // --------------------------------------------------
     // POS: BÁN HÀNG
@@ -239,7 +256,6 @@ builder.Services.AddAuthorization(options =>
                     MaQuyen.BanHang));
         });
 
-
     // --------------------------------------------------
     // POS-10, POS-11: XEM HÓA ĐƠN
     // --------------------------------------------------
@@ -254,7 +270,6 @@ builder.Services.AddAuthorization(options =>
                 PosInvoiceAccess.CoQuyenXem(
                     context.User));
         });
-
 
     // --------------------------------------------------
     // POS-12: HỦY HÓA ĐƠN
@@ -272,7 +287,6 @@ builder.Services.AddAuthorization(options =>
         });
 });
 
-
 // ======================================================
 // 10. KHỞI TẠO ADMIN ĐẦU TIÊN
 // ======================================================
@@ -283,18 +297,15 @@ builder.Services.Configure<AdminDauTienOptions>(
 
 builder.Services.AddScoped<KhoiTaoAdminDauTien>();
 
-
 // ======================================================
 // 11. BUILD APPLICATION
 // ======================================================
 
 var app = builder.Build();
 
-
 // Khởi tạo Admin đầu tiên khi ứng dụng chạy
 await KhoiTaoAdminDauTien.ChayKhiKhoiDongAsync(
     app.Services);
-
 
 // ======================================================
 // 12. HTTP PIPELINE
@@ -325,7 +336,6 @@ app.UseAuthentication();
 // Authorization
 app.UseAuthorization();
 
-
 // ======================================================
 // 13. ROUTING
 // ======================================================
@@ -346,7 +356,6 @@ app.MapControllerRoute(
 
 // API Controllers
 app.MapControllers();
-
 
 // ======================================================
 // 14. RUN APPLICATION

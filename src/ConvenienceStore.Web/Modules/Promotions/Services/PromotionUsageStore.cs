@@ -1,3 +1,4 @@
+using System.Data.Common;
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Shared.Data;
 using ConvenienceStore.Web.Shared.Errors;
@@ -29,7 +30,7 @@ public sealed class PromotionUsageStore(CuaHangDbContext db)
               AND (@promotion IS NULL OR v.chuong_trinh_id=@promotion)
             ORDER BY v.thanh_toan_luc DESC,v.hoa_don_id DESC,v.chuong_trinh_id
             """, r => new PromotionUse(Convert.ToInt64(r[0]),r.GetString(1),Convert.ToInt64(r[2]),
-                r.GetString(3),r.GetDateTime(4),r.GetString(5),r.GetString(6),Convert.ToInt64(r[7]),Convert.ToInt64(r[8])),
+                r.GetString(3),r.VietnamDateTime(4),r.GetString(5),r.GetString(6),Convert.ToInt64(r[7]),Convert.ToInt64(r[8])),
             ct,("@from",from),("@to",to),("@promotion",promotionId));
 
     public async Task<PromotionHistory> HistoryAsync(long id, CancellationToken ct)
@@ -58,7 +59,7 @@ public sealed class PromotionUsageStore(CuaHangDbContext db)
             await db.ChayAsync("DELETE FROM chuong_trinh_khuyen_mai WHERE id=@id",ct,("@id",id));
             await tx.CommitAsync(ct);
         }
-        catch(MySqlException e) when(e.Number==1451)
+        catch(DbException e) when(SqlDialect.IsForeignKeyViolation(e))
         {
             throw new LoiNghiepVu("KHUYEN_MAI_DA_DUOC_DUNG",409,"Chương trình vừa phát sinh tham chiếu. Hãy tải lại và dùng Kết thúc.");
         }

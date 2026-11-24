@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class GioHang
 {
-    public uint Id { get; set; }
+    public long Id { get; set; }
 
-    public uint ThuNganId { get; set; }
+    public long ThuNganId { get; set; }
 
-    public uint? KhachHangId { get; set; }
+    public long? KhachHangId { get; set; }
 
     public string TrangThai { get; set; } = null!;
 
@@ -23,15 +23,15 @@ public partial class GioHang
 
     public string? LyDoHuy { get; set; }
 
-    public ulong? GiaTriKhiHuy { get; set; }
+    public long? GiaTriKhiHuy { get; set; }
 
-    public uint PhienBan { get; set; }
+    public long PhienBan { get; set; }
 
     public DateTime NgayTao { get; set; }
 
     public DateTime NgayCapNhat { get; set; }
 
-    public uint? DangBanCuaThuNgan { get; set; }
+    public long? DangBanCuaThuNgan { get; set; }
 
     public virtual ICollection<CtGioHang> CtGioHangs { get; set; } = new List<CtGioHang>();
 

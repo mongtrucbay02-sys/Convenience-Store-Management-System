@@ -14,7 +14,7 @@ public sealed class Sp01ProductMySqlTests(CsdlMySqlTam database) : IClassFixture
         var query = new ProductListQuery { DanhMucId = ids.Category, Keyword = "sua", Size = 1, Sort = "-giaBan,ma" };
         var first = await repo.ListAsync(query, false); var second = await repo.ListAsync(query with { Page = 2 }, false);
         Assert.Equal(2, first.Total); Assert.Equal(ids.Inactive, Assert.Single(first.Items).Id);
-        Assert.Equal(ids.Active, Assert.Single(second.Items).Id); Assert.Equal(10000u, second.Items[0].GiaBan);
+        Assert.Equal(ids.Active, Assert.Single(second.Items).Id); Assert.Equal(10000L, second.Items[0].GiaBan);
         Assert.Empty((await repo.ListAsync(query with { Page = 3 }, false)).Items);
         Assert.Empty((await repo.ListAsync(query with { TrangThai = "NGUNG_KINH_DOANH" }, true)).Items);
         Assert.Empty((await repo.ListAsync(query with { Keyword = "%" }, false)).Items);

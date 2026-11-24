@@ -13,7 +13,7 @@ namespace ConvenienceStore.Web.Modules.Products.Controllers;
 public sealed class ProductPricePagesController(ProductDetailService service, ILogger<ProductPricePagesController> logger) : Controller
 {
     [HttpGet("/Products/{id}/Prices")]
-    public async Task<IActionResult> Index(uint id, [FromQuery] ProductPricesQuery query, CancellationToken ct)
+    public async Task<IActionResult> Index(long id, [FromQuery] ProductPricesQuery query, CancellationToken ct)
     {
         if (User.DangPhaiDoiMatKhau()) return Forbid();
         ViewData["ProductId"] = id; ViewData["ScheduledOnly"] = query.DaLenLich;

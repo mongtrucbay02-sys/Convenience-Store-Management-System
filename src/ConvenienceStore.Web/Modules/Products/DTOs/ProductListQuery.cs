@@ -5,7 +5,7 @@ public sealed record ProductListQuery
     public int Page { get; init; } = 1;
     public int Size { get; init; } = 20;
     public string? Keyword { get; init; }
-    public uint? DanhMucId { get; init; }
+    public long? DanhMucId { get; init; }
     public string? TrangThai { get; init; }
     public long? GiaBanTu { get; init; }
     public long? GiaBanDen { get; init; }

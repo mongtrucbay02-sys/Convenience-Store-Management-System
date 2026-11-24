@@ -15,7 +15,7 @@
     <tbody>
     @foreach (var line in Model.CtPhieuNhaps)
     {
-        <tr><td>@line.TenSanPham</td><td>@line.DonViTinh</td><td>@line.SoLuong</td><td>@line.GiaNhap.ToString("N0") đ</td><td>@(((ulong)line.SoLuong * line.GiaNhap).ToString("N0")) đ</td></tr>
+        <tr><td>@line.TenSanPham</td><td>@line.DonViTinh</td><td>@line.SoLuong</td><td>@line.GiaNhap.ToString("N0") đ</td><td>@(((long)line.SoLuong * line.GiaNhap).ToString("N0")) đ</td></tr>
     }
     </tbody>
 </table>

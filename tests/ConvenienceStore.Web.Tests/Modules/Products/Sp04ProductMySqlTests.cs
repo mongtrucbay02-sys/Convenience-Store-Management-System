@@ -30,7 +30,7 @@ public sealed class Sp04ProductMySqlTests(CsdlMySqlTam database) : IClassFixture
         var input = Sp04ProductUnitTests.Valid() with { TenSanPham = "Current renamed", DanhMucId = ids.Category };
         await repo.UpdateAsync(ids.Active, input);
         var snapshot = await db.CtHoaDons.AsNoTracking().SingleAsync(x => x.HoaDonId == invoice && x.SanPhamId == ids.Active);
-        Assert.Equal("Original snapshot", snapshot.TenSanPham); Assert.Equal("Hộp", snapshot.DonViTinh); Assert.Equal(10000u, snapshot.DonGia); Assert.Equal(8000m, snapshot.GiaVon); Assert.Equal(10000ul, snapshot.ThanhTien);
+        Assert.Equal("Original snapshot", snapshot.TenSanPham); Assert.Equal("Hộp", snapshot.DonViTinh); Assert.Equal(10000L, snapshot.DonGia); Assert.Equal(8000m, snapshot.GiaVon); Assert.Equal(10000L, snapshot.ThanhTien);
         Assert.Equal(409, (await Assert.ThrowsAsync<LoiNghiepVu>(() => repo.UpdateAsync(ids.Active, input with { PhienBan = 2, DonViTinh = "Cái" }))).MaHttp);
         using var cancel = new CancellationTokenSource(); cancel.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repo.UpdateAsync(ids.Active, input with { PhienBan = 2 }, ct: cancel.Token));

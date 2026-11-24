@@ -28,7 +28,7 @@ public sealed class Sp05PricingMySqlTests(CsdlMySqlTam database) : IClassFixture
     {
         var ids = await ProductReadSeed.Create(database);
         await database.ChayAsync("INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id) SELECT id,10100,NOW(),nguoi_tao_id FROM san_pham WHERE id=@id", ("@id", ids.Active));
-        await using var db = database.TaoDbContext(); Assert.Equal(10100u, (await new EfProductDetailRepository(db).FindAsync(ids.Active, false))!.GiaBan);
+        await using var db = database.TaoDbContext(); Assert.Equal(10100L, (await new EfProductDetailRepository(db).FindAsync(ids.Active, false))!.GiaBan);
         var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> { ["ConnectionStrings:CuaHang"] = database.ChuoiKetNoi }).Build();
         Assert.Equal(10100L, (await new MySqlPosCatalog(config).FindAsync((int)ids.Active))!.Price);
     }
@@ -46,7 +46,7 @@ public sealed class Sp05PricingMySqlTests(CsdlMySqlTam database) : IClassFixture
         var actor = Convert.ToUInt32(await database.DocMotGiaTriAsync("SELECT nguoi_tao_id FROM san_pham WHERE id=@id", ("@id", ids.Active)));
         await using var db = database.TaoDbContext(); var repo = new EfProductPricingRepository(db);
         var immediate = await repo.CreateAsync(ids.Active, new() { GiaBan = 12000, PhienBan = 1 }, actor);
-        Assert.Equal(2u, immediate.PhienBan); Assert.Equal(actor, immediate.NguoiTaoId); Assert.True(immediate.NgayTao.Year >= 2026);
+        Assert.Equal(2L, immediate.PhienBan); Assert.Equal(actor, immediate.NguoiTaoId); Assert.True(immediate.NgayTao.Year >= 2026);
         var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> { ["ConnectionStrings:CuaHang"] = database.ChuoiKetNoi }).Build(); var catalog = new MySqlPosCatalog(config);
         Assert.Equal(12000L, (await catalog.FindAsync((int)ids.Active))!.Price); Assert.Equal(12000L, Assert.Single(await catalog.SearchAsync(null, (int)ids.Category)).Price);
         Assert.Equal(10000, Convert.ToInt32(await database.DocMotGiaTriAsync("SELECT don_gia FROM ct_gio_hang WHERE san_pham_id=@id", ("@id", ids.Active))));
@@ -84,6 +84,6 @@ public sealed class Sp05PricingMySqlTests(CsdlMySqlTam database) : IClassFixture
         await database.ChayAsync("CREATE TRIGGER sp05_reject_version BEFORE UPDATE ON san_pham FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Injected version failure'");
         try { await Assert.ThrowsAsync<MySqlException>(() => repo.CancelAsync(ids.Active, price.Id, 2, actor)); }
         finally { await database.ChayAsync("DROP TRIGGER sp05_reject_version"); }
-        var unchanged = await repo.FindAsync(ids.Active, price.Id); Assert.NotNull(unchanged); Assert.Null(unchanged.HuyLuc); Assert.Null(unchanged.NguoiHuyId); Assert.Equal(2u, unchanged.PhienBan);
+        var unchanged = await repo.FindAsync(ids.Active, price.Id); Assert.NotNull(unchanged); Assert.Null(unchanged.HuyLuc); Assert.Null(unchanged.NguoiHuyId); Assert.Equal(2L, unchanged.PhienBan);
     }
 }

@@ -12,7 +12,7 @@ public static class ProductPriceRules
     {
         ArgumentNullException.ThrowIfNull(input); var errors = new List<LoiTruong>();
         if (input.GiaBan is null or <= 0 or > uint.MaxValue || input.GiaBan % 100 != 0) errors.Add(new("giaBan", "Giá phải là số nguyên dương, bội số 100 đồng trong phạm vi lưu trữ."));
-        if (input.PhienBan == 0) errors.Add(new("phienBan", "Cần phiên bản hiện tại."));
+        if (input.PhienBan <= 0) errors.Add(new("phienBan", "Cần phiên bản hiện tại."));
         if (!TryParse(input.HieuLucTu, out _)) errors.Add(new("hieuLucTu", "Thời điểm phải là ISO 8601 có múi giờ, trong phạm vi lưu trữ."));
         if (errors.Count > 0) throw LoiNghiepVu.DuLieuKhongHopLe(errors);
         return input;
@@ -42,10 +42,10 @@ public static class ProductPriceRules
 public sealed class ProductPricingService(IProductPricingRepository prices)
 {
     private static void Admin(string role) { if (role != "AD") throw new LoiNghiepVu(MaLoiChung.KhongDuQuyen, 403, "Chỉ AD được đổi hoặc hủy giá bán."); }
-    public async Task<ProductPriceResult> FindAsync(uint id, uint priceId, string role, CancellationToken ct = default)
+    public async Task<ProductPriceResult> FindAsync(long id, long priceId, string role, CancellationToken ct = default)
     { Admin(role); return await prices.FindAsync(id, priceId, ct) ?? throw LoiNghiepVu.KhongTimThay("Mức giá không còn tồn tại."); }
-    public Task<ProductPriceResult> CreateAsync(uint id, ProductPriceChangeDto input, uint actorId, string role, CancellationToken ct = default)
+    public Task<ProductPriceResult> CreateAsync(long id, ProductPriceChangeDto input, long actorId, string role, CancellationToken ct = default)
     { Admin(role); input = ProductPriceRules.Normalize(input); ct.ThrowIfCancellationRequested(); return prices.CreateAsync(id, input, actorId, ct); }
-    public Task<ProductPriceResult> CancelAsync(uint id, uint priceId, ProductPriceCancelDto input, uint actorId, string role, CancellationToken ct = default)
-    { Admin(role); if (input.PhienBan == 0) throw LoiNghiepVu.DuLieuKhongHopLe("phienBan", "Cần phiên bản hiện tại."); ct.ThrowIfCancellationRequested(); return prices.CancelAsync(id, priceId, input.PhienBan, actorId, ct); }
+    public Task<ProductPriceResult> CancelAsync(long id, long priceId, ProductPriceCancelDto input, long actorId, string role, CancellationToken ct = default)
+    { Admin(role); if (input.PhienBan <= 0) throw LoiNghiepVu.DuLieuKhongHopLe("phienBan", "Cần phiên bản hiện tại."); ct.ThrowIfCancellationRequested(); return prices.CancelAsync(id, priceId, input.PhienBan, actorId, ct); }
 }

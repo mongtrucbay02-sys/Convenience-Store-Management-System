@@ -9,6 +9,7 @@
 ## Đọc theo thứ tự
 | Tệp | Mục đích |
 |---|---|
+| [postgresql-runtime-change-20261123.md](postgresql-runtime-change-20261123.md) | Bổ sung kỹ thuật Supabase/UTC/CI, đã hiện thực cục bộ; chờ nhóm duyệt |
 | [srs.md](srs.md) | SRS bản nháp, phạm vi và phân loại |
 | [functional-requirements.md](functional-requirements.md) | FR-01…FR-15, điều kiện và nguồn |
 | [user-stories.md](user-stories.md) | US-01…US-12, vai trò/giá trị |

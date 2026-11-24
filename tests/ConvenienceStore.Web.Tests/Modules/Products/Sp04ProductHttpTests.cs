@@ -72,7 +72,7 @@ public sealed class Sp04ProductHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMy
         using var error = JsonDocument.Parse(await invalid.Content.ReadAsStringAsync()); Assert.Equal(5, error.RootElement.GetProperty("details").GetArrayLength());
         var input = new { tenSanPham = "Valid", danhMucId = ids.Category, donViTinh = "Hộp", nguongToiThieu = 5, phienBan = 1 };
         Assert.Equal(HttpStatusCode.NotFound, (await client.PutAsJsonAsync("/api/v1/products/4294967295", input)).StatusCode);
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await client.PutAsJsonAsync($"/api/v1/products/{ids.Active}", input with { danhMucId = uint.MaxValue })).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await client.PutAsJsonAsync($"/api/v1/products/{ids.Active}", input with { danhMucId = 4294967295L })).StatusCode);
         Assert.Equal(1, Convert.ToInt32(await db.DocMotGiaTriAsync("SELECT phien_ban FROM san_pham WHERE id=@id", ("@id", ids.Active))));
     }
 

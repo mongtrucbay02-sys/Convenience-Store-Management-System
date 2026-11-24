@@ -46,7 +46,7 @@ public sealed class Sp01ProductUnitTests
             Query = query; ActiveOnly = activeOnly; Token = ct;
             if (Failure is not null) return Task.FromException<PagedResultDto<ProductListItemDto>>(Failure);
             return Task.FromResult(new PagedResultDto<ProductListItemDto>(Enumerable.Range(1, 2).Select(id => new ProductListItemDto {
-                Id = (uint)id, Ma = "P" + id, TenSanPham = "Product", DanhMuc = new(1, "Category"), DonViTinh = "Unit", TrangThai = "DANG_KINH_DOANH"
+                Id = (long)id, Ma = "P" + id, TenSanPham = "Product", DanhMuc = new(1, "Category"), DonViTinh = "Unit", TrangThai = "DANG_KINH_DOANH"
             }).ToArray(), 2, 1, query.Size));
         }
     }
@@ -66,6 +66,8 @@ public sealed class Sp01ProductUnitTests
     [InlineData(int.MaxValue, 100, null, null)]
     [InlineData(1, 20, -1L, null)]
     [InlineData(1, 20, 200L, 100L)]
+    [InlineData(1, 20, 4294967300L, null)]
+    [InlineData(1, 20, null, 4294967300L)]
     public void RejectsInvalidBounds(int page, int size, long? from, long? to)
     {
         Assert.Equal(422, Assert.Throws<LoiNghiepVu>(() => ProductReadService.Normalize(new() { Page = page, Size = size, GiaBanTu = from, GiaBanDen = to })).MaHttp);

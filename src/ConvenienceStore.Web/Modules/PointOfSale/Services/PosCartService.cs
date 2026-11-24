@@ -2,7 +2,8 @@ using System.Data;
 using ConvenienceStore.Web.Models.Pos;
 using ConvenienceStore.Web.Modules.Auth;
 using ConvenienceStore.Web.Modules.Auth.Security;
-using MySqlConnector;
+using System.Data.Common;
+using ConvenienceStore.Web.Shared.Data;
 
 namespace ConvenienceStore.Web.Services.Pos;
 
@@ -62,15 +63,15 @@ public sealed class PosCartService
         if (cartId == null) return "Không có đơn đang bán. Hãy mở quầy bán hàng trước.";
         if (customerId.HasValue)
         {
-            await using var customer = new MySqlCommand(
+            await using var customer = SqlDialect.Command(
                 "SELECT id FROM khach_hang WHERE id=@id AND trang_thai='HOAT_DONG' FOR UPDATE", conn, tx);
-            customer.Parameters.AddWithValue("@id", customerId.Value);
+            customer.AddValue("@id", customerId.Value);
             if (await customer.ExecuteScalarAsync() == null) return "Khách hàng không còn hoạt động.";
         }
-        await using var update = new MySqlCommand(
+        await using var update = SqlDialect.Command(
             "UPDATE gio_hang SET khach_hang_id=@id WHERE id=@g AND trang_thai='DANG_BAN'", conn, tx);
-        update.Parameters.AddWithValue("@id", (object?)customerId ?? DBNull.Value);
-        update.Parameters.AddWithValue("@g", cartId.Value);
+        update.AddValue("@id", (object?)customerId ?? DBNull.Value);
+        update.AddValue("@g", cartId.Value);
         await update.ExecuteNonQueryAsync();
         await ApplyPromotionsAsync(conn, tx, cartId.Value);
         await tx.CommitAsync();
@@ -108,14 +109,14 @@ public sealed class PosCartService
         if (hienCo == null)
         {
             // BR-POS-01: giá dòng chốt theo giá đang hiệu lực LÚC THÊM VÀO GIỎ.
-            await using var them = new MySqlCommand(
+            await using var them = SqlDialect.Command(
                 """
                 INSERT INTO ct_gio_hang (gio_hang_id, san_pham_id, so_luong, don_gia)
                 VALUES (@g, @p, 1, @gia)
                 """, conn, tx);
-            them.Parameters.AddWithValue("@g", gioId);
-            them.Parameters.AddWithValue("@p", productId);
-            them.Parameters.AddWithValue("@gia", product.Price);
+            them.AddValue("@g", gioId);
+            them.AddValue("@p", productId);
+            them.AddValue("@gia", product.Price);
             await them.ExecuteNonQueryAsync();
         }
         else
@@ -153,10 +154,10 @@ public sealed class PosCartService
 
         if (quantity <= 0)
         {
-            await using var xoa = new MySqlCommand(
+            await using var xoa = SqlDialect.Command(
                 "DELETE FROM ct_gio_hang WHERE gio_hang_id = @g AND san_pham_id = @p", conn, tx);
-            xoa.Parameters.AddWithValue("@g", gioId.Value);
-            xoa.Parameters.AddWithValue("@p", productId);
+            xoa.AddValue("@g", gioId.Value);
+            xoa.AddValue("@p", productId);
             await xoa.ExecuteNonQueryAsync();
             await tx.CommitAsync();
             return null;
@@ -239,14 +240,14 @@ public sealed class PosCartService
         return changed;
     }
 
-    private static async Task<int> ApplyPromotionsAsync(MySqlConnection conn, MySqlTransaction tx, int gioId)
+    private static async Task<int> ApplyPromotionsAsync(DbConnection conn, DbTransaction tx, int gioId)
     {
         var promotions = await PosPromotionCalculator.ReadAsync(conn, tx);
-        await using var customer = new MySqlCommand("""
+        await using var customer = SqlDialect.Command("""
             SELECT COUNT(*) FROM gio_hang g JOIN khach_hang k ON k.id = g.khach_hang_id
             WHERE g.id = @g AND k.trang_thai = 'HOAT_DONG'
             """, conn, tx);
-        customer.Parameters.AddWithValue("@g", gioId);
+        customer.AddValue("@g", gioId);
         bool member = Convert.ToInt32(await customer.ExecuteScalarAsync()) > 0;
         var cart = await DocDongAsync(conn, tx, gioId);
         int changed = 0;
@@ -255,14 +256,14 @@ public sealed class PosCartService
             var best = PosPromotionCalculator.Best(promotions, item.ProductId, item.UnitPrice, member);
             long discount = best is null ? 0 : PosPromotionCalculator.Discount(item.UnitPrice, best);
             if (item.PromotionId == best?.Id && item.UnitDiscount == discount) continue;
-            await using var update = new MySqlCommand("""
+            await using var update = SqlDialect.Command("""
                 UPDATE ct_gio_hang SET khuyen_mai_id = @km, giam_don_vi = @d
                 WHERE gio_hang_id = @g AND san_pham_id = @p
                 """, conn, tx);
-            update.Parameters.AddWithValue("@km", (object?)best?.Id ?? DBNull.Value);
-            update.Parameters.AddWithValue("@d", discount);
-            update.Parameters.AddWithValue("@g", gioId);
-            update.Parameters.AddWithValue("@p", item.ProductId);
+            update.AddValue("@km", (object?)best?.Id ?? DBNull.Value);
+            update.AddValue("@d", discount);
+            update.AddValue("@g", gioId);
+            update.AddValue("@p", item.ProductId);
             changed += await update.ExecuteNonQueryAsync();
         }
         return changed;
@@ -284,17 +285,17 @@ public sealed class PosCartService
     // =====================  HÀM NỘI BỘ  =====================
 
     /// <summary>Đơn DANG_BAN của thu ngân (khóa dòng để các request cùng thu ngân xếp hàng).</summary>
-    private static async Task<int?> DocGioDangBanAsync(MySqlConnection conn, MySqlTransaction tx, int thuNganId)
+    private static async Task<int?> DocGioDangBanAsync(DbConnection conn, DbTransaction tx, int thuNganId)
     {
-        await using var cmd = new MySqlCommand(
+        await using var cmd = SqlDialect.Command(
             "SELECT id FROM gio_hang WHERE thu_ngan_id = @t AND trang_thai = 'DANG_BAN' FOR UPDATE",
             conn, tx);
-        cmd.Parameters.AddWithValue("@t", thuNganId);
+        cmd.AddValue("@t", thuNganId);
         var kq = await cmd.ExecuteScalarAsync();
         return kq is null or DBNull ? null : Convert.ToInt32(kq);
     }
 
-    private static async Task<int> LayHoacTaoGioAsync(MySqlConnection conn, MySqlTransaction tx, int thuNganId)
+    private static async Task<int> LayHoacTaoGioAsync(DbConnection conn, DbTransaction tx, int thuNganId)
     {
         for (var lan = 0; lan < 3; lan++)
         {
@@ -304,13 +305,14 @@ public sealed class PosCartService
 
             try
             {
-                await using var tao = new MySqlCommand(
-                    "INSERT INTO gio_hang (thu_ngan_id, trang_thai) VALUES (@t, 'DANG_BAN')", conn, tx);
-                tao.Parameters.AddWithValue("@t", thuNganId);
-                await tao.ExecuteNonQueryAsync();
-                return (int)tao.LastInsertedId;
+                await using var tao = SqlDialect.Command(
+                    conn.Sql("INSERT INTO gio_hang (thu_ngan_id, trang_thai) VALUES (@t, 'DANG_BAN'); SELECT LAST_INSERT_ID();",
+                        "INSERT INTO gio_hang (thu_ngan_id, trang_thai) VALUES (@t, 'DANG_BAN') ON CONFLICT (dang_ban_cua_thu_ngan) DO NOTHING RETURNING id"), conn, tx);
+                tao.AddValue("@t", thuNganId);
+                var created = await tao.ExecuteScalarAsync();
+                if (created is not null and not DBNull) return Convert.ToInt32(created);
             }
-            catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.DuplicateKeyEntry)
+            catch (DbException ex) when (SqlDialect.IsUniqueViolation(ex))
             {
                 // uq_gio_dang_ban: request khác vừa tạo đơn cho thu ngân này.
                 // Lỗi trùng khóa chỉ hủy câu lệnh, không hủy giao dịch -> vòng sau đọc lại thấy đơn đó.
@@ -321,37 +323,37 @@ public sealed class PosCartService
     }
 
     private static async Task<int?> DocSoLuongAsync(
-        MySqlConnection conn, MySqlTransaction tx, int gioId, int productId)
+        DbConnection conn, DbTransaction tx, int gioId, int productId)
     {
-        await using var cmd = new MySqlCommand(
+        await using var cmd = SqlDialect.Command(
             "SELECT so_luong FROM ct_gio_hang WHERE gio_hang_id = @g AND san_pham_id = @p FOR UPDATE",
             conn, tx);
-        cmd.Parameters.AddWithValue("@g", gioId);
-        cmd.Parameters.AddWithValue("@p", productId);
+        cmd.AddValue("@g", gioId);
+        cmd.AddValue("@p", productId);
         var kq = await cmd.ExecuteScalarAsync();
         return kq is null or DBNull ? null : Convert.ToInt32(kq);
     }
 
     private static async Task CapNhatSoLuongAsync(
-        MySqlConnection conn, MySqlTransaction tx, int gioId, int productId, int soLuong)
+        DbConnection conn, DbTransaction tx, int gioId, int productId, int soLuong)
     {
-        await using var cmd = new MySqlCommand(
+        await using var cmd = SqlDialect.Command(
             "UPDATE ct_gio_hang SET so_luong = @q WHERE gio_hang_id = @g AND san_pham_id = @p", conn, tx);
-        cmd.Parameters.AddWithValue("@q", soLuong);
-        cmd.Parameters.AddWithValue("@g", gioId);
-        cmd.Parameters.AddWithValue("@p", productId);
+        cmd.AddValue("@q", soLuong);
+        cmd.AddValue("@g", gioId);
+        cmd.AddValue("@p", productId);
         await cmd.ExecuteNonQueryAsync();
     }
 
-    private static async Task<PosCart> DocDongAsync(MySqlConnection conn, MySqlTransaction tx, int gioId)
+    private static async Task<PosCart> DocDongAsync(DbConnection conn, DbTransaction tx, int gioId)
     {
         var cart = new PosCart();
-        await using (var customer = new MySqlCommand("""
+        await using (var customer = SqlDialect.Command("""
             SELECT k.id,k.ho_ten,k.diem_hien_co FROM gio_hang g
             JOIN khach_hang k ON k.id=g.khach_hang_id WHERE g.id=@g
             """, conn, tx))
         {
-            customer.Parameters.AddWithValue("@g", gioId);
+            customer.AddValue("@g", gioId);
             await using var reader = await customer.ExecuteReaderAsync();
             if (await reader.ReadAsync())
             {
@@ -361,7 +363,7 @@ public sealed class PosCartService
             }
         }
 
-        await using var cmd = new MySqlCommand(
+        await using var cmd = SqlDialect.Command(
             """
             SELECT ct.san_pham_id, sp.ma, sp.ten_san_pham, ct.don_gia, ct.so_luong,
                    ct.khuyen_mai_id, ct.giam_don_vi, km.ten
@@ -371,7 +373,7 @@ public sealed class PosCartService
             WHERE ct.gio_hang_id = @g
             ORDER BY ct.them_luc, ct.san_pham_id
             """, conn, tx);
-        cmd.Parameters.AddWithValue("@g", gioId);
+        cmd.AddValue("@g", gioId);
 
         await using var doc = await cmd.ExecuteReaderAsync();
         while (await doc.ReadAsync())

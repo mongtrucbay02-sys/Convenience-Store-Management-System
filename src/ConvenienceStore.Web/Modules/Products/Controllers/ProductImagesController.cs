@@ -13,6 +13,6 @@ public sealed class ProductImagesController(ProductImageService images) : Contro
 {
     /// <summary>SP-03/SP-04 Upload a JPG/PNG image with optimistic concurrency.</summary>
     [HttpPost, RequestSizeLimit(3 * 1024 * 1024)]
-    public async Task<IActionResult> Upload(uint id, [FromForm] IFormFile? image, [FromForm] uint phienBan, CancellationToken ct) =>
+    public async Task<IActionResult> Upload(long id, [FromForm] IFormFile? image, [FromForm] long phienBan, CancellationToken ct) =>
         Ok(await images.SetAsync(id, phienBan, image, User.LayMaVaiTro(), ct));
 }

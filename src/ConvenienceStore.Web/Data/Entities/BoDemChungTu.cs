@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
@@ -9,5 +9,5 @@ public partial class BoDemChungTu
 
     public string Ky { get; set; } = null!;
 
-    public uint SoCuoi { get; set; }
+    public long SoCuoi { get; set; }
 }

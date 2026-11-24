@@ -1,3 +1,4 @@
+using ConvenienceStore.Web.Shared.Data;
 using System.Data.Common;
 using System.Globalization;
 using ConvenienceStore.Web.Data;
@@ -123,9 +124,9 @@ public sealed class MySqlTransactionalReportsDataSource(CuaHangDbContext db)
     public async Task<IReadOnlyList<ReportPurchaseReceiptFact>> GetPurchaseReceiptsAsync(
         DateTimeOffset fromInclusive, DateTimeOffset toExclusive, CancellationToken cancellationToken)
     {
-        const string sql = """
+        var sql = $"""
             SELECT h.id AS receipt_id,
-                   COALESCE(h.xac_nhan_luc, CAST(h.ngay_nhap AS DATETIME)) AS received_at,
+                   COALESCE(h.xac_nhan_luc, {_db.Sql("CAST(h.ngay_nhap AS DATETIME)", "(CAST(h.ngay_nhap AS timestamp) AT TIME ZONE 'Asia/Ho_Chi_Minh')")}) AS received_at,
                    h.nha_cung_cap_id AS supplier_id, COALESCE(n.ten, '') AS supplier_name,
                    l.san_pham_id AS product_id, COALESCE(l.ten_san_pham, '') AS product_name,
                    l.so_luong AS quantity, l.gia_nhap AS unit_cost
@@ -133,8 +134,8 @@ public sealed class MySqlTransactionalReportsDataSource(CuaHangDbContext db)
             INNER JOIN ct_phieu_nhap l ON l.phieu_nhap_id = h.id
             LEFT JOIN nha_cung_cap n ON n.id = h.nha_cung_cap_id
             WHERE h.trang_thai = 'DA_NHAP_KHO'
-              AND COALESCE(h.xac_nhan_luc, CAST(h.ngay_nhap AS DATETIME)) >= @fromInclusive
-              AND COALESCE(h.xac_nhan_luc, CAST(h.ngay_nhap AS DATETIME)) < @toExclusive
+              AND COALESCE(h.xac_nhan_luc, {_db.Sql("CAST(h.ngay_nhap AS DATETIME)", "(CAST(h.ngay_nhap AS timestamp) AT TIME ZONE 'Asia/Ho_Chi_Minh')")}) >= @fromInclusive
+              AND COALESCE(h.xac_nhan_luc, {_db.Sql("CAST(h.ngay_nhap AS DATETIME)", "(CAST(h.ngay_nhap AS timestamp) AT TIME ZONE 'Asia/Ho_Chi_Minh')")}) < @toExclusive
             ORDER BY h.id, l.san_pham_id
             """;
         var rows = await QueryAsync(sql, fromInclusive, toExclusive, reader =>
@@ -264,7 +265,7 @@ public sealed class MySqlTransactionalReportsDataSource(CuaHangDbContext db)
     {
         var parameter = command.CreateParameter();
         parameter.ParameterName = name;
-        parameter.Value = value;
+        parameter.Value = SqlDialect.Normalize(command.Connection!, value) ?? DBNull.Value;
         command.Parameters.Add(parameter);
     }
 
@@ -277,7 +278,7 @@ public sealed class MySqlTransactionalReportsDataSource(CuaHangDbContext db)
         var date = value switch
         {
             DateTimeOffset dto => dto.ToOffset(VietnamOffset),
-            DateTime dt => new DateTimeOffset(DateTime.SpecifyKind(dt, DateTimeKind.Unspecified), VietnamOffset),
+            DateTime dt => ConvenienceStore.Web.Shared.Api.GioVietNam.ThanhOffset(dt),
             _ => new DateTimeOffset(Convert.ToDateTime(value, CultureInfo.InvariantCulture), VietnamOffset)
         };
         return date;

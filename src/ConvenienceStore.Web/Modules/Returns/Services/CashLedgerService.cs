@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,7 +35,7 @@ public sealed class CashLedgerService
             FROM giao_dich_tien_mat g JOIN tai_khoan t ON t.id=g.nguoi_thuc_hien_id
             ORDER BY g.id DESC LIMIT 100
             """, r => new Entry(r.GetString(0), Convert.ToInt64(r[1]), Convert.ToInt64(r[2]),
-                Convert.ToInt64(r[3]), r.GetDateTime(4), r.GetString(5), r.IsDBNull(6) ? null : r.GetString(6)), ct);
+                Convert.ToInt64(r[3]), r.VietnamDateTime(4), r.GetString(5), r.IsDBNull(6) ? null : r.GetString(6)), ct);
 
     /// <summary>One-time physical count at upgrade. Never sum old invoices or reset the ledger.</summary>
     public async Task ConfirmOpeningAsync(CuaHangDbContext db, int actor, long counted, long expectedBalance, string? reason, CancellationToken ct)

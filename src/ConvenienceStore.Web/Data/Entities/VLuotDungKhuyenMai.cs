@@ -1,21 +1,21 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ConvenienceStore.Web.Data.Entities;
 
 public partial class VLuotDungKhuyenMai
 {
-    public uint? ChuongTrinhId { get; set; }
+    public long? ChuongTrinhId { get; set; }
 
-    public uint HoaDonId { get; set; }
+    public long? HoaDonId { get; set; }
 
-    public string MaHoaDon { get; set; } = null!;
+    public string? MaHoaDon { get; set; }
 
-    public DateTime ThanhToanLuc { get; set; }
+    public DateTime? ThanhToanLuc { get; set; }
 
-    public uint ThuNganId { get; set; }
+    public long? ThuNganId { get; set; }
 
-    public uint? KhachHangId { get; set; }
+    public long? KhachHangId { get; set; }
 
     public decimal? SoLuongSanPham { get; set; }
 

@@ -1,3 +1,4 @@
+using ConvenienceStore.Web.Shared.Data;
 using System.Data.Common;
 using System.Globalization;
 using ConvenienceStore.Web.Data;
@@ -96,9 +97,9 @@ public sealed class MySqlDashboardDataSource(CuaHangDbContext db) : IDashboardDa
         finally { if (close) await connection.CloseAsync(); }
     }
 
-    private static void Param(DbCommand c, string name, object value) { var p=c.CreateParameter(); p.ParameterName=name; p.Value=value; c.Parameters.Add(p); }
+    private static void Param(DbCommand c, string name, object value) { var p=c.CreateParameter(); p.ParameterName=name; p.Value=SqlDialect.Normalize(c.Connection!,value)??DBNull.Value; c.Parameters.Add(p); }
     private static DateTime DbDate(DateTimeOffset d) => DateTime.SpecifyKind(d.ToOffset(VietnamOffset).DateTime, DateTimeKind.Unspecified);
-    private static DateTimeOffset VietnamDate(DbDataReader r,string n) => new(DateTime.SpecifyKind(Convert.ToDateTime(r[n],CultureInfo.InvariantCulture),DateTimeKind.Unspecified),VietnamOffset);
+    private static DateTimeOffset VietnamDate(DbDataReader r,string n) => ConvenienceStore.Web.Shared.Api.GioVietNam.ThanhOffset(Convert.ToDateTime(r[n],CultureInfo.InvariantCulture));
     private static long Long(DbDataReader r,string n) => r[n] is DBNull ? 0 : Convert.ToInt64(r[n],CultureInfo.InvariantCulture);
     private static int Int(DbDataReader r,string n) => r[n] is DBNull ? 0 : Convert.ToInt32(r[n],CultureInfo.InvariantCulture);
     private static string Text(DbDataReader r,string n) => r[n] is DBNull ? "" : Convert.ToString(r[n],CultureInfo.InvariantCulture) ?? "";

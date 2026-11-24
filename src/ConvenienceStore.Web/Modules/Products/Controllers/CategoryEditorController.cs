@@ -14,7 +14,7 @@ public sealed class CategoryEditorController(CategoryMutationService service):Co
     [HttpGet("/Categories/Create")]
     public IActionResult Create()=>User.DangPhaiDoiMatKhau()?Forbid():View(Template,new CategoryEditModel());
     [HttpGet("/Categories/{id}/Edit")]
-    public async Task<IActionResult> Edit(uint id,CancellationToken ct)
+    public async Task<IActionResult> Edit(long id,CancellationToken ct)
     {
         if(User.DangPhaiDoiMatKhau())return Forbid();var x=await service.FindAsync(id,ct);if(x is null)return NotFound();
         return View(Template,new CategoryEditModel{Id=x.Id,Ten=x.Ten,MoTa=x.MoTa,KhongDoiTra=x.KhongDoiTra,PhienBan=x.PhienBan});
@@ -25,7 +25,7 @@ public sealed class CategoryEditorController(CategoryMutationService service):Co
         if(User.DangPhaiDoiMatKhau())return Forbid();if(!ModelState.IsValid){Response.StatusCode=422;return View(Template,model);}var r=await service.CreateAsync(new(model.Ten,model.MoTa,model.KhongDoiTra),ct);return Complete(model,r);
     }
     [HttpPost("/Categories/{id}/Edit"),ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(uint id,[Bind("Ten,MoTa,KhongDoiTra,PhienBan")]CategoryEditModel model,CancellationToken ct)
+    public async Task<IActionResult> Edit(long id,[Bind("Ten,MoTa,KhongDoiTra,PhienBan")]CategoryEditModel model,CancellationToken ct)
     {if(User.DangPhaiDoiMatKhau())return Forbid();model.Id=id;if(!ModelState.IsValid){Response.StatusCode=422;return View(Template,model);}var r=await service.UpdateAsync(id,new(model.Ten,model.MoTa,model.KhongDoiTra,model.PhienBan),ct);return Complete(model,r);}
     private IActionResult Complete(CategoryEditModel model,ConvenienceStore.Web.Modules.Products.DTOs.CategoryMutationResult r)
     {

@@ -1,4 +1,4 @@
-﻿
+
 namespace ConvenienceStore.Web.Models;
 
 public class DashboardViewModel

@@ -11,7 +11,7 @@ public sealed class InvoiceLookupRequest
 }
 
 public sealed record InvoiceLookupFilter(string? Ma, string? SoDienThoai, int Page, int Size);
-public sealed record ReturnLookupPolicy(int Id, int SoNgayDoiTra);
+public sealed record ReturnLookupPolicy(long Id, int SoNgayDoiTra);
 public sealed record InvoiceLookupSnapshot(ReturnLookupPolicy? Policy,
     IReadOnlyList<OriginalInvoiceFact> Items, int Total, int Page, int Size);
 
@@ -20,9 +20,9 @@ public sealed class OriginalInvoiceFact
     public long Id { get; init; }
     public string Ma { get; init; } = "";
     public DateTime NgayMua { get; init; }
-    public int ThuNganId { get; init; }
+    public long ThuNganId { get; init; }
     public string TenThuNgan { get; init; } = "";
-    public int? KhachHangId { get; init; }
+    public long? KhachHangId { get; init; }
     public string? TenKhachHang { get; init; }
     public string? SoDienThoai { get; init; }
     public long TongThanhToan { get; init; }
@@ -30,7 +30,7 @@ public sealed class OriginalInvoiceFact
     public List<OriginalInvoiceLineFact> ChiTiet { get; } = [];
 }
 
-public sealed record OriginalInvoiceLineFact(int SanPhamId, string TenSanPham, string DonViTinh,
+public sealed record OriginalInvoiceLineFact(long SanPhamId, string TenSanPham, string DonViTinh,
     int SoLuongMua, long DonGia, long GiamDonVi, string TenDanhMuc,
     bool KhongDoiTra, long SoLuongDaTraHoacDangXuLy);
 
@@ -44,7 +44,7 @@ public sealed class OriginalInvoiceDto
     public string TenKhachHang { get; init; } = "Khách lẻ";
     public string? SoDienThoai { get; init; }
     public long TongThanhToan { get; init; }
-    public int ChinhSachId { get; init; }
+    public long ChinhSachId { get; init; }
     public int SoNgayDoiTra { get; init; }
     public DateOnly NgayHetHan { get; init; }
     public bool DaHuy { get; init; }
@@ -53,7 +53,7 @@ public sealed class OriginalInvoiceDto
     public IReadOnlyList<OriginalInvoiceLineDto> ChiTiet { get; init; } = [];
 }
 
-public sealed record OriginalInvoiceLineDto(int SanPhamId, string TenSanPham, string DonViTinh,
+public sealed record OriginalInvoiceLineDto(long SanPhamId, string TenSanPham, string DonViTinh,
     string TenDanhMuc, int SoLuongMua, long GiaThucTraMoiDonVi,
     long SoLuongDaTraHoacDangXuLy, long SoLuongConDuocTra,
     bool HopLe, bool CanDuyetNgoaiLe, IReadOnlyList<string> LyDo);

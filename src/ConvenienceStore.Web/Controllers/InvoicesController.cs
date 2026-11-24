@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +36,7 @@ public sealed class InvoicesController : Controller
         [FromQuery(Name = "fromDate")] DateOnly? fromDate,
         [FromQuery(Name = "toDate")] DateOnly? toDate,
         [FromQuery(Name = "Status")] string? status,
-        [FromQuery(Name = "CashierId")] int? cashierId,
+        [FromQuery(Name = "CashierId")] long? cashierId,
         [FromQuery(Name = "Code")] string? code,
         [FromQuery(Name = "Customer")] string? customer,
         [FromQuery(Name = "page")] int page = 1,

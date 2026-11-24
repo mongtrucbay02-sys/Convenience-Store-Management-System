@@ -1,10 +1,10 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using ConvenienceStore.Web.Models.Pos;
 using ConvenienceStore.Web.Modules.Auth.Security;
 
 namespace ConvenienceStore.Web.Services.Pos;
 
-// Interface đọc danh sách hóa đơn từ CSDL (triển khai: MySqlPosInvoiceListStore).
+// Interface đọc danh sách hóa đơn từ CSDL (triển khai: PostgreSqlPosInvoiceListStore).
 public interface IPosInvoiceListStore
 {
     Task<PosInvoiceListResult> SearchAsync(
@@ -17,7 +17,7 @@ public interface IPosInvoiceListStore
 
 // Người đang xem hóa đơn, lấy từ claim của phiên đăng nhập (KHÔNG lấy từ request).
 public sealed record PosInvoiceViewer(
-    int UserId,
+    long UserId,
     bool CanViewAll,
     bool CanViewOwn,
     bool CanOpenReceipt)
@@ -49,7 +49,7 @@ public static class PosInvoiceAccess
         || user.HasClaim(ThongTinXacThuc.ClaimQuyen, MaQuyen.HoaDonXemCuaMinh);
 
     // Có được xem MỘT hóa đơn cụ thể của thu ngân invoiceCashierId hay không.
-    public static bool CanView(PosInvoiceViewer viewer, int invoiceCashierId)
+    public static bool CanView(PosInvoiceViewer viewer, long invoiceCashierId)
     {
         ArgumentNullException.ThrowIfNull(viewer);
 
@@ -63,7 +63,7 @@ public sealed record PosInvoiceListRequest(
     DateOnly? FromDate,
     DateOnly? ToDate,
     string? Status,
-    int? CashierId,
+    long? CashierId,
     string? Code,
     int Page = 1,
     string? Customer = null);

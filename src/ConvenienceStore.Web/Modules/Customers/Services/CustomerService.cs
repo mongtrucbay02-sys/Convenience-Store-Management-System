@@ -20,14 +20,11 @@ public sealed class CustomerService(CuaHangDbContext db)
             var pattern = "%" + search + "%";
             long? code = long.TryParse(search, out var parsed) && parsed.ToString() == search
                 ? parsed : null;
-            if(db.IsPostgres())
             {
                 pattern=VietnameseSearch.Fold(pattern);
                 query=query.Where(customer=>EF.Functions.Like(VietnameseSearch.Fold(customer.HoTen!),pattern)
                     || EF.Functions.Like(customer.SoDienThoai!,pattern) || customer.Id==code);
             }
-            else query = query.Where(customer => EF.Functions.Like(customer.HoTen!, pattern)
-                || EF.Functions.Like(customer.SoDienThoai!, pattern) || customer.Id == code);
         }
 
         var rows = await query.OrderByDescending(customer => customer.Id).Take(100)
@@ -56,7 +53,7 @@ public sealed class CustomerService(CuaHangDbContext db)
             BirthDate = k.NgaySinh?.ToDateTime(TimeOnly.MinValue), Gender = k.GioiTinh, Version = k.PhienBan };
     }
 
-    public async Task<long> SaveAsync(long? id, CustomerInput input, int actor, CancellationToken ct)
+    public async Task<long> SaveAsync(long? id, CustomerInput input, long actor, CancellationToken ct)
     {
         Validate(input);
         await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
@@ -160,7 +157,7 @@ public sealed class CustomerService(CuaHangDbContext db)
         await tx.CommitAsync(ct);
     }
 
-    public async Task AdjustAsync(long id, PointAdjustment input, int actor, CancellationToken ct)
+    public async Task AdjustAsync(long id, PointAdjustment input, long actor, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(input.Reason) || input.Reason.Trim().Length > 500)
             throw LoiNghiepVu.DuLieuKhongHopLe("reason", "Lý do bắt buộc, tối đa 500 ký tự.");

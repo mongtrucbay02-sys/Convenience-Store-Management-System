@@ -31,7 +31,7 @@ public sealed class ProductReadService(IProductReadRepository products, IDichVuK
         if (role is not ("AD" or "NK" or "TN")) throw new UnauthorizedAccessException();
         query = Normalize(query); ct.ThrowIfCancellationRequested();
         var page = await products.ListAsync(query, role == "TN", ct);
-        var stock = (await inventory.LayTonKhoAsync(page.Items.Select(x => checked((int)x.Id)).ToArray(), ct)).ToDictionary(x => (long)x.SanPhamId);
+        var stock = (await inventory.LayTonKhoAsync(page.Items.Select(x => x.Id).ToArray(), ct)).ToDictionary(x => (long)x.SanPhamId);
         return page with { Items = page.Items.Select(x => x with {
             TonKho = stock.GetValueOrDefault(x.Id)?.SoLuongTon ?? 0,
             GiaVon = role == "AD" ? stock.GetValueOrDefault(x.Id)?.GiaVonBinhQuan : null

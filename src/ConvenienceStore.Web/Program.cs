@@ -32,13 +32,13 @@ builder.Services.AddScoped<
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<ReportFilterService>();
 builder.Services.AddScoped<PromotionUsageStore>();
-builder.Services.AddScoped<IWeekEightReportDataSource, MySqlWeekEightReportDataSource>();
+builder.Services.AddScoped<IWeekEightReportDataSource, PostgreSqlWeekEightReportDataSource>();
 builder.Services.AddScoped<WeekEightReportsService>();
 
 // Dashboard
 builder.Services.AddScoped<
     IDashboardDataSource,
-    MySqlDashboardDataSource>();
+    PostgreSqlDashboardDataSource>();
 
 builder.Services.AddScoped<
     IDashboardService,
@@ -47,11 +47,11 @@ builder.Services.AddScoped<
 // Báo cáo
 builder.Services.AddScoped<
     IOperationalReportDataSource,
-    MySqlTransactionalReportsDataSource>();
+    PostgreSqlTransactionalReportsDataSource>();
 
 builder.Services.AddScoped<
     ITransactionalReportsDataSource,
-    MySqlTransactionalReportsDataSource>();
+    PostgreSqlTransactionalReportsDataSource>();
 
 builder.Services.AddScoped<
     IOperationalReportsService,
@@ -60,11 +60,11 @@ builder.Services.AddScoped<
 // Khuyến mãi
 builder.Services.AddScoped<
     IPromotionDataSource,
-    MySqlPromotionDataSource>();
+    PostgreSqlPromotionDataSource>();
 
 builder.Services.AddScoped<
     IProductLookup,
-    MySqlProductLookup>();
+    PostgreSqlProductLookup>();
 
 builder.Services.AddScoped<
     IPromotionService,
@@ -74,7 +74,7 @@ builder.Services.AddScoped<
 // 2. KẾT NỐI CSDL
 // ==========================================
 
-var connectionString = MySqlEnv.GetConnectionString(
+var connectionString = PostgreSqlEnv.GetConnectionString(
     builder.Environment.ContentRootPath, builder.Configuration);
 
 if (string.IsNullOrWhiteSpace(connectionString))
@@ -85,16 +85,13 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "ConvenienceStore.Web hoặc truyền qua biến môi trường.");
 }
 
-var databaseProvider = MySqlEnv.GetProvider(builder.Environment.ContentRootPath, builder.Configuration);
-if (databaseProvider == "PostgreSql") connectionString = SqlDialect.PostgresConnectionString(connectionString);
+var databaseProvider = PostgreSqlEnv.GetProvider(builder.Environment.ContentRootPath, builder.Configuration);
+connectionString = SqlDialect.PostgresConnectionString(connectionString);
 builder.Configuration["ConnectionStrings:CuaHang"] = connectionString;
 builder.Configuration["Database:Provider"] = databaseProvider;
 builder.Services.AddDbContext<CuaHangDbContext>(options =>
 {
-    if (databaseProvider == "PostgreSql")
-        options.UseNpgsql(connectionString, postgres => postgres.SetPostgresVersion(17, 0));
-    else
-        options.UseMySQL(connectionString).AddInterceptors(new GioVietNamInterceptor());
+    options.UseNpgsql(connectionString, postgres => postgres.SetPostgresVersion(17, 0));
 });
 
 // ==========================================
@@ -102,7 +99,7 @@ builder.Services.AddDbContext<CuaHangDbContext>(options =>
 // ==========================================
 
 // POS-01: Danh mục và sản phẩm
-builder.Services.AddScoped<MySqlPosCatalog>();
+builder.Services.AddScoped<PostgreSqlPosCatalog>();
 
 // POS-01, POS-02, POS-09: Giỏ hàng
 builder.Services.AddScoped<PosCartService>();
@@ -121,12 +118,12 @@ builder.Services.AddScoped<PosInvoiceCancellationService>();
 // POS-07: Store lưu đơn hàng
 builder.Services.AddScoped<
     IPosCheckoutStore,
-    MySqlPosCheckoutStore>();
+    PostgreSqlPosCheckoutStore>();
 
 // POS-07: Store đọc hóa đơn
 builder.Services.AddScoped<
     IPosInvoiceStore,
-    MySqlPosInvoiceStore>();
+    PostgreSqlPosInvoiceStore>();
 
 // ==========================================
 // 4. SERVICE POS-10, POS-11
@@ -137,7 +134,7 @@ builder.Services.AddScoped<PosInvoiceListService>();
 
 builder.Services.AddScoped<
     IPosInvoiceListStore,
-    MySqlPosInvoiceListStore>();
+    PostgreSqlPosInvoiceListStore>();
 
 // ==========================================
 // 5. MODULE CỦA NHÓM

@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConvenienceStore.Web.Modules.Reports.Services;
 
-/// <summary>Dashboard queries mapped to the MySQL tables and column names in the shared schema.</summary>
-public sealed class MySqlDashboardDataSource(CuaHangDbContext db) : IDashboardDataSource
+/// <summary>Dashboard queries mapped to the PostgreSQL tables and column names in the shared schema.</summary>
+public sealed class PostgreSqlDashboardDataSource(CuaHangDbContext db) : IDashboardDataSource
 {
     private static readonly TimeSpan VietnamOffset = TimeSpan.FromHours(7);
     private readonly CuaHangDbContext _db = db;

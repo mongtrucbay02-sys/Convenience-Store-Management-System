@@ -5,23 +5,20 @@ using ConvenienceStore.Web.Shared.Data;
 
 namespace ConvenienceStore.Web.Services.Pos;
 
-public sealed class MySqlPosCatalog
+public sealed class PostgreSqlPosCatalog
 {
     private readonly IConfiguration _configuration;
 
-    public MySqlPosCatalog(IConfiguration config)
+    public PostgreSqlPosCatalog(IConfiguration config)
     {
         _configuration = config;
         _ =
-            // Ưu tiên PosMySql nếu có; không thì dùng chung chuỗi kết nối
-            // CuaHang của Program.cs để chỉ cần cấu hình MỘT chuỗi.
-            config.GetConnectionString("PosMySql")
-            ?? config.GetConnectionString("CuaHang")
+            config.GetConnectionString("CuaHang")
             ?? throw new InvalidOperationException(
-                "Chưa cấu hình ConnectionStrings:CuaHang (hoặc PosMySql)");
+                "Chưa cấu hình ConnectionStrings:CuaHang");
     }
 
-    private bool IsPostgres => string.Equals(_configuration["Database:Provider"],"PostgreSql",StringComparison.OrdinalIgnoreCase);
+
     public DbConnection CreateConnection()
         => SqlDialect.CreateConnection(_configuration);
 
@@ -32,14 +29,14 @@ public sealed class MySqlPosCatalog
         var connection = CreateConnection();
         try {
             await connection.OpenAsync();
-            await using var command = SqlDialect.Command(connection.Sql(ConvenienceStore.Web.Data.GioVietNamInterceptor.CauLenhDatMuiGio, "SET TIME ZONE 'Asia/Ho_Chi_Minh'"), connection);
+            await using var command = SqlDialect.Command("SET TIME ZONE 'Asia/Ho_Chi_Minh'", connection);
             await command.ExecuteNonQueryAsync(); return connection;
         }
         catch { await connection.DisposeAsync(); throw; }
     }
 
     public async Task<List<PosProduct>> SearchAsync(
-        string? keyword, int? categoryId = null)
+        string? keyword, long? categoryId = null)
     {
         var sql = $"""
             SELECT
@@ -60,8 +57,8 @@ public sealed class MySqlPosCatalog
               AND dm.trang_thai = 'HOAT_DONG'
               AND (
                   @keyword = ''
-                  OR {VietnameseSearch.Column(IsPostgres,"sp.ma")} LIKE @pattern
-                  OR {VietnameseSearch.Column(IsPostgres,"sp.ten_san_pham")} LIKE @pattern
+                  OR {VietnameseSearch.Column("sp.ma")} LIKE @pattern
+                  OR {VietnameseSearch.Column("sp.ten_san_pham")} LIKE @pattern
               )
               AND (
                   @categoryId IS NULL
@@ -79,7 +76,7 @@ public sealed class MySqlPosCatalog
             SqlDialect.Command(sql, connection);
 
         var search = keyword?.Trim() ?? "";
-        if(IsPostgres) search=VietnameseSearch.Fold(search);
+        search=VietnameseSearch.Fold(search);
 
         command.AddValue("@keyword", search);
         command.AddValue("@pattern", $"%{search}%");
@@ -92,7 +89,7 @@ public sealed class MySqlPosCatalog
         {
             products.Add(new PosProduct
             {
-                Id = Convert.ToInt32(reader["id"]),
+                Id = Convert.ToInt64(reader["id"]),
                 Code = Convert.ToString(reader["ma"]) ?? "",
                 Name = Convert.ToString(reader["ten_san_pham"]) ?? "",
                 ImageUrl = reader["anh_url"] as string,
@@ -119,14 +116,14 @@ public sealed class MySqlPosCatalog
         {
             categories.Add(new PosCategory
             {
-                Id = Convert.ToInt32(reader["id"]),
+                Id = Convert.ToInt64(reader["id"]),
                 Name = Convert.ToString(reader["ten"]) ?? ""
             });
         }
         return categories;
     }
 
-    public async Task<PosProduct?> FindAsync(int productId)
+    public async Task<PosProduct?> FindAsync(long productId)
     {
         if (productId <= 0) return null;
         var sql = $"""
@@ -148,7 +145,7 @@ public sealed class MySqlPosCatalog
         if (!await reader.ReadAsync()) return null;
         return new PosProduct
         {
-            Id = Convert.ToInt32(reader["id"]),
+            Id = Convert.ToInt64(reader["id"]),
             Code = Convert.ToString(reader["ma"]) ?? "",
             Name = Convert.ToString(reader["ten_san_pham"]) ?? "",
             ImageUrl = reader["anh_url"] as string,

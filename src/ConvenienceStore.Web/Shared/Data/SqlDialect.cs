@@ -7,21 +7,12 @@ namespace ConvenienceStore.Web.Shared.Data;
 
 public static class SqlDialect
 {
-    public static bool IsPostgres(this DbContext db) => db.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
-    public static string Sql(this DbContext db, string mysql, string postgres) => db.IsPostgres() ? postgres : mysql;
-    public static string Sql(this DbConnection connection, string mysql, string postgres) => connection is NpgsqlConnection ? postgres : mysql;
-    public static string CounterUpsert(this DbContext db) => db.Sql(
-        "ON DUPLICATE KEY UPDATE so_cuoi=so_cuoi+1",
-        "ON CONFLICT (tien_to,ky) DO UPDATE SET so_cuoi=bo_dem_chung_tu.so_cuoi+1");
+    public static string CounterUpsert(this DbContext db) =>
+        "ON CONFLICT (tien_to,ky) DO UPDATE SET so_cuoi=bo_dem_chung_tu.so_cuoi+1";
 
-    public static DbConnection CreateConnection(IConfiguration configuration)
-    {
-        var postgres = string.Equals(configuration["Database:Provider"], "PostgreSql", StringComparison.OrdinalIgnoreCase);
-        var value = (postgres ? null : configuration.GetConnectionString("PosMySql"))
-            ?? configuration.GetConnectionString("CuaHang")
-            ?? throw new InvalidOperationException("Thiếu ConnectionStrings:CuaHang.");
-        return postgres ? new NpgsqlConnection(PostgresConnectionString(value)) : new MySqlConnector.MySqlConnection(value);
-    }
+    public static DbConnection CreateConnection(IConfiguration configuration) =>
+        new NpgsqlConnection(PostgresConnectionString(configuration.GetConnectionString("CuaHang")
+            ?? throw new InvalidOperationException("Missing ConnectionStrings:CuaHang.")));
 
     public static string PostgresConnectionString(string value) => new NpgsqlConnectionStringBuilder(value)
     { SearchPath = "smartmart", Timezone = "Asia/Ho_Chi_Minh" }.ConnectionString;
@@ -49,7 +40,7 @@ public static class SqlDialect
         command.Parameters.Add(parameter);
     }
 
-    public static object? Normalize(DbConnection connection, object? value) => connection is not NpgsqlConnection ? value : value switch
+    public static object? Normalize(DbConnection connection, object? value) => value switch
     {
         DateTime date when date.Kind == DateTimeKind.Unspecified => new DateTimeOffset(date, TimeSpan.FromHours(7)).UtcDateTime,
         DateTime date => date.ToUniversalTime(),
@@ -62,31 +53,26 @@ public static class SqlDialect
     public static bool IsUniqueViolation(Exception exception) => exception switch
     {
         PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } => true,
-        MySql.Data.MySqlClient.MySqlException { Number: 1062 } => true,
-        MySqlConnector.MySqlException { Number: 1062 } => true,
         _ => false
     };
 
     public static bool IsForeignKeyViolation(Exception exception) => exception switch
     {
         PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation } => true,
-        MySql.Data.MySqlClient.MySqlException { Number: 1451 or 1452 } => true,
-        MySqlConnector.MySqlException { Number: 1451 or 1452 } => true,
         _ => false
     };
 
     public static async Task<long> InsertIdAsync(this DbContext db, string insert, CancellationToken ct,
         params (string Ten, object? GiaTri)[] values)
     {
-        var sql = insert.Trim().TrimEnd(';') + db.Sql("; SELECT LAST_INSERT_ID();", " RETURNING id;");
+        var sql = insert.Trim().TrimEnd(';') + " RETURNING id;";
         return Convert.ToInt64(await db.DocMotGiaTriAsync(sql, ct, values));
     }
 
     public static async Task<long> InsertIdAsync(DbConnection connection, DbTransaction transaction, string insert,
         CancellationToken ct, IReadOnlyDictionary<string, object?> values)
     {
-        await using var command = Command(insert.Trim().TrimEnd(';') + connection.Sql(
-            "; SELECT LAST_INSERT_ID();", " RETURNING id;"), connection, transaction);
+        await using var command = Command(insert.Trim().TrimEnd(';') + " RETURNING id;", connection, transaction);
         foreach (var (name, value) in values) command.AddValue(name, value);
         return Convert.ToInt64(await command.ExecuteScalarAsync(ct));
     }

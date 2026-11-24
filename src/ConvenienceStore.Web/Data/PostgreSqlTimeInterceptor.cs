@@ -16,6 +16,10 @@ public sealed class PostgreSqlTimeInterceptor : DbCommandInterceptor
     public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command, CommandEventData data,
         InterceptionResult<DbDataReader> result, CancellationToken ct = default)
     { Normalize(command); return ValueTask.FromResult(result); }
+    public override InterceptionResult<int> NonQueryExecuting(DbCommand command, CommandEventData data, InterceptionResult<int> result)
+    { Normalize(command); return result; }
+    public override InterceptionResult<object> ScalarExecuting(DbCommand command, CommandEventData data, InterceptionResult<object> result)
+    { Normalize(command); return result; }
     public override ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(DbCommand command, CommandEventData data,
         InterceptionResult<int> result, CancellationToken ct = default)
     { Normalize(command); return ValueTask.FromResult(result); }

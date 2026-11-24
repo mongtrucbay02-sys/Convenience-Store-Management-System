@@ -38,7 +38,7 @@ public sealed class CashLedgerService
                 Convert.ToInt64(r[3]), r.VietnamDateTime(4), r.GetString(5), r.IsDBNull(6) ? null : r.GetString(6)), ct);
 
     /// <summary>One-time physical count at upgrade. Never sum old invoices or reset the ledger.</summary>
-    public async Task ConfirmOpeningAsync(CuaHangDbContext db, int actor, long counted, long expectedBalance, string? reason, CancellationToken ct)
+    public async Task ConfirmOpeningAsync(CuaHangDbContext db, long actor, long counted, long expectedBalance, string? reason, CancellationToken ct)
     {
         reason = reason?.Trim();
         if (counted < 0 || expectedBalance < 0 || string.IsNullOrWhiteSpace(reason) || reason.Length > 500)
@@ -64,7 +64,7 @@ public sealed class CashLedgerService
         await tx.CommitAsync(ct);
     }
 
-    public async Task RecordCancellationRefundAsync(CuaHangDbContext db, long invoiceId, int actor, long amount, CancellationToken ct)
+    public async Task RecordCancellationRefundAsync(CuaHangDbContext db, long invoiceId, long actor, long amount, CancellationToken ct)
     {
         RequireTransaction(db);
         if (invoiceId <= 0 || actor <= 0 || amount <= 0)
@@ -89,7 +89,7 @@ public sealed class CashLedgerService
     public async Task RecordSaleAsync(
         CuaHangDbContext db,
         long invoiceId,
-        int cashierId,
+        long cashierId,
         long amount,
         CancellationToken ct)
     {
@@ -277,7 +277,7 @@ public sealed class ReturnRefundService(CashLedgerService ledger)
     public async Task<long> RefundAsync(
         CuaHangDbContext db,
         long returnId,
-        int cashierId,
+        long cashierId,
         CancellationToken ct = default)
     {
         CashLedgerService.RequireTransaction(db);
@@ -328,7 +328,7 @@ public sealed class ReturnRefundService(CashLedgerService ledger)
                 r.Chuoi(0),
                 r.Chuoi(1),
                 r.SoNguyenDai(2),
-                r.SoNguyen(3)),
+                r.SoNguyenDai(3)),
             ct,
             ("@id", returnId));
 
@@ -472,7 +472,7 @@ public sealed class ReturnRefundService(CashLedgerService ledger)
     public async Task<ReturnRefundReceipt> ReceiptAsync(
         CuaHangDbContext db,
         long returnId,
-        int cashierId,
+        long cashierId,
         CancellationToken ct = default)
     {
         if (returnId <= 0 || cashierId <= 0)
@@ -528,7 +528,7 @@ public sealed class ReturnRefundService(CashLedgerService ledger)
         string Loai,
         string Status,
         long Amount,
-        int CashierId);
+        long CashierId);
 }
 
 /// <summary>

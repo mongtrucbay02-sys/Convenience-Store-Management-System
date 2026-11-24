@@ -22,7 +22,7 @@ public sealed class PurchaseReceiptInput
 
 public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inventory, TimeProvider clock)
 {
-    public async Task<SanPham> CreateProductAsync(QuickPurchaseProduct input, int actorId, CancellationToken ct)
+    public async Task<SanPham> CreateProductAsync(QuickPurchaseProduct input, long actorId, CancellationToken ct)
     {
         var name = input.Name?.Trim();
         var unit = input.Unit?.Trim();
@@ -51,12 +51,12 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
         });
         db.SanPhams.Add(product);
         await db.SaveChangesAsync(ct);
-        await inventory.KhoiTaoTonKhoAsync(checked((int)product.Id), ct: ct);
+        await inventory.KhoiTaoTonKhoAsync(product.Id, ct: ct);
         await transaction.CommitAsync(ct);
         return product;
     }
 
-    public async Task<long> CreateAsync(PurchaseReceiptInput input, int actorId, CancellationToken ct)
+    public async Task<long> CreateAsync(PurchaseReceiptInput input, long actorId, CancellationToken ct)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
         var now = clock.GetUtcNow().ToOffset(TimeSpan.FromHours(7)).DateTime;
@@ -92,7 +92,7 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
         await transaction.CommitAsync(ct);
     }
 
-    public async Task CancelAsync(long id, string? reason, int actorId, CancellationToken ct)
+    public async Task CancelAsync(long id, string? reason, long actorId, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(reason) || reason.Trim().Length > 255)
             throw new ArgumentException("Nhập lý do hủy, tối đa 255 ký tự.");
@@ -164,7 +164,7 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
         return await db.PhieuNhaps.Include(row => row.CtPhieuNhaps).SingleAsync(row => row.Id == id, ct);
     }
 
-    public async Task<IReadOnlyList<string>> ConfirmAsync(long id, int actorId, CancellationToken ct)
+    public async Task<IReadOnlyList<string>> ConfirmAsync(long id, long actorId, CancellationToken ct)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
         var receipt = await LockDraftAsync(id, ct);
@@ -173,7 +173,7 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
 
         var productIds = receipt.CtPhieuNhaps.Select(line => line.SanPhamId).ToArray();
         var changes = receipt.CtPhieuNhaps.Select(line => new DongBienDong(
-            checked((int)line.SanPhamId), checked((int)line.SoLuong), GiaVon: line.GiaNhap)).ToArray();
+            line.SanPhamId, checked((int)line.SoLuong), GiaVon: line.GiaNhap)).ToArray();
         var (productParameters, values) = TruyVanCsdl.TaoThamSoIn("sp", changes.Select(change => change.SanPhamId));
         var products = await db.DocDanhSachAsync(
             $"SELECT trang_thai FROM san_pham WHERE id IN ({productParameters}) ORDER BY id FOR SHARE",
@@ -182,7 +182,7 @@ public sealed class PurchaseReceiptService(CuaHangDbContext db, IDichVuKho inven
             throw new InvalidOperationException("Phiếu có sản phẩm đã ngừng kinh doanh. Mở bán lại trước khi xác nhận.");
 
         var result = await inventory.GhiNhanBienDongAsync(
-            new(LoaiBienDong.NHAP_HANG, checked((int)id), receipt.MaPhieu, actorId, changes), ct);
+            new(LoaiBienDong.NHAP_HANG, id, receipt.MaPhieu, actorId, changes), ct);
 
         receipt.TrangThai = "DA_NHAP_KHO";
         receipt.NguoiXacNhanId = checked((long)actorId);

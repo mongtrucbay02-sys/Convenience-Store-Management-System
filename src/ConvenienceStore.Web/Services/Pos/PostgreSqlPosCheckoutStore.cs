@@ -23,23 +23,23 @@ namespace ConvenienceStore.Web.Services.Pos;
 /// POS-07: Lưu hóa đơn, trừ kho, tích điểm và hoàn tất giỏ.
 /// Mọi thao tác ghi đều chạy trong transaction của PosCheckoutService.
 /// </summary>
-public sealed class MySqlPosCheckoutStore(
+public sealed class PostgreSqlPosCheckoutStore(
     CuaHangDbContext db,
     IDichVuKho kho,
     CashLedgerService cashLedger,
-    ILogger<MySqlPosCheckoutStore> log) : IPosCheckoutStore
+    ILogger<PostgreSqlPosCheckoutStore> log) : IPosCheckoutStore
 {
     private sealed record GioDangBan(
-        int Id,
-        int? KhachHangId);
+        long Id,
+        long? KhachHangId);
 
     private sealed record DongGio(
-        int SanPhamId,
+        long SanPhamId,
         string Ten,
         string DonVi,
         int SoLuong,
         long DonGia,
-        int? KhuyenMaiId,
+        long? KhuyenMaiId,
         long GiamDonVi,
         string TrangThaiSanPham);
 
@@ -48,7 +48,7 @@ public sealed class MySqlPosCheckoutStore(
         string TrangThai);
 
     private sealed record QuyTacDiem(
-        int SoTienMotDiem,
+        long SoTienMotDiem,
         bool DangBat);
 
     // =====================================================
@@ -56,7 +56,7 @@ public sealed class MySqlPosCheckoutStore(
     // =====================================================
 
     public async Task<PosOrderSaved> SaveOrderAsync(
-        int cashierId,
+        long cashierId,
         long cashReceived,
         CancellationToken cancellationToken)
     {
@@ -85,8 +85,8 @@ public sealed class MySqlPosCheckoutStore(
             FOR UPDATE
             """,
             d => new GioDangBan(
-                d.SoNguyen(0),
-                d.IsDBNull(1) ? null : d.SoNguyen(1)),
+                d.SoNguyenDai(0),
+                d.IsDBNull(1) ? null : d.SoNguyenDai(1)),
             cancellationToken,
             ("@t", cashierId));
 
@@ -167,9 +167,7 @@ public sealed class MySqlPosCheckoutStore(
                 "SELECT NOW()",
                 cancellationToken));
 
-        var ky = bayGio.ToString(
-            "yyyyMMdd",
-            CultureInfo.InvariantCulture);
+        var ky = ConvenienceStore.Web.Shared.Api.GioVietNam.MaNgayChungTu(bayGio);
 
         var maHoaDon = await CapMaHoaDonAsync(
             ky,
@@ -177,10 +175,10 @@ public sealed class MySqlPosCheckoutStore(
 
         // 6. Khóa khách hàng và tính điểm.
         KhachHang? khach = null;
-        int? soTienMotDiem = null;
+        long? soTienMotDiem = null;
         int diemCong = 0;
 
-        if (gio.KhachHangId is int khachId)
+        if (gio.KhachHangId is long khachId)
         {
             khach = await db.DocMotDongAsync(
                 """
@@ -210,7 +208,7 @@ public sealed class MySqlPosCheckoutStore(
                 LIMIT 1
                 """,
                 d => new QuyTacDiem(
-                    d.SoNguyen(0),
+                    d.SoNguyenDai(0),
                     d.DungSai(1)),
                 cancellationToken);
 
@@ -282,7 +280,7 @@ public sealed class MySqlPosCheckoutStore(
         var ketQuaKho = await kho.GhiNhanBienDongAsync(
             new YeuCauBienDong(
                 LoaiBienDong.BAN_HANG,
-                checked((int)hoaDonId),
+                hoaDonId,
                 maHoaDon,
                 cashierId,
                 dong.Select(x =>
@@ -346,11 +344,11 @@ public sealed class MySqlPosCheckoutStore(
             await ConvenienceStore.Web.Modules.Customers.Services.CustomerPoints
                 .ChangeAsync(
                     db,
-                    checked((uint)gio.KhachHangId!.Value),
+                    checked((long)gio.KhachHangId!.Value),
                     diemCong,
                     "TICH_DIEM",
                     cashierId,
-                    checked((uint)hoaDonId),
+                    checked((long)hoaDonId),
                     null,
                     null,
                     cancellationToken);
@@ -441,12 +439,12 @@ public sealed class MySqlPosCheckoutStore(
     private static DongGio DocDong(DbDataReader d)
     {
         return new DongGio(
-            d.SoNguyen(0),
+            d.SoNguyenDai(0),
             d.Chuoi(1),
             d.Chuoi(2),
             d.SoNguyen(3),
             d.SoNguyenDai(4),
-            d.IsDBNull(5) ? null : d.SoNguyen(5),
+            d.IsDBNull(5) ? null : d.SoNguyenDai(5),
             d.SoNguyenDai(6),
             d.Chuoi(7));
     }

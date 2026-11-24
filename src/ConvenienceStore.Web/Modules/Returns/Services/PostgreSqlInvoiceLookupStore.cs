@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConvenienceStore.Web.Modules.Returns.Services;
 
-public sealed class MySqlInvoiceLookupStore(CuaHangDbContext db) : IInvoiceLookupStore
+public sealed class PostgreSqlInvoiceLookupStore(CuaHangDbContext db) : IInvoiceLookupStore
 {
     public async Task<InvoiceLookupSnapshot> ReadAsync(InvoiceLookupFilter filter, DateTime nowVietnam,
         CancellationToken cancellationToken = default)
@@ -17,7 +17,7 @@ public sealed class MySqlInvoiceLookupStore(CuaHangDbContext db) : IInvoiceLooku
         var policy = await db.DocMotDongAsync("""
             SELECT id, so_ngay_doi_tra FROM chinh_sach_doi_tra
             WHERE hieu_luc_tu <= @now ORDER BY hieu_luc_tu DESC, id DESC LIMIT 1
-            """, r => new ReturnLookupPolicy(r.SoNguyen(0), r.SoNguyen(1)), cancellationToken, ("@now", nowVietnam));
+            """, r => new ReturnLookupPolicy(r.SoNguyenDai(0), r.SoNguyen(1)), cancellationToken, ("@now", nowVietnam));
         if (policy is null)
             return new InvoiceLookupSnapshot(null, [], 0, 1, filter.Size);
 
@@ -46,9 +46,9 @@ public sealed class MySqlInvoiceLookupStore(CuaHangDbContext db) : IInvoiceLooku
             Id = r.SoNguyenDai(0),
             Ma = r.Chuoi(1),
             NgayMua = r.NgayGio(2),
-            ThuNganId = r.SoNguyen(3),
+            ThuNganId = r.SoNguyenDai(3),
             TenThuNgan = r.Chuoi(4),
-            KhachHangId = r.IsDBNull(5) ? null : r.SoNguyen(5),
+            KhachHangId = r.IsDBNull(5) ? null : r.SoNguyenDai(5),
             TenKhachHang = r.ChuoiHoacNull(6),
             SoDienThoai = r.ChuoiHoacNull(7),
             TongThanhToan = r.SoNguyenDai(8),
@@ -56,7 +56,7 @@ public sealed class MySqlInvoiceLookupStore(CuaHangDbContext db) : IInvoiceLooku
         }, cancellationToken, [.. parameters, ("@size", filter.Size), ("@offset", (page - 1) * filter.Size)]);
         if (invoices.Count > 0)
         {
-            var (ids, args) = TruyVanCsdl.TaoThamSoIn("hd", invoices.Select(i => checked((int)i.Id)));
+            var (ids, args) = TruyVanCsdl.TaoThamSoIn("hd", invoices.Select(i => i.Id));
             var lines = await db.DocDanhSachAsync($"""
                 SELECT d.hoa_don_id, d.san_pham_id, d.ten_san_pham, d.don_vi_tinh,
                        d.so_luong, d.don_gia, d.giam_don_vi, dm.ten, dm.khong_doi_tra,

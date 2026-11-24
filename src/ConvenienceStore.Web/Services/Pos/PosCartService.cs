@@ -23,15 +23,15 @@ public sealed class PosCartService
     private const IsolationLevel MucCoLap = IsolationLevel.ReadCommitted;
 
     private readonly IHttpContextAccessor _http;
-    private readonly MySqlPosCatalog _catalog;
+    private readonly PostgreSqlPosCatalog _catalog;
 
-    public PosCartService(IHttpContextAccessor http, MySqlPosCatalog catalog)
+    public PosCartService(IHttpContextAccessor http, PostgreSqlPosCatalog catalog)
     {
         _http = http;
         _catalog = catalog;
     }
 
-    private int ThuNganId =>
+    private long ThuNganId =>
         (_http.HttpContext?.User ?? throw new InvalidOperationException("Không có ngữ cảnh HTTP."))
         .LayTaiKhoanId();
 
@@ -53,7 +53,7 @@ public sealed class PosCartService
     }
 
     // POS-03: mutate only the authenticated cashier's existing active cart.
-    public async Task<string?> SetCustomerAsync(int? customerId)
+    public async Task<string?> SetCustomerAsync(long? customerId)
     {
         if (customerId is <= 0) return "Khách hàng không hợp lệ.";
         await using var conn = _catalog.CreateConnection();
@@ -80,7 +80,7 @@ public sealed class PosCartService
 
     // ---------- Thêm sản phẩm (qty 1, hoặc +1 nếu đã có) ----------
 
-    public async Task<string?> AddAsync(int productId)
+    public async Task<string?> AddAsync(long productId)
     {
         var product = await _catalog.FindAsync(productId);
         if (product == null)
@@ -131,7 +131,7 @@ public sealed class PosCartService
 
     // ---------- Sửa số lượng / xóa dòng ----------
 
-    public async Task<string?> UpdateAsync(int productId, int quantity)
+    public async Task<string?> UpdateAsync(long productId, int quantity)
     {
         await using var conn = _catalog.CreateConnection();
         await conn.OpenAsync();
@@ -240,7 +240,7 @@ public sealed class PosCartService
         return changed;
     }
 
-    private static async Task<int> ApplyPromotionsAsync(DbConnection conn, DbTransaction tx, int gioId)
+    private static async Task<int> ApplyPromotionsAsync(DbConnection conn, DbTransaction tx, long gioId)
     {
         var promotions = await PosPromotionCalculator.ReadAsync(conn, tx);
         await using var customer = SqlDialect.Command("""
@@ -285,17 +285,17 @@ public sealed class PosCartService
     // =====================  HÀM NỘI BỘ  =====================
 
     /// <summary>Đơn DANG_BAN của thu ngân (khóa dòng để các request cùng thu ngân xếp hàng).</summary>
-    private static async Task<int?> DocGioDangBanAsync(DbConnection conn, DbTransaction tx, int thuNganId)
+    private static async Task<long?> DocGioDangBanAsync(DbConnection conn, DbTransaction tx, long thuNganId)
     {
         await using var cmd = SqlDialect.Command(
             "SELECT id FROM gio_hang WHERE thu_ngan_id = @t AND trang_thai = 'DANG_BAN' FOR UPDATE",
             conn, tx);
         cmd.AddValue("@t", thuNganId);
         var kq = await cmd.ExecuteScalarAsync();
-        return kq is null or DBNull ? null : Convert.ToInt32(kq);
+        return kq is null or DBNull ? null : Convert.ToInt64(kq);
     }
 
-    private static async Task<int> LayHoacTaoGioAsync(DbConnection conn, DbTransaction tx, int thuNganId)
+    private static async Task<long> LayHoacTaoGioAsync(DbConnection conn, DbTransaction tx, long thuNganId)
     {
         for (var lan = 0; lan < 3; lan++)
         {
@@ -306,11 +306,10 @@ public sealed class PosCartService
             try
             {
                 await using var tao = SqlDialect.Command(
-                    conn.Sql("INSERT INTO gio_hang (thu_ngan_id, trang_thai) VALUES (@t, 'DANG_BAN'); SELECT LAST_INSERT_ID();",
-                        "INSERT INTO gio_hang (thu_ngan_id, trang_thai) VALUES (@t, 'DANG_BAN') ON CONFLICT (dang_ban_cua_thu_ngan) DO NOTHING RETURNING id"), conn, tx);
+                    "INSERT INTO gio_hang (thu_ngan_id, trang_thai) VALUES (@t, 'DANG_BAN') ON CONFLICT (dang_ban_cua_thu_ngan) DO NOTHING RETURNING id", conn, tx);
                 tao.AddValue("@t", thuNganId);
                 var created = await tao.ExecuteScalarAsync();
-                if (created is not null and not DBNull) return Convert.ToInt32(created);
+                if (created is not null and not DBNull) return Convert.ToInt64(created);
             }
             catch (DbException ex) when (SqlDialect.IsUniqueViolation(ex))
             {
@@ -323,7 +322,7 @@ public sealed class PosCartService
     }
 
     private static async Task<int?> DocSoLuongAsync(
-        DbConnection conn, DbTransaction tx, int gioId, int productId)
+        DbConnection conn, DbTransaction tx, long gioId, long productId)
     {
         await using var cmd = SqlDialect.Command(
             "SELECT so_luong FROM ct_gio_hang WHERE gio_hang_id = @g AND san_pham_id = @p FOR UPDATE",
@@ -335,7 +334,7 @@ public sealed class PosCartService
     }
 
     private static async Task CapNhatSoLuongAsync(
-        DbConnection conn, DbTransaction tx, int gioId, int productId, int soLuong)
+        DbConnection conn, DbTransaction tx, long gioId, long productId, int soLuong)
     {
         await using var cmd = SqlDialect.Command(
             "UPDATE ct_gio_hang SET so_luong = @q WHERE gio_hang_id = @g AND san_pham_id = @p", conn, tx);
@@ -345,7 +344,7 @@ public sealed class PosCartService
         await cmd.ExecuteNonQueryAsync();
     }
 
-    private static async Task<PosCart> DocDongAsync(DbConnection conn, DbTransaction tx, int gioId)
+    private static async Task<PosCart> DocDongAsync(DbConnection conn, DbTransaction tx, long gioId)
     {
         var cart = new PosCart();
         await using (var customer = SqlDialect.Command("""
@@ -357,9 +356,9 @@ public sealed class PosCartService
             await using var reader = await customer.ExecuteReaderAsync();
             if (await reader.ReadAsync())
             {
-                cart.CustomerId = Convert.ToInt32(reader[0]);
+                cart.CustomerId = Convert.ToInt64(reader[0]);
                 cart.CustomerName = reader.IsDBNull(1) ? "Khách đã ẩn" : reader.GetString(1);
-                cart.CustomerPoints = Convert.ToUInt32(reader[2]);
+                cart.CustomerPoints = Convert.ToInt64(reader[2]);
             }
         }
 
@@ -380,12 +379,12 @@ public sealed class PosCartService
         {
             cart.Items.Add(new PosCartItem
             {
-                ProductId = Convert.ToInt32(doc[0]),
+                ProductId = Convert.ToInt64(doc[0]),
                 Code = Convert.ToString(doc[1]) ?? "",
                 Name = Convert.ToString(doc[2]) ?? "",
                 UnitPrice = Convert.ToInt64(doc[3]),
                 Quantity = Convert.ToInt32(doc[4]),
-                PromotionId = doc.IsDBNull(5) ? null : Convert.ToInt32(doc[5]),
+                PromotionId = doc.IsDBNull(5) ? null : Convert.ToInt64(doc[5]),
                 UnitDiscount = doc.IsDBNull(6) ? 0 : Convert.ToInt64(doc[6]),
                 PromotionName = doc.IsDBNull(7) ? "" : doc.GetString(7)
             });

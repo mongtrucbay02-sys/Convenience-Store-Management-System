@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Models.Pos;
 using ConvenienceStore.Web.Shared.Data;
@@ -8,11 +8,11 @@ namespace ConvenienceStore.Web.Services.Pos;
 // Đọc danh sách hóa đơn từ bảng hoa_don (schema_v1.sql).
 // Mọi giá trị người dùng nhập đều đi qua tham số SQL; chỉ số trang/số dòng (số nguyên đã kiểm tra)
 // được nối vào câu lệnh.
-public sealed class MySqlPosInvoiceListStore : IPosInvoiceListStore
+public sealed class PostgreSqlPosInvoiceListStore : IPosInvoiceListStore
 {
     private readonly CuaHangDbContext _db;
 
-    public MySqlPosInvoiceListStore(CuaHangDbContext db)
+    public PostgreSqlPosInvoiceListStore(CuaHangDbContext db)
     {
         _db = db;
     }
@@ -35,7 +35,7 @@ public sealed class MySqlPosInvoiceListStore : IPosInvoiceListStore
             ("@den", to)
         };
 
-        if (filter.CashierId is int cashierId)
+        if (filter.CashierId is long cashierId)
         {
             where.Append(" AND h.thu_ngan_id = @thuNgan");
             parameters.Add(("@thuNgan", cashierId));
@@ -136,7 +136,7 @@ public sealed class MySqlPosInvoiceListStore : IPosInvoiceListStore
             JOIN hoa_don h ON h.thu_ngan_id = t.id
             ORDER BY t.ho_ten
             """,
-            r => new PosCashierOption(r.SoNguyen(0), r.Chuoi(1)),
+            r => new PosCashierOption(r.SoNguyenDai(0), r.Chuoi(1)),
             cancellationToken);
 
     private sealed record Summary(int Count, long Revenue, int Cancelled);

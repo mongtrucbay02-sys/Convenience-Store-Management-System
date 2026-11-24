@@ -5,8 +5,8 @@ namespace ConvenienceStore.Web.Modules.Auth.Security;
 
 public static class NguoiDungHienTai
 {
-    public static int LayTaiKhoanId(this ClaimsPrincipal nguoiDung) =>
-        int.Parse(LayGiaTri(nguoiDung, ClaimTypes.NameIdentifier), CultureInfo.InvariantCulture);
+    public static long LayTaiKhoanId(this ClaimsPrincipal nguoiDung) =>
+        long.Parse(LayGiaTri(nguoiDung, ClaimTypes.NameIdentifier), CultureInfo.InvariantCulture);
 
     public static long LayPhienId(this ClaimsPrincipal nguoiDung) =>
         long.Parse(LayGiaTri(nguoiDung, ThongTinXacThuc.ClaimPhienId), CultureInfo.InvariantCulture);

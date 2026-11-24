@@ -19,7 +19,7 @@ public sealed class ReportFilterService(CuaHangDbContext db)
         return rows.Select(x=>new SelectListItem(x.Ma+" · "+x.Ten,x.Id.ToString(CultureInfo.InvariantCulture),x.Id==selected)).ToArray();
     }
     // Include archived entries so administrators can filter historical transactions.
-    public async Task<SelectListItem[]> GetCategoriesAsync(int? selected, CancellationToken ct)
+    public async Task<SelectListItem[]> GetCategoriesAsync(long? selected, CancellationToken ct)
     {
         var rows = await db.DanhMucs.AsNoTracking().OrderBy(x => x.Ten).ThenBy(x => x.Id)
             .Select(x => new { x.Id, x.Ten }).ToListAsync(ct);
@@ -27,7 +27,7 @@ public sealed class ReportFilterService(CuaHangDbContext db)
             x.Id.ToString(CultureInfo.InvariantCulture), x.Id == selected)).ToArray();
     }
 
-    public async Task<SelectListItem[]> GetSuppliersAsync(int? selected, CancellationToken ct)
+    public async Task<SelectListItem[]> GetSuppliersAsync(long? selected, CancellationToken ct)
     {
         var rows = await db.NhaCungCaps.AsNoTracking().OrderBy(x => x.Ten).ThenBy(x => x.Id)
             .Select(x => new { x.Id, x.Ten }).ToListAsync(ct);

@@ -14,19 +14,17 @@ public sealed class EfProductReadRepository(CuaHangDbContext db) : IProductReadR
         query = ProductReadService.Normalize(query);
         var rows = db.SanPhams.AsNoTracking().AsQueryable();
         if (activeOnly) rows = rows.Where(x => x.TrangThai == "DANG_KINH_DOANH");
-        // Existing utf8mb4_0900_ai_ci columns provide case/accent-insensitive search on MySQL.
+        // Explicit Vietnamese folding is independent of the PostgreSQL database locale.
         if (!string.IsNullOrEmpty(query.Keyword))
         {
             // LIKE respects the column's accent-insensitive collation. Escape pattern metacharacters
             // so the keyword remains literal; Oracle's Contains/LOCATE translation does not meet BR-SP-01.
             var pattern = "%" + query.Keyword.Replace("!", "!!").Replace("%", "!%").Replace("_", "!_") + "%";
-            if(db.IsPostgres())
             {
                 pattern=VietnameseSearch.Fold(pattern);
                 rows=rows.Where(x=>EF.Functions.Like(VietnameseSearch.Fold(x.Ma),pattern,"!")
                     || EF.Functions.Like(VietnameseSearch.Fold(x.TenSanPham),pattern,"!"));
             }
-            else rows = rows.Where(x => EF.Functions.Like(x.Ma, pattern, "!") || EF.Functions.Like(x.TenSanPham, pattern, "!"));
         }
         if (query.DanhMucId.HasValue) rows = rows.Where(x => x.DanhMucId == query.DanhMucId);
         if (!string.IsNullOrEmpty(query.TrangThai)) rows = rows.Where(x => x.TrangThai == query.TrangThai);

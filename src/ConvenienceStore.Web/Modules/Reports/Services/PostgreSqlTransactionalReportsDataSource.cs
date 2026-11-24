@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore;
 namespace ConvenienceStore.Web.Modules.Reports.Services;
 
 /// <summary>
-/// Direct MySQL queries for BC-07/08 against the shared Vietnamese schema.
+/// Direct PostgreSQL queries for BC-07/08 against the shared Vietnamese schema.
 /// It deliberately uses the copied invoice/purchase/return costs rather than current prices.
 /// </summary>
-public sealed class MySqlTransactionalReportsDataSource(CuaHangDbContext db)
+public sealed class PostgreSqlTransactionalReportsDataSource(CuaHangDbContext db)
     : IOperationalReportDataSource, ITransactionalReportsDataSource
 {
     private static readonly TimeSpan VietnamOffset = TimeSpan.FromHours(7);
@@ -126,7 +126,7 @@ public sealed class MySqlTransactionalReportsDataSource(CuaHangDbContext db)
     {
         var sql = $"""
             SELECT h.id AS receipt_id,
-                   COALESCE(h.xac_nhan_luc, {_db.Sql("CAST(h.ngay_nhap AS DATETIME)", "(CAST(h.ngay_nhap AS timestamp) AT TIME ZONE 'Asia/Ho_Chi_Minh')")}) AS received_at,
+                   COALESCE(h.xac_nhan_luc, (CAST(h.ngay_nhap AS timestamp) AT TIME ZONE 'Asia/Ho_Chi_Minh')) AS received_at,
                    h.nha_cung_cap_id AS supplier_id, COALESCE(n.ten, '') AS supplier_name,
                    l.san_pham_id AS product_id, COALESCE(l.ten_san_pham, '') AS product_name,
                    l.so_luong AS quantity, l.gia_nhap AS unit_cost
@@ -134,8 +134,8 @@ public sealed class MySqlTransactionalReportsDataSource(CuaHangDbContext db)
             INNER JOIN ct_phieu_nhap l ON l.phieu_nhap_id = h.id
             LEFT JOIN nha_cung_cap n ON n.id = h.nha_cung_cap_id
             WHERE h.trang_thai = 'DA_NHAP_KHO'
-              AND COALESCE(h.xac_nhan_luc, {_db.Sql("CAST(h.ngay_nhap AS DATETIME)", "(CAST(h.ngay_nhap AS timestamp) AT TIME ZONE 'Asia/Ho_Chi_Minh')")}) >= @fromInclusive
-              AND COALESCE(h.xac_nhan_luc, {_db.Sql("CAST(h.ngay_nhap AS DATETIME)", "(CAST(h.ngay_nhap AS timestamp) AT TIME ZONE 'Asia/Ho_Chi_Minh')")}) < @toExclusive
+              AND COALESCE(h.xac_nhan_luc, (CAST(h.ngay_nhap AS timestamp) AT TIME ZONE 'Asia/Ho_Chi_Minh')) >= @fromInclusive
+              AND COALESCE(h.xac_nhan_luc, (CAST(h.ngay_nhap AS timestamp) AT TIME ZONE 'Asia/Ho_Chi_Minh')) < @toExclusive
             ORDER BY h.id, l.san_pham_id
             """;
         var rows = await QueryAsync(sql, fromInclusive, toExclusive, reader =>

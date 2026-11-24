@@ -9,7 +9,7 @@ using ConvenienceStore.Web.Shared.Data;
 namespace ConvenienceStore.Web.Services.Pos;
 
 public sealed record PosHeldOrder(
-    int Id,
+    long Id,
     DateTime HeldAt,
     string Note,
     int Quantity,
@@ -29,12 +29,12 @@ public sealed record PosHeldOrderResult(
 /// Không giữ chỗ hoặc thay đổi tồn kho khi tạm giữ đơn.
 /// </summary>
 public sealed class PosHeldOrderService(
-    MySqlPosCatalog catalog,
+    PostgreSqlPosCatalog catalog,
     IHttpContextAccessor http)
 {
     // ID tài khoản đăng nhập hiện tại.
     // Chỉ chấp nhận tài khoản Thu ngân đang đăng nhập.
-    private int AccountId
+    private long AccountId
     {
         get
         {
@@ -46,9 +46,9 @@ public sealed class PosHeldOrderService(
             if (user?.Identity?.IsAuthenticated != true
                 || !isCashier
                 || user.DangPhaiDoiMatKhau()
-                || !int.TryParse(
+                || !long.TryParse(
                     user.FindFirstValue(ClaimTypes.NameIdentifier),
-                    out int id)
+                    out long id)
                 || id <= 0)
             {
                 throw new UnauthorizedAccessException(
@@ -82,7 +82,7 @@ public sealed class PosHeldOrderService(
     private async Task<(
         DbConnection Connection,
         DbTransaction Transaction,
-        int AccountId)> Begin()
+        long AccountId)> Begin()
     {
         var accountId = AccountId;
         var conn = catalog.CreateConnection();
@@ -92,7 +92,7 @@ public sealed class PosHeldOrderService(
             await conn.OpenAsync();
 
             await using (var zone = SqlDialect.Command(
-                conn.Sql("SET time_zone = '+07:00'", "SET TIME ZONE 'Asia/Ho_Chi_Minh'"), conn))
+                "SET TIME ZONE 'Asia/Ho_Chi_Minh'", conn))
             {
                 await zone.ExecuteNonQueryAsync();
             }
@@ -143,7 +143,7 @@ public sealed class PosHeldOrderService(
     private static async Task<int> Expire(
         DbConnection conn,
         DbTransaction tx,
-        int accountId)
+        long accountId)
     {
         await using var cmd = SqlDialect.Command("""
             UPDATE gio_hang g
@@ -226,7 +226,7 @@ public sealed class PosHeldOrderService(
             while (await reader.ReadAsync())
             {
                 orders.Add(new PosHeldOrder(
-                    Convert.ToInt32(reader[0]),
+                    Convert.ToInt64(reader[0]),
                     reader.VietnamDateTime(1),
                     reader.GetString(2),
                     Convert.ToInt32(reader[3]),
@@ -294,7 +294,7 @@ public sealed class PosHeldOrderService(
                 "Giỏ hàng đang trống, không có đơn để tạm giữ.");
         }
 
-        int id = Convert.ToInt32(current);
+        long id = Convert.ToInt64(current);
 
         int lines = Convert.ToInt32(
             await Execute(conn, tx, """
@@ -340,11 +340,11 @@ public sealed class PosHeldOrderService(
 
     // Dữ liệu chi tiết sản phẩm trong đơn tạm giữ.
     private sealed record Line(
-        int Id,
+        long Id,
         string Name,
         int Quantity,
         long Price,
-        int? Promotion,
+        long? Promotion,
         long Discount,
         long? CurrentPrice,
         int Stock,
@@ -355,7 +355,7 @@ public sealed class PosHeldOrderService(
     // =====================================================
 
     public async Task<PosHeldOrderResult> RecallAsync(
-        int orderId)
+        long orderId)
     {
         if (orderId <= 0)
         {
@@ -383,7 +383,7 @@ public sealed class PosHeldOrderService(
         // Không gọi lại nếu giỏ hiện tại đang có sản phẩm.
         if (current is not null && current is not DBNull)
         {
-            int currentId = Convert.ToInt32(current);
+            long currentId = Convert.ToInt64(current);
 
             int currentLines = Convert.ToInt32(
                 await Execute(conn, tx, """
@@ -448,7 +448,7 @@ public sealed class PosHeldOrderService(
                 ON tk.san_pham_id = sp.id
             WHERE ct.gio_hang_id = @g
             ORDER BY ct.san_pham_id
-            {conn.Sql("FOR SHARE", "FOR SHARE OF ct,sp,dm")}
+            FOR SHARE OF ct,sp,dm
             """, conn, tx))
         {
             cmd.AddValue("@g", orderId);
@@ -459,13 +459,13 @@ public sealed class PosHeldOrderService(
             while (await reader.ReadAsync())
             {
                 lines.Add(new Line(
-                    Convert.ToInt32(reader[0]),
+                    Convert.ToInt64(reader[0]),
                     reader.GetString(1),
                     Convert.ToInt32(reader[2]),
                     Convert.ToInt64(reader[3]),
                     reader.IsDBNull(4)
                         ? null
-                        : Convert.ToInt32(reader[4]),
+                        : Convert.ToInt64(reader[4]),
                     Convert.ToInt64(reader[5]),
                     reader.IsDBNull(6)
                         ? null

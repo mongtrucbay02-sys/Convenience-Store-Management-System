@@ -168,7 +168,7 @@ public sealed partial class KhoiTaoAdminDauTien(
 
         // Không phân biệt hoa thường nhờ collation utf8mb4_0900_ai_ci (BR-AUTH-06).
         var soTrungTen = Convert.ToInt64(await DocMotGiaTriAsync(ketNoi, giaoTac,
-            "SELECT COUNT(*) FROM tai_khoan WHERE ten_dang_nhap = @ten", ct, ("@ten", tenDangNhap)));
+            "SELECT COUNT(*) FROM tai_khoan WHERE lower(ten_dang_nhap) = lower(@ten)", ct, ("@ten", tenDangNhap)));
         if (soTrungTen > 0)
         {
             await giaoTac.RollbackAsync(ct);

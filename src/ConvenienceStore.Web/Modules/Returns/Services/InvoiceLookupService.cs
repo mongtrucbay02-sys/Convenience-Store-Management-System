@@ -22,7 +22,7 @@ public static class ReturnLookupAccess
             throw new LoiNghiepVu(MaLoiChung.ChuaDangNhap, 401, "Vui lòng đăng nhập.");
         if (!user.IsInRole(BangQuyen.ThuNgan)
             || !user.HasClaim(ThongTinXacThuc.ClaimQuyen, MaQuyen.DoiTra)
-            || !int.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), NumberStyles.None,
+            || !long.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), NumberStyles.None,
                 CultureInfo.InvariantCulture, out var id) || id <= 0)
             throw new LoiNghiepVu(MaLoiChung.KhongDuQuyen, 403, "Bạn không có quyền tra cứu đổi trả.");
         if (user.DangPhaiDoiMatKhau())

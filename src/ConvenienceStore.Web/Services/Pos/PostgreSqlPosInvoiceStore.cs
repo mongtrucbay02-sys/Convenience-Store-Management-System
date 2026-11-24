@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,9 +16,9 @@ namespace ConvenienceStore.Web.Services.Pos;
 /// Sử dụng dữ liệu đã lưu tại thời điểm bán,
 /// không lấy lại giá bán từ bảng san_pham.
 /// </summary>
-public sealed class MySqlPosInvoiceStore(
+public sealed class PostgreSqlPosInvoiceStore(
     CuaHangDbContext db,
-    ILogger<MySqlPosInvoiceStore> log
+    ILogger<PostgreSqlPosInvoiceStore> log
 ) : IPosInvoiceStore
 {
     public async Task<PosInvoiceViewModel?> GetByIdAsync(
@@ -78,8 +78,8 @@ public sealed class MySqlPosInvoiceStore(
                     CashReceived = d.SoNguyenDai(9),
                     Change = d.SoNguyenDai(10),
                     PointsEarned = d.SoNguyen(11),
-                    CashierId = d.SoNguyen(12),
-                    CustomerId = d.IsDBNull(13) ? null : d.SoNguyen(13),
+                    CashierId = d.SoNguyenDai(12),
+                    CustomerId = d.IsDBNull(13) ? null : d.SoNguyenDai(13),
                     CustomerPhone = d.ChuoiHoacNull(14),
                     ExchangeCredit = d.SoNguyenDai(15),
                     CancelledAt = d.NgayGioHoacNull(16),
@@ -121,9 +121,9 @@ public sealed class MySqlPosInvoiceStore(
                     UnitPrice = d.SoNguyenDai(2),
                     Discount = d.SoNguyenDai(3),
                     LineTotal = d.SoNguyenDai(4),
-                    ProductId = d.SoNguyen(5),
+                    ProductId = d.SoNguyenDai(5),
                     Unit = d.Chuoi(6),
-                    PromotionId = d.IsDBNull(7) ? null : d.SoNguyen(7),
+                    PromotionId = d.IsDBNull(7) ? null : d.SoNguyenDai(7),
                     PromotionCode = d.ChuoiHoacNull(8)
                 },
                 cancellationToken,
@@ -171,8 +171,8 @@ public sealed class MySqlPosInvoiceStore(
                     WHERE r.hoa_don_id=@id
                     """,
                     r => new PosInvoiceRefund(
-                        r.SoNguyenDai(0), r.Chuoi(1), Convert.ToUInt32(r[2]),
-                        Convert.ToUInt32(r[3]), r.Chuoi(4), r.NgayGio(5), r.Chuoi(6)),
+                        r.SoNguyenDai(0), r.Chuoi(1), Convert.ToInt64(r[2]),
+                        Convert.ToInt64(r[3]), r.Chuoi(4), r.NgayGio(5), r.Chuoi(6)),
                     cancellationToken, ("@id", invoiceId));
             }
 

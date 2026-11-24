@@ -1,16 +1,15 @@
 namespace ConvenienceStore.Web.Shared.Data;
 
-internal static class MySqlEnv
+internal static class PostgreSqlEnv
 {
     public static string? GetConnectionString(string contentRoot, IConfiguration configuration)
         => GetValue(contentRoot, configuration, "ConnectionStrings__CuaHang", "ConnectionStrings:CuaHang");
 
     public static string GetProvider(string contentRoot, IConfiguration configuration)
     {
-        var value = GetValue(contentRoot, configuration, "Database__Provider", "Database:Provider") ?? "MySql";
+        var value = GetValue(contentRoot, configuration, "Database__Provider", "Database:Provider") ?? "PostgreSql";
         if (value.Equals("PostgreSql", StringComparison.OrdinalIgnoreCase)) return "PostgreSql";
-        if (value.Equals("MySql", StringComparison.OrdinalIgnoreCase)) return "MySql";
-        throw new InvalidOperationException("Database:Provider phải là MySql hoặc PostgreSql.");
+        throw new InvalidOperationException("Database:Provider must be PostgreSql; no fallback provider is supported.");
     }
 
     private static string? GetValue(string contentRoot, IConfiguration configuration, string key, string configurationKey)

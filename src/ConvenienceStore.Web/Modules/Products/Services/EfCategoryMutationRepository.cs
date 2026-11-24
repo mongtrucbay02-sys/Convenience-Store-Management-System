@@ -4,7 +4,6 @@ using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Data.Entities;
 using ConvenienceStore.Web.Modules.Products.DTOs;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
 
 namespace ConvenienceStore.Web.Modules.Products.Services;
 

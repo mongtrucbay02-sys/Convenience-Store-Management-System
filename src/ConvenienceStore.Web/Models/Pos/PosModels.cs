@@ -12,7 +12,7 @@ namespace ConvenienceStore.Web.Models.Pos;
 public sealed class PosProduct
 {
     public string? ImageUrl { get; set; }
-    public int Id { get; set; }
+    public long Id { get; set; }
     public string Code { get; set; } = "";
     public string Name { get; set; } = "";
     public long Price { get; set; }
@@ -25,7 +25,7 @@ public sealed class PosProduct
 
 public sealed class PosCategory
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
     public string Name { get; set; } = "";
 }
 
@@ -35,7 +35,7 @@ public sealed class PosCategory
 
 public sealed class PosCartItem
 {
-    public int ProductId { get; set; }
+    public long ProductId { get; set; }
     public string Code { get; set; } = "";
     public string Name { get; set; } = "";
 
@@ -46,7 +46,7 @@ public sealed class PosCartItem
     public int Quantity { get; set; }
 
     // Mã chương trình khuyến mãi
-    public int? PromotionId { get; set; }
+    public long? PromotionId { get; set; }
     public string PromotionName { get; set; } = "";
 
     // Số tiền giảm trên một sản phẩm
@@ -71,9 +71,9 @@ public sealed class PosCartItem
 
 public sealed class PosCart
 {
-    public int? CustomerId { get; set; }
+    public long? CustomerId { get; set; }
     public string? CustomerName { get; set; }
-    public uint CustomerPoints { get; set; }
+    public long CustomerPoints { get; set; }
     public bool PromotionsChanged { get; set; }
     public List<PosCartItem> Items { get; set; } = new();
 
@@ -109,7 +109,7 @@ public sealed class PosPageViewModel
 
     public string Search { get; set; } = "";
 
-    public int? CategoryId { get; set; }
+    public long? CategoryId { get; set; }
 
     public long Subtotal => Cart.Subtotal;
 

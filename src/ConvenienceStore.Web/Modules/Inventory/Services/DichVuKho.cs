@@ -231,7 +231,7 @@ public sealed class DichVuKho(
     // =====================================================
 
     public async Task KhoiTaoTonKhoAsync(
-        int sanPhamId,
+        long sanPhamId,
         int nguongToiThieu = 5,
         CancellationToken ct = default)
     {
@@ -333,7 +333,7 @@ public sealed class DichVuKho(
 
     public async Task<IReadOnlyList<TonKhoHienTai>>
         LayTonKhoAsync(
-            IReadOnlyCollection<int> sanPhamIds,
+            IReadOnlyCollection<long> sanPhamIds,
             CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(
@@ -382,9 +382,9 @@ public sealed class DichVuKho(
     // KHÓA TỒN KHO - CHỐNG BÁN VƯỢT TỒN
     // =====================================================
 
-    private async Task<Dictionary<int, TonKhoHienTai>>
+    private async Task<Dictionary<long, TonKhoHienTai>>
         KhoaTonKhoAsync(
-            IEnumerable<int> sanPhamIds,
+            IEnumerable<long> sanPhamIds,
             CancellationToken ct)
     {
         var ids = sanPhamIds
@@ -513,7 +513,7 @@ public sealed class DichVuKho(
             throw LoiDichVuKho.KhongHopLe(loi);
         }
 
-        var daGap = new HashSet<int>();
+        var daGap = new HashSet<long>();
 
         for (var i = 0; i < yeuCau.Dong.Count; i++)
         {
@@ -581,7 +581,7 @@ public sealed class DichVuKho(
         DbDataReader doc)
     {
         return new TonKhoHienTai(
-            doc.SoNguyen(0),
+            doc.SoNguyenDai(0),
             doc.SoNguyen(1),
             doc.SoThapPhan(2),
             doc.SoNguyen(3));

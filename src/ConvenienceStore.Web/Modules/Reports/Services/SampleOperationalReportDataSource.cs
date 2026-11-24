@@ -7,7 +7,7 @@ namespace ConvenienceStore.Web.Modules.Reports.Services;
 public sealed class SampleOperationalReportDataSource : IOperationalReportDataSource
 {
     private static readonly TimeSpan VietnamOffset = TimeSpan.FromHours(7);
-    private static readonly (int Id, string Name)[] Categories =
+    private static readonly (long Id, string Name)[] Categories =
     [
         (1, "Đồ uống"), (2, "Thực phẩm khô"), (3, "Sữa và lạnh"), (4, "Chăm sóc cá nhân")
     ];
@@ -28,7 +28,7 @@ public sealed class SampleOperationalReportDataSource : IOperationalReportDataSo
     ];
     private static readonly (long Id, string Name)[] Cashiers =
     [(1, "Nguyễn An"), (2, "Trần Bình"), (3, "Lê Chi")];
-    private static readonly (int Id, string Name)[] Suppliers =
+    private static readonly (long Id, string Name)[] Suppliers =
     [(1, "Công ty Minh Phát"), (2, "Nhà phân phối An Khang"), (3, "Thực phẩm Việt")];
 
     private readonly IReadOnlyList<ReportProductFact> _products;

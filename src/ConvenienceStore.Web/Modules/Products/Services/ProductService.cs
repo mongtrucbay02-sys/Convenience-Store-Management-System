@@ -1,4 +1,4 @@
-﻿namespace ConvenienceStore.Web.Modules.Products.Services;
+namespace ConvenienceStore.Web.Modules.Products.Services;
 
 public class ProductService : IProductService
 {

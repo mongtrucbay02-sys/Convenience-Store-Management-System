@@ -12,45 +12,14 @@ public sealed class ReturnLineRequest
     public string Handling { get; set; } = "NHAP_LAI";
 }
 
-public sealed class ExchangeRequest
-{
-    public long InvoiceId { get; set; }
-    public List<ExchangeLineRequest> Lines { get; set; } = [];
-    public long CashReceived { get; set; }
-}
-
-public sealed class ExchangeLineRequest
-{
-    public int ProductId { get; set; }
-    public int Quantity { get; set; }
-    public string Reason { get; set; } = "KHAC";
-    public string? Note { get; set; }
-    public string Condition { get; set; } = "Bình thường";
-    public string Handling { get; set; } = "NHAP_LAI";
-}
-
-public sealed record ExchangePreview(
-    long InvoiceId,
-    long ReturnValue,
-    long NewOrderTotal,
-    long Difference,
-    IReadOnlyList<ReturnPreviewLine> ReturnedLines,
-    bool CanComplete,
-    string? Error);
-
-public sealed class ExchangePage
-{
-    public ReturnForm? Invoice { get; set; }
-    public ExchangeRequest Request { get; set; } = new();
-    public ExchangePreview? Preview { get; set; }
-    public string? Error { get; set; }
-}
-
 public sealed class ReturnOrderRequest
 {
     public long InvoiceId { get; set; }
+
     public List<ReturnLineRequest> Lines { get; set; } = [];
+
     public string? ConfirmationToken { get; set; }
+
     public bool CashConfirmed { get; set; }
 }
 
@@ -107,17 +76,20 @@ public sealed record ReturnReceipt(
     DateTimeOffset CreatedAt,
     string Cashier,
     IReadOnlyList<ReturnPreviewLine> Lines,
-    string Type = "TRA_HANG",  // "TRA_HANG" or "DOI_HANG"
-    long? NewInvoiceId = null,  // DOI_HANG only
-    string? NewInvoiceCode = null,  // DOI_HANG only
-    long ExtraPaid = 0)  // DOI_HANG only: tiền khách trả thêm (tien_thu_them)
+    string Type = "TRA_HANG",
+    long? NewInvoiceId = null,
+    string? NewInvoiceCode = null,
+    long ExtraPaid = 0)
 {
 }
 
 public sealed class ReturnOrderPage
 {
     public ReturnForm? Invoice { get; set; }
+
     public ReturnOrderRequest Request { get; set; } = new();
+
     public ReturnPreview? Preview { get; set; }
+
     public string? Error { get; set; }
 }

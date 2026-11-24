@@ -46,13 +46,14 @@ public sealed class PosController : Controller
     [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Index(
         string? search,
-        int? categoryId)
+        int? categoryId, long? exchangeInvoiceId = null)
     {
         if (categoryId.HasValue && categoryId.Value <= 0)
         {
             categoryId = null;
         }
 
+        ViewData["ExchangeInvoiceId"] = exchangeInvoiceId is > 0 ? exchangeInvoiceId : null;
         var held = await _heldOrders.ListAsync();
         if (held.ExpiredCount > 0) TempData["Success"] = $"Đã tự hủy {held.ExpiredCount} đơn tạm giữ từ ngày trước.";
         var model = new PosPageViewModel
@@ -98,12 +99,12 @@ public sealed class PosController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = BangQuyen.ThuNgan)]
-    public async Task<IActionResult> Add(int productId)
+    public async Task<IActionResult> Add(int productId, long? exchangeInvoiceId = null)
     {
         if (productId <= 0)
         {
             TempData["Error"] = "Sản phẩm không hợp lệ.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { exchangeInvoiceId });
         }
 
         var error = await _cart.AddAsync(productId);
@@ -111,7 +112,7 @@ public sealed class PosController : Controller
         TempData[error == null ? "Success" : "Error"] =
             error ?? "Đã thêm sản phẩm vào giỏ.";
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index), new { exchangeInvoiceId });
     }
 
     // ==========================================
@@ -123,12 +124,12 @@ public sealed class PosController : Controller
     [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Update(
         int productId,
-        string? quantity)
+        string? quantity, long? exchangeInvoiceId = null)
     {
         if (productId <= 0)
         {
             TempData["Error"] = "Sản phẩm không hợp lệ.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { exchangeInvoiceId });
         }
 
         if (!int.TryParse(
@@ -140,7 +141,7 @@ public sealed class PosController : Controller
             TempData["Error"] =
                 "Số lượng phải là số nguyên không âm.";
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { exchangeInvoiceId });
         }
 
         var error = await _cart.UpdateAsync(
@@ -157,7 +158,7 @@ public sealed class PosController : Controller
                 : "Đã cập nhật số lượng sản phẩm.";
         }
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index), new { exchangeInvoiceId });
     }
 
     // ==========================================
@@ -167,12 +168,12 @@ public sealed class PosController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = BangQuyen.ThuNgan)]
-    public async Task<IActionResult> Remove(int productId)
+    public async Task<IActionResult> Remove(int productId, long? exchangeInvoiceId = null)
     {
         if (productId <= 0)
         {
             TempData["Error"] = "Sản phẩm không hợp lệ.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { exchangeInvoiceId });
         }
 
         var error = await _cart.UpdateAsync(productId, 0);
@@ -180,7 +181,7 @@ public sealed class PosController : Controller
         TempData[error == null ? "Success" : "Error"] =
             error ?? "Đã xóa sản phẩm khỏi giỏ.";
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index), new { exchangeInvoiceId });
     }
 
     // ==========================================

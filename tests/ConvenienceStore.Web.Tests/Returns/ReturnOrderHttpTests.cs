@@ -143,7 +143,24 @@ public class ReturnOrderHttpTests(CsdlKhoFixture fixture)
         Assert.DoesNotContain("<script>alert(1)</script>",html);
         var post=await client.PostAsync("/Returns/Preview",new FormUrlEncodedContent(new Dictionary<string,string> { ["Request.InvoiceId"]=seed.Invoice.ToString() }));
         Assert.Equal(HttpStatusCode.BadRequest,post.StatusCode);
-        var exchange=await client.GetStringAsync("/Returns/Exchange?invoiceId="+seed.Invoice);
-        Assert.Contains("DT-03",WebUtility.HtmlDecode(exchange));
+        int cashier = fixture.TaiKhoanThuNganId;
+        const string activeCart = "SELECT id FROM gio_hang WHERE thu_ngan_id=@cashier AND trang_thai='DANG_BAN'";
+        var existingCart = await fixture.DocMotGiaTriAsync(activeCart, ("@cashier", cashier));
+        try
+        {
+            var exchange = await client.GetStringAsync("/Returns/Exchange?invoiceId=" + seed.Invoice);
+            Assert.Contains("DT-03", WebUtility.HtmlDecode(exchange));
+        }
+        finally
+        {
+            if (existingCart is null)
+            {
+                await fixture.ChayAsync("""
+                    UPDATE gio_hang SET trang_thai='DA_HUY', huy_luc=NOW(),
+                        ly_do_huy='THU_NGAN_HUY', gia_tri_khi_huy=0
+                    WHERE thu_ngan_id=@cashier AND trang_thai='DANG_BAN'
+                    """, ("@cashier", cashier));
+            }
+        }
     }
 }

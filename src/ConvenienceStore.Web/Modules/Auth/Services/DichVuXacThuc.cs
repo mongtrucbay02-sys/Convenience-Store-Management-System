@@ -17,17 +17,17 @@ public sealed class DichVuXacThuc(CuaHangDbContext db) : IDichVuXacThuc
     private string SqlTaiKhoanDangNhap =>
         $"""
         SELECT t.id, t.ten_dang_nhap, t.mat_khau_bam, t.ho_ten, t.trang_thai, t.bat_buoc_doi_mk, t.so_lan_sai,
-               t.khoa_tam_den, {db.Sql("TIMESTAMPDIFF(SECOND, NOW(), t.khoa_tam_den)", "CAST(EXTRACT(EPOCH FROM (t.khoa_tam_den - NOW())) AS bigint)")}, v.ma, v.ten
+               t.khoa_tam_den, CAST(EXTRACT(EPOCH FROM (t.khoa_tam_den - NOW())) AS bigint), v.ma, v.ten
         FROM tai_khoan t
         JOIN vai_tro v ON v.id = t.vai_tro_id
-        WHERE t.ten_dang_nhap = @ten
+        WHERE lower(t.ten_dang_nhap) = lower(@ten)
         FOR UPDATE OF t
         """;
 
     private string SqlPhien =>
         $"""
         SELECT p.id, p.tai_khoan_id, p.huy_luc IS NOT NULL,
-               {db.Sql($"p.hoat_dong_cuoi < NOW() - INTERVAL {ThongTinXacThuc.SoPhutPhien} MINUTE", "p.het_han_luc < NOW()")},
+               (p.het_han_luc < NOW() OR p.hoat_dong_cuoi < NOW() - INTERVAL '30 minutes'),
                p.hoat_dong_cuoi < NOW(),
                t.ten_dang_nhap, t.ho_ten, t.trang_thai, t.bat_buoc_doi_mk, v.ma
         FROM phien_dang_nhap p
@@ -82,7 +82,7 @@ public sealed class DichVuXacThuc(CuaHangDbContext db) : IDichVuXacThuc
                 await db.ChayAsync(
                     $"""
                     UPDATE tai_khoan
-                    SET so_lan_sai = 0, khoa_tam_den = NOW() + {db.Sql($"INTERVAL {ThongTinXacThuc.SoPhutKhoaTam} MINUTE", $"INTERVAL '{ThongTinXacThuc.SoPhutKhoaTam} minutes'")}
+                    SET so_lan_sai = 0, khoa_tam_den = NOW() + {$"INTERVAL '{ThongTinXacThuc.SoPhutKhoaTam} minutes'"}
                     WHERE id = @id
                     """,
                     ct, ("@id", taiKhoan.Id));
@@ -116,8 +116,7 @@ public sealed class DichVuXacThuc(CuaHangDbContext db) : IDichVuXacThuc
 
         var token = TokenPhien.TaoToken();
         await db.ChayAsync(
-            db.Sql("INSERT INTO phien_dang_nhap (tai_khoan_id, token_bam) VALUES (@id, @bam)",
-                $"INSERT INTO phien_dang_nhap (tai_khoan_id, token_bam,het_han_luc) VALUES (@id, @bam,NOW()+INTERVAL '{ThongTinXacThuc.SoPhutPhien} minutes')"),
+            $"INSERT INTO phien_dang_nhap (tai_khoan_id, token_bam,het_han_luc) VALUES (@id, @bam,NOW()+INTERVAL '{ThongTinXacThuc.SoPhutPhien} minutes')",
             ct, ("@id", taiKhoan.Id), ("@bam", TokenPhien.Bam(token)));
         await giaoTac.CommitAsync(ct);
 
@@ -137,7 +136,7 @@ public sealed class DichVuXacThuc(CuaHangDbContext db) : IDichVuXacThuc
             System.Data.IsolationLevel.ReadCommitted, ct);
         var accountId = await db.DocMotDongAsync(
             "SELECT p.tai_khoan_id, v.ma FROM phien_dang_nhap p JOIN tai_khoan t ON t.id = p.tai_khoan_id JOIN vai_tro v ON v.id = t.vai_tro_id WHERE p.id = @id AND p.huy_luc IS NULL FOR UPDATE OF p",
-            reader => new { Id = Convert.ToInt32(reader.GetValue(0)), Role = reader.GetString(1) }, ct, ("@id", phienId));
+            reader => new { Id = Convert.ToInt64(reader.GetValue(0)), Role = reader.GetString(1) }, ct, ("@id", phienId));
         // Replayed logout must not cancel a cart started after the original logout.
         if (accountId is not null)
         {
@@ -150,7 +149,7 @@ public sealed class DichVuXacThuc(CuaHangDbContext db) : IDichVuXacThuc
         }
         await transaction.CommitAsync(ct);
     }
-    public async Task DoiMatKhauAsync(int taiKhoanId, YeuCauDoiMatKhau yeuCau, CancellationToken ct = default)
+    public async Task DoiMatKhauAsync(long taiKhoanId, YeuCauDoiMatKhau yeuCau, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(yeuCau);
         await using var giaoTac = await db.Database.BeginTransactionAsync(ct);
@@ -218,8 +217,7 @@ public sealed class DichVuXacThuc(CuaHangDbContext db) : IDichVuXacThuc
 
         if (phien.CanGiaHan)
             await db.ChayAsync(
-                db.Sql("UPDATE phien_dang_nhap SET hoat_dong_cuoi = NOW() WHERE id = @id AND huy_luc IS NULL",
-                    $"UPDATE phien_dang_nhap SET hoat_dong_cuoi=NOW(),het_han_luc=NOW()+INTERVAL '{ThongTinXacThuc.SoPhutPhien} minutes' WHERE id=@id AND huy_luc IS NULL"), ct, ("@id", phien.Id));
+                $"UPDATE phien_dang_nhap SET hoat_dong_cuoi=NOW(),het_han_luc=NOW()+INTERVAL '{ThongTinXacThuc.SoPhutPhien} minutes' WHERE id=@id AND huy_luc IS NULL", ct, ("@id", phien.Id));
 
         return new KetQuaXacThucPhien(
             new NguoiDungPhien(phien.Id, phien.TaiKhoanId, phien.TenDangNhap, phien.HoTen, phien.MaVaiTro, phien.BatBuocDoiMatKhau),
@@ -240,7 +238,7 @@ public sealed class DichVuXacThuc(CuaHangDbContext db) : IDichVuXacThuc
     }
 
     private static TaiKhoanDangNhap DocTaiKhoanDangNhap(DbDataReader doc) => new(
-        doc.SoNguyen(0),
+        doc.SoNguyenDai(0),
         doc.Chuoi(1),
         doc.Chuoi(2),
         doc.Chuoi(3),
@@ -254,7 +252,7 @@ public sealed class DichVuXacThuc(CuaHangDbContext db) : IDichVuXacThuc
 
     private static PhienDoc DocPhien(DbDataReader doc) => new(
         doc.SoNguyenDai(0),
-        doc.SoNguyen(1),
+        doc.SoNguyenDai(1),
         doc.DungSai(2),
         doc.DungSai(3),
         doc.DungSai(4),
@@ -265,7 +263,7 @@ public sealed class DichVuXacThuc(CuaHangDbContext db) : IDichVuXacThuc
         doc.Chuoi(9));
 
     private sealed record TaiKhoanDangNhap(
-        int Id,
+        long Id,
         string TenDangNhap,
         string MatKhauBam,
         string HoTen,
@@ -279,7 +277,7 @@ public sealed class DichVuXacThuc(CuaHangDbContext db) : IDichVuXacThuc
 
     private sealed record PhienDoc(
         long Id,
-        int TaiKhoanId,
+        long TaiKhoanId,
         bool DaHuy,
         bool HetHan,
         bool CanGiaHan,

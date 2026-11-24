@@ -9,12 +9,13 @@ namespace ConvenienceStore.Web.Shared.Data;
 public static class VietnameseSearch
 {
     private const string Accents = "àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ";
-    private static readonly string Plain = Fold(Accents);
+    private static readonly string Characters = Accents + Accents.ToUpperInvariant();
+    private static readonly string Plain = Fold(Accents) + Fold(Accents);
     public static string Fold(string value) => new string(value.ToLowerInvariant().Normalize(NormalizationForm.FormD)
         .Where(c=>CharUnicodeInfo.GetUnicodeCategory(c)!=UnicodeCategory.NonSpacingMark).ToArray()).Replace('đ','d');
 
-    public static string Column(bool postgres, string column) => postgres
-        ? $"translate(lower({column}),'{Accents}','{Plain}')" : column;
+    public static string Column(string column) =>
+        $"translate(lower({column}),'{Characters}','{Plain}')";
 
     public static void Configure(ModelBuilder model)
     {
@@ -22,7 +23,7 @@ public static class VietnameseSearch
         model.HasDbFunction(typeof(VietnameseSearch).GetMethod(nameof(Fold))!).HasTranslation(arguments =>
             new SqlFunctionExpression("translate", [
                 new SqlFunctionExpression("lower",arguments,true,[true],typeof(string),mapping),
-                new SqlConstantExpression(Accents,mapping),new SqlConstantExpression(Plain,mapping)
+                new SqlConstantExpression(Characters,mapping),new SqlConstantExpression(Plain,mapping)
             ],true,[true,false,false],typeof(string),mapping));
     }
 }

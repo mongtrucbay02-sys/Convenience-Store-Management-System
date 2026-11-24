@@ -2,7 +2,7 @@ namespace ConvenienceStore.Web.Modules.Inventory.Models;
 
 public sealed record YeuCauBienDong(
     LoaiBienDong Loai,
-    int ChungTuId,
+    long ChungTuId,
     string MaChungTu,
-    int NguoiThucHienId,
+    long NguoiThucHienId,
     IReadOnlyList<DongBienDong> Dong);

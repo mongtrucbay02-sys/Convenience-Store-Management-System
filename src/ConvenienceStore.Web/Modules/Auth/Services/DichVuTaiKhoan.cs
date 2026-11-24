@@ -69,8 +69,8 @@ public sealed partial class DichVuTaiKhoan(CuaHangDbContext db) : IDichVuTaiKhoa
         var thamSo = new List<(string, object?)>();
         if (tuKhoa is not null)
         {
-            dieuKien.Append(" AND (t.ten_dang_nhap LIKE @tuKhoa OR t.ho_ten LIKE @tuKhoa)");
-            thamSo.Add(("@tuKhoa", "%" + ThoatKyTuLike(tuKhoa) + "%"));
+            dieuKien.Append($" AND ({VietnameseSearch.Column("t.ten_dang_nhap")} LIKE @tuKhoa OR {VietnameseSearch.Column("t.ho_ten")} LIKE @tuKhoa)");
+            thamSo.Add(("@tuKhoa", "%" + ThoatKyTuLike(VietnameseSearch.Fold(tuKhoa)) + "%"));
         }
 
         if (vaiTro is not null)
@@ -127,7 +127,7 @@ public sealed partial class DichVuTaiKhoan(CuaHangDbContext db) : IDichVuTaiKhoa
 
         await using var giaoTac = await db.Database.BeginTransactionAsync(ct);
         var soTrungTen = Convert.ToInt32(await db.DocMotGiaTriAsync(
-            "SELECT COUNT(*) FROM tai_khoan WHERE ten_dang_nhap = @ten", ct, ("@ten", tenDangNhap)));
+            "SELECT COUNT(*) FROM tai_khoan WHERE lower(ten_dang_nhap) = lower(@ten)", ct, ("@ten", tenDangNhap)));
         if (soTrungTen > 0)
             throw LoiTrungTenDangNhap();
         await KiemTraTrungLienLacAsync(null, soDienThoai, email, ct);
@@ -229,8 +229,8 @@ public sealed partial class DichVuTaiKhoan(CuaHangDbContext db) : IDichVuTaiKhoa
             """
             SELECT so_dien_thoai, email
             FROM tai_khoan
-            WHERE (@boQua IS NULL OR id <> @boQua)
-              AND ((@sdt IS NOT NULL AND so_dien_thoai = @sdt) OR (@email IS NOT NULL AND email = @email))
+            WHERE (CAST(@boQua AS bigint) IS NULL OR id <> @boQua)
+              AND ((CAST(@sdt AS text) IS NOT NULL AND so_dien_thoai = @sdt) OR (CAST(@email AS text) IS NOT NULL AND lower(email) = lower(CAST(@email AS text))))
             """,
             doc => (Sdt: doc.ChuoiHoacNull(0), Email: doc.ChuoiHoacNull(1)),
             ct, ("@boQua", boQuaId), ("@sdt", soDienThoai), ("@email", email));

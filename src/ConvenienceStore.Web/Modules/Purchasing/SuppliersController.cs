@@ -35,11 +35,13 @@ public sealed class SuppliersController(CuaHangDbContext db) : Controller
     public async Task<IActionResult> Index(string? q, string? status, int page = 1, CancellationToken ct = default)
     {
         if (!ModelState.IsValid || page is < 1 or > 100000) return BadRequest();
+        status = string.IsNullOrWhiteSpace(status) ? null : status.Trim();
+        if (status is not null and not ("HOAT_DONG" or "NGUNG_HOP_TAC")) return BadRequest();
         var query = db.NhaCungCaps.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(q))
         {
-            var term = q.Trim();
-            query = query.Where(row => row.Ma.Contains(term) || row.Ten.Contains(term) || row.SoDienThoai.Contains(term));
+            var term = VietnameseSearch.Fold(q.Trim());
+            query = query.Where(row => VietnameseSearch.Fold(row.Ma).Contains(term) || VietnameseSearch.Fold(row.Ten).Contains(term) || row.SoDienThoai.Contains(term));
         }
         if (status is "HOAT_DONG" or "NGUNG_HOP_TAC")
             query = query.Where(row => row.TrangThai == status);
@@ -47,7 +49,7 @@ public sealed class SuppliersController(CuaHangDbContext db) : Controller
             .Select(row => new SupplierListRow(row, row.PhieuNhaps.Max(receipt => receipt.XacNhanLuc))).ToListAsync(ct);
         ViewBag.Page = page;
         ViewBag.HasNext = rows.Count > 50;
-        ViewBag.Term = q;
+        ViewBag.Term = q?.Trim();
         ViewBag.Status = status;
         return View("~/Views/Purchasing/Suppliers.cshtml", rows.Take(50).ToList());
     }

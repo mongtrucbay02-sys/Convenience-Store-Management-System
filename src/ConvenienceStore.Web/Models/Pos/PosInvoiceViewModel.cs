@@ -1,4 +1,4 @@
-﻿
+
 namespace ConvenienceStore.Web.Models.Pos;
 
 // Thông tin một sản phẩm trên hóa đơn.
@@ -6,9 +6,9 @@ namespace ConvenienceStore.Web.Models.Pos;
 // không lấy lại tên hoặc giá hiện tại.
 public sealed class PosInvoiceItemViewModel
 {
-    public int ProductId { get; set; }
+    public long ProductId { get; set; }
     public string Unit { get; set; } = "";
-    public int? PromotionId { get; set; }
+    public long? PromotionId { get; set; }
     public string? PromotionCode { get; set; }
     public string ProductName { get; set; } = "";
 
@@ -24,7 +24,7 @@ public sealed class PosInvoiceItemViewModel
 // Dữ liệu hóa đơn để hiển thị và in K80.
 public sealed class PosInvoiceViewModel
 {
-    public int? CustomerId { get; set; }
+    public long? CustomerId { get; set; }
     public string? CustomerPhone { get; set; }
     public long ExchangeCredit { get; set; }
     public bool IsReprint { get; set; }
@@ -37,7 +37,7 @@ public sealed class PosInvoiceViewModel
     public long InvoiceId { get; set; }
 
     // BR-POS-11: đối chiếu tài khoản lập hóa đơn khi mở trực tiếp URL.
-    public int CashierId { get; set; }
+    public long CashierId { get; set; }
 
     public string InvoiceCode { get; set; } = "";
 
@@ -68,4 +68,4 @@ public sealed class PosInvoiceViewModel
 public sealed record PosInvoiceReturn(long Id, string Code, string Type, string Status,
     DateTime CreatedAt, long Refund, long AdditionalPayment, int PointsReversed, bool IsOriginalInvoice);
 
-public sealed record PosInvoiceRefund(long Amount, string Method, uint PointsReversed, uint PointsNotReversed, string Reason, DateTime At, string Actor);
+public sealed record PosInvoiceRefund(long Amount, string Method, long PointsReversed, long PointsNotReversed, string Reason, DateTime At, string Actor);

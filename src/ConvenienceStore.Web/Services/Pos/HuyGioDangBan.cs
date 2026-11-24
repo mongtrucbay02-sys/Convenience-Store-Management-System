@@ -6,7 +6,7 @@ public static class HuyGioDangBan
 {
     // Caller owns the transaction; cart mutations serialize on the parent row.
     public static async Task HuyAsync(DbConnection connection, DbTransaction transaction,
-        int cashierId, CancellationToken ct = default)
+        long cashierId, CancellationToken ct = default)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
@@ -27,7 +27,7 @@ public static class HuyGioDangBan
                 huy_luc = NOW(),
                 ly_do_huy = 'THU_NGAN_HUY',
                 gia_tri_khi_huy = COALESCE((
-                    SELECT CAST(SUM(so_luong * (don_gia - giam_don_vi)) AS {connection.Sql("UNSIGNED", "bigint")})
+                    SELECT CAST(SUM(so_luong * (don_gia - giam_don_vi)) AS bigint)
                     FROM ct_gio_hang WHERE gio_hang_id = @g), 0)
             WHERE id = @g AND trang_thai = 'DANG_BAN'
             AND EXISTS (SELECT 1 FROM ct_gio_hang WHERE gio_hang_id = @g)

@@ -1,4 +1,4 @@
-﻿
+
 namespace ConvenienceStore.Web.Models.Pos
 {
     public sealed class PosCheckoutViewModel

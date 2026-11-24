@@ -6,7 +6,7 @@ using ConvenienceStore.Web.Tests.HaTang;
 
 namespace ConvenienceStore.Web.Tests.Modules.Products;
 
-public sealed class Sp01ProductHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMySqlTam>
+public sealed class Sp01ProductHttpTests(CsdlPostgreSqlTam db) : IClassFixture<CsdlPostgreSqlTam>
 {
     [Theory]
     [InlineData(null, 401)]
@@ -30,7 +30,7 @@ public sealed class Sp01ProductHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMy
     [InlineData("AD", 2, true)]
     [InlineData("NK", 2, false)]
     [InlineData("TN", 1, false)]
-    public async Task SearchFiltersStockAndRoleProjectionUseMySql(string role, int count, bool seesCost)
+    public async Task SearchFiltersStockAndRoleProjectionUsePostgreSql(string role, int count, bool seesCost)
     {
         var ids = await ProductReadSeed.Create(db);
         await using var app = await ListFeatureHost.Start(db, s => { s.AddModuleProducts(); s.AddModuleInventory(); });
@@ -84,7 +84,7 @@ public sealed class Sp01ProductHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMy
 
 internal static class ProductReadSeed
 {
-    public static async Task<(long Category, long Active, long Inactive)> Create(CsdlMySqlTam db)
+    public static async Task<(long Category, long Active, long Inactive)> Create(CsdlPostgreSqlTam db)
     {
         var key = Guid.NewGuid().ToString("N");
         await db.ChayAsync("""
@@ -98,13 +98,13 @@ internal static class ProductReadSeed
             SELECT CONCAT(LEFT(@key,18),'x'),'SỮA inactive',d.id,'Hộp',t.id,'NGUNG_KINH_DOANH'
             FROM danh_muc d JOIN tai_khoan t ON t.ten_dang_nhap=@key WHERE d.ten=@key;
             INSERT INTO ton_kho(san_pham_id,so_luong_ton,gia_von_binh_quan,nguong_toi_thieu)
-            SELECT p.id,7,IF(p.trang_thai='DANG_KINH_DOANH',8000,12000),5
+            SELECT p.id,7,(CASE WHEN p.trang_thai='DANG_KINH_DOANH' THEN 8000 ELSE 12000 END),5
             FROM san_pham p JOIN danh_muc d ON p.danh_muc_id=d.id WHERE d.ten=@key;
             INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id)
-            SELECT p.id,IF(p.trang_thai='DANG_KINH_DOANH',10000,20000),NOW()-INTERVAL 1 DAY,p.nguoi_tao_id
+            SELECT p.id,(CASE WHEN p.trang_thai='DANG_KINH_DOANH' THEN 10000 ELSE 20000 END),NOW()-INTERVAL '1 day',p.nguoi_tao_id
             FROM san_pham p JOIN danh_muc d ON p.danh_muc_id=d.id WHERE d.ten=@key;
             INSERT INTO lich_su_gia(san_pham_id,gia_ban,hieu_luc_tu,nguoi_tao_id)
-            SELECT p.id,99900,NOW()+INTERVAL 1 DAY,p.nguoi_tao_id
+            SELECT p.id,99900,NOW()+INTERVAL '1 day',p.nguoi_tao_id
             FROM san_pham p JOIN danh_muc d ON p.danh_muc_id=d.id WHERE d.ten=@key AND p.trang_thai='DANG_KINH_DOANH';
             """, ("@key", key));
         var cat = Convert.ToUInt32(await db.DocMotGiaTriAsync("SELECT id FROM danh_muc WHERE ten=@key", ("@key", key)));

@@ -12,7 +12,7 @@ namespace ConvenienceStore.Web.Controllers;
 public sealed class PosController : Controller
 {
     private readonly PosHeldOrderService _heldOrders;
-    private readonly MySqlPosCatalog _catalog;
+    private readonly PostgreSqlPosCatalog _catalog;
     private readonly PosCartService _cart;
     private readonly PosPaymentService _posPayment;
     private readonly PosCheckoutService _checkoutService;
@@ -23,7 +23,7 @@ public sealed class PosController : Controller
     // ==========================================
 
     public PosController(
-        MySqlPosCatalog catalog,
+        PostgreSqlPosCatalog catalog,
         PosCartService cart,
         PosPaymentService posPayment,
         PosCheckoutService checkoutService,
@@ -46,7 +46,7 @@ public sealed class PosController : Controller
     [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Index(
         string? search,
-        int? categoryId)
+        long? categoryId)
     {
         if (categoryId.HasValue && categoryId.Value <= 0)
         {
@@ -84,7 +84,7 @@ public sealed class PosController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = BangQuyen.ThuNgan)]
-    public async Task<IActionResult> Recall(int orderId)
+    public async Task<IActionResult> Recall(long orderId)
     {
         var result = await _heldOrders.RecallAsync(orderId);
         TempData[result.Success ? "Success" : "Error"] = result.Message;
@@ -98,7 +98,7 @@ public sealed class PosController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = BangQuyen.ThuNgan)]
-    public async Task<IActionResult> Add(int productId)
+    public async Task<IActionResult> Add(long productId)
     {
         if (productId <= 0)
         {
@@ -122,7 +122,7 @@ public sealed class PosController : Controller
     [ValidateAntiForgeryToken]
     [Authorize(Roles = BangQuyen.ThuNgan)]
     public async Task<IActionResult> Update(
-        int productId,
+        long productId,
         string? quantity)
     {
         if (productId <= 0)
@@ -167,7 +167,7 @@ public sealed class PosController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = BangQuyen.ThuNgan)]
-    public async Task<IActionResult> Remove(int productId)
+    public async Task<IActionResult> Remove(long productId)
     {
         if (productId <= 0)
         {

@@ -16,7 +16,7 @@ public sealed class LoiDichVuKho : LoiNghiepVu
     public static LoiDichVuKho KhongHopLe(IReadOnlyList<LoiTruong> chiTiet) =>
         new(MaLoiKho.DuLieuKhongHopLe, StatusCodes.Status422UnprocessableEntity, ThongBaoLoi.DuLieuKhongHopLe, chiTiet);
 
-    public static LoiDichVuKho SanPhamKhongTonTai(IReadOnlyList<int> sanPhamIds) =>
+    public static LoiDichVuKho SanPhamKhongTonTai(IReadOnlyList<long> sanPhamIds) =>
         new(
             MaLoiKho.SanPhamKhongTonTai,
             StatusCodes.Status422UnprocessableEntity,

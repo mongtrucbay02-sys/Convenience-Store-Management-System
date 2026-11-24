@@ -149,7 +149,7 @@ public sealed class DichVuTaiKhoanQuanTriTests(CsdlXacThucFixture csdl) : IAsync
     {
         var tk = await _duLieu.TaoTaiKhoanAsync("TN");
         await csdl.ChayAsync(
-            "UPDATE tai_khoan SET khoa_tam_den = NOW() + INTERVAL 15 MINUTE, so_lan_sai = 2 WHERE id = @id", ("@id", tk.Id));
+            "UPDATE tai_khoan SET khoa_tam_den = NOW() + INTERVAL '15 minute', so_lan_sai = 2 WHERE id = @id", ("@id", tk.Id));
 
         var sau = await TaiKhoan().MoKhoaAsync(tk.Id);
 
@@ -188,7 +188,7 @@ public sealed class DichVuTaiKhoanQuanTriTests(CsdlXacThucFixture csdl) : IAsync
     {
         var tk = await _duLieu.TaoTaiKhoanAsync("TN");
         await csdl.ChayAsync(
-            "UPDATE tai_khoan SET khoa_tam_den = NOW() + INTERVAL 15 MINUTE, so_lan_sai = 3 WHERE id = @id", ("@id", tk.Id));
+            "UPDATE tai_khoan SET khoa_tam_den = NOW() + INTERVAL '15 minute', so_lan_sai = 3 WHERE id = @id", ("@id", tk.Id));
 
         var kq = await TaiKhoan().DatLaiMatKhauAsync(tk.Id, null);
 

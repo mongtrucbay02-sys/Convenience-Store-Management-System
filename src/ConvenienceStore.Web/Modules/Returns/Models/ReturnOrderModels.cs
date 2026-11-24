@@ -4,7 +4,7 @@ namespace ConvenienceStore.Web.Modules.Returns.Models;
 
 public sealed class ReturnLineRequest
 {
-    public int ProductId { get; set; }
+    public long ProductId { get; set; }
     public int Quantity { get; set; }
     public string Reason { get; set; } = "";
     public string? Note { get; set; }
@@ -21,7 +21,7 @@ public sealed class ReturnOrderRequest
 }
 
 public sealed record ReturnFormLine(
-    int ProductId,
+    long ProductId,
     string Name,
     string Unit,
     long UnitPaid,
@@ -37,7 +37,7 @@ public sealed record ReturnForm(
     IReadOnlyList<ReturnFormLine> Lines);
 
 public sealed record ReturnPreviewLine(
-    int ProductId,
+    long ProductId,
     string Name,
     int Quantity,
     long UnitPaid,

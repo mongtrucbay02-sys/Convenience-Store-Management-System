@@ -1,0 +1,1180 @@
+{
+  "baseline": "2e8d94b35d1426fa168c42417cae831677133208",
+  "branch": "integration/smartmart-postgresql-only",
+  "prepared_on": "2026-11-24",
+  "commits": [
+    {
+      "group": "runtime",
+      "sha": "f29ebb3d0247602fb7c06dd0edaf509b520e8eba",
+      "title": "refactor(db): make PostgreSQL the sole runtime provider",
+      "file_count_with_renames": 113,
+      "files": [
+        {
+          "status": "M",
+          "path": ".env.example"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-runtime/Data/CuaHangDbContext.LegacyMySql.cs",
+          "previous_path": "src/ConvenienceStore.Web/Data/CuaHangDbContext.LegacyMySql.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-runtime/Data/GioVietNamInterceptor.cs",
+          "previous_path": "src/ConvenienceStore.Web/Data/GioVietNamInterceptor.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-runtime/Data/Migrations/20261026120030_InitialCreate.Designer.cs",
+          "previous_path": "src/ConvenienceStore.Web/Data/Migrations/20261026120030_InitialCreate.Designer.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-runtime/Data/Migrations/20261026120030_InitialCreate.cs",
+          "previous_path": "src/ConvenienceStore.Web/Data/Migrations/20261026120030_InitialCreate.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-runtime/Data/Migrations/20261112160000_Pos12CancelInvoice.cs",
+          "previous_path": "src/ConvenienceStore.Web/Data/Migrations/20261112160000_Pos12CancelInvoice.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-runtime/Data/Migrations/20261112170000_CashLedger.cs",
+          "previous_path": "src/ConvenienceStore.Web/Data/Migrations/20261112170000_CashLedger.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-runtime/Data/Migrations/20261123090000_CashLedgerReconciliation.cs",
+          "previous_path": "src/ConvenienceStore.Web/Data/Migrations/20261123090000_CashLedgerReconciliation.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-runtime/Data/Migrations/20261123091000_PromotionImage.cs",
+          "previous_path": "src/ConvenienceStore.Web/Data/Migrations/20261123091000_PromotionImage.cs"
+        },
+        {
+          "status": "A",
+          "path": "docs/archive/mysql-runtime/Data/Migrations/CuaHangDbContextModelSnapshot.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-runtime/Data/Migrations/SchemaV1.cs",
+          "previous_path": "src/ConvenienceStore.Web/Data/Migrations/SchemaV1.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-runtime/Data/PostgreSqlMigrationGuard.cs",
+          "previous_path": "src/ConvenienceStore.Web/Data/PostgreSqlMigrationGuard.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-tools/pr168-schema-audit/Program.cs",
+          "previous_path": "scripts/pr168-schema-audit/Program.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-tools/pr168-schema-audit/SchemaAudit.csproj",
+          "previous_path": "scripts/pr168-schema-audit/SchemaAudit.csproj"
+        },
+        {
+          "status": "A",
+          "path": "docs/db/POSTGRESQL-MIGRATIONS.md"
+        },
+        {
+          "status": "M",
+          "path": "docs/db/schema_postgresql.sql"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/.env.example"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/.env.postgresql.example"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Controllers/DashboardController.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Controllers/InvoiceDetailsApiController.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Controllers/InvoicesController.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Controllers/PosController.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/ConvenienceStore.Web.csproj"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Data/CuaHangDbContext.PostgreSql.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Data/CuaHangDbContext.cs"
+        },
+        {
+          "status": "A",
+          "path": "src/ConvenienceStore.Web/Data/CuaHangDesignTimeFactory.cs"
+        },
+        {
+          "status": "A",
+          "path": "src/ConvenienceStore.Web/Data/Migrations/20261124050401_PostgreSqlBaseline.Designer.cs"
+        },
+        {
+          "status": "A",
+          "path": "src/ConvenienceStore.Web/Data/Migrations/20261124050401_PostgreSqlBaseline.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Data/Migrations/CuaHangDbContextModelSnapshot.cs"
+        },
+        {
+          "status": "A",
+          "path": "src/ConvenienceStore.Web/Data/Migrations/Sql/PostgreSqlBaseline.sql"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Data/PostgreSqlTimeInterceptor.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Models/DashboardViewModel.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Models/Pos/PosCheckoutViewModel.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Models/Pos/PosInvoiceListModels.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Models/Pos/PosInvoiceViewModel.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Models/Pos/PosModels.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Auth/Security/NguoiDungHienTai.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Auth/Services/DichVuTaiKhoan.QuanTri.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Auth/Services/DichVuTaiKhoan.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Auth/Services/DichVuXacThuc.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Auth/Services/IDichVuTaiKhoan.QuanTri.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Auth/Services/IDichVuXacThuc.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Auth/Services/KhoiTaoAdminDauTien.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Auth/Services/NguoiDungPhien.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Customers/Controllers/CustomersController.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Customers/Models/CustomerModels.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Customers/Services/CustomerPoints.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Customers/Services/CustomerService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Inventory/Controllers/StockDocumentsController.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Inventory/Models/DongBienDong.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Inventory/Models/KetQuaDong.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Inventory/Models/ThieuTon.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Inventory/Models/TonKhoHienTai.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Inventory/Models/YeuCauBienDong.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Inventory/Services/DichVuKho.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Inventory/Services/IDichVuKho.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Inventory/Services/LoiDichVuKho.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Controllers/ProductsController.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/EfCategoryMutationRepository.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/EfCategoryRemovalRepository.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/EfProductCreationRepository.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/EfProductLifecycleRepository.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/EfProductReadRepository.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/ICategoryReadRepository.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/IProductService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/ProductDetailService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/ProductReadService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/ProductService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Services/IPromotionDataSource.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Services/InMemoryPromotionDataSource.cs"
+        },
+        {
+          "status": "R074",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Services/PostgreSqlPromotionDataSource.cs",
+          "previous_path": "src/ConvenienceStore.Web/Modules/Promotions/Services/MySqlPromotionDataSource.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Services/PromotionUsageStore.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Purchasing/PurchaseReceiptService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Reports/Models/OperationalReportModels.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Reports/Services/DashboardService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Reports/Services/IDashboardDataSource.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Reports/Services/IOperationalReportDataSource.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Reports/Services/OperationalReportsService.cs"
+        },
+        {
+          "status": "R096",
+          "path": "src/ConvenienceStore.Web/Modules/Reports/Services/PostgreSqlDashboardDataSource.cs",
+          "previous_path": "src/ConvenienceStore.Web/Modules/Reports/Services/MySqlDashboardDataSource.cs"
+        },
+        {
+          "status": "R096",
+          "path": "src/ConvenienceStore.Web/Modules/Reports/Services/PostgreSqlTransactionalReportsDataSource.cs",
+          "previous_path": "src/ConvenienceStore.Web/Modules/Reports/Services/MySqlTransactionalReportsDataSource.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Reports/Services/ReportFilterService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Reports/Services/SampleOperationalReportDataSource.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Reports/Services/WeekEightReportDataSource.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Returns/Controllers/ReturnRefundController.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Returns/DangKyModuleReturns.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Returns/Models/InvoiceLookupModels.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Returns/Models/ReturnOrderModels.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Returns/Services/CashLedgerService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Returns/Services/InvoiceLookupService.cs"
+        },
+        {
+          "status": "R092",
+          "path": "src/ConvenienceStore.Web/Modules/Returns/Services/PostgreSqlInvoiceLookupStore.cs",
+          "previous_path": "src/ConvenienceStore.Web/Modules/Returns/Services/MySqlInvoiceLookupStore.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Returns/Services/ReturnOrderService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Returns/Services/ReturnPointsGateway.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Program.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Services/Pos/HuyGioDangBan.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Services/Pos/ICurrentCashier.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Services/Pos/IPosCatalog.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Services/Pos/PosCartService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Services/Pos/PosCheckoutService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Services/Pos/PosHeldOrderService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Services/Pos/PosInvoiceCancellationService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Services/Pos/PosInvoiceListService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Services/Pos/PosInvoiceService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Services/Pos/PosPaymentService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Services/Pos/PosPromotionCalculator.cs"
+        },
+        {
+          "status": "R078",
+          "path": "src/ConvenienceStore.Web/Services/Pos/PostgreSqlPosCatalog.cs",
+          "previous_path": "src/ConvenienceStore.Web/Services/Pos/MySqlPosCatalog.cs"
+        },
+        {
+          "status": "R095",
+          "path": "src/ConvenienceStore.Web/Services/Pos/PostgreSqlPosCheckoutStore.cs",
+          "previous_path": "src/ConvenienceStore.Web/Services/Pos/MySqlPosCheckoutStore.cs"
+        },
+        {
+          "status": "R095",
+          "path": "src/ConvenienceStore.Web/Services/Pos/PostgreSqlPosInvoiceListStore.cs",
+          "previous_path": "src/ConvenienceStore.Web/Services/Pos/MySqlPosInvoiceListStore.cs"
+        },
+        {
+          "status": "R095",
+          "path": "src/ConvenienceStore.Web/Services/Pos/PostgreSqlPosInvoiceStore.cs",
+          "previous_path": "src/ConvenienceStore.Web/Services/Pos/MySqlPosInvoiceStore.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Shared/Api/GioVietNam.cs"
+        },
+        {
+          "status": "R085",
+          "path": "src/ConvenienceStore.Web/Shared/Data/PostgreSqlEnv.cs",
+          "previous_path": "src/ConvenienceStore.Web/Shared/Data/MySqlEnv.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Shared/Data/SqlDialect.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Shared/Data/TruyVanCsdl.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Shared/Data/VietnameseSearch.cs"
+        }
+      ]
+    },
+    {
+      "group": "business",
+      "sha": "4ce95b311d4f3eb83adfae325fee989940eae333",
+      "title": "fix: enforce password gates and transactional business rules",
+      "file_count_with_renames": 21,
+      "files": [
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Auth/Security/KiemTraDoiMatKhauFilter.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/EfCategoryMutationRepository.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/EfProductCreationRepository.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/EfProductPricingRepository.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/ProductCreationService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/ProductPricingService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Products/Services/ProductReadService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Controllers/PromotionHistoryApiController.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Controllers/PromotionsApiController.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Controllers/PromotionsController.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Models/PromotionFormModel.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Models/PromotionModels.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Services/IPromotionService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Services/PromotionService.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Services/PromotionUsageStore.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Views/Promotions/Delete.cshtml"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Views/Promotions/Form.cshtml"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Promotions/Views/Promotions/Index.cshtml"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Purchasing/PurchaseReceiptsController.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Modules/Purchasing/SuppliersController.cs"
+        },
+        {
+          "status": "M",
+          "path": "src/ConvenienceStore.Web/Views/Purchasing/Index.cshtml"
+        }
+      ]
+    },
+    {
+      "group": "tests-ci",
+      "sha": "b1c04234a7b14e8ba7349b5538a0f86be1bdbefd",
+      "title": "test: port regression suite and CI to isolated PostgreSQL 17",
+      "file_count_with_renames": 66,
+      "files": [
+        {
+          "status": "M",
+          "path": ".github/workflows/ci.yml"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-tests/HaTang/SchemaMappingTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/HaTang/SchemaMappingTests.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-tests/HaTang/SchemaReference.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/HaTang/SchemaReference.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-tests/Integration/Database/Schema/MigrationExtensionMySqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Integration/Database/Schema/MigrationExtensionMySqlTests.cs"
+        },
+        {
+          "status": "R100",
+          "path": "docs/archive/mysql-tests/Integration/Database/Schema/SchemaStructureTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Integration/Database/Schema/SchemaStructureTests.cs"
+        },
+        {
+          "status": "A",
+          "path": "scripts/ci/verify-postgresql-runtime.ps1"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Auth/CsdlXacThucFixture.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Auth/DichVuTaiKhoanQuanTriTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Auth/DichVuXacThucTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Auth/DuLieuTestXacThuc.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Auth/KhoiTaoAdminDauTienTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/CustomerDatabaseTests.cs"
+        },
+        {
+          "status": "D",
+          "path": "tests/ConvenienceStore.Web.Tests/HaTang/CsdlMySqlTam.cs"
+        },
+        {
+          "status": "A",
+          "path": "tests/ConvenienceStore.Web.Tests/HaTang/CsdlPostgreSqlTam.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/HaTang/DanhMucConcurrencyMetadataTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/HaTang/DanhMucConcurrencyTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/HaTang/GeneratedColumnsMetadataTests.cs"
+        },
+        {
+          "status": "R097",
+          "path": "tests/ConvenienceStore.Web.Tests/HaTang/GeneratedColumnsPostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/HaTang/GeneratedColumnsMySqlTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/HaTang/ListFeatureHost.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Inventory/CsdlKhoFixture.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Inventory/DichVuKhoTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Inventory/DuLieuTestKho.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Inventory/HaTangTestKhoTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Inventory/TichHopDichVuKhoTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/CategoryHttpFeatureTests.cs"
+        },
+        {
+          "status": "R094",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/CategoryPostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Modules/Products/CategoryMySqlTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/ProductReferenceSeed.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/ProductsIntegrationHttpTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp01ProductHttpTests.cs"
+        },
+        {
+          "status": "R092",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp01ProductPostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp01ProductMySqlTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp01ProductUnitTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp02ProductHttpTests.cs"
+        },
+        {
+          "status": "R089",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp02ProductPostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp02ProductMySqlTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp02ProductUnitTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp03ImageHttpTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp03ProductHttpTests.cs"
+        },
+        {
+          "status": "R091",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp03ProductPostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp03ProductMySqlTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp04ProductHttpTests.cs"
+        },
+        {
+          "status": "R082",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp04ProductPostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp04ProductMySqlTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp05PricingHttpTests.cs"
+        },
+        {
+          "status": "R078",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp05PricingPostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp05PricingMySqlTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp05PricingUnitTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp06LifecycleHttpTests.cs"
+        },
+        {
+          "status": "R082",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp06LifecyclePostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp06LifecycleMySqlTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp08CategoryHttpTests.cs"
+        },
+        {
+          "status": "R094",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp08CategoryPostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp08CategoryMySqlTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp09CategoryHttpTests.cs"
+        },
+        {
+          "status": "R090",
+          "path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp09CategoryPostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp09CategoryMySqlTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/PosHeldOrderTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/PosInvoiceStoreTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/PosPageAuthorizationTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/PosPromotionCalculatorTests.cs"
+        },
+        {
+          "status": "A",
+          "path": "tests/ConvenienceStore.Web.Tests/PostgreSql/IntegrationRegressionTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/PostgreSql/PostgreSqlRuntimeTests.cs"
+        },
+        {
+          "status": "A",
+          "path": "tests/ConvenienceStore.Web.Tests/PostgreSql/PostgreSqlSchemaTests.cs"
+        },
+        {
+          "status": "A",
+          "path": "tests/ConvenienceStore.Web.Tests/PostgreSql/PurchasingParityTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/PostgreSql/SupabaseModelMappingTests.cs"
+        },
+        {
+          "status": "R078",
+          "path": "tests/ConvenienceStore.Web.Tests/PromotionImagePostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/PromotionImageMySqlTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/PromotionManagementTests.cs"
+        },
+        {
+          "status": "R092",
+          "path": "tests/ConvenienceStore.Web.Tests/ReportPromotionPostgreSqlRegressionTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/ReportPromotionMySqlRegressionTests.cs"
+        },
+        {
+          "status": "R084",
+          "path": "tests/ConvenienceStore.Web.Tests/Returns/CashCancellationPostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Returns/CashCancellationMySqlTests.cs"
+        },
+        {
+          "status": "R094",
+          "path": "tests/ConvenienceStore.Web.Tests/Returns/InvoiceLookupPostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Returns/InvoiceLookupMySqlTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tests/ConvenienceStore.Web.Tests/Returns/ReturnOrderHttpTests.cs"
+        },
+        {
+          "status": "R098",
+          "path": "tests/ConvenienceStore.Web.Tests/Returns/ReturnOrderPostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/Returns/ReturnOrderMySqlTests.cs"
+        },
+        {
+          "status": "R091",
+          "path": "tests/ConvenienceStore.Web.Tests/WeekEightPostgreSqlTests.cs",
+          "previous_path": "tests/ConvenienceStore.Web.Tests/WeekEightMySqlTests.cs"
+        },
+        {
+          "status": "M",
+          "path": "tools/SupabaseSmoke/Program.cs"
+        }
+      ]
+    }
+  ],
+  "documentation_commit": {
+    "sha": null,
+    "lookup": "The commit containing this file (git log -1 --format=%H -- <this path>).",
+    "title": "docs: record PostgreSQL integration evidence and adoption gates",
+    "paths": [
+      "README.md",
+      "docs/03-requirements/README.md",
+      "docs/03-requirements/postgresql-runtime-change-20261123.md",
+      "docs/04-system-design/supabase-entity-mapping-20261123.md",
+      "docs/05-implementation/README.md",
+      "docs/05-implementation/postgresql-integration-files-20261124.json",
+      "docs/05-implementation/postgresql-only-integration-20261124.md",
+      "docs/05-implementation/setup/postgresql-runtime-setup.md",
+      "docs/06-testing/README.md",
+      "docs/06-testing/ci-github-actions.md",
+      "docs/06-testing/test-reports/2026-11-24-commit-preparation.files.json",
+      "docs/06-testing/test-reports/2026-11-24-commit-preparation.md",
+      "docs/06-testing/test-reports/2026-11-24-postgresql-integration.md",
+      "docs/06-testing/test-reports/2026-11-24-postgresql-integration.summary.json",
+      "docs/07-deployment/README.md",
+      "docs/07-deployment/postgresql-publish.md",
+      "docs/archive/postgresql-transition-20261123/postgresql-runtime-setup.md"
+    ]
+  },
+  "verification": {
+    "branch": "integration/smartmart-postgresql-only",
+    "baseline": "2e8d94b35d1426fa168c42417cae831677133208",
+    "source_file_count": 546,
+    "committed_source_files": 545,
+    "excluded_local_ide_file": "src/ConvenienceStore.Web/ConvenienceStore.Web.csproj.user",
+    "source_sha256": "02c2fad6433dc56886de6fa657d97b9de33b76407c5ecc58a1a9ab64ea2c4fad",
+    "source_missing": [],
+    "source_different": [],
+    "source_not_committed": [],
+    "deleted_paths_preserved": 42,
+    "archive_exact_pairs": 17,
+    "schema_tables": 31,
+    "schema_matches_captured_contract": true,
+    "live_supabase_check": false,
+    "database_changes_this_turn": 0,
+    "tests_rerun_this_turn": false,
+    "fresh_build": "PASS: 0 warnings, 0 errors",
+    "trx_sha256": "15fa3c51e09a04d856df2036921cf0173a3bd6a80ed4e351e9984411acc0dc01"
+  },
+  "deletion_disposition": [
+    {
+      "old": "scripts/pr168-schema-audit/Program.cs",
+      "retained": "docs/archive/mysql-tools/pr168-schema-audit/Program.cs"
+    },
+    {
+      "old": "scripts/pr168-schema-audit/SchemaAudit.csproj",
+      "retained": "docs/archive/mysql-tools/pr168-schema-audit/SchemaAudit.csproj"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Data/CuaHangDbContext.LegacyMySql.cs",
+      "retained": "docs/archive/mysql-runtime/Data/CuaHangDbContext.LegacyMySql.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Data/GioVietNamInterceptor.cs",
+      "retained": "docs/archive/mysql-runtime/Data/GioVietNamInterceptor.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Data/Migrations/20261026120030_InitialCreate.Designer.cs",
+      "retained": "docs/archive/mysql-runtime/Data/Migrations/20261026120030_InitialCreate.Designer.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Data/Migrations/20261026120030_InitialCreate.cs",
+      "retained": "docs/archive/mysql-runtime/Data/Migrations/20261026120030_InitialCreate.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Data/Migrations/20261112160000_Pos12CancelInvoice.cs",
+      "retained": "docs/archive/mysql-runtime/Data/Migrations/20261112160000_Pos12CancelInvoice.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Data/Migrations/20261112170000_CashLedger.cs",
+      "retained": "docs/archive/mysql-runtime/Data/Migrations/20261112170000_CashLedger.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Data/Migrations/20261123090000_CashLedgerReconciliation.cs",
+      "retained": "docs/archive/mysql-runtime/Data/Migrations/20261123090000_CashLedgerReconciliation.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Data/Migrations/20261123091000_PromotionImage.cs",
+      "retained": "docs/archive/mysql-runtime/Data/Migrations/20261123091000_PromotionImage.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Data/Migrations/SchemaV1.cs",
+      "retained": "docs/archive/mysql-runtime/Data/Migrations/SchemaV1.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Data/PostgreSqlMigrationGuard.cs",
+      "retained": "docs/archive/mysql-runtime/Data/PostgreSqlMigrationGuard.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Modules/Promotions/Services/MySqlPromotionDataSource.cs",
+      "retained": "src/ConvenienceStore.Web/Modules/Promotions/Services/PostgreSqlPromotionDataSource.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Modules/Reports/Services/MySqlDashboardDataSource.cs",
+      "retained": "src/ConvenienceStore.Web/Modules/Reports/Services/PostgreSqlDashboardDataSource.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Modules/Reports/Services/MySqlTransactionalReportsDataSource.cs",
+      "retained": "src/ConvenienceStore.Web/Modules/Reports/Services/PostgreSqlTransactionalReportsDataSource.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Modules/Returns/Services/MySqlInvoiceLookupStore.cs",
+      "retained": "src/ConvenienceStore.Web/Modules/Returns/Services/PostgreSqlInvoiceLookupStore.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Services/Pos/MySqlPosCatalog.cs",
+      "retained": "src/ConvenienceStore.Web/Services/Pos/PostgreSqlPosCatalog.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Services/Pos/MySqlPosCheckoutStore.cs",
+      "retained": "src/ConvenienceStore.Web/Services/Pos/PostgreSqlPosCheckoutStore.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Services/Pos/MySqlPosInvoiceListStore.cs",
+      "retained": "src/ConvenienceStore.Web/Services/Pos/PostgreSqlPosInvoiceListStore.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Services/Pos/MySqlPosInvoiceStore.cs",
+      "retained": "src/ConvenienceStore.Web/Services/Pos/PostgreSqlPosInvoiceStore.cs"
+    },
+    {
+      "old": "src/ConvenienceStore.Web/Shared/Data/MySqlEnv.cs",
+      "retained": "src/ConvenienceStore.Web/Shared/Data/PostgreSqlEnv.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/HaTang/CsdlMySqlTam.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/HaTang/CsdlPostgreSqlTam.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/HaTang/GeneratedColumnsMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/HaTang/GeneratedColumnsPostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/HaTang/SchemaMappingTests.cs",
+      "retained": "docs/archive/mysql-tests/HaTang/SchemaMappingTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/HaTang/SchemaReference.cs",
+      "retained": "docs/archive/mysql-tests/HaTang/SchemaReference.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Integration/Database/Schema/MigrationExtensionMySqlTests.cs",
+      "retained": "docs/archive/mysql-tests/Integration/Database/Schema/MigrationExtensionMySqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Integration/Database/Schema/SchemaStructureTests.cs",
+      "retained": "docs/archive/mysql-tests/Integration/Database/Schema/SchemaStructureTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Modules/Products/CategoryMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/Modules/Products/CategoryPostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp01ProductMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp01ProductPostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp02ProductMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp02ProductPostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp03ProductMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp03ProductPostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp04ProductMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp04ProductPostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp05PricingMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp05PricingPostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp06LifecycleMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp06LifecyclePostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp08CategoryMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp08CategoryPostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp09CategoryMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/Modules/Products/Sp09CategoryPostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/PromotionImageMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/PromotionImagePostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/ReportPromotionMySqlRegressionTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/ReportPromotionPostgreSqlRegressionTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Returns/CashCancellationMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/Returns/CashCancellationPostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Returns/InvoiceLookupMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/Returns/InvoiceLookupPostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/Returns/ReturnOrderMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/Returns/ReturnOrderPostgreSqlTests.cs"
+    },
+    {
+      "old": "tests/ConvenienceStore.Web.Tests/WeekEightMySqlTests.cs",
+      "retained": "tests/ConvenienceStore.Web.Tests/WeekEightPostgreSqlTests.cs"
+    }
+  ],
+  "byte_equivalent_archives_after_line_ending_normalization": [
+    {
+      "path": "docs/archive/mysql-runtime/Data/CuaHangDbContext.LegacyMySql.cs",
+      "matches_baseline": "src/ConvenienceStore.Web/Data/CuaHangDbContext.LegacyMySql.cs"
+    },
+    {
+      "path": "docs/archive/mysql-runtime/Data/GioVietNamInterceptor.cs",
+      "matches_baseline": "src/ConvenienceStore.Web/Data/GioVietNamInterceptor.cs"
+    },
+    {
+      "path": "docs/archive/mysql-runtime/Data/Migrations/20261026120030_InitialCreate.Designer.cs",
+      "matches_baseline": "src/ConvenienceStore.Web/Data/Migrations/20261026120030_InitialCreate.Designer.cs"
+    },
+    {
+      "path": "docs/archive/mysql-runtime/Data/Migrations/20261026120030_InitialCreate.cs",
+      "matches_baseline": "src/ConvenienceStore.Web/Data/Migrations/20261026120030_InitialCreate.cs"
+    },
+    {
+      "path": "docs/archive/mysql-runtime/Data/Migrations/20261112160000_Pos12CancelInvoice.cs",
+      "matches_baseline": "src/ConvenienceStore.Web/Data/Migrations/20261112160000_Pos12CancelInvoice.cs"
+    },
+    {
+      "path": "docs/archive/mysql-runtime/Data/Migrations/20261112170000_CashLedger.cs",
+      "matches_baseline": "src/ConvenienceStore.Web/Data/Migrations/20261112170000_CashLedger.cs"
+    },
+    {
+      "path": "docs/archive/mysql-runtime/Data/Migrations/20261123090000_CashLedgerReconciliation.cs",
+      "matches_baseline": "src/ConvenienceStore.Web/Data/Migrations/20261123090000_CashLedgerReconciliation.cs"
+    },
+    {
+      "path": "docs/archive/mysql-runtime/Data/Migrations/20261123091000_PromotionImage.cs",
+      "matches_baseline": "src/ConvenienceStore.Web/Data/Migrations/20261123091000_PromotionImage.cs"
+    },
+    {
+      "path": "docs/archive/mysql-runtime/Data/Migrations/CuaHangDbContextModelSnapshot.cs",
+      "matches_baseline": "src/ConvenienceStore.Web/Data/Migrations/CuaHangDbContextModelSnapshot.cs"
+    },
+    {
+      "path": "docs/archive/mysql-runtime/Data/Migrations/SchemaV1.cs",
+      "matches_baseline": "src/ConvenienceStore.Web/Data/Migrations/SchemaV1.cs"
+    },
+    {
+      "path": "docs/archive/mysql-runtime/Data/PostgreSqlMigrationGuard.cs",
+      "matches_baseline": "src/ConvenienceStore.Web/Data/PostgreSqlMigrationGuard.cs"
+    },
+    {
+      "path": "docs/archive/mysql-tests/HaTang/SchemaMappingTests.cs",
+      "matches_baseline": "tests/ConvenienceStore.Web.Tests/HaTang/SchemaMappingTests.cs"
+    },
+    {
+      "path": "docs/archive/mysql-tests/HaTang/SchemaReference.cs",
+      "matches_baseline": "tests/ConvenienceStore.Web.Tests/HaTang/SchemaReference.cs"
+    },
+    {
+      "path": "docs/archive/mysql-tests/Integration/Database/Schema/MigrationExtensionMySqlTests.cs",
+      "matches_baseline": "tests/ConvenienceStore.Web.Tests/Integration/Database/Schema/MigrationExtensionMySqlTests.cs"
+    },
+    {
+      "path": "docs/archive/mysql-tests/Integration/Database/Schema/SchemaStructureTests.cs",
+      "matches_baseline": "tests/ConvenienceStore.Web.Tests/Integration/Database/Schema/SchemaStructureTests.cs"
+    },
+    {
+      "path": "docs/archive/mysql-tools/pr168-schema-audit/Program.cs",
+      "matches_baseline": "scripts/pr168-schema-audit/Program.cs"
+    },
+    {
+      "path": "docs/archive/mysql-tools/pr168-schema-audit/SchemaAudit.csproj",
+      "matches_baseline": "scripts/pr168-schema-audit/SchemaAudit.csproj"
+    }
+  ],
+  "previous_test_counters": {
+    "total": "763",
+    "executed": "763",
+    "passed": "763",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "previous_test_times": {
+    "creation": "2026-11-24T17:16:51.5939294+07:00",
+    "queuing": "2026-11-24T17:16:51.5939298+07:00",
+    "start": "2026-11-24T17:16:49.4716833+07:00",
+    "finish": "2026-11-24T17:19:45.9812641+07:00"
+  }
+}

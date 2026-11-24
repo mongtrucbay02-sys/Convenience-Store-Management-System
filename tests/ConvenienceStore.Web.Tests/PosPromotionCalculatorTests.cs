@@ -56,8 +56,8 @@ public class PosPromotionDatabaseTests(CsdlKhoFixture fixture)
         await fixture.ChayAsync("""
             INSERT INTO chuong_trinh_khuyen_mai
             (ma, ten, loai_giam, gia_tri, bat_dau_luc, ket_thuc_luc, trang_thai, nguoi_tao_id)
-            VALUES ('POS04-TEST', 'Giảm 15%', 'PHAN_TRAM', 15, NOW()-INTERVAL 1 DAY,
-                    NOW()+INTERVAL 1 DAY, 'DA_KICH_HOAT', @a)
+            VALUES ('POS04-TEST', 'Giảm 15%', 'PHAN_TRAM', 15, NOW()-INTERVAL '1 day',
+                    NOW()+INTERVAL '1 day', 'DA_KICH_HOAT', @a)
             """, ("@a", fixture.TaiKhoanAdminId));
         int promotion = Convert.ToInt32(await fixture.DocMotGiaTriAsync("SELECT id FROM chuong_trinh_khuyen_mai WHERE ma='POS04-TEST'"));
         await fixture.ChayAsync("INSERT INTO khuyen_mai_san_pham VALUES (@k,@p)", ("@k", promotion), ("@p", product));
@@ -69,7 +69,7 @@ public class PosPromotionDatabaseTests(CsdlKhoFixture fixture)
             new[] { new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, fixture.TaiKhoanThuNganId.ToString()) }, "Test"));
         var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string,string?> { ["ConnectionStrings:CuaHang"] = fixture.ChuoiKetNoi }).Build();
-        var service = new PosCartService(new Microsoft.AspNetCore.Http.HttpContextAccessor { HttpContext = context }, new MySqlPosCatalog(config));
+        var service = new PosCartService(new Microsoft.AspNetCore.Http.HttpContextAccessor { HttpContext = context }, new PostgreSqlPosCatalog(config));
         var cart = await service.GetCartAsync();
         Assert.Equal(7400, cart.Discount);
         Assert.Equal("Giảm 15%", Assert.Single(cart.Items).PromotionName);

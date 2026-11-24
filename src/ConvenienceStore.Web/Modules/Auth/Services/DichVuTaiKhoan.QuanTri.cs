@@ -54,7 +54,7 @@ public sealed partial class DichVuTaiKhoan
     }
 
     public async Task<TaiKhoanDto> KhoaAsync(
-        long id, YeuCauKhoaTaiKhoan yeuCau, int nguoiThucHienId, CancellationToken ct = default)
+        long id, YeuCauKhoaTaiKhoan yeuCau, long nguoiThucHienId, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(yeuCau);
         var lyDo = QuyTacTaiKhoan.ChuanHoa(yeuCau.LyDo);

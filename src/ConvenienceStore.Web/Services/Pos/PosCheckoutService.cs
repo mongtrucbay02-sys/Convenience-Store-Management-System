@@ -1,4 +1,4 @@
-﻿
+
 using System.Data;
 using System.Security.Claims;
 using ConvenienceStore.Web.Data;
@@ -61,7 +61,7 @@ public sealed class PosCheckoutException(string message)
 public interface IPosCheckoutStore
 {
     Task<PosOrderSaved> SaveOrderAsync(
-        int cashierId,
+        long cashierId,
         long cashReceived,
         CancellationToken cancellationToken);
 }
@@ -89,7 +89,7 @@ public sealed class PosCheckoutService(
             return Failed("Thu ngân chưa đăng nhập.");
         }
 
-        int cashierId;
+        long cashierId;
 
         try
         {
@@ -215,7 +215,7 @@ public sealed class PosCheckoutService(
                     saved.InvoiceCode);
 
                 // Không tự động thanh toán lại:
-                // Commit có thể đã thành công trên MySQL.
+                // Commit có thể đã thành công trên PostgreSQL.
                 return Failed(
                     "Không xác định được kết quả lưu hóa đơn. " +
                     "Hãy kiểm tra danh sách hóa đơn " +

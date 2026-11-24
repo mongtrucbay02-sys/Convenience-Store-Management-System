@@ -19,6 +19,7 @@
 }
 
 <form method="post" asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@Model.Id" class="row g-3" style="max-width:760px">
+    <input type="hidden" asp-for="Version" />
     <div asp-validation-summary="All" class="text-danger"></div>
 
     <div class="col-12">

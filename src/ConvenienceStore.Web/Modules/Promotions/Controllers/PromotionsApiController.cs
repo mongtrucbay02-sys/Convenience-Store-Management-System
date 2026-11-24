@@ -86,7 +86,7 @@ public class PromotionsApiController : ControllerBase
         }
 
         return ToActionResult(await _promotionService.ChangeStatusAsync(
-            promotionId, request.TargetStatus.Value, cancellationToken));
+            promotionId, request.TargetStatus.Value, cancellationToken, request.Version));
     }
 
     private IActionResult ToActionResult(PromotionResult<PromotionDto> result) =>

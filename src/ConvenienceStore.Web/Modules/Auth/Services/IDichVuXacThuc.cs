@@ -8,7 +8,7 @@ public interface IDichVuXacThuc
 
     Task DangXuatAsync(long phienId, CancellationToken ct = default);
 
-    Task DoiMatKhauAsync(int taiKhoanId, YeuCauDoiMatKhau yeuCau, CancellationToken ct = default);
+    Task DoiMatKhauAsync(long taiKhoanId, YeuCauDoiMatKhau yeuCau, CancellationToken ct = default);
 
     Task<KetQuaXacThucPhien> XacThucPhienAsync(string tokenPhien, CancellationToken ct = default);
 }

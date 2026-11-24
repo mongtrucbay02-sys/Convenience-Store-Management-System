@@ -10,13 +10,13 @@ namespace ConvenienceStore.Web.Modules.Returns.Services;
 public interface IReturnPointsGateway
 {
     Task<int> RecoverAsync(CuaHangDbContext transactionContext, long invoiceId,
-        long returnId, int cashierId, long refund, CancellationToken ct);
+        long returnId, long cashierId, long refund, CancellationToken ct);
 }
 
 public sealed class ReturnPointsGateway : IReturnPointsGateway
 {
     public async Task<int> RecoverAsync(CuaHangDbContext transactionContext, long invoiceId,
-        long returnId, int cashierId, long refund, CancellationToken ct)
+        long returnId, long cashierId, long refund, CancellationToken ct)
     {
         var db = transactionContext;
         if (db.Database.CurrentTransaction is null)
@@ -28,14 +28,14 @@ public sealed class ReturnPointsGateway : IReturnPointsGateway
             """,
             r => new
             {
-                Customer = r.IsDBNull(0) ? (uint?)null : Convert.ToUInt32(r[0]),
+                Customer = r.IsDBNull(0) ? (long?)null : Convert.ToInt64(r[0]),
                 Earned = Convert.ToInt32(r[1]),
-                Rate = r.IsDBNull(2) ? 0u : Convert.ToUInt32(r[2]),
+                Rate = r.IsDBNull(2) ? 0u : Convert.ToInt64(r[2]),
                 Paid = Convert.ToInt64(r[3])
             }, ct, ("@id", invoiceId));
         if (invoice is null)
             throw LoiNghiepVu.KhongTimThay("Không tìm thấy hóa đơn.");
-        if (invoice.Customer is not uint customer || invoice.Earned <= 0 || refund <= 0 || invoice.Paid <= 0)
+        if (invoice.Customer is not long customer || invoice.Earned <= 0 || refund <= 0 || invoice.Paid <= 0)
             return 0;
 
         var existing = await db.DocMotGiaTriAsync("""
@@ -71,7 +71,7 @@ public sealed class ReturnPointsGateway : IReturnPointsGateway
         if (recovered > 0)
         {
             await CustomerPoints.ChangeAsync(db, customer, -recovered, "THU_HOI_TRA_HANG",
-                cashierId, checked((uint)invoiceId), checked((uint)returnId), "Thu hồi điểm khi trả hàng.", ct);
+                cashierId, checked((long)invoiceId), checked((long)returnId), "Thu hồi điểm khi trả hàng.", ct);
         }
 
         return recovered;

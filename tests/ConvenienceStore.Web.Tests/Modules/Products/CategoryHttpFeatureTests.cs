@@ -8,7 +8,7 @@ using ConvenienceStore.Web.Modules.Products;
 
 namespace ConvenienceStore.Web.Tests.Modules.Products;
 
-public sealed class CategoryHttpFeatureTests(CsdlMySqlTam database) : IClassFixture<CsdlMySqlTam>
+public sealed class CategoryHttpFeatureTests(CsdlPostgreSqlTam database) : IClassFixture<CsdlPostgreSqlTam>
 {
     private static void Register(IServiceCollection services)
     {

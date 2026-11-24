@@ -13,7 +13,7 @@ namespace ConvenienceStore.Web.Tests.Inventory;
 /// Không xóa dữ liệu giữa các test (trigger chặn xóa thẻ kho, BR-KHO-03): mỗi test tự tạo
 /// sản phẩm riêng bằng <see cref="DuLieuTestKho"/> và chỉ đọc sản phẩm của mình.
 /// </remarks>
-public sealed class CsdlKhoFixture : CsdlMySqlTam
+public sealed class CsdlKhoFixture : CsdlPostgreSqlTam
 {
     public int TaiKhoanAdminId { get; private set; }
 

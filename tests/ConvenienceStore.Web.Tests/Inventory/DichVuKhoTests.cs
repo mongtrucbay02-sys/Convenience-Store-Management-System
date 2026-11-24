@@ -337,7 +337,7 @@ public sealed class DichVuKhoTests(CsdlKhoFixture csdl)
 
         var ds = await BoTroGoiDichVuKho.TaoDichVu(db).LayTonKhoAsync([sp2, sp1, 999_999_999]);
 
-        Assert.Equal(new[] { sp1, sp2 }, ds.Select(t => t.SanPhamId).ToArray());
+        Assert.Equal(new long[] { sp1, sp2 }, ds.Select(t => t.SanPhamId).ToArray());
         Assert.True(ds[0].DuoiNguong);
         Assert.False(ds[1].DuoiNguong);
     }
@@ -346,7 +346,7 @@ public sealed class DichVuKhoTests(CsdlKhoFixture csdl)
     {
         await using var db = csdl.TaoDbContext();
         await db.Database.OpenConnectionAsync();
-        await db.Database.ExecuteSqlRawAsync("SET SESSION innodb_lock_wait_timeout = 10");
+        await db.Database.ExecuteSqlRawAsync("SET lock_timeout = '10s'");
         await using var giaoTac = await db.Database.BeginTransactionAsync();
         try
         {

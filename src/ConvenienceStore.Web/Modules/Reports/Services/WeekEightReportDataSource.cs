@@ -22,7 +22,7 @@ public interface IWeekEightReportDataSource
     Task<IReadOnlyList<PromotionUse>> UsesAsync(DateTime from,DateTime to,CancellationToken ct);
 }
 
-public sealed class MySqlWeekEightReportDataSource(CuaHangDbContext db,PromotionUsageStore usage) : IWeekEightReportDataSource
+public sealed class PostgreSqlWeekEightReportDataSource(CuaHangDbContext db,PromotionUsageStore usage) : IWeekEightReportDataSource
 {
     private static long Number(object x)=>Convert.ToInt64(x);
     private static long? NullableNumber(object x)=>x is DBNull?null:Number(x);

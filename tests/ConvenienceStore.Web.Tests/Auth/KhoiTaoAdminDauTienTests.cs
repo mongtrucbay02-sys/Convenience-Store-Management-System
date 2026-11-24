@@ -9,7 +9,7 @@ namespace ConvenienceStore.Web.Tests.Auth;
 
 /// <summary>CSDL tạm riêng cho test T4-16 (không có dữ liệu nền, để tự kiểm soát tài khoản Admin).</summary>
 [CollectionDefinition(Ten)]
-public sealed class AdminDauTienCollection : ICollectionFixture<CsdlMySqlTam>
+public sealed class AdminDauTienCollection : ICollectionFixture<CsdlPostgreSqlTam>
 {
     public const string Ten = "AdminDauTien";
 }
@@ -20,7 +20,7 @@ public sealed class AdminDauTienCollection : ICollectionFixture<CsdlMySqlTam>
 /// </summary>
 [Collection(AdminDauTienCollection.Ten)]
 [Trait("Category", "AdminDauTien")]
-public sealed class KhoiTaoAdminDauTienTests(CsdlMySqlTam csdl) : IAsyncLifetime
+public sealed class KhoiTaoAdminDauTienTests(CsdlPostgreSqlTam csdl) : IAsyncLifetime
 {
     private const string MatKhauHopLe = "MatKhau123";
 
@@ -37,10 +37,10 @@ public sealed class KhoiTaoAdminDauTienTests(CsdlMySqlTam csdl) : IAsyncLifetime
         Assert.Equal(KetQuaKhoiTaoAdmin.DaTao, kq);
         Assert.Equal(1, await DemAdminAsync());
         await using var ketNoi = await csdl.MoKetNoiAsync();
-        await using var lenh = CsdlMySqlTam.TaoLenh(ketNoi,
+        await using var lenh = CsdlPostgreSqlTam.TaoLenh(ketNoi,
             """
             SELECT t.ho_ten, t.trang_thai, t.bat_buoc_doi_mk, t.so_lan_sai, t.mat_khau_bam,
-                   TIMESTAMPDIFF(SECOND, t.ngay_tao, NOW())
+                   CAST(EXTRACT(EPOCH FROM (NOW()-t.ngay_tao)) AS bigint)
             FROM tai_khoan t JOIN vai_tro v ON v.id = t.vai_tro_id
             WHERE t.ten_dang_nhap = 'admin' AND v.ma = 'AD'
             """);

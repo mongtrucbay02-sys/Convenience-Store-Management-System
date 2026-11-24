@@ -38,7 +38,7 @@ public sealed class InvoiceDetailsApiController(PosInvoiceService invoices) : Co
     }
 }
 
-// Giữ tên trường của hợp đồng POS/DT; ngày MySQL là giờ Việt Nam.
+// Giữ tên trường của hợp đồng POS/DT; ngày PostgreSQL là giờ Việt Nam.
 public static class PosInvoiceApiData
 {
     public static object From(PosInvoiceViewModel invoice) => new

@@ -18,7 +18,7 @@ public sealed class ProductDetailService(IProductDetailRepository products, IDic
     {
         CheckRole(role); ct.ThrowIfCancellationRequested();
         var row = await products.FindAsync(id, role == "TN", ct) ?? throw Missing();
-        var stock = (await inventory.LayTonKhoAsync([checked((int)id)], ct)).SingleOrDefault();
+        var stock = (await inventory.LayTonKhoAsync([id], ct)).SingleOrDefault();
         var scheduled = await products.PricesAsync(id, new(), ct);
         return row with {
             AnhUrl = SafeImageUrl(row.AnhUrl), TonKho = stock?.SoLuongTon ?? 0, NguongToiThieu = stock?.NguongToiThieu ?? 0,

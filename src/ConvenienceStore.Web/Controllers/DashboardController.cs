@@ -17,10 +17,9 @@ public class DashboardController : Controller
     {
         _configuration = configuration;
         _ =
-            configuration.GetConnectionString("PosMySql")
-            ?? configuration.GetConnectionString("CuaHang")
+            configuration.GetConnectionString("CuaHang")
             ?? throw new InvalidOperationException(
-                "Chưa cấu hình kết nối MySQL (CuaHang hoặc PosMySql).");
+                "Chưa cấu hình kết nối PostgreSQL (CuaHang).");
     }
 
     public async Task<IActionResult> Index()

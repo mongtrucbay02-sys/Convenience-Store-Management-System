@@ -961,7 +961,7 @@ CREATE TRIGGER trg_quy_tien_mat_updated BEFORE UPDATE ON smartmart.quy_tien_mat 
 CREATE TRIGGER trg_san_pham_updated BEFORE UPDATE ON smartmart.san_pham FOR EACH ROW EXECUTE FUNCTION smartmart.fn_updated_at();
 CREATE TRIGGER trg_tai_khoan_updated BEFORE UPDATE ON smartmart.tai_khoan FOR EACH ROW EXECUTE FUNCTION smartmart.fn_updated_at();
 CREATE TRIGGER trg_ton_kho_updated BEFORE UPDATE ON smartmart.ton_kho FOR EACH ROW EXECUTE FUNCTION smartmart.fn_updated_at();
-CREATE VIEW smartmart.v_chuong_trinh_khuyen_mai AS  SELECT id,
+CREATE VIEW smartmart.v_chuong_trinh_khuyen_mai WITH (security_invoker = true) AS  SELECT id,
     ma,
     ten,
     mo_ta,
@@ -985,7 +985,7 @@ CREATE VIEW smartmart.v_chuong_trinh_khuyen_mai AS  SELECT id,
             ELSE 'DANG_CHAY'::text
         END AS trang_thai_hien_thi
    FROM smartmart.chuong_trinh_khuyen_mai c;;
-CREATE VIEW smartmart.v_gia_ban_hien_hanh AS  SELECT san_pham_id,
+CREATE VIEW smartmart.v_gia_ban_hien_hanh WITH (security_invoker = true) AS  SELECT san_pham_id,
     id AS lich_su_gia_id,
     gia_ban,
     hieu_luc_tu
@@ -1001,7 +1001,7 @@ CREATE VIEW smartmart.v_gia_ban_hien_hanh AS  SELECT san_pham_id,
            FROM smartmart.lich_su_gia l
           WHERE ((l.huy_luc IS NULL) AND (l.hieu_luc_tu <= now()))) x
   WHERE (thu_tu = 1);;
-CREATE VIEW smartmart.v_luot_dung_khuyen_mai AS  SELECT d.khuyen_mai_id AS chuong_trinh_id,
+CREATE VIEW smartmart.v_luot_dung_khuyen_mai WITH (security_invoker = true) AS  SELECT d.khuyen_mai_id AS chuong_trinh_id,
     h.id AS hoa_don_id,
     h.ma_hoa_don,
     h.thanh_toan_luc,
@@ -1013,3 +1013,34 @@ CREATE VIEW smartmart.v_luot_dung_khuyen_mai AS  SELECT d.khuyen_mai_id AS chuon
      JOIN smartmart.hoa_don h ON ((h.id = d.hoa_don_id)))
   WHERE ((d.khuyen_mai_id IS NOT NULL) AND ((h.trang_thai)::text = 'DA_THANH_TOAN'::text))
   GROUP BY d.khuyen_mai_id, h.id, h.ma_hoa_don, h.thanh_toan_luc, h.thu_ngan_id, h.khach_hang_id;;
+
+-- Private .NET backend access. Application authorization remains in ASP.NET;
+-- Supabase anon/authenticated roles receive no Smart Mart data privileges.
+REVOKE ALL ON SCHEMA smartmart FROM PUBLIC;
+REVOKE ALL ON ALL TABLES IN SCHEMA smartmart FROM PUBLIC;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA smartmart FROM PUBLIC;
+DO $security$
+DECLARE t record; r text;
+BEGIN
+  FOREACH r IN ARRAY ARRAY['anon','authenticated'] LOOP
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname=r) THEN
+      EXECUTE format('REVOKE ALL ON SCHEMA smartmart FROM %I',r);
+      EXECUTE format('REVOKE ALL ON ALL TABLES IN SCHEMA smartmart FROM %I',r);
+      EXECUTE format('REVOKE ALL ON ALL SEQUENCES IN SCHEMA smartmart FROM %I',r);
+    END IF;
+  END LOOP;
+  FOR t IN SELECT tablename FROM pg_tables WHERE schemaname='smartmart' LOOP
+    EXECUTE format('ALTER TABLE smartmart.%I ENABLE ROW LEVEL SECURITY',t.tablename);
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='smartmart_backend') THEN
+      EXECUTE format('CREATE POLICY backend_access ON smartmart.%I FOR ALL TO smartmart_backend USING (true) WITH CHECK (true)',t.tablename);
+    END IF;
+  END LOOP;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='smartmart_backend') THEN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='smartmart_backend' AND (rolsuper OR rolbypassrls)) THEN
+      RAISE EXCEPTION 'smartmart_backend must be NOSUPERUSER NOBYPASSRLS';
+    END IF;
+    GRANT USAGE ON SCHEMA smartmart TO smartmart_backend;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA smartmart TO smartmart_backend;
+    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA smartmart TO smartmart_backend;
+  END IF;
+END $security$;

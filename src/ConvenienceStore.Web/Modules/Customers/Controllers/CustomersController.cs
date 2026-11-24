@@ -42,7 +42,7 @@ public sealed class CustomersController(CustomerService customers, PosCartServic
             var customerId = await customers.SaveAsync(id, input, User.LayTaiKhoanId(), ct);
             if (input.AttachToCart)
             {
-                var error = await cart.SetCustomerAsync(checked((int)customerId));
+                var error = await cart.SetCustomerAsync(customerId);
                 if (error != null)
                 {
                     TempData["Error"] = "Khách đã được lưu. " + error;
@@ -65,7 +65,7 @@ public sealed class CustomersController(CustomerService customers, PosCartServic
     }
 
     [Authorize(Roles = CustomerRoles.Cashier), HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Attach(int? customerId)
+    public async Task<IActionResult> Attach(long? customerId)
     {
         var error = await cart.SetCustomerAsync(customerId);
         TempData[error == null ? "Success" : "Error"] = error ?? "Đã cập nhật khách và khuyến mãi của đơn.";

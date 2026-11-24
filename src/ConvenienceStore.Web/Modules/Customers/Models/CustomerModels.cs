@@ -29,14 +29,14 @@ public static class CustomerRules
 {
     public static string MaskPhone(string? phone) => phone is { Length: 10 }
         ? phone[..3] + "****" + phone[7..] : "";
-    public static int EarnedPoints(long paid, int? amountPerPoint, bool enabled = true)
+    public static int EarnedPoints(long paid, long? amountPerPoint, bool enabled = true)
     {
         if (paid < 0 || amountPerPoint is <= 0) throw new ArgumentOutOfRangeException(nameof(paid));
         return enabled ? checked((int)(paid / (amountPerPoint ?? 10000))) : 0;
     }
-    public static long AdjustedBalance(long balance, int points)
+    public static long AdjustedBalance(long balance, long points)
     {
-        if (balance < 0 || points == 0 || (points < 0 && balance < -(long)points)
+        if (balance < 0 || points == 0 || points == long.MinValue || (points < 0 && balance < -(long)points)
             || (points > 0 && balance > long.MaxValue - points))
             throw new ArgumentOutOfRangeException(nameof(points), "Điểm điều chỉnh phải khác 0 và không làm số dư âm hoặc vượt giới hạn.");
         return balance + points;

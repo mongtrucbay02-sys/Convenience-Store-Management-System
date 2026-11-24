@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ConvenienceStore.Web.Modules.Auth.Security;
 using Microsoft.AspNetCore.Authorization;
 

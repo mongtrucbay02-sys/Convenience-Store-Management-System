@@ -5,13 +5,13 @@ using Xunit;
 namespace ConvenienceStore.Web.Tests.HaTang;
 
 [CollectionDefinition(Ten)]
-public sealed class DanhMucConcurrencyCollection : ICollectionFixture<CsdlMySqlTam>
+public sealed class DanhMucConcurrencyCollection : ICollectionFixture<CsdlPostgreSqlTam>
 {
     public const string Ten = "DanhMucConcurrency";
 }
 
 [Collection(DanhMucConcurrencyCollection.Ten)]
-public sealed class DanhMucConcurrencyTests(CsdlMySqlTam csdl) : IAsyncLifetime
+public sealed class DanhMucConcurrencyTests(CsdlPostgreSqlTam csdl) : IAsyncLifetime
 {
     private long _danhMucId;
 

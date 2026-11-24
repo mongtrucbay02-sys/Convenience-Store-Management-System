@@ -13,8 +13,8 @@ public sealed class PromotionHistoryApiController(PromotionUsageStore store) : C
 
     // Session XSRF is enforced by the shared AUTH API filter, as for the other API mutations.
     [HttpDelete("{id:long}")]
-    public async Task<IActionResult> Delete(long id,CancellationToken ct)
+    public async Task<IActionResult> Delete(long id,CancellationToken ct,[FromQuery] long? version = null)
     {
-        await store.DeleteAsync(id,ct);return NoContent();
+        await store.DeleteAsync(id,ct,version);return NoContent();
     }
 }

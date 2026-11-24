@@ -3,7 +3,7 @@ using System.Data.Common;
 
 namespace ConvenienceStore.Web.Services.Pos;
 
-public sealed record PosPromotion(int Id, int ProductId, string Name, string Type,
+public sealed record PosPromotion(long Id, long ProductId, string Name, string Type,
     long Value, long? Cap, bool MembersOnly, DateTime EndAt);
 
 public static class PosPromotionCalculator
@@ -22,7 +22,7 @@ public static class PosPromotionCalculator
         return (long)Math.Clamp(amount, 0, price);
     }
 
-    public static PosPromotion? Best(IEnumerable<PosPromotion> promotions, int productId,
+    public static PosPromotion? Best(IEnumerable<PosPromotion> promotions, long productId,
         long price, bool member) => promotions
         .Where(p => p.ProductId == productId && (!p.MembersOnly || member) && Discount(price, p) > 0)
         .OrderByDescending(p => Discount(price, p)).ThenBy(p => p.EndAt).ThenBy(p => p.Id)
@@ -47,7 +47,7 @@ public static class PosPromotionCalculator
         var result = new List<PosPromotion>();
         await using var reader = await command.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
-            result.Add(new(Convert.ToInt32(reader[0]), Convert.ToInt32(reader[1]),
+            result.Add(new(Convert.ToInt64(reader[0]), Convert.ToInt64(reader[1]),
                 reader.GetString(2), reader.GetString(3), Convert.ToInt64(reader[4]),
                 reader.IsDBNull(5) ? null : Convert.ToInt64(reader[5]),
                 Convert.ToBoolean(reader[6]), reader.VietnamDateTime(7)));

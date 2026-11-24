@@ -44,8 +44,8 @@ public sealed class InMemoryPromotionDataSource : IPromotionDataSource
         lock (_gate)
         {
             var index = _records.FindIndex(r => r.Id == record.Id);
-            if (index < 0) return Task.FromResult(false);
-            _records[index] = record;
+            if (index < 0 || _records[index].Version != record.Version) return Task.FromResult(false);
+            _records[index] = record with { Version = checked(record.Version + 1) };
             return Task.FromResult(true);
         }
     }

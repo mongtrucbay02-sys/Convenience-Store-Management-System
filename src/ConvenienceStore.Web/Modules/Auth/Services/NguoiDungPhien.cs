@@ -2,7 +2,7 @@ namespace ConvenienceStore.Web.Modules.Auth.Services;
 
 public sealed record NguoiDungPhien(
     long PhienId,
-    int TaiKhoanId,
+    long TaiKhoanId,
     string TenDangNhap,
     string HoTen,
     string MaVaiTro,

@@ -116,9 +116,9 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
                 return Conflict("Chưa có đủ số lượng đếm thực tế.");
             try
             {
-                var result = await stock.GhiNhanBienDongAsync(new(LoaiBienDong.KIEM_KE, checked((int)id),
+                var result = await stock.GhiNhanBienDongAsync(new(LoaiBienDong.KIEM_KE, id,
                     row.MaPhieu, User.LayTaiKhoanId(), row.CtKiemKes.Select(line => new DongBienDong(
-                        checked((int)line.SanPhamId), SoLuongThucTe: line.SoLuongThucTe)).ToArray()), ct);
+                        line.SanPhamId, SoLuongThucTe: line.SoLuongThucTe)).ToArray()), ct);
                 var changes = result.Dong.ToDictionary(line => checked((long)line.SanPhamId));
                 foreach (var line in row.CtKiemKes)
                 {
@@ -218,9 +218,9 @@ public sealed class StockDocumentsController(CuaHangDbContext db, IDichVuKho sto
         {
             try
             {
-                var result = await stock.GhiNhanBienDongAsync(new(LoaiBienDong.XUAT_HUY, checked((int)id),
+                var result = await stock.GhiNhanBienDongAsync(new(LoaiBienDong.XUAT_HUY, id,
                     row.MaPhieu, User.LayTaiKhoanId(), row.CtXuatHuys.Select(line => new DongBienDong(
-                        checked((int)line.SanPhamId), SoLuong: checked((int)line.SoLuong))).ToArray()), ct);
+                        line.SanPhamId, SoLuong: checked((int)line.SoLuong))).ToArray()), ct);
                 var changes = result.Dong.ToDictionary(line => checked((long)line.SanPhamId));
                 foreach (var line in row.CtXuatHuys) line.GiaVonLucDuyet = changes[line.SanPhamId].GiaVonApDung;
             }

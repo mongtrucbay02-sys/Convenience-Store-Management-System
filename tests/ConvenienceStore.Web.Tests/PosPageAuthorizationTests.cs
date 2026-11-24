@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ConvenienceStore.Web.Tests;
 
-public sealed class PosPageAuthorizationTests(CsdlMySqlTam database) : IClassFixture<CsdlMySqlTam>
+public sealed class PosPageAuthorizationTests(CsdlPostgreSqlTam database) : IClassFixture<CsdlPostgreSqlTam>
 {
     private Task<WebApplication> Start() => ListFeatureHost.Start(database, services =>
     {
@@ -18,14 +18,14 @@ public sealed class PosPageAuthorizationTests(CsdlMySqlTam database) : IClassFix
         services.AddHttpContextAccessor();
         services.AddModuleInventory();
         services.AddModuleReturns();
-        services.AddScoped<MySqlPosCatalog>();
+        services.AddScoped<PostgreSqlPosCatalog>();
         services.AddScoped<PosCartService>();
         services.AddScoped<PosHeldOrderService>();
         services.AddScoped<PosPaymentService>();
         services.AddScoped<PosCheckoutService>();
-        services.AddScoped<IPosCheckoutStore, MySqlPosCheckoutStore>();
+        services.AddScoped<IPosCheckoutStore, PostgreSqlPosCheckoutStore>();
         services.AddScoped<PosInvoiceService>();
-        services.AddScoped<IPosInvoiceStore, MySqlPosInvoiceStore>();
+        services.AddScoped<IPosInvoiceStore, PostgreSqlPosInvoiceStore>();
     });
 
     [Theory]

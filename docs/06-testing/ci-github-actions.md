@@ -1,45 +1,38 @@
-# CI GitHub Actions — .NET 10 và MySQL riêng
+# CI GitHub Actions — .NET 10 và PostgreSQL 17 riêng
 
-> **Trạng thái:** Đã viết workflow, chờ chạy trên GitHub và review độc lập.
->
-> **Phụ trách:** #5 Nguyễn Tiến Trung · **Ngày:** 2026-11-23.
->
-> **Có dùng AI:** OpenAI Codex, xem AI-TRUNG-004 trong [nhật ký](../09-ai-usage/ai-usage-log.md).
+> Cập nhật ngày 24/11/2026 cho nhánh `integration/smartmart-postgresql-only`. Workflow hiện chỉ dùng PostgreSQL. Kết quả GitHub của bộ commit tích hợp này: **NOT RUN**.
 
 ## Cách hoạt động
 
-[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) chạy khi mở/cập nhật PR vào bất kỳ nhánh nào, khi push vào `main`/`develop`, hoặc qua `workflow_dispatch` khi workflow đã xuất hiện trên nhánh mặc định. Một commit mới trên cùng PR hủy lượt CI cũ còn chạy.
+[Workflow](../../.github/workflows/ci.yml) chạy khi mở/cập nhật PR, khi push vào `main`/`develop`, hoặc qua `workflow_dispatch` khi workflow có trên nhánh phù hợp. Một commit mới trên cùng PR hủy lượt CI cũ còn chạy. Chuẩn bị commit cục bộ không kích hoạt workflow.
 
-Job **Build and test** dùng Ubuntu 24.04, .NET SDK `10.0.x`, service chính thức `mysql:8.4` và giới hạn 25 phút:
+Job **Build and test** dùng Ubuntu 24.04, .NET SDK `10.0.x`, service `postgres:17-alpine` và giới hạn 25 phút:
 
-1. Checkout mã; action checkout/setup-dotnet/upload-artifact được ghim bằng commit SHA từ repository chính thức.
-2. `dotnet restore ConvenienceStoreManagement.slnx`.
-3. `dotnet build ConvenienceStoreManagement.slnx --configuration Release --no-restore`.
-4. Chạy toàn bộ project test ở Release, không restore/build lại.
-5. [verify-trx.ps1](../../scripts/ci/verify-trx.ps1) từ chối kết quả không có test, có lỗi, bị bỏ qua hoặc chưa thực thi đủ.
+1. Checkout mã; các action checkout/setup-dotnet/upload-artifact được ghim bằng commit SHA.
+2. Restore solution và build Release.
+3. Publish ứng dụng MVC/Razor rồi chạy [verify-postgresql-runtime.ps1](../../scripts/ci/verify-postgresql-runtime.ps1): bắt buộc Npgsql, EF Core 10 cùng phiên bản; từ chối MySQL/Pomelo và cấu hình development trong publish output.
+4. Chạy toàn bộ project test ở Release với PostgreSQL 17 riêng, không restore/build lại.
+5. [verify-trx.ps1](../../scripts/ci/verify-trx.ps1) từ chối kết quả thiếu test, có lỗi, bị bỏ qua hoặc chưa thực thi đủ.
 6. Upload TRX kể cả khi test lỗi; giữ artifact 7 ngày.
 
-## MySQL và cấu hình
+## PostgreSQL và cấu hình
 
-- Mỗi job có service MySQL dùng một lần, health check và cổng host được GitHub cấp động. Container bị dọn khi job kết thúc.
-- `ConnectionStrings__CuaHangTest` chỉ trỏ tới service này. Fixture tạo `cuahang_test_*`, áp migration thật, chạy test rồi xóa database.
-- Root được dùng **chỉ trong service CI** vì fixture cần tạo/xóa database và tạo trigger. Password `ci-only-password` là giá trị công khai dành cho service tạm, không phải thông tin tài khoản của nhóm.
-- Không cần GitHub secret Aiven, `.env` cá nhân hoặc `ConnectionStrings__CuaHang` của ứng dụng. Không đặt chúng vào workflow.
-- Không dùng `pull_request_target` để chạy mã PR; token chỉ có `contents: read`, checkout không giữ credential.
-- Chưa ghim patch/digest của image `mysql:8.4`; đây là nhánh tương thích Aiven. Bằng chứng cục bộ hiện dùng 8.4.13, không phải khẳng định đã chạy MySQL 9.7.2 như tài liệu cũ. Nhóm cần chốt lại ma trận phiên bản trong ADR/SRS.
+- Mỗi job có service PostgreSQL dùng một lần, health check và cổng host do GitHub cấp động. Container được dọn khi job kết thúc.
+- `ConnectionStrings__CuaHangPostgreSqlTest` trỏ tới service loopback này. Fixture kiểm tra PostgreSQL major 17, từ chối host ngoài loopback và tạo/xóa database tên ngẫu nhiên của chính fixture.
+- Tài khoản có quyền tạo/xóa database chỉ dùng trong service CI riêng. Mật khẩu service được khai báo công khai trong workflow để khởi tạo container tạm, không phải credential Supabase hoặc tài khoản của nhóm.
+- Không dùng `.env` cá nhân, `ConnectionStrings__CuaHang` phát hành hoặc secret Supabase chung cho job test. Không giữ provider/service MySQL dự phòng.
+- Token chỉ có `contents: read`, checkout không giữ credential; không dùng `pull_request_target` để thực thi mã PR.
+- SDK `10.0.x` và image `postgres:17-alpine` chưa ghim đầy đủ patch/digest; SM-15 vẫn mở cho release tái lập. Bằng chứng cục bộ trước đó dùng SDK 10.0.401 và PostgreSQL 17.11, không chứng minh runner Linux đã chạy thành công.
 
-Tài liệu tham khảo: [GitHub service containers](https://docs.github.com/en/actions/tutorials/use-containerized-services/use-docker-service-containers), [setup-dotnet](https://github.com/actions/setup-dotnet), [checkout](https://github.com/actions/checkout), [upload-artifact](https://github.com/actions/upload-artifact).
+## Sau khi người dùng cho phép push
 
-## Người dùng cần làm sau khi push
+1. Mở/cập nhật PR, chờ **SmartMart CI / Build and test** hoàn tất trên đúng commit chứa thay đổi.
+2. Nếu lỗi, xem step tương ứng và tải artifact `test-results-<run-id>-<attempt>`; không đánh dấu CI đạt từ kết quả máy cá nhân.
+3. Chỉ sau khi check xuất hiện và chạy thành công, owner mới quyết định required status check/ruleset. Commit workflow không tự bật bảo vệ nhánh.
+4. PR bên ngoài có thể cần người có quyền cho phép chạy theo cài đặt repository.
 
-1. Mở PR, vào **Checks**, chờ **SmartMart CI / Build and test** kết thúc.
-2. Nếu lỗi, mở step tương ứng và tải artifact `test-results-<run-id>-<attempt>`; không đánh dấu CI đạt từ kết quả chạy ở máy.
-3. Chỉ sau khi check xuất hiện và chạy thành công, quản trị repo mới chọn **Build and test** làm required status check trong ruleset của `main`/`develop` nếu nhóm đồng ý. Thêm workflow không tự bật bảo vệ nhánh.
-4. PR từ người đóng góp bên ngoài có thể cần người có quyền duyệt chạy workflow theo cài đặt GitHub hiện tại.
+## Kiểm tra tại máy và giới hạn bằng chứng
 
-## Kiểm tra tại máy
+Các lệnh restore/build/publish/test hiện hành nằm trong [hướng dẫn migration](../db/POSTGRESQL-MIGRATIONS.md). Mọi test ghi chỉ dùng PostgreSQL 17 riêng; không chạy migration, seed, reset hoặc test ghi trên Supabase chung. Kết quả cục bộ không xác minh GitHub runner/service container.
 
-- Dùng `actionlint` kiểm tra cú pháp workflow và GitHub expressions. Không cần Docker Desktop để viết/kiểm tra YAML.
-- Khi chạy test tại máy, dùng MySQL riêng có quyền tạo/xóa database. Không dùng Aiven chung. Không thừa hưởng `ASPNETCORE_URLS` cố định hoặc chế độ Development từ script mở web; các test host có cấu hình riêng.
-- Các lệnh restore/build/test trong workflow có thể chạy trên máy với `ConnectionStrings__CuaHangTest` riêng. Kết quả cục bộ không xác minh đầy đủ Ubuntu/service container/GitHub runner.
-- Máy Windows hiện chưa có Docker daemon hoạt động, nên chưa chạy service container Linux tại máy. Trạng thái GitHub CI chỉ được xác nhận sau lượt run thật.
+[Báo cáo 763/763 test](test-reports/2026-11-24-postgresql-integration.md) là bằng chứng của lần chạy trước khi commit. [Báo cáo chuẩn bị commit](test-reports/2026-11-24-commit-preparation.md) ghi rõ build chạy lại và kiểm tra hash source; không có lần test database mới trong lượt chuẩn bị này. Bằng chứng CI/MySQL lịch sử được giữ trong [báo cáo 23/11](test-reports/2026-11-23-ci-schema.md).

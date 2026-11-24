@@ -7,7 +7,7 @@ using ConvenienceStore.Web.Tests.HaTang;
 
 namespace ConvenienceStore.Web.Tests.Modules.Products;
 
-public sealed class Sp09CategoryHttpTests(CsdlMySqlTam db) : IClassFixture<CsdlMySqlTam>
+public sealed class Sp09CategoryHttpTests(CsdlPostgreSqlTam db) : IClassFixture<CsdlPostgreSqlTam>
 {
     [Theory]
     [InlineData(null, 401)]

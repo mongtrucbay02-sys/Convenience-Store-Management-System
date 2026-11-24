@@ -20,7 +20,7 @@ public sealed class EfProductPricingRepository(CuaHangDbContext db) : IProductPr
         input = ProductPriceRules.Normalize(input);
         await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, ct);
         var cost = await LockActive(id, input.PhienBan, ct);
-        var now = Convert.ToDateTime(await db.DocMotGiaTriAsync("SELECT NOW()", ct));
+        var now = Convert.ToDateTime(await db.DocMotGiaTriAsync("SELECT clock_timestamp()", ct));
         var effective = ProductPriceRules.ResolveEffectiveAt(input.HieuLucTu, now);
         ProductPriceRules.EnsureCostConfirmed(input.GiaBan!.Value, cost, input.XacNhanDuoiGiaVon);
         await Bump(id, input.PhienBan, ct);

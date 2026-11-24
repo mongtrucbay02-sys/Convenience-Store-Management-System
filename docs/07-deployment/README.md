@@ -13,6 +13,7 @@ Hướng dẫn **đưa hệ thống lên môi trường chạy** (demo/staging/p
 
 | Tài liệu | Mô tả | Trạng thái |
 |---|---|---|
+| [../db/POSTGRESQL-MIGRATIONS.md](../db/POSTGRESQL-MIGRATIONS.md) | Baseline PostgreSQL-only, private backend role và adoption schema hiện có | Publish guard PASS cục bộ; M0/shared/staging chưa nghiệm thu |
 | [`supabase-smoke-ci.md`](supabase-smoke-ci.md) | Workflow kiểm tra kết nối và SELECT qua EF trên Supabase thật, cấu hình GitHub Secret | Supabase thật đọc được 31 bảng + 3 view; đã cấu hình secret, chờ chạy GitHub |
 | [`postgresql-publish.md`](postgresql-publish.md) | Publish PostgreSQL, kiểm tra staging, cấu hình backend và rollback | Publish đã chạy cục bộ; chưa có URL staging |
 | `environments.md` | Danh sách môi trường, địa chỉ, CSDL (Aiven MySQL `cuahang_codefirst_dev`…) — **không ghi mật khẩu** | Chưa có |

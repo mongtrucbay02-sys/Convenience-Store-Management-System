@@ -1,3 +1,7 @@
+Implementation update 2026-11-24: one PostgreSQL-only CuaHangDbContext now replaces the transitional provider switch. MySQL migrations/adapters are archived or renamed outside the release lineage; the migration guard has been replaced by an offline-generated PostgreSQL baseline/snapshot. The mapping/catalog evidence below remains a dated reference. Existing Supabase adoption and runtime-role verification still require M0 review; see [current migration contract](../db/POSTGRESQL-MIGRATIONS.md).
+
+---
+
 # Ánh xạ EF Core cho Supabase — 23/11/2026
 
 ## Phạm vi

@@ -29,6 +29,8 @@ Ngày 23/11, commit `dc89ec5` thêm CI/gate TRX và ba test migration mở rộn
 
 Cùng ngày, commit `ce06dff` sửa đồng bộ hủy/quỹ, thêm chốt số dư, lưu ảnh KM và bảy test; **707/707 test, 41/41 kiểm tra HTTP đạt cục bộ**. Xem [báo cáo sửa quỹ/ảnh](test-reports/2026-11-23-cash-promotion.md). Điện thoại để sau; migration chưa được duyệt, CI GitHub/staging/review độc lập chưa xác nhận.
 
+Tuần 8 bổ sung KM-05/06 và BC-09/10/11: 733/733 test đầy đủ đạt; sau thay đổi cuối 27/27 ca liên quan đạt; 53/53 HTTP và ảnh trình duyệt trên MySQL tạm. Xem [báo cáo tuần 8](test-reports/2026-11-23-week8.md) để phân biệt phiên bản đã kiểm thử; CI/staging/review vẫn chờ.
+
 ## Tiêu chí hoàn thành
 - [ ] Mỗi mã chức năng MVP có ít nhất một test case.
 - [ ] Mỗi API trong OpenAPI ở `04` được kiểm thử theo checklist trong tài liệu API.

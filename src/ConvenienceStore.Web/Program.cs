@@ -46,6 +46,9 @@ builder.Services.AddSingleton(TimeProvider.System);
 
 // Report Filter
 builder.Services.AddScoped<ReportFilterService>();
+builder.Services.AddScoped<PromotionUsageStore>();
+builder.Services.AddScoped<IWeekEightReportDataSource, MySqlWeekEightReportDataSource>();
+builder.Services.AddScoped<WeekEightReportsService>();
 
 
 // ======================================================

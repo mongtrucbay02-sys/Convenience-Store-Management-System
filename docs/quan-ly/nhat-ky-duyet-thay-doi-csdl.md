@@ -72,10 +72,16 @@ Tiêu chí duyệt một migration:
 2. Không sửa hay xóa migration đã gộp; mọi thay đổi là migration mới.
 3. Khớp ERD v1 hoặc có issue "thay đổi yêu cầu" đã được #1 đồng ý; cập nhật `docs/db/schema_v1.sql` trong cùng PR.
 4. Không phá trigger và CHECK hiện có (chạy `docs/db/kiem_thu.sh`: 29/29 thao tác sai vẫn bị chặn).
-5. `dotnet test` đạt trên MySQL 9.7.2.
+5. `dotnet test` đạt trên MySQL 9.7.2. **Từ 23/11/2026** (ADR-003): đạt trên PostgreSQL 17; migration MySQL chỉ còn áp dụng cho bản lùi.
 
 ## Bổ sung đối chiếu 23/11/2026 — chưa phải approval
 
 #5 Trung chuẩn bị [bộ đối chiếu migration/ERD/SRS](../04-system-design/database/reconciliation-20261123/README.md) cho `Pos12CancelInvoice` và `CashLedger`, gồm ERD vật lý bổ sung, từ điển, DDL tham chiếu và các quyết định còn mở. Không sửa migration lịch sử hoặc áp CSDL chung. Phiên bản MySQL có bằng chứng hiện tại là 8.4.13; workflow CI chọn nhánh 8.4, cần nhóm chốt lại ma trận phiên bản thay vì mặc định đã kiểm chứng 9.7.2. Mục này ghi nhận sản phẩm đối chiếu, **không xác nhận người phụ trách CSDL đã duyệt**.
 
 Đợt sửa tiếp theo tại commit `ce06dff` đề xuất hai migration `CashLedgerReconciliation` và `PromotionImage`: [thiết kế và hướng dẫn nâng cấp](../04-system-design/database/cash-promotion-20261123.md), [đề xuất SRS](../03-requirements/cash-promotion-change-proposal-20261123.md), [kết quả kiểm thử](../06-testing/test-reports/2026-11-23-cash-promotion.md). **Đang chờ #1 duyệt theo #234**; chưa ghi Aiven chung hoặc cập nhật trạng thái Approved của schema/SRS.
+
+## Đổi nền tảng CSDL 23/11/2026
+
+| Ngày | Nguồn | Người | Thay đổi CSDL | Kết luận | Ghi chú |
+| --- | --- | --- | --- | --- | --- |
+| 23/11 | [ADR-003](../adr/ADR-003-chuyen-csdl-postgresql-supabase.md); báo cáo kiểm kê Supabase của #2 | #2 Yến dựng schema; nhóm chốt; #1 ghi | Schema `smartmart` trên Supabase (PostgreSQL 17.12): 31 bảng, 62 FK, 89 CHECK, 17 trigger, 3 view, RLS 31/31 | **Nhóm chốt dùng làm CSDL đích**. Chưa duyệt theo 5 tiêu chí vì ứng dụng chưa chạy trên schema này | DDL hiện chỉ nằm trên Supabase, cần đưa vào repo qua PR. Duyệt lại khi có ánh xạ hoặc migration Npgsql và CI PostgreSQL |

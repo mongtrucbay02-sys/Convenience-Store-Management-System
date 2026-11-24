@@ -1,12 +1,21 @@
 @model List<ConvenienceStore.Web.Modules.Customers.Models.CustomerRow>
-@{ ViewData["Title"] = "Khách hàng"; Layout = "_AdminLayout"; var attach = ViewData["AttachToCart"] is true; }
+@{ ViewData["Title"] = "Khách hàng"; Layout = "_AdminLayout"; var attach = ViewData["AttachToCart"] is true; var exchangeInvoiceId = ViewData["ExchangeInvoiceId"] as long?; var approvalId = ViewData["ApprovalId"] as long?; }
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
     <h1 class="mb-0">Khách hàng</h1>
-    <a class="btn btn-primary" asp-action="Create" asp-route-attachToCart="@attach" asp-route-phone="@ViewData["Search"]">+ Thêm khách mới</a>
+    @if (exchangeInvoiceId.HasValue)
+    {
+        <a class="btn btn-outline-primary" asp-controller="Pos" asp-action="Index" asp-route-exchangeInvoiceId="@exchangeInvoiceId" asp-route-approvalId="@approvalId">Quay lại chọn hàng đổi</a>
+    }
+    else
+    {
+        <a class="btn btn-primary" asp-action="Create" asp-route-attachToCart="@attach" asp-route-phone="@ViewData["Search"]">+ Thêm khách mới</a>
+    }
 </div>
 @if (TempData["Error"] is string error) { <p role="alert">@error</p> }
 @if (TempData["Success"] is string success) { <p role="status">@success</p> }
 <form method="get" class="smartmart-filter-row">
+    <input type="hidden" name="exchangeInvoiceId" value="@exchangeInvoiceId" />
+    <input type="hidden" name="approvalId" value="@approvalId" />
     <input type="hidden" name="attachToCart" value="@attach.ToString().ToLowerInvariant()" />
     <label class="flex-grow-1">Tên, số điện thoại hoặc mã <input class="form-control mt-1" name="search" value="@ViewData["Search"]" maxlength="100" /></label>
     <button class="btn btn-outline-success" type="submit">Tìm kiếm</button>
@@ -36,7 +45,7 @@ else
                             <div class="smartmart-row-actions">
                                 @if (attach && User.IsInRole("TN"))
                                 {
-                                    <form asp-action="Attach" method="post"><input type="hidden" name="customerId" value="@row.Id" /><button class="btn btn-primary btn-sm" type="submit">Chọn khách</button></form>
+                                    <form asp-action="Attach" asp-route-exchangeInvoiceId="@exchangeInvoiceId" asp-route-approvalId="@approvalId" method="post"><input type="hidden" name="customerId" value="@row.Id" /><button class="btn btn-primary btn-sm" type="submit">Chọn khách</button></form>
                                 }
                                 <a class="btn btn-outline-success btn-sm" asp-action="Edit" asp-route-id="@row.Id">Sửa</a>
                                 <a class="btn btn-outline-secondary btn-sm" asp-action="History" asp-route-id="@row.Id">Lịch sử</a>

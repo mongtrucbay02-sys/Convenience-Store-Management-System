@@ -1,7 +1,6 @@
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Auth.Security;
 using ConvenienceStore.Web.Modules.Customers;
-using ConvenienceStore.Web.Modules.Customers.Services;
 using ConvenienceStore.Web.Modules.Inventory.Models;
 using ConvenienceStore.Web.Modules.Inventory.Services;
 using ConvenienceStore.Web.Modules.Returns.Models;
@@ -26,7 +25,7 @@ namespace ConvenienceStore.Web.Modules.Returns.Services;
 /// the exchange slip, returned stock and points recovery.
 /// </summary>
 public sealed class ExchangeService(CuaHangDbContext db, IDichVuKho stock,
-    IPosCheckoutStore checkoutStore, PosCartService posCart, TimeProvider time)
+    IPosCheckoutStore checkoutStore, PosCartService posCart, TimeProvider time, IReturnPointsGateway points)
 {
     private sealed record Header(long Id, string Code, string Status, DateTime PaidAt,
         int? CustomerId, int PointsEarned, long TotalPaid);
@@ -262,23 +261,32 @@ public sealed class ExchangeService(CuaHangDbContext db, IDichVuKho stock,
             if (restock.Count > 0)
                 await stock.GhiNhanBienDongAsync(new(LoaiBienDong.TRA_HANG, checked((int)exchangeId), code, actor, restock), ct);
 
-            if (draft.Invoice.CustomerId is int customerId && draft.Invoice.PointsEarned > 0 && preview.ReturnValue > 0)
-            {
-                // Return-earned points are reversed proportionally to the original invoice value.
-                // A full return reverses all earned points; partial returns use integer floor.
-                int recover = checked((int)Math.Min(draft.Invoice.PointsEarned,
-                    (long)draft.Invoice.PointsEarned * preview.ReturnValue / Math.Max(1, draft.Invoice.TotalPaid)));
-                if (recover > 0)
-                {
-                    await CustomerPoints.ChangeAsync(db, checked((uint)customerId), -recover, "THU_HOI_TRA_HANG", actor,
-                        checked((uint)draft.Invoice.Id), checked((uint)exchangeId), "Thu hồi điểm theo giá trị hàng đổi", ct);
-                    pointsRecovered = recover;
-                }
-            }
+            pointsRecovered = await points.RecoverAsync(db, draft.Invoice.Id, exchangeId, actor, preview.ReturnValue, ct);
             await db.ChayAsync("UPDATE phieu_doi_tra SET diem_thu_hoi=@d WHERE id=@id", ct, ("@d", pointsRecovered), ("@id", exchangeId));
         }
         await tx.CommitAsync(ct);
         return exchangeId;
+    }
+
+    internal async Task<PosOrderSaved> CheckoutApprovedCartAsync(int cashier, int? customerId,
+        long returnValue, long cashDue, long cashReceived, bool cashConfirmed, CancellationToken ct)
+    {
+        var (cart, lines) = await ReadActiveCart(cashier, ct);
+        if (cart.CustomerId != customerId)
+            throw LoiNghiepVu.XungDot("DT03_CUSTOMER_MISMATCH", "Khách hàng trong giỏ POS phải khớp hóa đơn gốc.");
+        if (lines.Count == 0 || ToCartPreview(lines).Sum(l => l.LineTotal) != checked(returnValue + cashDue))
+            throw LoiNghiepVu.XungDot("DT06_GIO_HANG_THAY_DOI", $"Chọn hàng mới có tổng sau giảm giá {returnValue + cashDue:N0} đ như phiếu đã duyệt.");
+        if (cashReceived < cashDue || (cashDue > 0 && !cashConfirmed))
+            throw new LoiNghiepVu("DT06_TIEN_MAT_KHONG_HOP_LE", 422, "Nhập đủ và xác nhận tiền mặt đã nhận.");
+
+        try
+        {
+            return await checkoutStore.SaveOrderAsync(cashier, cashDue > 0 ? cashReceived : 0, ct, returnValue);
+        }
+        catch (PosCheckoutException error)
+        {
+            throw LoiNghiepVu.XungDot("DOI_TRA_XUNG_DOT", error.Message);
+        }
     }
 
     public async Task<ExchangeReceipt> ReceiptAsync(long id, ClaimsPrincipal user, CancellationToken ct = default)

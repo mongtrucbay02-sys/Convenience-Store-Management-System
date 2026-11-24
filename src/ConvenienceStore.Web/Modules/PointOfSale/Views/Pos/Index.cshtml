@@ -4,6 +4,10 @@
     ViewData["Title"] = "Quầy bán hàng";
     Layout = "_AdminLayout";
     var exchangeInvoiceId = ViewData["ExchangeInvoiceId"] as long?;
+    var approvalId = ViewData["ApprovalId"] as long?;
+    var exchangeUrl = approvalId.HasValue
+        ? Url.Action("ApprovedExchange", "ReturnApprovals", new { id = approvalId })
+        : Url.Action("Exchange", "ReturnOrders", new { invoiceId = exchangeInvoiceId });
 }
 
 <link rel="stylesheet" href="~/css/pos.css" asp-append-version="true" />
@@ -23,7 +27,7 @@
     @if (exchangeInvoiceId.HasValue)
     {
         <div class="alert alert-info">Chọn hàng mới và khách hàng theo hóa đơn gốc, rồi quay lại DT-03 để tính chênh lệch.</div>
-        <a class="btn btn-outline-primary mb-3" href="@Url.Action("Exchange", "ReturnOrders", new { invoiceId = exchangeInvoiceId })">Quay lại đổi hàng</a>
+        <a class="btn btn-outline-primary mb-3" href="@exchangeUrl">Quay lại đổi hàng</a>
     }
     else
     {
@@ -51,10 +55,10 @@
         @if (Model.Cart.CustomerId.HasValue)
         {
             <p>@Model.Cart.CustomerName — @Model.Cart.CustomerPoints điểm</p>
-            <form asp-controller="Customers" asp-action="Attach" asp-route-exchangeInvoiceId="@exchangeInvoiceId" method="post"><button>Gỡ khách khỏi đơn</button></form>
+            <form asp-controller="Customers" asp-action="Attach" asp-route-exchangeInvoiceId="@exchangeInvoiceId" asp-route-approvalId="@approvalId" method="post"><button>Gỡ khách khỏi đơn</button></form>
         }
         <nav class="smartmart-action-row mb-0" aria-label="Khách hàng tại quầy">
-            <a class="btn btn-outline-success btn-sm" asp-controller="Customers" asp-action="Index" asp-route-exchangeInvoiceId="@exchangeInvoiceId" asp-route-attachToCart="true">Tìm / gắn khách hàng</a>
+            <a class="btn btn-outline-success btn-sm" asp-controller="Customers" asp-action="Index" asp-route-exchangeInvoiceId="@exchangeInvoiceId" asp-route-approvalId="@approvalId" asp-route-attachToCart="true">Tìm / gắn khách hàng</a>
             @if (!exchangeInvoiceId.HasValue)
             {
                 <a class="btn btn-primary btn-sm" asp-controller="Customers" asp-action="Create" asp-route-attachToCart="true">Thêm nhanh khách</a>
@@ -82,6 +86,7 @@
                   asp-action="Index"
                   class="pos-search">
 
+                <input type="hidden" name="approvalId" value="@approvalId" />
                 <input type="hidden" name="exchangeInvoiceId" value="@exchangeInvoiceId" />
                 <input name="search"
                        value="@Model.Search"
@@ -150,7 +155,7 @@
 
                         <!-- THÊM SẢN PHẨM VÀO GIỎ -->
                         <form asp-controller="Pos"
-                              asp-action="Add" asp-route-exchangeInvoiceId="@exchangeInvoiceId"
+                              asp-action="Add" asp-route-exchangeInvoiceId="@exchangeInvoiceId" asp-route-approvalId="@approvalId"
                               method="post">
 
                             @Html.AntiForgeryToken()
@@ -233,7 +238,7 @@
 
                         <!-- NÚT GIẢM SỐ LƯỢNG -->
                         <form asp-controller="Pos"
-                              asp-action="Update" asp-route-exchangeInvoiceId="@exchangeInvoiceId"
+                              asp-action="Update" asp-route-exchangeInvoiceId="@exchangeInvoiceId" asp-route-approvalId="@approvalId"
                               method="post">
 
                             @Html.AntiForgeryToken()
@@ -255,7 +260,7 @@
 
                         <!-- NHẬP SỐ LƯỢNG -->
                         <form asp-controller="Pos"
-                              asp-action="Update" asp-route-exchangeInvoiceId="@exchangeInvoiceId"
+                              asp-action="Update" asp-route-exchangeInvoiceId="@exchangeInvoiceId" asp-route-approvalId="@approvalId"
                               method="post"
                               class="d-flex gap-1 align-items-center">
 
@@ -282,7 +287,7 @@
 
                         <!-- NÚT TĂNG SỐ LƯỢNG -->
                         <form asp-controller="Pos"
-                              asp-action="Update" asp-route-exchangeInvoiceId="@exchangeInvoiceId"
+                              asp-action="Update" asp-route-exchangeInvoiceId="@exchangeInvoiceId" asp-route-approvalId="@approvalId"
                               method="post">
 
                             @Html.AntiForgeryToken()
@@ -304,7 +309,7 @@
 
                         <!-- XÓA SẢN PHẨM -->
                         <form asp-controller="Pos"
-                              asp-action="Remove" asp-route-exchangeInvoiceId="@exchangeInvoiceId"
+                              asp-action="Remove" asp-route-exchangeInvoiceId="@exchangeInvoiceId" asp-route-approvalId="@approvalId"
                               method="post">
 
                             @Html.AntiForgeryToken()
@@ -368,7 +373,7 @@
         
             @if (exchangeInvoiceId.HasValue)
             {
-                <a class="btn btn-primary w-100" href="@Url.Action("Exchange", "ReturnOrders", new { invoiceId = exchangeInvoiceId })">Quay lại đổi hàng</a>
+                <a class="btn btn-primary w-100" href="@exchangeUrl">Quay lại đổi hàng</a>
             }
             else
             {

@@ -14,6 +14,9 @@ public static class DangKyModuleReturns
 
         services.AddScoped<ReturnOrderService>();
         services.AddScoped<ExchangeService>();
+        services.TryAddScoped<CashLedgerService>();
+        services.TryAddScoped<ReturnRefundService>();
+        services.AddScoped<ReturnApprovalService>();
 
         services.TryAddScoped<IReturnPointsGateway, ReturnPointsGateway>();
 

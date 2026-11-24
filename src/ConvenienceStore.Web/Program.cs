@@ -198,6 +198,9 @@ builder.Services.AddModuleReturns();
 
 builder.Services.AddAuthorization(options =>
 {
+    options.AddPolicy(MaQuyen.DoiTraDuyetCauHinh, policy =>
+        policy.RequireRole(BangQuyen.Admin)
+            .RequireClaim(ThongTinXacThuc.ClaimQuyen, MaQuyen.DoiTraDuyetCauHinh));
     // --------------------------------------------------
     // ADMIN
     // --------------------------------------------------

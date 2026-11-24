@@ -62,9 +62,13 @@
             <p><strong>Hóa đơn gốc:</strong> @receipt.OriginalInvoiceCode</p>
             @if (receipt.Status == "CHO_DUYET")
             {
-                <div class="dt3-warn">Phiếu đã được gửi chờ Admin duyệt. Chưa tạo hóa đơn mới, chưa thu tiền, chưa thay đổi tồn kho hoặc điểm. Luồng hoàn tất sau duyệt thuộc DT-06 và hiện chưa có trong project.</div>
+                <div class="dt3-warn">Phiếu đã được gửi chờ Admin duyệt. Chưa tạo hóa đơn mới, chưa thu tiền, chưa thay đổi tồn kho hoặc điểm.</div>
             }
-            else
+            else if (receipt.Status == "DA_DUYET")
+            {
+                <a class="btn btn-primary" href="@Url.Action("ApprovedExchange", "ReturnApprovals", new { id = receipt.Id })">Tiếp tục phiếu đổi đã duyệt</a>
+            }
+            else if (receipt.Status == "HOAN_TAT")
             {
                 <p><strong>Hóa đơn mới:</strong> @receipt.NewInvoiceCode</p>
                 <p><strong>Giá trị hàng trả:</strong> @receipt.ReturnValue.ToString("N0") đ</p>
@@ -126,7 +130,7 @@
                 <h2>Kiểm tra chênh lệch</h2>
                 @if (preview.NeedsApproval)
                 {
-                    <div class="dt3-warn">Phiếu thuộc trường hợp cần Admin duyệt theo DT-06. Phiếu sẽ ở trạng thái CHỜ DUYỆT; hiện project chưa có luồng hoàn tất sau duyệt.</div>
+                    <div class="dt3-warn">Phiếu thuộc trường hợp cần Admin duyệt theo DT-06. Phiếu sẽ ở trạng thái CHỜ DUYỆT.</div>
                 }
                 <table class="dt3-table">
                     <tbody>

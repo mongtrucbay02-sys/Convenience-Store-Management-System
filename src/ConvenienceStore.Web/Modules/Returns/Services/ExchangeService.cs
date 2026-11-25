@@ -53,8 +53,7 @@ public sealed class ExchangeService(
             if (!string.Equals(request.ConfirmationToken, preview.ConfirmationToken, StringComparison.Ordinal))
                 throw Conflict("Hóa đơn hoặc giỏ POS đã thay đổi. Vui lòng tính lại chênh lệch.");
 
-            if (request.CashReceived < preview.CashDue || (preview.CashDue > 0 && !request.CashConfirmed))
-                throw LoiNghiepVu.DuLieuKhongHopLe("cashReceived", $"Xác nhận đã thu đủ {preview.CashDue:N0} đ.");
+            bool pending = preview.Returned.NeedsApproval;
 
             var now = time.GetUtcNow();
             var period = now.ToOffset(GioVietNam.DoLech).ToString("yyyyMMdd", CultureInfo.InvariantCulture);
@@ -68,25 +67,37 @@ public sealed class ExchangeService(
                 throw Conflict("Mã phiếu đổi vượt giới hạn.");
 
             // POS ghi hóa đơn, trừ kho hàng mới và cập nhật quỹ trong giao dịch này.
-            var order = await checkout.SaveOrderAsync(actor,
-                preview.CashDue > 0 ? request.CashReceived : 0, ct, preview.Returned.Refund);
+            var order = pending ? null : await CheckoutAsync(actor, preview.Returned.Refund,
+                preview.CashDue, request.CashReceived, request.CashConfirmed, ct);
             var id = await db.InsertIdAsync("""
                 INSERT INTO phieu_doi_tra(ma_phieu, loai, hoa_don_goc_id, hoa_don_moi_id, khach_hang_id,
-                    chinh_sach_id, trang_thai, gia_tri_hang_tra, tien_hoan, tien_thu_them, thu_ngan_id, hoan_tat_luc)
-                VALUES (@code, 'DOI_HANG', @invoice, @newInvoice, @kh, @policy, 'HOAN_TAT', @value, 0, @cash, @actor, @now)
-                """, ct, ("@code", code), ("@invoice", request.InvoiceId), ("@newInvoice", order.InvoiceId),
+                    chinh_sach_id, trang_thai, gia_tri_hang_tra, tien_hoan, tien_thu_them, thu_ngan_id, hoan_tat_luc,
+                    can_duyet_qua_han, can_duyet_danh_muc, can_duyet_vuot_nguong)
+                VALUES (@code, 'DOI_HANG', @invoice, @newInvoice, @kh, @policy, @status, @value, 0, @cash, @actor, @now,
+                    @expired, @forbidden, @over)
+                """, ct, ("@code", code), ("@invoice", request.InvoiceId), ("@newInvoice", order?.InvoiceId),
                 ("@kh", customerId), ("@policy", policyId), ("@value", preview.Returned.Refund),
-                ("@cash", preview.CashDue), ("@actor", actor), ("@now", now));
+                ("@cash", preview.CashDue), ("@actor", actor), ("@now", pending ? null : now),
+                ("@status", pending ? "CHO_DUYET" : "HOAN_TAT"),
+                ("@expired", preview.Returned.Expired), ("@forbidden", preview.Returned.Forbidden),
+                ("@over", preview.Returned.OverThreshold));
 
             foreach (var line in preview.Returned.Lines)
             {
                 await db.ChayAsync("""
                     INSERT INTO ct_phieu_doi_tra(phieu_doi_tra_id, san_pham_id, hoa_don_id, so_luong,
                         don_gia_thuc_tra, ly_do, ghi_chu_ly_do, tinh_trang, cach_xu_ly, ngoai_le, gia_von)
-                    VALUES (@id, @product, @invoice, @qty, @price, @reason, @note, @condition, @handling, FALSE, @cost)
+                    VALUES (@id, @product, @invoice, @qty, @price, @reason, @note, @condition, @handling, @exception, @cost)
                     """, ct, ("@id", id), ("@product", line.ProductId), ("@invoice", request.InvoiceId),
                     ("@qty", line.Quantity), ("@price", line.UnitPaid), ("@reason", line.Reason),
-                    ("@note", line.Note), ("@condition", line.Condition), ("@handling", line.Handling), ("@cost", line.Cost));
+                    ("@note", line.Note), ("@condition", line.Condition), ("@handling", line.Handling),
+                    ("@exception", line.Exception), ("@cost", line.Cost));
+            }
+
+            if (pending)
+            {
+                await tx.CommitAsync(ct);
+                return id;
             }
 
             var restock = preview.Returned.Lines.Where(x => x.Handling == "NHAP_LAI")
@@ -104,10 +115,6 @@ public sealed class ExchangeService(
             await tx.CommitAsync(ct);
             return id;
         }
-        catch (PosCheckoutException ex)
-        {
-            throw Conflict(ex.Message);
-        }
         catch (PostgresException ex) when (ex.SqlState is PostgresErrorCodes.DeadlockDetected
             or PostgresErrorCodes.SerializationFailure)
         {
@@ -122,10 +129,46 @@ public sealed class ExchangeService(
             throw LoiNghiepVu.DuLieuKhongHopLe("cashReceived", "Tiền khách đưa không được âm.");
 
         var (customerId, policyId, returned) = await returns.CalculateForExchangeAsync(request, actor, ct);
-        if (returned.NeedsApproval)
-            throw Conflict("Phiếu đổi thuộc diện cần Admin duyệt. Vui lòng liên hệ quản lý.");
-
         var (cart, items) = await ReadCartAsync(actor, ct, lockCart: true);
+        var newTotal = ValidateCart(cart, items, customerId, returned.Refund);
+
+        var token = Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            ReturnToken = returned.ConfirmationToken,
+            cart,
+            Items = items.Select(x => new { x.Line, x.PromotionId })
+        })));
+        return (customerId, policyId, new(returned, newTotal, newTotal - returned.Refund, token,
+            items.Select(x => x.Line).ToList()));
+    }
+
+    internal async Task<PosOrderSaved> CheckoutApprovedCartAsync(long actor, long? customerId,
+        long returnValue, long cashDue, long cashReceived, bool cashConfirmed, CancellationToken ct)
+    {
+        var (cart, items) = await ReadCartAsync(actor, ct, lockCart: true);
+        var total = ValidateCart(cart, items, customerId, returnValue);
+        if (total - returnValue != cashDue)
+            throw Conflict("Giỏ POS phải khớp số tiền chênh lệch trên phiếu đã duyệt.");
+        return await CheckoutAsync(actor, returnValue, cashDue, cashReceived, cashConfirmed, ct);
+    }
+
+    private async Task<PosOrderSaved> CheckoutAsync(long actor, long returnValue, long cashDue,
+        long cashReceived, bool cashConfirmed, CancellationToken ct)
+    {
+        if (cashReceived < cashDue || (cashDue > 0 && !cashConfirmed))
+            throw LoiNghiepVu.DuLieuKhongHopLe("cashReceived", $"Xác nhận đã thu đủ {cashDue:N0} đ.");
+        try
+        {
+            return await checkout.SaveOrderAsync(actor, cashDue > 0 ? cashReceived : 0, ct, returnValue);
+        }
+        catch (PosCheckoutException ex)
+        {
+            throw Conflict(ex.Message);
+        }
+    }
+
+    private static long ValidateCart(Cart? cart, List<CartItem> items, long? customerId, long returnValue)
+    {
         if (cart is null || items.Count == 0)
             throw LoiNghiepVu.DuLieuKhongHopLe("cart", "Hãy thêm hàng mới vào giỏ POS trước khi đổi hàng.");
         if (cart.CustomerId != customerId)
@@ -140,20 +183,13 @@ public sealed class ExchangeService(
         }
 
         var newTotal = items.Sum(x => x.Line.LineTotal);
-        if (newTotal < returned.Refund)
+        if (newTotal < returnValue)
             throw new LoiNghiepVu("DT03_NEGATIVE_DIFFERENCE", 422,
                 "Giá trị hàng đổi thấp hơn hàng trả. Chọn thêm hàng mới hoặc chuyển sang DT-02 trả hàng.");
         if (newTotal <= 0)
             throw LoiNghiepVu.DuLieuKhongHopLe("cart", "Giá trị hàng mới phải lớn hơn 0.");
 
-        var token = Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new
-        {
-            ReturnToken = returned.ConfirmationToken,
-            cart,
-            Items = items.Select(x => new { x.Line, x.PromotionId })
-        })));
-        return (customerId, policyId, new(returned, newTotal, newTotal - returned.Refund, token,
-            items.Select(x => x.Line).ToList()));
+        return newTotal;
     }
 
     private async Task<(Cart? Cart, List<CartItem> Items)> ReadCartAsync(long actor, CancellationToken ct, bool lockCart)
@@ -182,13 +218,14 @@ public sealed class ExchangeService(
         var actor = await returns.Actor(user, ct);
         var receipt = await db.DocMotDongAsync("""
             SELECT p.id, p.ma_phieu, old.ma_hoa_don, new.id, new.ma_hoa_don,
-                p.gia_tri_hang_tra, new.tong_thanh_toan, p.tien_thu_them, new.tien_khach_dua, new.tien_thua
+                p.gia_tri_hang_tra, COALESCE(new.tong_thanh_toan, p.gia_tri_hang_tra + p.tien_thu_them),
+                p.tien_thu_them, COALESCE(new.tien_khach_dua, 0), COALESCE(new.tien_thua, 0), p.trang_thai
             FROM phieu_doi_tra p JOIN hoa_don old ON old.id = p.hoa_don_goc_id
-            JOIN hoa_don new ON new.id = p.hoa_don_moi_id
-            WHERE p.id = @id AND p.loai = 'DOI_HANG' AND p.trang_thai = 'HOAN_TAT' AND p.thu_ngan_id = @actor
-            """, r => new ExchangeReceipt(r.SoNguyenDai(0), r.Chuoi(1), r.Chuoi(2), r.SoNguyenDai(3),
-                r.Chuoi(4), r.SoNguyenDai(5), r.SoNguyenDai(6), r.SoNguyenDai(7),
-                r.SoNguyenDai(8), r.SoNguyenDai(9), []), ct, ("@id", id), ("@actor", actor))
+            LEFT JOIN hoa_don new ON new.id = p.hoa_don_moi_id
+            WHERE p.id = @id AND p.loai = 'DOI_HANG' AND p.thu_ngan_id = @actor
+            """, r => new ExchangeReceipt(r.SoNguyenDai(0), r.Chuoi(1), r.Chuoi(2), r.SoNguyenDaiHoacNull(3),
+                r.ChuoiHoacNull(4), r.SoNguyenDai(5), r.SoNguyenDai(6), r.SoNguyenDai(7),
+                r.SoNguyenDai(8), r.SoNguyenDai(9), [], r.Chuoi(10)), ct, ("@id", id), ("@actor", actor))
             ?? throw LoiNghiepVu.KhongTimThay("Không tìm thấy phiếu đổi hàng của bạn.");
 
         var lines = await db.DocDanhSachAsync("""

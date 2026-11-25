@@ -1,0 +1,35 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model ConvenienceStore.Web.Modules.Returns.Models.ReturnSlipDetails
+@{
+    Layout = null;
+    ViewData["Print"] = true;
+}
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>In lại phiếu @Model.Slip.Code</title>
+    <link rel="stylesheet" href="~/css/return-order.css" asp-append-version="true" />
+    <style>
+        body { margin: 0; font: 14px/1.4 system-ui, sans-serif; }
+        .slip-print { width: min(100%, 80mm); margin: 0 auto; overflow-wrap: anywhere; }
+        .slip-print .return-receipt { box-sizing: border-box; padding: 4mm; }
+        .slip-print .return-line { padding: 4px 0; border: 0; border-bottom: 1px dashed; border-radius: 0; }
+        .slip-print .return-no-print { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .75rem; }
+        @@media print {
+            @@page { margin: 4mm; }
+            .slip-print { width: 100%; max-width: 72mm; margin: 0 auto; font-size: 11pt; }
+        }
+    </style>
+</head>
+<body>
+    <main class="return-order slip-print">
+        <div class="return-no-print">
+            <a asp-action="Details" asp-route-id="@Model.Slip.Id">Về chi tiết phiếu</a>
+            <button type="button" onclick="window.print()">In phiếu K80</button>
+        </div>
+        @await Html.PartialAsync("~/Modules/Returns/Views/_SlipReceipt.cshtml", Model)
+    </main>
+</body>
+</html>

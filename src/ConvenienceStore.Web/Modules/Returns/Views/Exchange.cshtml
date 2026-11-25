@@ -69,7 +69,11 @@
                 <input type="hidden" name="Request.Lines[@i].Condition" value="@line.Condition" />
                 <input type="hidden" name="Request.Lines[@i].Handling" value="@line.Handling" />
             }
-            @if (preview.CashDue > 0)
+            @if (preview.Returned.NeedsApproval)
+            {
+                <p>Phiếu cần Admin duyệt. Thu tiền sau khi phiếu được duyệt và bạn hoàn tất đổi hàng.</p>
+            }
+            else if (preview.CashDue > 0)
             {
                 <label class="form-label" for="cash">Tiền mặt khách đưa</label>
                 <input class="form-control mb-2" id="cash" name="Request.CashReceived" type="number"
@@ -79,7 +83,7 @@
                     Đã nhận tiền chênh lệch
                 </label>
             }
-            <button class="btn btn-success" type="submit">Hoàn tất đổi hàng</button>
+            <button class="btn btn-success" type="submit">@(preview.Returned.NeedsApproval ? "Gửi phiếu chờ duyệt" : "Hoàn tất đổi hàng")</button>
         </form>
     </section>
 }

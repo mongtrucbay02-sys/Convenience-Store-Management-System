@@ -1,0 +1,29 @@
+@model ConvenienceStore.Web.Modules.Returns.Services.ApprovalDetails
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Hoàn tất phiếu đổi đã duyệt";
+    var slip = Model.Slip;
+}
+@await Html.PartialAsync("~/Modules/Returns/Views/_ApprovalSlip.cshtml", Model)
+@if (slip.Status == "DA_DUYET" && slip.InvoicePaid)
+{
+    <p>Tổng hàng mới sau khuyến mãi <strong>@((slip.ReturnValue + slip.CashDue).ToString("N0")) đ</strong></p>
+    <p>Khách trả thêm <strong>@slip.CashDue.ToString("N0") đ</strong></p>
+    <p>Chọn hàng trong giỏ POS sao cho tổng sau khuyến mãi khớp giá trị trên phiếu đã duyệt.</p>
+    <a class="btn btn-outline-primary mb-3" href="@Url.Action("Index", "Pos", new { exchangeInvoiceId = slip.InvoiceId })">Mở POS để chọn hàng mới</a>
+    <form method="post" action="@Url.Action("CompleteExchange", "ReturnApprovals", new { id = slip.Id })">
+        @Html.AntiForgeryToken()
+        @if (slip.CashDue > 0)
+        {
+            <label class="form-label" for="approved-cash">Tiền mặt khách đưa</label>
+            <input class="form-control mb-3" id="approved-cash" name="cashReceived" type="number" min="@slip.CashDue" step="1" required />
+            <label class="d-block mb-3"><input type="checkbox" name="cashConfirmed" value="true" required /> Đã nhận tiền chênh lệch.</label>
+        }
+        <button class="btn btn-success" type="submit">Hoàn tất đổi hàng</button>
+    </form>
+}
+else if (slip.Status == "HOAN_TAT")
+{
+    <a href="@Url.Action("ExchangeReceipt", "ReturnOrders", new { id = slip.Id })">Xem biên nhận đổi hàng</a>
+}
+<a class="d-inline-block mt-3" href="@Url.Action("ApprovedExchanges", "ReturnApprovals")">Về danh sách phiếu đổi đã duyệt</a>

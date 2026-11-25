@@ -19,9 +19,9 @@ public sealed record ExchangePreview(
     IReadOnlyList<ExchangeCartLine> NewItems);
 
 public sealed record ExchangeReceipt(
-    long Id, string Code, string OriginalInvoiceCode, long NewInvoiceId,
-    string NewInvoiceCode, long ReturnValue, long NewTotal, long CashDue,
-    long CashReceived, long Change, IReadOnlyList<ReturnPreviewLine> ReturnLines);
+    long Id, string Code, string OriginalInvoiceCode, long? NewInvoiceId,
+    string? NewInvoiceCode, long ReturnValue, long NewTotal, long CashDue,
+    long CashReceived, long Change, IReadOnlyList<ReturnPreviewLine> ReturnLines, string Status);
 
 public sealed record ExchangePage(
     ReturnForm Invoice, ExchangeRequest Request, IReadOnlyList<ExchangeCartLine> NewItems,

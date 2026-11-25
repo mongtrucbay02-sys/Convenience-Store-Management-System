@@ -25,6 +25,7 @@
         <p>Đang chọn hàng mới cho phiếu đổi.</p>
         <a class="btn btn-outline-primary mb-3" asp-controller="ReturnOrders" asp-action="Exchange"
            asp-route-invoiceId="@exchangeInvoiceId">Quay lại đổi hàng</a>
+        <a class="btn btn-outline-secondary mb-3" asp-controller="ReturnApprovals" asp-action="ApprovedExchanges">Phiếu đổi đã duyệt</a>
     }
     else
     {

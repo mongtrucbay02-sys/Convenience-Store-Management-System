@@ -115,19 +115,117 @@ public sealed class ExchangePostgreSqlTests(CsdlKhoFixture fixture)
     }
 
     [Fact]
-    public async Task BlocksAnExchangeThatRequiresDt06()
+    public async Task SendsExceptionExchangeForApprovalAndAllowsOnlyOneDecision()
     {
-        var s = await SeedAsync(30000, 3);
+        var s = await SeedApprovalAsync();
+        await using var db = fixture.TaoDbContext();
+        await using var otherDb = fixture.TaoDbContext();
+        var exchange = Service(db);
+        var request = await ConfirmAsync(exchange, s);
+        request.CashReceived = 0;
+        request.CashConfirmed = false;
+        var cashier = Cashier(s.Cashier);
+        var id = await exchange.CreateAsync(request, cashier);
+        var pending = await exchange.ReceiptAsync(id, cashier);
+        Assert.Equal("CHO_DUYET", pending.Status);
+        Assert.Null(pending.NewInvoiceId);
+        Assert.Equal(3, await Stock(s.NewProduct));
+        var approvals = Approvals(db);
+        var duplicate = Approvals(otherDb);
+        Assert.Contains(await approvals.PendingAsync(default), x => x.Id == id && x.Forbidden);
+        var attempts = await Task.WhenAll(new[] { approvals, duplicate }.Select(async service =>
+            await Record.ExceptionAsync(() => service.DecideAsync(id, fixture.TaiKhoanAdminId, true, "Đã kiểm tra", false, default))));
+        Assert.Single(attempts, error => error == null);
+        Assert.Equal("DT06_XUNG_DOT", Assert.IsType<LoiNghiepVu>(Assert.Single(attempts, error => error != null)).Ma);
+        Assert.Contains(await approvals.ApprovedExchangesAsync(s.Cashier, default), x => x.Id == id);
+        var wrongCashier = await Assert.ThrowsAsync<LoiNghiepVu>(() =>
+            approvals.CompleteExchangeAsync(id, fixture.TaiKhoanThuNganId, 10000, true, default));
+        Assert.Equal(404, wrongCashier.MaHttp);
+
+        await approvals.CompleteExchangeAsync(id, s.Cashier, 10000, true, default);
+        var receipt = await exchange.ReceiptAsync(id, cashier);
+        Assert.Equal("HOAN_TAT", receipt.Status);
+        Assert.NotNull(receipt.NewInvoiceId);
+        Assert.Equal(4, await Stock(s.OriginalProduct));
+        Assert.Equal(2, await Stock(s.NewProduct));
+    }
+
+    [Fact]
+    public async Task ApprovedExchangeRollsBackWhenPointsCannotBeRecovered()
+    {
+        var s = await SeedApprovalAsync(member: true);
+        var cashBefore = await Scalar("SELECT so_du FROM quy_tien_mat");
+        await using var db = fixture.TaoDbContext();
+        var exchange = Service(db);
+        var request = await ConfirmAsync(exchange, s);
+        var id = await exchange.CreateAsync(request, Cashier(s.Cashier));
+        var approvals = Approvals(db, new FailingPoints());
+        await approvals.DecideAsync(id, fixture.TaiKhoanAdminId, true, "Đã kiểm tra", false, default);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            approvals.CompleteExchangeAsync(id, s.Cashier, 10000, true, default));
+        var result = await exchange.ReceiptAsync(id, Cashier(s.Cashier));
+        Assert.Equal("DA_DUYET", result.Status);
+        Assert.Null(result.NewInvoiceId);
+        Assert.Equal(0, await Scalar("SELECT COUNT(*) FROM hoa_don WHERE gio_hang_id=@id", ("@id", s.Cart)));
+        Assert.Equal(3, await Stock(s.OriginalProduct));
+        Assert.Equal(3, await Stock(s.NewProduct));
+        Assert.Equal(cashBefore, await Scalar("SELECT so_du FROM quy_tien_mat"));
+        Assert.Equal(2, await Scalar("SELECT diem_hien_co FROM khach_hang WHERE id=@id", ("@id", s.Customer)));
+    }
+
+    [Fact]
+    public async Task RejectingAnExceptionReleasesTheOriginalInvoiceQuantity()
+    {
+        var s = await SeedApprovalAsync();
+        await using var db = fixture.TaoDbContext();
+        var exchange = Service(db);
+        var id = await exchange.CreateAsync(await ConfirmAsync(exchange, s), Cashier(s.Cashier));
+        await Approvals(db).DecideAsync(id, fixture.TaiKhoanAdminId, false, "Không đủ chứng từ", false, default);
+        var receipt = await exchange.ReceiptAsync(id, Cashier(s.Cashier));
+        Assert.Equal("BI_TU_CHOI", receipt.Status);
+        Assert.Null(receipt.NewInvoiceId);
+        Assert.Equal(3, await Stock(s.OriginalProduct));
+        Assert.Equal(1, Assert.Single((await exchange.FormAsync(Request(s), Cashier(s.Cashier))).Invoice.Lines).Remaining);
+    }
+
+    private async Task<Seed> SeedApprovalAsync(bool member = false)
+    {
+        var s = await SeedAsync(30000, 3, member: member);
         await fixture.ChayAsync("""
             WITH category AS (
-                INSERT INTO danh_muc(ten, khong_doi_tra) VALUES ('Danh mục cần duyệt DT03', TRUE) RETURNING id
+                INSERT INTO danh_muc(ten, khong_doi_tra) VALUES (@name, TRUE) RETURNING id
             )
             UPDATE san_pham SET danh_muc_id = (SELECT id FROM category) WHERE id = @id
-            """, ("@id", s.OriginalProduct));
+            """, ("@name", $"Danh mục DT06 {s.OriginalProduct}"), ("@id", s.OriginalProduct));
+        return s;
+    }
+
+    [Fact]
+    public async Task ApprovingReturnRequiresRefundConfirmationAndRecordsEffectsOnce()
+    {
+        var s = await SeedApprovalAsync(member: true);
+        await fixture.ChayAsync("UPDATE quy_tien_mat SET so_du = GREATEST(so_du, 30000) WHERE id = 1");
+        var balance = await Scalar("SELECT so_du FROM quy_tien_mat");
         await using var db = fixture.TaoDbContext();
-        var error = await Assert.ThrowsAsync<LoiNghiepVu>(() => Service(db).PreviewAsync(Request(s), Cashier(s.Cashier)));
-        Assert.Equal(409, error.MaHttp);
-        Assert.Equal(0, await CountExchanges(s));
+        var returns = new ReturnOrderService(db, BoTroGoiDichVuKho.TaoDichVu(db), new ReturnPointsGateway(), clock);
+        var request = Request(s);
+        var cashier = Cashier(s.Cashier);
+        var preview = await returns.PreviewAsync(request, cashier);
+        Assert.True(preview.NeedsApproval);
+        request.ConfirmationToken = preview.ConfirmationToken;
+        var id = await returns.CreateAsync(request, cashier);
+        var approvals = Approvals(db);
+        var unconfirmed = await Assert.ThrowsAsync<LoiNghiepVu>(() =>
+            approvals.DecideAsync(id, fixture.TaiKhoanAdminId, true, "Đã xem phiếu", false, default));
+        Assert.Equal("CHUA_XAC_NHAN_HOAN_TIEN", unconfirmed.Ma);
+        Assert.Contains(await approvals.PendingAsync(default), x => x.Id == id);
+        Assert.Equal(balance, await Scalar("SELECT so_du FROM quy_tien_mat"));
+
+        await approvals.DecideAsync(id, fixture.TaiKhoanAdminId, true, "Đã hoàn tiền mặt", true, default);
+        Assert.Equal("HOAN_TAT", (await approvals.DetailsAsync(id, null, default)).Slip.Status);
+        Assert.Equal(4, await Stock(s.OriginalProduct));
+        Assert.Equal(0, await Scalar("SELECT diem_hien_co FROM khach_hang WHERE id=@id", ("@id", s.Customer)));
+        Assert.Equal(balance - 20000, await Scalar("SELECT so_du FROM quy_tien_mat"));
     }
 
     [Fact]
@@ -191,6 +289,13 @@ public sealed class ExchangePostgreSqlTests(CsdlKhoFixture fixture)
         return new(db, new ReturnOrderService(db, stock, points, clock),
             new PostgreSqlPosCheckoutStore(db, stock, new CashLedgerService(), NullLogger<PostgreSqlPosCheckoutStore>.Instance),
             stock, points, clock);
+    }
+
+    private ReturnApprovalService Approvals(CuaHangDbContext db, IReturnPointsGateway? points = null)
+    {
+        points ??= new ReturnPointsGateway();
+        return new(db, BoTroGoiDichVuKho.TaoDichVu(db), points,
+            new ReturnRefundService(new CashLedgerService()), Service(db, points), clock);
     }
 
     private async Task<Seed> SeedAsync(long price, int stock, bool sameProduct = false, bool member = false)

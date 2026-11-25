@@ -27,3 +27,4 @@ Các mã `AI-TRUNG-*` dùng tiền tố riêng để tránh trùng số với c�
 | Mã | Ngày | Thành viên | Giai đoạn (00–10) | Công cụ | Mục đích | Sản phẩm bị ảnh hưởng (file/PR) | Mức độ | Người kiểm chứng | Ghi chú |
 |---|---|---|---|---|---|---|---|---|---|
 | AI-HOAI-DT03-001 | 2026-11-25 | Nguyễn Thu Hoài | 05, 06, 09 | OpenAI Codex | Chuyển DT-03 sang backend PostgreSQL-only của `develop` theo phản hồi PR #284 | Luồng DT-03, tích hợp POS/kho/quỹ/điểm/báo cáo và kiểm thử PostgreSQL cho issue #238 | Tạo phần lớn phần chuyển đổi và test | Chờ hai reviewer của nhóm | Kiểm thử giao dịch, cạnh tranh và rollback trên PostgreSQL 17 cục bộ |
+| AI-HOAI-DT0607-001 | 2026-11-25 | Nguyễn Thu Hoài | 05, 06, 09 | OpenAI Codex | Tích hợp DT-03, DT-06 và DT-07 trên PostgreSQL | Module Returns, liên kết từ POS và BC-01, kiểm thử đổi trả cho #238 và #239 | Sửa một phần, bổ sung kiểm thử | Chờ review | Kiểm tra phân quyền, phê duyệt đồng thời, hoàn tiền, rollback, tra cứu và in lại K80 |

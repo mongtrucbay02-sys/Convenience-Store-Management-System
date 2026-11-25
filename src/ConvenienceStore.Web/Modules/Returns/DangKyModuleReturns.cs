@@ -28,6 +28,8 @@ public static class DangKyModuleReturns
         services.AddScoped<ReturnOrderService>();
         services.TryAddScoped<PostgreSqlPosCheckoutStore>();
         services.AddScoped<ExchangeService>();
+        services.AddScoped<ReturnApprovalService>();
+        services.AddScoped<ReturnSlipLookupService>();
 
         // Đăng ký cổng tích hợp thu hồi điểm KH-06
         services.TryAddScoped<IReturnPointsGateway, ReturnPointsGateway>();

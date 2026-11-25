@@ -1,0 +1,28 @@
+@model ConvenienceStore.Web.Modules.Returns.Services.ApprovalDetails
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Duyệt đổi trả ngoại lệ";
+    var slip = Model.Slip;
+}
+@await Html.PartialAsync("~/Modules/Returns/Views/_ApprovalSlip.cshtml", Model)
+@if (slip.Kind == "DOI_HANG")
+{
+    <p>Phần chênh lệch khách trả khi hoàn tất đổi <strong>@slip.CashDue.ToString("N0") đ</strong></p>
+}
+@if (slip.Status == "CHO_DUYET")
+{
+    <form method="post" action="@Url.Action("Decide", "ReturnApprovals", new { id = slip.Id })">
+        @Html.AntiForgeryToken()
+        <label class="form-label" for="approval-note">Ghi chú quyết định</label>
+        <textarea class="form-control mb-3" id="approval-note" name="note" maxlength="255" required></textarea>
+        @if (slip.Kind == "TRA_HANG" && slip.ReturnValue > 0)
+        {
+            <label class="d-block mb-3"><input type="checkbox" name="refundConfirmed" value="true" />
+                Xác nhận hoàn @slip.ReturnValue.ToString("N0") đ tiền mặt cho khách khi duyệt phiếu.
+            </label>
+        }
+        <button class="btn btn-success" type="submit" name="decision" value="approve">Duyệt</button>
+        <button class="btn btn-outline-danger" type="submit" name="decision" value="reject">Từ chối</button>
+    </form>
+}
+<a class="d-inline-block mt-3" href="@Url.Action("Index", "ReturnApprovals")">Về danh sách chờ duyệt</a>

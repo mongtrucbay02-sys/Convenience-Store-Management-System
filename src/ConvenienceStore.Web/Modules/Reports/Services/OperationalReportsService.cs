@@ -76,7 +76,6 @@ public sealed class OperationalReportsService : IOperationalReportsService
         var sales = new Dictionary<long, ProductSale>();
         foreach (var invoice in invoices)
         {
-            var shares = AllocateDeductions(invoice);
             for (var i = 0; i < invoice.Lines.Count; i++)
             {
                 var line = invoice.Lines[i];
@@ -86,7 +85,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
                 if (!sales.TryGetValue(product.Id, out var sale)) sale = new ProductSale(product);
                 sale.Quantity += line.Quantity;
                 sale.Gross += (long)line.Quantity * line.ListPriceSnapshot;
-                sale.Deductions += shares[i];
+                sale.Deductions += line.PromotionDiscountSnapshot;
                 sale.InvoiceIds.Add(invoice.Id);
                 sales[product.Id] = sale;
             }
@@ -138,7 +137,6 @@ public sealed class OperationalReportsService : IOperationalReportsService
         var categories = new Dictionary<long, CategorySale>();
         foreach (var invoice in invoices)
         {
-            var shares = AllocateDeductions(invoice);
             for (var i = 0; i < invoice.Lines.Count; i++)
             {
                 var line = invoice.Lines[i];
@@ -148,7 +146,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
                     sale = new CategorySale(product.CategoryName);
                 sale.Quantity += line.Quantity;
                 sale.Gross += (long)line.Quantity * line.ListPriceSnapshot;
-                sale.Deductions += shares[i];
+                sale.Deductions += line.PromotionDiscountSnapshot;
                 sale.InvoiceIds.Add(invoice.Id);
                 categories[product.CategoryId] = sale;
             }
@@ -319,8 +317,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
 
         foreach (var invoice in invoices)
         {
-            var shares = AllocateDeductions(invoice);
-            var selected = invoice.Lines.Select((line, index) => (Line: line, Discount: shares[index]))
+            var selected = invoice.Lines.Select(line => (Line: line, Discount: line.PromotionDiscountSnapshot))
                 .Where(x => MatchesProduct(x.Line.ProductId, x.Line.CategoryId, query)).ToArray();
             var lines = selected.Select(x => x.Line).ToArray();
             if (lines.Length == 0) continue;
@@ -353,7 +350,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
         var data = buckets.Select(x => new GrossProfitDay(x.Key, x.Value.GrossRevenue - x.Value.PromotionDiscount - x.Value.Refunds,
             x.Value.SoldCost - x.Value.RestockedCost, x.Value.WriteOffValue, x.Value.DestroyedReturns)).ToArray();
         var netRevenue = data.Sum(x => x.NetRevenue);
-        var costOfGoods = data.Sum(x => x.CostOfGoods);
+        var costOfGoods = RoundCurrency(data.Sum(x => x.CostOfGoods));
         var profit = netRevenue - costOfGoods;
         var margin = netRevenue == 0 ? 0 : profit * 100m / netRevenue;
         var writeOffValue = data.Sum(x => x.WriteOffValue);
@@ -368,7 +365,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
              Metric("Lợi nhuận gộp", profit), Metric("Tỷ suất lợi nhuận", (long)Math.Round(margin * 10, MidpointRounding.AwayFromZero), "percent"),
              Metric("Giá trị xuất hủy", writeOffValue), Metric("Hàng trả bị hủy", destroyedReturns)],
             ["Ngày", "Doanh thu thuần", "Giá vốn hàng bán", "Lợi nhuận gộp", "Tỷ suất", "Giá trị xuất hủy", "Hàng trả bị hủy"],
-            rows, data.Select(x => new ReportChartPoint(x.Date.ToString("dd/MM"), x.NetRevenue, x.Profit)).ToArray(),
+            rows, data.Select(x => new ReportChartPoint(x.Date.ToString("dd/MM"), x.NetRevenue, RoundCurrency(x.Profit))).ToArray(),
             data.Length == 0 ? "Không có dữ liệu trong khoảng đã chọn" : null);
     }
 
@@ -406,26 +403,35 @@ public sealed class OperationalReportsService : IOperationalReportsService
             DateOnly.TryParse(key[4..], out var grossProfitDate))
         {
             var invoicesForDay = await _source.GetPaidInvoicesAsync(range!.FromInclusive, range.ToExclusive, ct);
-            var salesRows = invoicesForDay.Where(invoice =>
+            var sales = invoicesForDay.Where(invoice =>
                     DateOnly.FromDateTime(invoice.PaidAt.ToOffset(ReportRangeResolver.VietnamOffset).DateTime) == grossProfitDate)
                 .SelectMany(invoice => invoice.Lines.Where(line => MatchesProduct(line.ProductId, line.CategoryId, query))
-                    .Select(line => Row($"invoice:{invoice.Id}", $"HD-{invoice.Id:000000}", "Bán hàng",
-                        invoice.PaidAt.ToOffset(ReportRangeResolver.VietnamOffset).ToString("dd/MM/yyyy HH:mm"),
-                        line.ProductName, line.Quantity.ToString(), Money(line.ListPriceSnapshot), Money(line.UnitCostSnapshot))))
-                .ToList();
+                    .Select(line => (Invoice: invoice, Line: line))).ToArray();
+            var salesRows = sales.Select(x => Row($"invoice:{x.Invoice.Id}", $"HD-{x.Invoice.Id:000000}", "Bán hàng",
+                x.Invoice.PaidAt.ToOffset(ReportRangeResolver.VietnamOffset).ToString("dd/MM/yyyy HH:mm"),
+                x.Line.ProductName, x.Line.Quantity.ToString(), Money((long)x.Line.Quantity*x.Line.ListPriceSnapshot),
+                Money(x.Line.PromotionDiscountSnapshot), Money(x.Line.NetRevenueSnapshot), CostMoney(x.Line.UnitCostSnapshot),
+                CostMoney(x.Line.Quantity*x.Line.UnitCostSnapshot), "Bán hàng"));
             var returnsForDay = await _source.GetReturnsAsync(range.FromInclusive, range.ToExclusive, ct);
-            var returnRows = returnsForDay.Where(returned =>
+            var returns = returnsForDay.Where(returned =>
                     DateOnly.FromDateTime(returned.ReturnedAt.ToOffset(ReportRangeResolver.VietnamOffset).DateTime) == grossProfitDate)
                 .SelectMany(returned => returned.Lines.Where(line => MatchesProduct(line.ProductId, line.CategoryId, query))
-                    .Select(line => Row($"return:{returned.Id}", $"PT-{returned.Id:000000}", "Trả hàng",
-                        returned.ReturnedAt.ToOffset(ReportRangeResolver.VietnamOffset).ToString("dd/MM/yyyy HH:mm"),
-                        line.ProductName, line.Quantity.ToString(), Money(line.RefundAmount),
-                        line.RestockedQuantity > 0 ? "Nhập lại kho" : "Không nhập lại kho")))
-                .ToArray();
+                    .Select(line => (Return: returned, Line: line))).ToArray();
+            var returnRows = returns.Select(x => Row($"return:{x.Return.Id}", $"PT-{x.Return.Id:000000}", "Trả hàng",
+                x.Return.ReturnedAt.ToOffset(ReportRangeResolver.VietnamOffset).ToString("dd/MM/yyyy HH:mm"),
+                x.Line.ProductName, x.Line.Quantity.ToString(), Money(0), Money(x.Line.RefundAmount), Money(-x.Line.RefundAmount),
+                CostMoney(x.Line.UnitCostSnapshot), CostMoney(-x.Line.RestockedQuantity*x.Line.UnitCostSnapshot),
+                x.Line.RestockedQuantity > 0 ? "Nhập lại kho" : "Không nhập lại kho"));
             var allRows = salesRows.Concat(returnRows).ToArray();
+            var gross = sales.Sum(x => (long)x.Line.Quantity*x.Line.ListPriceSnapshot);
+            var deductions = sales.Sum(x => x.Line.PromotionDiscountSnapshot)+returns.Sum(x => x.Line.RefundAmount);
+            var cost = RoundCurrency(sales.Sum(x => x.Line.Quantity*x.Line.UnitCostSnapshot)
+                -returns.Sum(x => x.Line.RestockedQuantity*x.Line.UnitCostSnapshot));
             return Build("BC-08 detail", "Chi tiết doanh thu và giá vốn", range, query,
-                [Metric("Số dòng giao dịch", allRows.Length, "number")],
-                ["Mã", "Loại", "Thời điểm (UTC+7)", "Sản phẩm", "Số lượng", "Giá / hoàn tiền", "Giá vốn / xử lý"],
+                [Metric("Số dòng giao dịch", allRows.Length, "number"),Metric("Doanh thu gộp",gross),
+                 Metric("Giảm trừ",deductions),Metric("Doanh thu thuần",gross-deductions),
+                 Metric("Giá vốn hàng bán",cost),Metric("Lợi nhuận gộp",gross-deductions-cost)],
+                ["Mã", "Loại", "Thời điểm (UTC+7)", "Sản phẩm", "Số lượng", "Gộp", "Giảm trừ", "Thuần", "Đơn giá vốn", "Giá vốn", "Xử lý"],
                 allRows, [], allRows.Length == 0 ? "Không có dữ liệu trong khoảng đã chọn" : null);
         }
         if (normalizedCode is "BC-02" or "BC-03" or "BC-04" or "BC-05")
@@ -480,8 +486,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
         var invoiceCount = 0;
         foreach (var invoice in invoices.Where(i => MatchesEvent(i.PaidAt, i.CashierId)))
         {
-            var shares = AllocateDeductions(invoice);
-            var lines = invoice.Lines.Select((line, index) => (Line: line, Discount: shares[index]))
+            var lines = invoice.Lines.Select(line => (Line: line, Discount: line.PromotionDiscountSnapshot))
                 .Where(x => MatchesLine(x.Line.ProductId, x.Line.CategoryId)).ToArray();
             if (lines.Length == 0) continue;
             var gross = lines.Sum(x => (long)x.Line.Quantity * x.Line.ListPriceSnapshot);
@@ -534,6 +539,8 @@ public sealed class OperationalReportsService : IOperationalReportsService
         new(code, title, range, metrics, columns, rows, chart, message, query);
 
     private static ReportMetric Metric(string label, long value, string format = "currency") => new(label, value, format);
+    private static ReportMetric Metric(string label, decimal value) => new(label, RoundCurrency(value), "currency");
+    private static long RoundCurrency(decimal value) => checked((long)decimal.Round(value, 0, MidpointRounding.AwayFromZero));
     private static ReportTableRow Row(string key, params string[] cells) => new(key, cells);
     private static long Gross(ReportPaidInvoiceFact i) => i.Lines.Sum(l => (long)l.Quantity * l.ListPriceSnapshot);
     private static long Deductions(ReportPaidInvoiceFact i) => i.PromotionDiscount + i.RefundAmount;
@@ -541,6 +548,7 @@ public sealed class OperationalReportsService : IOperationalReportsService
     private static string Money(long value) => value.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
     private static string Money(decimal value) => decimal.Round(value, 0, MidpointRounding.AwayFromZero)
         .ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
+    private static string CostMoney(decimal value) => value.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
     private static long RowStockValue(ReportProductFact product) =>
         checked((long)decimal.Round(product.CurrentStock * product.UnitCost, 0, MidpointRounding.AwayFromZero));
     private static string Percent(decimal value) => value.ToString("0.0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + "%";
@@ -550,23 +558,6 @@ public sealed class OperationalReportsService : IOperationalReportsService
         "week" => "Tuần từ " + date.ToString("dd/MM/yyyy"),
         _ => date.ToString("dd/MM/yyyy")
     };
-
-    private static long[] AllocateDeductions(ReportPaidInvoiceFact invoice)
-    {
-        var grosses = invoice.Lines.Select(l => (long)l.Quantity * l.ListPriceSnapshot).ToArray();
-        var total = grosses.Sum();
-        var deductions = Math.Clamp(invoice.PromotionDiscount + invoice.RefundAmount, 0, total);
-        var allocations = new long[grosses.Length];
-        var allocated = 0L;
-        for (var i = 0; i < grosses.Length; i++)
-        {
-            allocations[i] = i == grosses.Length - 1 || total == 0
-                ? deductions - allocated
-                : (long)Math.Floor((decimal)deductions * grosses[i] / total);
-            allocated += allocations[i];
-        }
-        return allocations;
-    }
 
     private sealed record RevenueBucket(DateOnly Date, int InvoiceCount, long Gross, long Deductions, long Net, long Average);
     private sealed record ProductSale(ReportProductFact Product)
@@ -593,13 +584,13 @@ public sealed class OperationalReportsService : IOperationalReportsService
         public long GrossRevenue { get; set; }
         public long PromotionDiscount { get; set; }
         public long Refunds { get; set; }
-        public long SoldCost { get; set; }
-        public long RestockedCost { get; set; }
-        public long WriteOffValue { get; set; }
-        public long DestroyedReturns { get; set; }
+        public decimal SoldCost { get; set; }
+        public decimal RestockedCost { get; set; }
+        public decimal WriteOffValue { get; set; }
+        public decimal DestroyedReturns { get; set; }
     }
-    private sealed record GrossProfitDay(DateOnly Date, long NetRevenue, long CostOfGoods, long WriteOffValue, long DestroyedReturns)
+    private sealed record GrossProfitDay(DateOnly Date, long NetRevenue, decimal CostOfGoods, decimal WriteOffValue, decimal DestroyedReturns)
     {
-        public long Profit => NetRevenue - CostOfGoods;
+        public long Profit => NetRevenue - RoundCurrency(CostOfGoods);
     }
 }

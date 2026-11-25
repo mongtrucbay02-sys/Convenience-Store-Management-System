@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using ConvenienceStore.Web.Data;
 using ConvenienceStore.Web.Modules.Returns.Models;
 using ConvenienceStore.Web.Modules.Returns.Services;
+using ConvenienceStore.Web.Modules.Reports.Models;
+using ConvenienceStore.Web.Modules.Reports.Services;
 using ConvenienceStore.Web.Modules.Inventory.Models;
 using ConvenienceStore.Web.Shared.Data;
 using ConvenienceStore.Web.Shared.Errors;
@@ -655,6 +657,11 @@ public sealed class ReturnOrderPostgreSqlTests(CsdlKhoFixture fixture)
     public async Task PointsFailureAfterRestockRollsBackSlipAndStockTogether()
     {
         var seed = await Setup(points: 5);
+        await using var reportsDb = fixture.TaoDbContext();
+        var reports = new OperationalReportsService(new PostgreSqlTransactionalReportsDataSource(reportsDb), clock);
+        var query = new ReportQuery { Period = "custom", From = DateOnly.FromDateTime(Now.Date.AddDays(-2)),
+            To = DateOnly.FromDateTime(Now.Date), ProductId = seed.Product };
+        var before = await reports.GetGrossProfitAsync(query, default);
 
         await using var db = fixture.TaoDbContext();
 
@@ -678,6 +685,11 @@ public sealed class ReturnOrderPostgreSqlTests(CsdlKhoFixture fixture)
             0,
             await new DuLieuTestKho(fixture)
                 .DemTheKhoAsync(seed.Product, "TRA_HANG"));
+        var after = await reports.GetGrossProfitAsync(query, default);
+        foreach (var metric in new[] { "Doanh thu thuần", "Giá vốn hàng bán", "Lợi nhuận gộp" })
+            Assert.Equal(before.Metrics.Single(x => x.Label == metric).Value, after.Metrics.Single(x => x.Label == metric).Value);
+        Assert.Equal(seed.Price * seed.Quantity, after.Metrics.Single(x => x.Label == "Doanh thu thuần").Value);
+        Assert.Equal(5, await reportsDb.KhachHangs.Where(x => x.Id == seed.Customer).Select(x => x.DiemHienCo).SingleAsync());
     }
 
     [Fact]

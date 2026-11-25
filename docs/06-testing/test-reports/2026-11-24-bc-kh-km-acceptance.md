@@ -1,5 +1,7 @@
 # BC/KH/KM — sửa lỗi và chuẩn bị nghiệm thu #266 / #288
 
+> Cập nhật 25/11: kết quả này là lịch sử của bản ngày 24/11. Review #289 phát hiện cách chia tổng KM theo tỷ trọng vẫn sai snapshot từng dòng và đơn giá vốn bị làm tròn sớm. Bản sửa và các gate còn lại được ghi riêng trong [F289-01…06](2026-11-25-pr289-review.md); không dùng 819/819 cũ làm bằng chứng cho bản sửa mới.
+
 Ngày 24/11/2026. Trạng thái: **819/819 PASS cục bộ / chờ review**, không phải biên bản nghiệm thu cuối kỳ. Build Release 0 lỗi/cảnh báo; publish PostgreSQL-only đạt. 15 ca regression mới; không cộng các lượt filtered vào tổng full suite.
 
 ## Phạm vi và phiên bản

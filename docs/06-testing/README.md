@@ -13,6 +13,7 @@ Chứng minh hệ thống **làm đúng yêu cầu** ở `03` và **đúng thi�
 
 | Tài liệu | Mô tả | Trạng thái |
 |---|---|---|
+| [test-reports/2026-11-25-pr289-review.md](test-reports/2026-11-25-pr289-review.md) | F289-01…06: snapshot giảm giá, decimal, danh mục lịch sử, bigint, transaction và exact CI snapshot | 825/825 PASS cục bộ; F289-03 còn design gap, CI mới/review/UAT chưa xác nhận |
 | [test-reports/2026-11-24-bc-kh-km-acceptance.md](test-reports/2026-11-24-bc-kh-km-acceptance.md) | Sửa #266, đối chiếu ma trận #288, giảm trừ đổi hàng/chi tiết/bộ lọc/ID64 và tài liệu KH/KM PostgreSQL | 819/819 PASS cục bộ, build/publish đạt; chưa CI/review/UAT cuối |
 | [test-reports/2026-11-24-commit-preparation.md](test-reports/2026-11-24-commit-preparation.md) | Commit theo nhóm, kiểm tra source/secret/archive và provenance test | Commit cục bộ; build chạy lại; test trước được tái sử dụng; chưa push/CI |
 | [test-reports/2026-11-24-postgresql-integration.md](test-reports/2026-11-24-postgresql-integration.md) | PostgreSQL-only, SM-01/02/03/06/07/08/10/13, RLS và publish | 763/763 PASS cục bộ trên working tree baseline 2e8d94b; CI commit mới NOT RUN |

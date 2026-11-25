@@ -101,11 +101,11 @@ public sealed class PostgreSqlTransactionalReportsDataSource(CuaHangDbContext db
             var categoryName = Text(reader, "category_name");
             var quantity = Int32(reader, "quantity");
             var listPrice = Int64(reader, "list_price");
-            var unitCost = RoundedInt64(reader, "unit_cost");
+            var unitCost = Decimal(reader, "unit_cost");
             var discountPerUnit = Int64(reader, "discount_per_unit");
             return (id, paidAt, cashierId, cashierName, cashPaid,
                 new ReportInvoiceLineFact(productId, productName, categoryId, categoryName,
-                    quantity, listPrice, unitCost), discountPerUnit);
+                    quantity, listPrice, unitCost, discountPerUnit), discountPerUnit);
         }, cancellationToken);
 
         var grouped = new Dictionary<long, InvoiceBuilder>();
@@ -173,8 +173,8 @@ public sealed class PostgreSqlTransactionalReportsDataSource(CuaHangDbContext db
             var disposition = Text(reader, "disposition");
             var line = new ReportReturnedLineFact(Int64(reader, "product_id"), Text(reader, "product_name"),
                 Int64(reader, "category_id"), Text(reader, "category_name"), quantity,
-                RoundedInt64(reader, "unit_cost"), disposition == "NHAP_LAI" ? quantity : 0,
-                Int64(reader, "returned_value"), RoundedInt64(reader, "destroyed_value"));
+                Decimal(reader, "unit_cost"), disposition == "NHAP_LAI" ? quantity : 0,
+                Int64(reader, "returned_value"), Decimal(reader, "destroyed_value"));
             return (Id: Int64(reader, "return_id"), InvoiceId: Int64(reader, "invoice_id"),
                 ReturnedAt: VietnamDateTimeOffset(reader, "returned_at"), CashierId: Int64(reader, "cashier_id"),
                 CashierName: Text(reader, "cashier_name"), Line: line);
@@ -205,7 +205,7 @@ public sealed class PostgreSqlTransactionalReportsDataSource(CuaHangDbContext db
         return await QueryAsync(sql, fromInclusive, toExclusive, reader => new ReportWriteOffFact(
             Int64(reader, "writeoff_id"), VietnamDateTimeOffset(reader, "written_off_at"),
             Int64(reader, "product_id"), Int64(reader, "category_id"), Int32(reader, "quantity"),
-            RoundedInt64(reader, "unit_cost")), cancellationToken);
+            Decimal(reader, "unit_cost")), cancellationToken);
     }
 
     private async Task<IReadOnlyList<T>> QueryAsync<T>(string sql, DateTimeOffset fromInclusive,
@@ -284,9 +284,8 @@ public sealed class PostgreSqlTransactionalReportsDataSource(CuaHangDbContext db
     private static long Int64(DbDataReader reader, string name) =>
         reader[name] is DBNull ? 0 : Convert.ToInt64(reader[name], CultureInfo.InvariantCulture);
 
-    private static long RoundedInt64(DbDataReader reader, string name) =>
-        reader[name] is DBNull ? 0 : (long)Math.Round(Convert.ToDecimal(reader[name], CultureInfo.InvariantCulture),
-            0, MidpointRounding.AwayFromZero);
+    private static decimal Decimal(DbDataReader reader, string name) =>
+        reader[name] is DBNull ? 0 : Convert.ToDecimal(reader[name], CultureInfo.InvariantCulture);
 
     private sealed class InvoiceBuilder(long id, DateTimeOffset paidAt, long cashierId, string cashierName, long cashPaid)
     {

@@ -24,8 +24,8 @@ public sealed class OperationalReportsServiceTests
         public IReadOnlyList<ReportPaidInvoiceFact> Invoices { get; init; } =
         [
             new(10, new DateTimeOffset(2026, 11, 1, 0, 30, 0, Vn), 7, "An",
-                [new(1, "Nước", 1, "Đồ uống", 2, 100, 40), new(2, "Mì", 2, "Thực phẩm khô", 1, 50, 25)],
-                20, 0, 220)
+                [new(1, "Nước", 1, "Đồ uống", 2, 100, 40, 8), new(2, "Mì", 2, "Thực phẩm khô", 1, 50, 25, 4)],
+                20, 0, 230)
         ];
 
         public IReadOnlyList<ReportReturnFact> Returns { get; init; } =
@@ -74,7 +74,7 @@ public sealed class OperationalReportsServiceTests
     }
 
     [Fact]
-    public async Task ProductAndCategoryReports_AllocateInvoiceDeductionsProportionally()
+    public async Task ProductAndCategoryReports_UseStoredLineDiscountsAndSeparateReturns()
     {
         var products = await Create().GetProductsAsync(OneDay(), default);
         var categories = await Create().GetCategoriesAsync(OneDay(), default);
@@ -85,12 +85,13 @@ public sealed class OperationalReportsServiceTests
     }
 
     [Fact]
-    public async Task GrossProfitAndProductReportUseSameDiscountRemainderAfterFiltering()
+    public async Task GrossProfitAndProductReportUseSameLineSnapshotAfterFiltering()
     {
         var data = new FakeSource();
         var service = new OperationalReportsService(new FakeSource
         {
-            Invoices = [data.Invoices[0] with { PromotionDiscount = 21 }]
+            Invoices = [data.Invoices[0] with { PromotionDiscount = 21,
+                Lines = [data.Invoices[0].Lines[0],data.Invoices[0].Lines[1] with { DiscountPerUnitSnapshot = 5 }] }]
         }, new FixedTime(Now));
         var query = OneDay();
         query.ProductId = 2;
@@ -164,7 +165,7 @@ public sealed class OperationalReportsServiceTests
 
         Assert.Equal(1, report.Metrics.Single(x => x.Label == "Đơn hủy trước thanh toán").Value);
         Assert.Equal(1, report.Metrics.Single(x => x.Label == "Hóa đơn hủy sau thanh toán").Value);
-        Assert.Equal(220, report.Metrics.Single(x => x.Label == "Tiền mặt thu").Value);
+        Assert.Equal(230, report.Metrics.Single(x => x.Label == "Tiền mặt thu").Value);
     }
 
     [Fact]

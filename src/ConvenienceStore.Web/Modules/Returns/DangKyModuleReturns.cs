@@ -1,5 +1,6 @@
 
 using ConvenienceStore.Web.Modules.Returns.Services;
+using ConvenienceStore.Web.Services.Pos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -25,6 +26,8 @@ public static class DangKyModuleReturns
 
         // Đăng ký dịch vụ đổi trả hàng
         services.AddScoped<ReturnOrderService>();
+        services.TryAddScoped<PostgreSqlPosCheckoutStore>();
+        services.AddScoped<ExchangeService>();
 
         // Đăng ký cổng tích hợp thu hồi điểm KH-06
         services.TryAddScoped<IReturnPointsGateway, ReturnPointsGateway>();

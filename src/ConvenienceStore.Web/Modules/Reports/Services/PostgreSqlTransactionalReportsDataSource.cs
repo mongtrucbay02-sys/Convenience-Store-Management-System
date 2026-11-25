@@ -156,7 +156,8 @@ public sealed class PostgreSqlTransactionalReportsDataSource(CuaHangDbContext db
                    h.thu_ngan_id AS cashier_id, COALESCE(a.ho_ten, '') AS cashier_name,
                    l.san_pham_id AS product_id, COALESCE(p.ten_san_pham, '') AS product_name,
                    COALESCE(p.danh_muc_id, 0) AS category_id, COALESCE(c.ten, '') AS category_name,
-                   h.tien_hoan AS total_refund, l.so_luong AS quantity, l.gia_von AS unit_cost,
+                   CASE WHEN h.loai = 'DOI_HANG' THEN h.gia_tri_hang_tra ELSE h.tien_hoan END AS total_refund,
+                   l.so_luong AS quantity, l.gia_von AS unit_cost,
                    l.cach_xu_ly AS disposition, l.thanh_tien AS returned_value, l.gia_tri_huy AS destroyed_value
             FROM phieu_doi_tra h
             INNER JOIN ct_phieu_doi_tra l ON l.phieu_doi_tra_id = h.id

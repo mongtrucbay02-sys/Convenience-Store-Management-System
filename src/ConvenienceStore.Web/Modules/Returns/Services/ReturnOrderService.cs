@@ -81,7 +81,7 @@ public sealed class ReturnOrderService(
     // 1. KIỂM TRA QUYỀN THU NGÂN
     // =========================================================
 
-    private async Task<long> Actor(
+    internal async Task<long> Actor(
         ClaimsPrincipal user,
         CancellationToken ct)
     {
@@ -470,6 +470,13 @@ public sealed class ReturnOrderService(
     // =========================================================
     // 6. PREVIEW
     // =========================================================
+
+    internal async Task<(long? CustomerId, long PolicyId, ReturnPreview Preview)> CalculateForExchangeAsync(
+        ReturnOrderRequest request, long actor, CancellationToken ct)
+    {
+        var draft = await Calculate(request, actor, ct);
+        return (draft.Invoice.CustomerId, draft.Policy.Id, draft.Preview);
+    }
 
     public async Task<ReturnPreview> PreviewAsync(
         ReturnOrderRequest request,

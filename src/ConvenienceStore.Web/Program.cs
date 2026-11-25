@@ -116,9 +116,8 @@ builder.Services.AddScoped<PosInvoiceService>();
 builder.Services.AddScoped<PosInvoiceCancellationService>();
 
 // POS-07: Store lưu đơn hàng
-builder.Services.AddScoped<
-    IPosCheckoutStore,
-    PostgreSqlPosCheckoutStore>();
+builder.Services.AddScoped<IPosCheckoutStore>(services =>
+    services.GetRequiredService<PostgreSqlPosCheckoutStore>());
 
 // POS-07: Store đọc hóa đơn
 builder.Services.AddScoped<

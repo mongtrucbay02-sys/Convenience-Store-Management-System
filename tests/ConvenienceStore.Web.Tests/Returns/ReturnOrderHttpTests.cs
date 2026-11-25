@@ -107,7 +107,9 @@ public class ReturnOrderHttpTests(CsdlKhoFixture fixture)
     [Fact]
     public async Task ApiPreviewCreateAndReceipt_UsesServerAmountsAndNoStore()
     {
-        var seed=await Seed();await using var app=await Start();using var client=Client(app);
+        var seed=await Seed();
+        await fixture.ChayAsync("UPDATE quy_tien_mat SET so_du=GREATEST(so_du,25000) WHERE id=1");
+        await using var app=await Start();using var client=Client(app);
         var request=Request(seed.Invoice,seed.Product);
         var previewResponse=await client.PostAsJsonAsync("/api/v1/returns/preview",request);previewResponse.EnsureSuccessStatusCode();
         var preview=(await previewResponse.Content.ReadFromJsonAsync<ReturnPreview>())!;Assert.Equal(25000,preview.Refund);
@@ -132,5 +134,8 @@ public class ReturnOrderHttpTests(CsdlKhoFixture fixture)
         Assert.Equal(HttpStatusCode.BadRequest,post.StatusCode);
         var exchange=await client.GetStringAsync("/Returns/Exchange?invoiceId="+seed.Invoice);
         Assert.Contains("DT-03",WebUtility.HtmlDecode(exchange));
+        Assert.Contains("action=\"/Returns/Exchange/Preview\"",exchange);
+        Assert.Contains("__RequestVerificationToken",exchange);
+        Assert.Contains("exchangeInvoiceId="+seed.Invoice,exchange);
     }
 }

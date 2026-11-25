@@ -11,7 +11,7 @@ namespace ConvenienceStore.Web.Modules.Returns.Controllers;
 [Authorize(Policy=MaQuyen.DoiTra,Roles=BangQuyen.ThuNgan)]
 [ResponseCache(NoStore=true,Location=ResponseCacheLocation.None)]
 [Route("Returns")]
-public sealed class ReturnOrdersController(ReturnOrderService service) : Controller
+public sealed class ReturnOrdersController(ReturnOrderService service, ExchangeService exchange) : Controller
 {
     public override void OnActionExecuted(ActionExecutedContext context)
     {
@@ -63,9 +63,61 @@ public sealed class ReturnOrdersController(ReturnOrderService service) : Control
     public async Task<IActionResult> Receipt(long id,CancellationToken ct)=>
         View("~/Modules/Returns/Views/Receipt.cshtml",await service.ReceiptAsync(id,User,ct));
     [HttpGet("Exchange")]
-    public async Task<IActionResult> Exchange(long invoiceId,CancellationToken ct)
+    public Task<IActionResult> Exchange(long invoiceId, CancellationToken ct) =>
+        ExchangeForm(new ExchangeRequest { InvoiceId = invoiceId }, ct);
+
+    [HttpPost("Exchange/Preview")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ExchangePreview([Bind(Prefix = "Request")] ExchangeRequest request, CancellationToken ct)
     {
-        await service.FormAsync(invoiceId,User,ct);
-        return View("~/Modules/Returns/Views/Exchange.cshtml",invoiceId);
+        if (!ModelState.IsValid)
+            return await ExchangeForm(request, ct, error: "Dữ liệu đổi hàng không hợp lệ.", status: 422);
+        try
+        {
+            return await ExchangeForm(request, ct, await exchange.PreviewAsync(request, User, ct));
+        }
+        catch (LoiNghiepVu e) when (e.MaHttp is 409 or 422)
+        {
+            return await ExchangeForm(request, ct, error: ExchangeError(e), status: e.MaHttp);
+        }
+    }
+
+    [HttpPost("Exchange/Create")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ExchangeCreate([Bind(Prefix = "Request")] ExchangeRequest request, CancellationToken ct)
+    {
+        if (!ModelState.IsValid)
+            return await ExchangeForm(request, ct, error: "Dữ liệu xác nhận không hợp lệ.", status: 422);
+        try
+        {
+            var id = await exchange.CreateAsync(request, User, ct);
+            return RedirectToAction(nameof(ExchangeReceipt), new { id });
+        }
+        catch (LoiNghiepVu e) when (e.MaHttp is 409 or 422)
+        {
+            return await ExchangeForm(request, ct, error: ExchangeError(e), status: e.MaHttp);
+        }
+    }
+
+    [HttpGet("Exchange/Receipts/{id:long}")]
+    public async Task<IActionResult> ExchangeReceipt(long id, CancellationToken ct) =>
+        View("~/Modules/Returns/Views/ExchangeReceipt.cshtml", await exchange.ReceiptAsync(id, User, ct));
+
+    private static string ExchangeError(LoiNghiepVu error) =>
+        error.ChiTiet is IReadOnlyList<LoiTruong> fields && fields.Count > 0
+            ? string.Join(" ", fields.Select(field => field.Loi))
+            : error.Message;
+
+    private async Task<IActionResult> ExchangeForm(ExchangeRequest request, CancellationToken ct,
+        ExchangePreview? preview = null, string? error = null, int status = 200)
+    {
+        var page = await exchange.FormAsync(request, User, ct);
+        Response.StatusCode = status;
+        return View("~/Modules/Returns/Views/Exchange.cshtml", page with
+        {
+            Preview = preview,
+            Error = error,
+            NewItems = preview?.NewItems ?? page.NewItems
+        });
     }
 }

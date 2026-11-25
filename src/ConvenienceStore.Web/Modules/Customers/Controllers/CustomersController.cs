@@ -12,10 +12,11 @@ namespace ConvenienceStore.Web.Modules.Customers.Controllers;
 public sealed class CustomersController(CustomerService customers, PosCartService cart) : Controller
 {
     [HttpGet]
-    public async Task<IActionResult> Index(string? search, bool attachToCart, CancellationToken ct)
+    public async Task<IActionResult> Index(string? search, bool attachToCart, CancellationToken ct, long? exchangeInvoiceId = null)
     {
         ViewData["Search"] = search;
         ViewData["AttachToCart"] = attachToCart;
+        ViewData["ExchangeInvoiceId"] = exchangeInvoiceId;
         return View("~/Modules/Customers/Views/Customers/Index.cshtml", await customers.SearchAsync(search, User.IsInRole(CustomerRoles.Admin), ct));
     }
 
@@ -65,11 +66,11 @@ public sealed class CustomersController(CustomerService customers, PosCartServic
     }
 
     [Authorize(Roles = CustomerRoles.Cashier), HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Attach(long? customerId)
+    public async Task<IActionResult> Attach(long? customerId, long? exchangeInvoiceId = null)
     {
         var error = await cart.SetCustomerAsync(customerId);
         TempData[error == null ? "Success" : "Error"] = error ?? "Đã cập nhật khách và khuyến mãi của đơn.";
-        return RedirectToAction("Index", "Pos");
+        return RedirectToAction("Index", "Pos", new { exchangeInvoiceId });
     }
 
     [HttpGet]

@@ -237,7 +237,7 @@ public sealed class PostgreSqlPosCheckoutStore(
 
                 diemCong =
                     ConvenienceStore.Web.Modules.Customers.Models.CustomerRules
-                        .EarnedPoints(tongThanhToan, soTienMotDiem);
+                        .EarnedPoints(tienCanThu, soTienMotDiem);
             }
         }
 

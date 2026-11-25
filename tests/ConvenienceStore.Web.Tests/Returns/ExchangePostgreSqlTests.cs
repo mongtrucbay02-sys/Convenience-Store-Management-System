@@ -6,6 +6,8 @@ using ConvenienceStore.Web.Modules.Returns.Services;
 using ConvenienceStore.Web.Services.Pos;
 using ConvenienceStore.Web.Shared.Errors;
 using ConvenienceStore.Web.Tests.Inventory;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ConvenienceStore.Web.Tests.Returns;
@@ -17,12 +19,12 @@ public sealed class ExchangePostgreSqlTests(CsdlKhoFixture fixture)
     private readonly TimeProvider clock = new InvoiceLookupServiceTests.FixedTime(Now);
 
     [Theory]
-    [InlineData(20000, 3, 3, 0, 0, 0)]
-    [InlineData(30000, 3, 4, 2, 10000, 12000)]
+    [InlineData(20000, 3, 3, 0, 0, 0, 0)]
+    [InlineData(30000, 3, 4, 2, 10000, 20000, 1)]
     public async Task CompletesExchangeWithStockLinkedInvoicesCashAndRevenue(
-        long newPrice, int stock, int originalAfter, int newAfter, long cashDue, long received)
+        long newPrice, int stock, int originalAfter, int newAfter, long cashDue, long received, int pointsEarned)
     {
-        var s = await SeedAsync(newPrice, stock, sameProduct: cashDue == 0);
+        var s = await SeedAsync(newPrice, stock, sameProduct: cashDue == 0, member: true);
         var cashBefore = await Scalar("SELECT so_du FROM quy_tien_mat");
         await using var db = fixture.TaoDbContext();
         var exchange = Service(db);
@@ -47,9 +49,37 @@ public sealed class ExchangePostgreSqlTests(CsdlKhoFixture fixture)
         Assert.Equal(cashDue, await Scalar("SELECT COALESCE(SUM(so_tien),0) FROM giao_dich_tien_mat WHERE hoa_don_id=@id", ("@id", receipt.NewInvoiceId)));
         Assert.Equal(1, await Scalar("SELECT COUNT(*) FROM the_kho WHERE loai_bien_dong='TRA_HANG' AND chung_tu_id=@id", ("@id", id)));
         Assert.Equal(1, await Scalar("SELECT COUNT(*) FROM the_kho WHERE loai_bien_dong='BAN_HANG' AND chung_tu_id=@id", ("@id", receipt.NewInvoiceId)));
-        var reports = await new PostgreSqlTransactionalReportsDataSource(db)
-            .GetReturnsAsync(Now.AddHours(-1), Now.AddHours(1), default);
-        Assert.Equal(20000, Assert.Single(reports, x => x.Id == id).Lines.Single().RefundAmount);
+        Assert.Equal(pointsEarned, await Scalar("SELECT diem_cong FROM hoa_don WHERE id=@id", ("@id", receipt.NewInvoiceId)));
+        Assert.Equal(2, await Scalar("SELECT diem_thu_hoi FROM phieu_doi_tra WHERE id=@id", ("@id", id)));
+        Assert.Equal(pointsEarned, await Scalar("SELECT diem_hien_co FROM khach_hang WHERE id=@id", ("@id", s.Customer)));
+
+        var reports = new PostgreSqlTransactionalReportsDataSource(db);
+        var returned = await reports.GetReturnsAsync(Now.AddHours(-1), Now.AddHours(1), default);
+        var sales = await reports.GetPaidInvoicesAsync(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(1), default);
+        var sale = Assert.Single(sales, x => x.Id == receipt.NewInvoiceId);
+        var deduction = Assert.Single(Assert.Single(returned, x => x.Id == id).Lines).RefundAmount;
+        var gross = sale.Lines.Sum(x => x.Quantity * x.ListPriceSnapshot);
+        Assert.Equal(newPrice, gross - sale.PromotionDiscount);
+        Assert.Equal(20000, deduction);
+        Assert.Equal(cashDue, gross - sale.PromotionDiscount - deduction);
+    }
+
+    [Fact]
+    public async Task PosDoesNotAddAnOutOfStockReplacement()
+    {
+        var s = await SeedAsync(30000, 0);
+        await fixture.ChayAsync("DELETE FROM ct_gio_hang WHERE gio_hang_id=@cart", ("@cart", s.Cart));
+        await fixture.ChayAsync("""
+            INSERT INTO lich_su_gia(san_pham_id, gia_ban, hieu_luc_tu, nguoi_tao_id)
+            VALUES (@product, 30000, NOW() - INTERVAL '1 day', @admin)
+            """, ("@product", s.NewProduct), ("@admin", fixture.TaiKhoanAdminId));
+        var config = new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?> { ["ConnectionStrings:CuaHang"] = fixture.ChuoiKetNoi }).Build();
+        var http = new HttpContextAccessor { HttpContext = new DefaultHttpContext { User = Cashier(s.Cashier) } };
+        var cart = new PosCartService(http, new PostgreSqlPosCatalog(config));
+
+        Assert.Equal("Chỉ còn 0 sản phẩm.", await cart.AddAsync(s.NewProduct));
+        Assert.Equal(0, await Scalar("SELECT COUNT(*) FROM ct_gio_hang WHERE gio_hang_id=@cart", ("@cart", s.Cart)));
     }
 
     [Theory]
@@ -59,9 +89,14 @@ public sealed class ExchangePostgreSqlTests(CsdlKhoFixture fixture)
     {
         var s = await SeedAsync(price, stock);
         await using var db = fixture.TaoDbContext();
-        var error = await Assert.ThrowsAsync<LoiNghiepVu>(() => Service(db).PreviewAsync(Request(s), Cashier(s.Cashier)));
-        Assert.Equal(status, error.MaHttp);
-        Assert.Equal(code, error.Ma);
+        var service = Service(db);
+        var request = Request(s);
+        var cashier = Cashier(s.Cashier);
+        var previewError = await Assert.ThrowsAsync<LoiNghiepVu>(() => service.PreviewAsync(request, cashier));
+        var createError = await Assert.ThrowsAsync<LoiNghiepVu>(() => service.CreateAsync(request, cashier));
+        Assert.Equal(status, previewError.MaHttp);
+        Assert.Equal(code, previewError.Ma);
+        Assert.Equal(code, createError.Ma);
         Assert.Equal(0, await CountExchanges(s));
     }
 

@@ -1,22 +1,23 @@
-using ConvenienceStore.Web.Data.Entities;
-
 namespace ConvenienceStore.Web.Modules.Purchasing;
 
 /// <summary>NH-09: lịch sử nhập kho của một nhà cung cấp, chỉ tính phiếu đã nhập kho.</summary>
 public sealed record SupplierPurchaseHistory(
-    IReadOnlyList<NhaCungCap> Suppliers,
-    NhaCungCap? Supplier,
+    IReadOnlyList<SupplierPurchaseSupplier> Suppliers,
+    SupplierPurchaseSupplier? Supplier,
     DateOnly? From,
     DateOnly? To,
     int ReceiptCount,
     long TotalValue,
     IReadOnlyList<SupplierPurchaseReceiptRow> Receipts,
     bool HasMoreReceipts,
-    IReadOnlyList<SupplierPurchaseProductRow> Products)
+    IReadOnlyList<SupplierPurchaseProductRow> Products,
+    int Page)
 {
-    public const int MaxReceipts = 50;
-    public const int MaxProducts = 20;
+    public const int ReceiptsPerPage = 50;
+    public const int MaxPage = 100000;
 }
+
+public sealed record SupplierPurchaseSupplier(long Id, string Code, string Name);
 
 public sealed record SupplierPurchaseReceiptRow(long Id, string Code, DateOnly ReceivedOn, int LineCount, long Total);
 

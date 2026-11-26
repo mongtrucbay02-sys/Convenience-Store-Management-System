@@ -1,8 +1,10 @@
 @model ConvenienceStore.Web.Modules.Purchasing.SupplierPurchaseHistory
 @using System.Globalization
+@using ConvenienceStore.Web.Modules.Purchasing
 @{
     ViewData["Title"] = "Lịch sử nhập theo nhà cung cấp";
     var inv = CultureInfo.InvariantCulture;
+    var vi = CultureInfo.GetCultureInfo("vi-VN");
     var from = Model.From?.ToString("yyyy-MM-dd", inv);
     var to = Model.To?.ToString("yyyy-MM-dd", inv);
 }
@@ -15,7 +17,7 @@
         <option value="">Chọn nhà cung cấp</option>
         @foreach (var supplier in Model.Suppliers)
         {
-            <option value="@supplier.Id" selected="@(Model.Supplier?.Id == supplier.Id)">@supplier.Ten (@supplier.Ma)</option>
+            <option value="@supplier.Id.ToString(inv)" selected="@(Model.Supplier?.Id == supplier.Id)">@supplier.Name (@supplier.Code)</option>
         }
     </select>
     <label>Từ ngày <input class="form-control" type="date" name="from" value="@from" /></label>
@@ -29,15 +31,15 @@
 }
 else if (Model.ReceiptCount == 0)
 {
-    <p class="alert alert-info" data-nh09-empty>Nhà cung cấp @Model.Supplier.Ten chưa có phiếu nhập kho trong khoảng thời gian đã chọn.</p>
+    <p class="alert alert-info" data-nh09-empty>Nhà cung cấp @Model.Supplier.Name chưa có phiếu nhập kho trong khoảng thời gian đã chọn.</p>
 }
 else
 {
     <section aria-label="Tổng quan nhập hàng" class="mb-3">
-        <h2 class="h5">@Model.Supplier.Ten</h2>
+        <h2 class="h5">@Model.Supplier.Name</h2>
         <p>
-            Số phiếu đã nhập kho: <strong data-nh09-receipts="@Model.ReceiptCount.ToString(inv)">@Model.ReceiptCount.ToString("N0")</strong>
-            · Tổng giá trị nhập: <strong data-nh09-total="@Model.TotalValue.ToString(inv)">@Model.TotalValue.ToString("N0") đ</strong>
+            Số phiếu đã nhập kho: <strong data-nh09-receipts="@Model.ReceiptCount.ToString(inv)">@Model.ReceiptCount.ToString("N0", vi)</strong>
+            · Tổng giá trị nhập: <strong data-nh09-total="@Model.TotalValue.ToString(inv)">@Model.TotalValue.ToString("N0", vi) đ</strong>
         </p>
         <p class="text-muted">Chỉ tính phiếu đã xác nhận nhập kho; phiếu nháp và phiếu đã hủy không được tính.</p>
     </section>
@@ -51,10 +53,11 @@ else
         {
             <tr data-nh09-product="@row.ProductId.ToString(inv)" data-receipts="@row.ReceiptCount.ToString(inv)"
                 data-quantity="@row.TotalQuantity.ToString(inv)" data-value="@row.TotalValue.ToString(inv)"
-                data-min="@row.MinPrice.ToString(inv)" data-max="@row.MaxPrice.ToString(inv)" data-latest="@row.LatestPrice.ToString(inv)">
-                <td>@row.ProductName</td><td>@row.Unit</td><td>@row.ReceiptCount.ToString("N0")</td><td>@row.TotalQuantity.ToString("N0")</td>
-                <td>@row.TotalValue.ToString("N0") đ</td><td>@row.MinPrice.ToString("N0") đ</td><td>@row.MaxPrice.ToString("N0") đ</td>
-                <td>@row.LatestPrice.ToString("N0") đ</td><td>@row.LatestReceivedOn.ToString("dd/MM/yyyy")</td>
+                data-min="@row.MinPrice.ToString(inv)" data-max="@row.MaxPrice.ToString(inv)" data-latest="@row.LatestPrice.ToString(inv)"
+                data-latest-date="@row.LatestReceivedOn.ToString("yyyy-MM-dd", inv)">
+                <td>@row.ProductName</td><td>@row.Unit</td><td>@row.ReceiptCount.ToString("N0", vi)</td><td>@row.TotalQuantity.ToString("N0", vi)</td>
+                <td>@row.TotalValue.ToString("N0", vi) đ</td><td>@row.MinPrice.ToString("N0", vi) đ</td><td>@row.MaxPrice.ToString("N0", vi) đ</td>
+                <td>@row.LatestPrice.ToString("N0", vi) đ</td><td>@row.LatestReceivedOn.ToString("dd/MM/yyyy", inv)</td>
             </tr>
         }
         </tbody>
@@ -70,14 +73,21 @@ else
         {
             <tr data-nh09-receipt="@row.Code">
                 <td><a asp-controller="PurchaseReceipts" asp-action="Details" asp-route-id="@row.Id">@row.Code</a></td>
-                <td>@row.ReceivedOn.ToString("dd/MM/yyyy")</td><td>@row.LineCount.ToString("N0")</td><td>@row.Total.ToString("N0") đ</td>
+                <td>@row.ReceivedOn.ToString("dd/MM/yyyy", inv)</td><td>@row.LineCount.ToString("N0", vi)</td><td>@row.Total.ToString("N0", vi) đ</td>
             </tr>
         }
         </tbody>
     </table>
     </div>
-    @if (Model.HasMoreReceipts)
-    {
-        <p class="text-muted">Chỉ hiển thị @Model.Receipts.Count phiếu gần nhất. Thu hẹp khoảng thời gian để xem phiếu cũ hơn.</p>
-    }
+    <nav class="smartmart-action-row mt-3" aria-label="Phân trang phiếu nhập">
+        @if (Model.Page > 1)
+        {
+            <a asp-action="Index" asp-route-supplierId="@Model.Supplier.Id" asp-route-from="@from" asp-route-to="@to" asp-route-page="@(Model.Page - 1)">Trang trước</a>
+        }
+        <span>Trang @Model.Page.ToString("N0", vi) · Tối đa @SupplierPurchaseHistory.ReceiptsPerPage phiếu mỗi trang</span>
+        @if (Model.HasMoreReceipts && Model.Page < SupplierPurchaseHistory.MaxPage)
+        {
+            <a asp-action="Index" asp-route-supplierId="@Model.Supplier.Id" asp-route-from="@from" asp-route-to="@to" asp-route-page="@(Model.Page + 1)">Trang sau</a>
+        }
+    </nav>
 }

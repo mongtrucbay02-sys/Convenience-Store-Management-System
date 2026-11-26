@@ -1,0 +1,83 @@
+@model ConvenienceStore.Web.Modules.Purchasing.SupplierPurchaseHistory
+@using System.Globalization
+@{
+    ViewData["Title"] = "Lịch sử nhập theo nhà cung cấp";
+    var inv = CultureInfo.InvariantCulture;
+    var from = Model.From?.ToString("yyyy-MM-dd", inv);
+    var to = Model.To?.ToString("yyyy-MM-dd", inv);
+}
+<h1>Lịch sử nhập theo nhà cung cấp</h1>
+<nav class="smartmart-action-row" aria-label="Điều hướng nhập hàng">
+    <a class="btn btn-outline-primary" asp-controller="PurchaseReceipts" asp-action="Index">Danh sách phiếu nhập</a>
+</nav>
+<form asp-action="Index" method="get" class="smartmart-filter-row">
+    <select class="form-select" name="supplierId" aria-label="Nhà cung cấp" required>
+        <option value="">Chọn nhà cung cấp</option>
+        @foreach (var supplier in Model.Suppliers)
+        {
+            <option value="@supplier.Id" selected="@(Model.Supplier?.Id == supplier.Id)">@supplier.Ten (@supplier.Ma)</option>
+        }
+    </select>
+    <label>Từ ngày <input class="form-control" type="date" name="from" value="@from" /></label>
+    <label>Đến ngày <input class="form-control" type="date" name="to" value="@to" /></label>
+    <button type="submit" class="btn btn-primary">Xem lịch sử</button>
+</form>
+
+@if (Model.Supplier is null)
+{
+    <p>Chọn nhà cung cấp và khoảng thời gian để xem lịch sử nhập kho.</p>
+}
+else if (Model.ReceiptCount == 0)
+{
+    <p class="alert alert-info" data-nh09-empty>Nhà cung cấp @Model.Supplier.Ten chưa có phiếu nhập kho trong khoảng thời gian đã chọn.</p>
+}
+else
+{
+    <section aria-label="Tổng quan nhập hàng" class="mb-3">
+        <h2 class="h5">@Model.Supplier.Ten</h2>
+        <p>
+            Số phiếu đã nhập kho: <strong data-nh09-receipts="@Model.ReceiptCount.ToString(inv)">@Model.ReceiptCount.ToString("N0")</strong>
+            · Tổng giá trị nhập: <strong data-nh09-total="@Model.TotalValue.ToString(inv)">@Model.TotalValue.ToString("N0") đ</strong>
+        </p>
+        <p class="text-muted">Chỉ tính phiếu đã xác nhận nhập kho; phiếu nháp và phiếu đã hủy không được tính.</p>
+    </section>
+
+    <h2 class="h5">Mặt hàng thường nhập và biến động giá nhập</h2>
+    <div class="table-responsive smartmart-data-table" role="region" aria-label="Mặt hàng thường nhập" tabindex="0">
+    <table class="table table-hover align-middle mb-0">
+        <thead><tr><th>Sản phẩm</th><th>ĐVT</th><th>Số lần nhập</th><th>Tổng SL</th><th>Tổng giá trị</th><th>Giá thấp nhất</th><th>Giá cao nhất</th><th>Giá gần nhất</th><th>Ngày nhập gần nhất</th></tr></thead>
+        <tbody>
+        @foreach (var row in Model.Products)
+        {
+            <tr data-nh09-product="@row.ProductId.ToString(inv)" data-receipts="@row.ReceiptCount.ToString(inv)"
+                data-quantity="@row.TotalQuantity.ToString(inv)" data-value="@row.TotalValue.ToString(inv)"
+                data-min="@row.MinPrice.ToString(inv)" data-max="@row.MaxPrice.ToString(inv)" data-latest="@row.LatestPrice.ToString(inv)">
+                <td>@row.ProductName</td><td>@row.Unit</td><td>@row.ReceiptCount.ToString("N0")</td><td>@row.TotalQuantity.ToString("N0")</td>
+                <td>@row.TotalValue.ToString("N0") đ</td><td>@row.MinPrice.ToString("N0") đ</td><td>@row.MaxPrice.ToString("N0") đ</td>
+                <td>@row.LatestPrice.ToString("N0") đ</td><td>@row.LatestReceivedOn.ToString("dd/MM/yyyy")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+
+    <h2 class="h5 mt-4">Phiếu đã nhập kho</h2>
+    <div class="table-responsive smartmart-data-table" role="region" aria-label="Phiếu đã nhập kho" tabindex="0">
+    <table class="table table-hover align-middle mb-0">
+        <thead><tr><th>Mã phiếu</th><th>Ngày nhập</th><th>Số mặt hàng</th><th>Tổng tiền</th></tr></thead>
+        <tbody>
+        @foreach (var row in Model.Receipts)
+        {
+            <tr data-nh09-receipt="@row.Code">
+                <td><a asp-controller="PurchaseReceipts" asp-action="Details" asp-route-id="@row.Id">@row.Code</a></td>
+                <td>@row.ReceivedOn.ToString("dd/MM/yyyy")</td><td>@row.LineCount.ToString("N0")</td><td>@row.Total.ToString("N0") đ</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+    @if (Model.HasMoreReceipts)
+    {
+        <p class="text-muted">Chỉ hiển thị @Model.Receipts.Count phiếu gần nhất. Thu hẹp khoảng thời gian để xem phiếu cũ hơn.</p>
+    }
+}

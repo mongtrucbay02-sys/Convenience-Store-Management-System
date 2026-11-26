@@ -74,25 +74,8 @@ builder.Services.AddScoped<
 // 2. KẾT NỐI CSDL
 // ==========================================
 
-var connectionString = PostgreSqlEnv.GetConnectionString(
-    builder.Environment.ContentRootPath, builder.Configuration);
-
-if (string.IsNullOrWhiteSpace(connectionString))
-{
-    throw new InvalidOperationException(
-        "Chưa cấu hình ConnectionStrings:CuaHang. " +
-        "Hãy đặt ConnectionStrings__CuaHang trong file .env cạnh project " +
-        "ConvenienceStore.Web hoặc truyền qua biến môi trường.");
-}
-
-var databaseProvider = PostgreSqlEnv.GetProvider(builder.Environment.ContentRootPath, builder.Configuration);
-connectionString = SqlDialect.PostgresConnectionString(connectionString);
-builder.Configuration["ConnectionStrings:CuaHang"] = connectionString;
-builder.Configuration["Database:Provider"] = databaseProvider;
-builder.Services.AddDbContext<CuaHangDbContext>(options =>
-{
-    options.UseNpgsql(connectionString, postgres => postgres.SetPostgresVersion(17, 0));
-});
+// Đọc .env / biến môi trường, chuẩn hóa chuỗi kết nối và đăng ký DbContext (Data/KetNoiCsdl.cs).
+builder.AddCuaHangDatabase();
 
 // ==========================================
 // 3. SERVICE POS-01, POS-02, POS-05, POS-07, POS-09

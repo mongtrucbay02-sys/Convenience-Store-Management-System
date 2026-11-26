@@ -1,24 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+
 namespace ConvenienceStore.Web.Data;
+
 public partial class CuaHangDbContext
 {
-    // Scaffolding omits some CLR-zero defaults. Raw INSERTs still require the
-    // database defaults, so retain the captured catalog definitions explicitly.
+    // Scaffold bỏ sót một số default bằng giá trị CLR; giữ SQL gốc để model khớp CSDL.
     private static void ConfigurePostgreSqlDefaults(ModelBuilder builder)
     {
-        void Default(string table, string column, string sql)
-        {
-            var entity=builder.Model.GetEntityTypes().Single(e=>e.GetSchema()=="smartmart" && e.GetTableName()==table);
-            var store=StoreObjectIdentifier.Table(table,"smartmart");
-            var property=entity.GetProperties().Single(p=>p.GetColumnName(store)==column);
-            if(property.FindAnnotation(RelationalAnnotationNames.DefaultValue) is null
-                && property.GetDefaultValueSql() is null)
-            {
-                property.SetDefaultValueSql(sql);
-                property.ValueGenerated=ValueGenerated.OnAdd;
-            }
-        }
         Default("bo_dem_chung_tu", "so_cuoi", "0");
         Default("chuong_trinh_khuyen_mai", "chi_thanh_vien", "false");
         Default("ct_gio_hang", "giam_don_vi", "0");
@@ -43,5 +32,19 @@ public partial class CuaHangDbContext
         Default("tai_khoan", "so_lan_sai", "0");
         Default("ton_kho", "so_luong_ton", "0");
         Default("ton_kho", "gia_von_binh_quan", "0");
+
+        void Default(string table, string column, string sql)
+        {
+            var entity = builder.Model.GetEntityTypes()
+                .Single(e => e.GetSchema() == "smartmart" && e.GetTableName() == table);
+            var store = StoreObjectIdentifier.Table(table, "smartmart");
+            var property = entity.GetProperties().Single(p => p.GetColumnName(store) == column);
+            if (property.FindAnnotation(RelationalAnnotationNames.DefaultValue) is null
+                && property.GetDefaultValueSql() is null)
+            {
+                property.SetDefaultValueSql(sql);
+                property.ValueGenerated = ValueGenerated.OnAdd;
+            }
+        }
     }
 }

@@ -5,7 +5,7 @@ namespace ConvenienceStore.Web.Data;
 
 public partial class CuaHangDbContext
 {
-    private void ConfigurePostgreSqlModel(ModelBuilder modelBuilder)
+    private static void ConfigurePostgreSqlModel(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<BoDemChungTu>(entity =>
         {
@@ -1426,7 +1426,5 @@ public partial class CuaHangDbContext
         ConfigurePostgreSqlConstraints(modelBuilder);
         ConfigurePostgreSqlDefaults(modelBuilder);
         ConvenienceStore.Web.Shared.Data.VietnameseSearch.Configure(modelBuilder);
-        OnModelCreatingPartial(modelBuilder);
     }
-
 }

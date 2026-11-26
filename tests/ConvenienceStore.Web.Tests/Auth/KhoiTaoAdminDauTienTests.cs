@@ -15,8 +15,8 @@ public sealed class AdminDauTienCollection : ICollectionFixture<CsdlPostgreSqlTa
 }
 
 /// <summary>
-/// T4-16: tài khoản Admin đầu tiên (auth-giai-thich.md mục 9.1). Chạy trên MySQL thật vì cần
-/// CHECK, collation không phân biệt hoa thường và dữ liệu vai_tro do migration tạo.
+/// T4-16: tài khoản Admin đầu tiên (auth-giai-thich.md mục 9.1). Chạy trên PostgreSQL 17 thật vì cần
+/// CHECK, ràng buộc unique và dữ liệu vai_tro do migration tạo.
 /// </summary>
 [Collection(AdminDauTienCollection.Ten)]
 [Trait("Category", "AdminDauTien")]

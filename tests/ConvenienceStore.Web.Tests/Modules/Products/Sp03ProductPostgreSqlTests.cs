@@ -17,7 +17,7 @@ public sealed class Sp03ProductPostgreSqlTests(CsdlPostgreSqlTam database) : ICl
         var actor = Convert.ToUInt32(await database.DocMotGiaTriAsync("SELECT nguoi_tao_id FROM san_pham WHERE id=@id", ("@id", ids.Active)));
         await using var db = database.TaoDbContext();
         var repo = new EfProductCreationRepository(db, new DichVuKho(db, NullLogger<DichVuKho>.Instance));
-        var input = Sp03ProductUnitTests.Valid() with { Ma = "MYSQL-" + Guid.NewGuid().ToString("N")[..12], DanhMucId = ids.Category };
+        var input = Sp03ProductUnitTests.Valid() with { Ma = "SP03-" + Guid.NewGuid().ToString("N")[..12], DanhMucId = ids.Category };
         var id = await repo.CreateAsync(input, actor);
         var stock = await db.TonKhos.AsNoTracking().SingleAsync(x => x.SanPhamId == id); Assert.Equal(0, stock.SoLuongTon); Assert.Equal(0, stock.GiaVonBinhQuan); Assert.Equal(5, stock.NguongToiThieu);
         Assert.Equal(1, await db.LichSuGia.CountAsync(x => x.SanPhamId == id));

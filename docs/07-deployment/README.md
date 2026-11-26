@@ -22,7 +22,7 @@ Hướng dẫn **đưa hệ thống lên môi trường chạy** (demo/staging/p
 | `release-notes/` | Ghi chú phát hành theo phiên bản (`vX.Y.Z.md`) | Chưa có |
 | `rollback.md` | Cách quay lại phiên bản trước khi triển khai lỗi | Chưa có |
 
-> Cấu hình kết nối MySQL hiện được mô tả ở [`05-implementation/setup/mysql-reports-setup.md`](../05-implementation/setup/mysql-reports-setup.md); `configuration.md` nên dẫn tới đó thay vì chép lại.
+> Cấu hình kết nối PostgreSQL/Supabase: xem `CONTRIBUTING.md` mục 4.2 và [`05-implementation/setup/postgresql-runtime-setup.md`](../05-implementation/setup/postgresql-runtime-setup.md). Hướng dẫn MySQL cũ đã lưu trữ ở `docs/archive/mysql-runtime/`.
 
 ## Tiêu chí hoàn thành
 - [ ] Một thành viên chưa tham gia triển khai làm theo `deployment-guide.md` và chạy được hệ thống.

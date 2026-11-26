@@ -6,7 +6,7 @@ namespace ConvenienceStore.Web.Data;
 /// <summary>
 /// Đọc cấu hình kết nối CSDL và đăng ký <see cref="CuaHangDbContext"/>.
 /// Thứ tự ưu tiên của mỗi khóa: biến môi trường → file <c>.env</c> cạnh project → appsettings.
-/// Chỉ đọc/ghi dữ liệu; không bao giờ chạy migration hay tạo bảng trên CSDL dùng chung.
+/// Chỉ đăng ký kết nối; không chạy migration hay tạo bảng trên CSDL dùng chung.
 /// </summary>
 public static class KetNoiCsdl
 {

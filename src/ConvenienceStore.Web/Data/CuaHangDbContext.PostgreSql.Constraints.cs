@@ -4,13 +4,11 @@ namespace ConvenienceStore.Web.Data;
 
 public partial class CuaHangDbContext
 {
-    // Catalog-derived constraints; mapping does not apply or modify the live schema.
+    // Giữ metadata từ catalog để model khớp schema; không chạy DDL trên CSDL.
     private static void ConfigurePostgreSqlConstraints(ModelBuilder modelBuilder)
     {
         var tables = modelBuilder.Model.GetEntityTypes().Where(e => e.GetSchema() == "smartmart" && e.GetTableName() is not null)
             .ToDictionary(e => e.GetTableName()!);
-        void Check(string table, string name, string expression) => tables[table].AddCheckConstraint(name, expression);
-        void Trigger(string table, string name) => tables[table].AddTrigger(name);
         Check("bo_dem_chung_tu", "ck_bo_dem_tien_to", "((tien_to)::text = ANY ((ARRAY['PN'::character varying, 'HD'::character varying, 'TH'::character varying, 'KK'::character varying, 'XH'::character varying, 'SP'::character varying, 'NCC'::character varying, 'KM'::character varying])::text[]))");
         Check("chuong_trinh_khuyen_mai", "ck_chuong_trinh_khuyen_mai_loai_giam_enum", "((loai_giam)::text = ANY ((ARRAY['PHAN_TRAM'::character varying, 'SO_TIEN'::character varying])::text[]))");
         Check("chuong_trinh_khuyen_mai", "ck_chuong_trinh_khuyen_mai_trang_thai_enum", "((trang_thai)::text = ANY ((ARRAY['NHAP'::character varying, 'DA_KICH_HOAT'::character varying, 'TAM_DUNG'::character varying, 'DA_KET_THUC'::character varying])::text[]))");
@@ -117,5 +115,8 @@ public partial class CuaHangDbContext
         Trigger("san_pham", "trg_san_pham_updated");
         Trigger("tai_khoan", "trg_tai_khoan_updated");
         Trigger("ton_kho", "trg_ton_kho_updated");
+
+        void Check(string table, string name, string expression) => tables[table].AddCheckConstraint(name, expression);
+        void Trigger(string table, string name) => tables[table].AddTrigger(name);
     }
 }

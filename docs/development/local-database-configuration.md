@@ -27,7 +27,7 @@ Ví dụ cấu trúc (thay các placeholder trực tiếp trong User Secrets):
 }
 ```
 
-Có thể cấu hình bằng biến môi trường ConnectionStrings__CuaHang. .NET không tự đọc file .env nếu không có thành phần nạp riêng; mẫu .env.example dành để tham khảo hoặc cho môi trường triển khai sử dụng.
+Có thể cấu hình bằng biến môi trường ConnectionStrings__CuaHang hoặc file `src/ConvenienceStore.Web/.env` (app tự nạp qua `PostgreSqlEnv`). Mẫu duy nhất: `src/ConvenienceStore.Web/.env.example`.
 
 ## Kiểm tra trước khi push
 

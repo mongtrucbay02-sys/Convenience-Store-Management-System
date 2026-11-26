@@ -4,7 +4,7 @@ using Xunit;
 namespace ConvenienceStore.Web.Tests.Inventory;
 
 /// <summary>
-/// T4-17: CSDL MySQL thật dùng chung cho các lớp test dịch vụ "Ghi nhận biến động kho"
+/// T4-17: CSDL PostgreSQL 17 thật dùng chung cho các lớp test dịch vụ "Ghi nhận biến động kho"
 /// (UT-01 → UT-13, Tài liệu dịch vụ kho 1.2 mục 6).
 /// </summary>
 /// <remarks>

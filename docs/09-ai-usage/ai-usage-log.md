@@ -26,6 +26,8 @@ Các mã `AI-TRUNG-*` dùng tiền tố riêng để tránh trùng số với c�
 
 ## Bổ sung 26/11/2026 — NH-09
 
+PR [#294](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/294) vào `develop`, reviewer độc lập đã mời: Thăng (`zlatanofficial111-netizen`). Kết quả local cuối: 857/857 PASS, gồm 31/31 NH-09; chưa có người review độc lập/staging tại lúc ghi.
+
 | Mã | Ngày | Thành viên | Giai đoạn (00–10) | Công cụ | Mục đích | Sản phẩm bị ảnh hưởng (file/PR) | Mức độ | Người kiểm chứng | Ghi chú |
 |---|---|---|---|---|---|---|---|---|---|
 | AI-YEN-NH09-001 | 2026-11-26 | Phan Hải Yến (#2) | 05, 06, 09 | OpenAI Codex | Kiểm chứng bản nháp NH-09, bổ sung test trước sửa production, tách service, sửa validation/paging/Razor, lập bằng chứng và tự chấm điểm cho issue #146 | `SupplierPurchaseHistoryController.cs`, `SupplierPurchaseHistoryService.cs`, `SupplierPurchaseHistoryModels.cs`, `Program.cs`, hai view Purchasing, `_AdminLayout.cshtml`, `SupplierPurchaseHistoryTests.cs`, `docs/05-implementation/NH09.md`, ma trận nghiệm thu | Sửa một phần bản nháp; tạo phần lớn test và service/tài liệu bổ sung | Chờ Thăng review độc lập | RED 21/29 PASS và 8 FAIL đúng nguyên nhân trên PostgreSQL 17 cô lập; kết quả GREEN/full suite, SHA và giới hạn ghi tại NH09.md. Không chạy test ghi Supabase chung; chưa có trình duyệt để kiểm tra trực quan, chưa nghiệm thu staging |

@@ -56,6 +56,10 @@
                 {
                     <a asp-area="" asp-controller="PurchaseReceipts" asp-action="Index">Phiếu nhập hàng</a>
                 }
+                @if (User.HasClaim("quyen", MaQuyen.NhapHangLichSuNcc))
+                {
+                    <a asp-area="" asp-controller="SupplierPurchaseHistory" asp-action="Index">Lịch sử nhập theo NCC</a>
+                }
                 @if (User.HasClaim("quyen", MaQuyen.TonKhoXem))
                 {
                     <a asp-area="" asp-controller="StockOverview" asp-action="Index">Tồn kho</a>

@@ -133,6 +133,7 @@ builder.Services.AddModuleAuth();
 builder.Services.AddModuleInventory();
 builder.Services.AddModuleProducts();
 builder.Services.AddScoped<PurchaseReceiptService>();
+builder.Services.AddScoped<SupplierPurchaseHistoryService>();
 
 // Đổi trả
 builder.Services.AddModuleReturns();

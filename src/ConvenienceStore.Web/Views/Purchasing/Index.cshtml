@@ -11,6 +11,10 @@
     {
         <a class="btn btn-primary" asp-action="Create">Lập phiếu nhập</a>
     }
+    @if (User.HasClaim("quyen", MaQuyen.NhapHangLichSuNcc))
+    {
+        <a class="btn btn-outline-primary" asp-controller="SupplierPurchaseHistory" asp-action="Index">Lịch sử nhập theo NCC</a>
+    }
 </nav>
 <form asp-action="Index" method="get" class="smartmart-filter-row">
     <input class="form-control" name="q" value="@ViewBag.Term" placeholder="Mã phiếu hoặc nhà cung cấp" aria-label="Tìm phiếu nhập">

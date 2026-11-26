@@ -184,7 +184,14 @@ internal sealed class PostgreSqlSmokeSession : ISmokeSession
     {
         if (!_readOnly || _transaction is null)
             throw new SmokeValidationException("ReadOnlyGuardNotApplied");
-        await using var command = new NpgsqlCommand(SmokeRoleGuard.Query, _connection, _transaction);
+        return await ReadRoleEvidenceAsync(_connection, _transaction);
+    }
+
+    // Shared with isolated PostgreSQL integration tests; production uses the same transaction.
+    internal static async Task<SmokeRoleEvidence> ReadRoleEvidenceAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction)
+    {
+        await using var command = new NpgsqlCommand(SmokeRoleGuard.Query, connection, transaction);
         await using var reader = await command.ExecuteReaderAsync();
         if (!await reader.ReadAsync())
             throw new SmokeValidationException("RoleEvidenceUnavailable");

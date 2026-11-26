@@ -12,6 +12,6 @@ dotnet run --project src/ConvenienceStore.Web --no-launch-profile
 
 Routes remain `/login.html`, `/Dashboard`, `/Products`, `/Categories`, `/Customers`, `/NhaCungCap`, `/NhapHang`, `/Kho`, `/Kho/ChungTu`, `/CashLedger`, `/Promotions/Promotions` and `/Reports/Reports/Dashboard`. The cashier uses `/Pos`. Existing role restrictions and CSRF remain enforced. A forced-password session must change its password before business routes are accessible.
 
-All write tests require a disposable loopback PostgreSQL 17 connection through `ConnectionStrings__CuaHangPostgreSqlTest`. No MySQL test connection is needed. CI uses a PostgreSQL 17 service, runs the entire suite, validates the TRX and verifies the release dependency graph. Shared Supabase is never a fixture target.
+Tests run in CI only: `SmartMart CI / Build and test` starts a disposable PostgreSQL 17 service, passes it through `ConnectionStrings__CuaHangPostgreSqlTest`, runs the entire suite, validates the TRX and verifies the release dependency graph. Team members do not need a local PostgreSQL. Shared Supabase is never a fixture target.
 
 The dated transitional setup is preserved in [archive](../../archive/postgresql-transition-20261123/postgresql-runtime-setup.md).

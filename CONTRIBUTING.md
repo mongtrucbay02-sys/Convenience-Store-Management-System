@@ -61,7 +61,7 @@ CSDL của nhóm là project Supabase `cgspynsairbgvawfuhbu`, schema `smartmart`
   - `src/ConvenienceStore.Web/Data/Migrations/`
   - `src/ConvenienceStore.Web/Data/Entities/`
   - `src/ConvenienceStore.Web/Data/CuaHangDbContext*.cs`
-- **Cấm** chạy `dotnet ef database update`, `dotnet ef migrations add` hay bất kỳ lệnh `CREATE/ALTER/DROP` nào trỏ vào Supabase. Lệnh `dotnet ef` chỉ dùng cho PostgreSQL 17 trên máy mình.
+- **Cấm** chạy `dotnet ef database update`, `dotnet ef migrations add` hay bất kỳ lệnh `CREATE/ALTER/DROP` nào trỏ vào Supabase. Không chạy lệnh `dotnet ef` nào để cập nhật CSDL; cấu trúc CSDL chỉ do Yến thay đổi.
 
 ### 4.2. Kết nối CSDL để code task
 
@@ -71,7 +71,7 @@ CSDL của nhóm là project Supabase `cgspynsairbgvawfuhbu`, schema `smartmart`
    - `Username` luôn là `smartmart_backend.<PROJECT_REF>` (qua pooler). Role này chỉ đọc/ghi dữ liệu, **không có quyền tạo hay sửa bảng**.
    - Không dùng tài khoản `postgres` (quản trị). Chỉ Yến giữ mật khẩu này.
 4. Chạy `dotnet run --project src/ConvenienceStore.Web`. `Data/KetNoiCsdl.cs` tự đọc theo thứ tự: biến môi trường → `.env` → `appsettings`, tự ép `Search Path=smartmart` và múi giờ `Asia/Ho_Chi_Minh`.
-5. `dotnet test` **không** đọc `.env`: đặt `ConnectionStrings__CuaHangPostgreSqlTest` (PostgreSQL 17 trên máy mình, chỉ `localhost`) làm biến môi trường trong terminal.
+5. **Không cần cài PostgreSQL hay chạy `dotnet test` trên máy.** Khi mở PR, CI (`SmartMart CI / Build and test`) tự dựng PostgreSQL 17 tạm, chạy toàn bộ test rồi xóa. Xem kết quả ở tab **Checks** của PR; đỏ thì bấm vào để xem test lỗi.
 
 ### 4.3. Không đưa bí mật lên Git
 
@@ -83,4 +83,4 @@ CSDL của nhóm là project Supabase `cgspynsairbgvawfuhbu`, schema `smartmart`
 ### 4.4. Dữ liệu trên Supabase dùng chung
 
 - Supabase là dữ liệu chung của cả nhóm và dữ liệu demo. Chỉ thao tác qua giao diện app khi chạy thử; không xóa hàng loạt, không reset, không seed đại trà.
-- Test tự động chạy trên PostgreSQL 17 cục bộ (`ConnectionStrings__CuaHangPostgreSqlTest`, chỉ chấp nhận `localhost`). Không trỏ test vào Supabase.
+- Test tự động chỉ chạy trên CI, với PostgreSQL 17 tạm bị xóa sau mỗi lần chạy. Fixture test từ chối mọi host không phải `localhost`, nên không bao giờ ghi vào Supabase.

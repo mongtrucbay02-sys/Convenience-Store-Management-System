@@ -31,6 +31,18 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=12
+      postgres-role:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: ci-only-role-fixture-password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432/tcp
+        options: >-
+          --health-cmd="pg_isready -U postgres -d postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: 'true'
@@ -63,6 +75,8 @@ jobs:
         env:
           # Fixtures refuse non-loopback hosts and create/drop only their random smartmart_test_* databases.
           ConnectionStrings__CuaHangPostgreSqlTest: "Host=127.0.0.1;Port=${{ job.services.postgres.ports['5432'] }};Database=postgres;Username=postgres;Password=ci-only-postgres-password;Pooling=false;"
+          # Dedicated cluster: role integration tests may change only their own disposable role.
+          ConnectionStrings__CuaHangPostgreSqlRoleTest: "Host=127.0.0.1;Port=${{ job.services.postgres-role.ports['5432'] }};Database=postgres;Username=postgres;Password=ci-only-role-fixture-password;Pooling=false;"
         run: >-
           dotnet test tests/ConvenienceStore.Web.Tests/ConvenienceStore.Web.Tests.csproj
           --configuration Release --no-build --no-restore

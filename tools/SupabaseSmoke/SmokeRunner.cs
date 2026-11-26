@@ -19,6 +19,14 @@ internal sealed class SmokeReport
     public bool CertificateConfigured { get; set; }
     public bool CertificateFileExists { get; set; }
     public bool ReadOnly { get; set; }
+    public bool RoleVerified { get; set; }
+    public string? CurrentUser { get; set; }
+    public string? SessionUser { get; set; }
+    public bool? IsSuperuser { get; set; }
+    public bool? BypassRls { get; set; }
+    public bool? CanCreateRole { get; set; }
+    public bool? CanCreateDatabase { get; set; }
+    public bool? RowSecurity { get; set; }
     public int Tables { get; set; }
     public int Views { get; set; }
     public int CheckedObjects => Probes.Count;
@@ -57,6 +65,7 @@ internal static class SmokeMapping
 internal interface ISmokeSession : IAsyncDisposable
 {
     Task<bool> BeginReadOnlyAsync();
+    Task<SmokeRoleEvidence> ReadRoleAsync();
     IReadOnlyList<SmokeObject> Objects { get; }
     Task<int> ProbeAsync(SmokeObject mappedObject);
     Task RollbackAsync();
@@ -87,6 +96,7 @@ internal static class SmokeRunner
                 {
                     report.ReadOnly = await session.BeginReadOnlyAsync();
                     if (!report.ReadOnly) throw new SmokeValidationException("ReadOnlyGuardNotApplied");
+                    SmokeRoleGuard.Verify(await session.ReadRoleAsync(), report);
                     var objects = session.Objects;
                     SmokeMapping.Validate(objects);
                     report.Tables = objects.Count(e => e.Kind == "table");
@@ -168,6 +178,29 @@ internal sealed class PostgreSqlSmokeSession : ISmokeSession
             .UseNpgsql(_connection, pg => pg.SetPostgresVersion(17, 0)).Options);
         await _db.Database.UseTransactionAsync(_transaction);
         return true;
+    }
+
+    public async Task<SmokeRoleEvidence> ReadRoleAsync()
+    {
+        if (!_readOnly || _transaction is null)
+            throw new SmokeValidationException("ReadOnlyGuardNotApplied");
+        return await ReadRoleEvidenceAsync(_connection, _transaction);
+    }
+
+    // Shared with isolated PostgreSQL integration tests; production uses the same transaction.
+    internal static async Task<SmokeRoleEvidence> ReadRoleEvidenceAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction)
+    {
+        await using var command = new NpgsqlCommand(SmokeRoleGuard.Query, connection, transaction);
+        await using var reader = await command.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+            throw new SmokeValidationException("RoleEvidenceUnavailable");
+        var evidence = new SmokeRoleEvidence(reader.GetString(0), reader.GetString(1),
+            reader.GetBoolean(2), reader.GetBoolean(3), reader.GetBoolean(4),
+            reader.GetBoolean(5), reader.GetString(6) == "on", reader.GetString(7) == "on");
+        if (await reader.ReadAsync())
+            throw new SmokeValidationException("RoleEvidenceUnavailable");
+        return evidence;
     }
 
     public async Task<int> ProbeAsync(SmokeObject mappedObject)

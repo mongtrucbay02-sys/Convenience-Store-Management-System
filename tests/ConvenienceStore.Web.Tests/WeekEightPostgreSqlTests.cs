@@ -87,6 +87,45 @@ public sealed class WeekEightPostgreSqlTests(CsdlKhoFixture db) : IClassFixture<
     }
 
     [Fact]
+    public async Task ExchangeRevenueUsesReturnedGoodsValueAndAgreesAcrossReports()
+    {
+        var seed = await Seed();
+        // An exchange applies the goods value to another invoice, with no cash refund.
+        var cart = await Scalar("INSERT INTO gio_hang(thu_ngan_id,trang_thai,khach_hang_id) VALUES(@tn,'DA_HOAN_TAT',@kh) RETURNING id",
+            ("@tn", db.TaiKhoanThuNganId), ("@kh", seed.Customer));
+        var replacement = await Scalar("""
+            INSERT INTO hoa_don(ma_hoa_don,gio_hang_id,thu_ngan_id,khach_hang_id,thanh_toan_luc,
+                tong_tien_hang,tong_giam,tong_thanh_toan,tien_tru_hang_doi,tien_khach_dua,tien_thua)
+            VALUES(@code,@cart,@tn,@kh,@at,135000,0,135000,135000,0,0) RETURNING id
+            """, ("@code", "HDX-" + Guid.NewGuid().ToString("N")[..12]), ("@cart", cart),
+            ("@tn", db.TaiKhoanThuNganId), ("@kh", seed.Customer), ("@at", seed.At));
+        await db.ChayAsync("""
+            INSERT INTO ct_hoa_don(hoa_don_id,san_pham_id,ten_san_pham,don_vi_tinh,so_luong,don_gia,giam_don_vi,gia_von)
+            SELECT @new,san_pham_id,ten_san_pham,don_vi_tinh,1,135000,0,gia_von
+            FROM ct_hoa_don WHERE hoa_don_id=@old ORDER BY san_pham_id LIMIT 1
+            """, ("@new", replacement), ("@old", seed.Invoice));
+        await db.ChayAsync("""
+            UPDATE phieu_doi_tra SET loai='DOI_HANG',tien_hoan=0,hoa_don_moi_id=@replacement
+            WHERE id=@id
+            """, ("@replacement", replacement), ("@id", seed.Return));
+        await using var context = db.TaoDbContext();
+        var source = new PostgreSqlTransactionalReportsDataSource(context);
+        var service = new OperationalReportsService(source, TimeProvider.System);
+        var returns = await source.GetReturnsAsync(new DateTimeOffset(seed.At.Date, TimeSpan.FromHours(7)),
+            new DateTimeOffset(seed.At.Date.AddDays(1), TimeSpan.FromHours(7)), default);
+        Assert.Equal(135000, Assert.Single(returns).Lines.Sum(x => x.RefundAmount));
+        var revenue = await service.GetRevenueAsync(seed.Query, default);
+        Assert.Equal(235000, Metric(revenue, "Doanh thu thuần"));
+        Assert.Equal(235000, Metric(await service.GetProductsAsync(seed.Query, default), "Doanh thu thuần"));
+        Assert.Equal(235000, Metric(await service.GetCategoriesAsync(seed.Query, default), "Doanh thu thuần"));
+        Assert.Equal(235000, Metric(await service.GetCashiersAsync(seed.Query, default), "Doanh thu thuần"));
+        Assert.Equal(235000, Metric(await service.GetGrossProfitAsync(seed.Query, default), "Doanh thu thuần"));
+        var week8 = await Service(context).GetAsync("BC-09", seed.Query, default);
+        Assert.Equal(0, Metric(week8, "Tiền hoàn"));
+        Assert.Equal(235000, Metric(week8, "Doanh thu thuần toàn kỳ"));
+    }
+
+    [Fact]
     public async Task UsageUsesSnapshotDiscountExcludesCancelledAndDeletePreservesReferences()
     {
         var seed=await Seed();await using var context=db.TaoDbContext();var store=new PromotionUsageStore(context);
@@ -140,6 +179,25 @@ public sealed class WeekEightPostgreSqlTests(CsdlKhoFixture db) : IClassFixture<
             Assert.Equal(status,(int)(await client.GetAsync(path)).StatusCode);
         Sp08CategoryHttpTests.AddXsrf(client);Assert.Equal(status,(int)(await client.DeleteAsync("/api/promotions/1")).StatusCode);
     }
+    [Fact]
+    public async Task ReportNavigationRetainsFiltersInDetailAndBackLink()
+    {
+        var seed = await Seed();
+        var product = await Scalar("SELECT san_pham_id FROM ct_hoa_don WHERE hoa_don_id=@id ORDER BY san_pham_id LIMIT 1", ("@id", seed.Invoice));
+        var category = await Scalar("SELECT danh_muc_id FROM san_pham WHERE id=@id", ("@id", product));
+        await using var app = await Host();
+        using var client = await ListFeatureHost.Client(app, db, "AD");
+        var html = await client.GetStringAsync($"/Reports/Reports/Products?{seed.Url}&CategoryId={category}&ProductId={product}&TopN=20&SortBy=revenue&GroupBy=week");
+        static string Link(string html, string path) => System.Text.RegularExpressions.Regex.Matches(html, "href=\"([^\"]+)\"")
+            .Select(m => WebUtility.HtmlDecode(m.Groups[1].Value)).First(href => href.Contains(path, StringComparison.Ordinal));
+        var detail = Link(html, "/Reports/Reports/Detail?");
+        foreach (var filter in new[] { $"CategoryId={category}", $"ProductId={product}", "TopN=20", "SortBy=revenue", "GroupBy=week" })
+            Assert.Contains(filter, detail);
+        var back = Link(await client.GetStringAsync(detail), "/Reports/Reports/Products?");
+        foreach (var filter in new[] { $"CategoryId={category}", $"ProductId={product}", "TopN=20", "SortBy=revenue", "GroupBy=week" })
+            Assert.Contains(filter, back);
+    }
+
     [Fact]
     public async Task AdminPagesDetailsExportsCsrfAndApiErrorsWorkAgainstRealPostgreSql()
     {

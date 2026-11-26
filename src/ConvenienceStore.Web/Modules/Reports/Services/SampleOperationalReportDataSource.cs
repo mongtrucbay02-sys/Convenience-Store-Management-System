@@ -100,13 +100,15 @@ public sealed class SampleOperationalReportDataSource : IOperationalReportDataSo
                 }
 
                 if (lines.Count == 0) continue;
+                if (n % 4 == 0)
+                    lines[0] = lines[0] with { DiscountPerUnitSnapshot = Math.Min(2_000, lines[0].ListPriceSnapshot) };
                 var cashier = Cashiers[(dayIndex + n) % Cashiers.Length];
                 var gross = lines.Sum(l => (long)l.Quantity * l.ListPriceSnapshot);
-                var promotion = n % 4 == 0 ? Math.Min(2_000, gross) : 0;
+                var promotion = lines.Sum(l => l.PromotionDiscountSnapshot);
                 var refund = n % 13 == 12 ? Math.Min(3_000, gross - promotion) : 0;
-                var net = gross - promotion - refund;
+                var net = gross - promotion;
                 invoices.Add(new ReportPaidInvoiceFact(
-                    invoiceId++, paidAt, cashier.Id, cashier.Name, lines, promotion, refund, net));
+                    invoiceId++, paidAt, cashier.Id, cashier.Name, lines, promotion, 0, net));
 
                 if (refund > 0 && lines.Count > 0)
                 {

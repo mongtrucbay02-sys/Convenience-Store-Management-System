@@ -388,6 +388,18 @@ public sealed partial class PostgreSqlRuntimeTests : IAsyncLifetime
         await using var tx=await db.Database.BeginTransactionAsync();
         await Assert.ThrowsAsync<LoiNghiepVu>(()=>refunds.RefundAsync(db,id,2));
         await tx.RollbackAsync();
+        await using var reportsDb=Db();
+        var source=new PostgreSqlTransactionalReportsDataSource(reportsDb);
+        var reports=new OperationalReportsService(source,TimeProvider.System);
+        var query=new ReportQuery {Period="today"};
+        foreach(var report in new[]{await reports.GetRevenueAsync(query,default),await reports.GetProductsAsync(query,default),
+            await reports.GetCategoriesAsync(query,default),await reports.GetGrossProfitAsync(query,default)})
+            Assert.Equal(20000,report.Metrics.Single(x=>x.Label=="Doanh thu thuần").Value);
+        Assert.Equal(5000,(await reports.GetGrossProfitAsync(query,default)).Metrics.Single(x=>x.Label=="Giá vốn hàng bán").Value);
+        var week=new WeekEightReportsService(new PostgreSqlWeekEightReportDataSource(reportsDb,new PromotionUsageStore(reportsDb)),TimeProvider.System);
+        var customerReport=await week.GetAsync("BC-10",query,default);
+        Assert.Equal(4,customerReport.Metrics.Single(x=>x.Label=="Điểm đã cộng").Value);
+        Assert.Equal(2,customerReport.Metrics.Single(x=>x.Label=="Điểm đã thu hồi").Value);
     }
 
     [Fact]

@@ -1,10 +1,10 @@
 # ERD Khách hàng và Khuyến mãi — phần thiết kế của #251
 
-Trạng thái: **Đang review**, 23/11/2026. Căn cứ bảng hiện có của `CuaHangDbContext` / `SchemaV1` và migration `PromotionImage` ở nhánh nền. Tuần 8 không tạo bảng hoặc DbContext mới.
+Trạng thái: **Đang review**, cập nhật 24/11/2026. Căn cứ entity `CuaHangDbContext`, mapping PostgreSQL và `Data/Migrations/Sql/PostgreSqlBaseline.sql` trên `develop` nền `770550c`. Các bảng dưới đây nằm trong schema `smartmart`; không tạo thêm bảng hoặc DbContext trong bản sửa #266.
 
 ```mermaid
 erDiagram
-    tai_khoan ||--o{ khach_hang : nguoi_tao_id
+    tai_khoan |o--o{ khach_hang : nguoi_tao_id
     tai_khoan |o--o{ quy_tac_tich_diem : nguoi_tao_id
     tai_khoan ||--o{ lich_su_diem : nguoi_thuc_hien_id
     tai_khoan ||--o{ chuong_trinh_khuyen_mai : nguoi_tao_id
@@ -19,47 +19,47 @@ erDiagram
     chuong_trinh_khuyen_mai |o--o{ ct_hoa_don : khuyen_mai_id
     chuong_trinh_khuyen_mai |o--o{ ct_gio_hang : khuyen_mai_id
     khach_hang {
-        uint id PK
+        bigint id PK
         varchar ho_ten "nullable khi ẩn"
         varchar so_dien_thoai UK "10 số, nullable khi ẩn"
-        uint diem_hien_co
-        enum trang_thai
-        uint nguoi_tao_id FK
+        bigint diem_hien_co
+        varchar trang_thai
+        bigint nguoi_tao_id FK
     }
     quy_tac_tich_diem {
-        uint id PK
-        uint so_tien_mot_diem
+        bigint id PK
+        bigint so_tien_mot_diem
         boolean dang_bat
-        datetime hieu_luc_tu
-        uint nguoi_tao_id FK
+        timestamptz hieu_luc_tu
+        bigint nguoi_tao_id FK
     }
     lich_su_diem {
-        ulong id PK
-        uint khach_hang_id FK
-        enum loai
+        bigint id PK
+        bigint khach_hang_id FK
+        varchar loai
         int so_diem
-        uint diem_sau
-        uint hoa_don_id FK
-        uint phieu_doi_tra_id FK
-        uint nguoi_thuc_hien_id FK
-        datetime thoi_diem
+        bigint diem_sau
+        bigint hoa_don_id FK
+        bigint phieu_doi_tra_id FK
+        bigint nguoi_thuc_hien_id FK
+        timestamptz thoi_diem
     }
     chuong_trinh_khuyen_mai {
-        uint id PK
+        bigint id PK
         varchar ma UK
-        enum loai_giam
-        uint gia_tri
-        uint giam_toi_da "nullable"
-        datetime bat_dau_luc
-        datetime ket_thuc_luc
+        varchar loai_giam
+        bigint gia_tri
+        bigint giam_toi_da "nullable"
+        timestamptz bat_dau_luc
+        timestamptz ket_thuc_luc
         boolean chi_thanh_vien
-        enum trang_thai
-        varchar anh_url "nullable, migration nhánh nền"
-        uint nguoi_tao_id FK
+        varchar trang_thai
+        varchar anh_url "nullable, varchar(2048)"
+        bigint nguoi_tao_id FK
     }
     khuyen_mai_san_pham {
-        uint chuong_trinh_id PK,FK
-        uint san_pham_id PK,FK
+        bigint chuong_trinh_id PK,FK
+        bigint san_pham_id PK,FK
     }
 ```
 
@@ -71,4 +71,4 @@ erDiagram
 | Lượt dùng | `v_luot_dung_khuyen_mai` gom theo chương trình + hóa đơn đã thanh toán; hóa đơn hủy không được tính. Đây là view đọc, không là bảng giao dịch mới. |
 | Xóa KM | Chặn cả tham chiếu trong giỏ và hóa đơn mọi trạng thái; việc không còn lượt hợp lệ không đồng nghĩa chưa từng có tham chiếu. Xóa liên kết sản phẩm rồi chương trình trong cùng transaction; FK bảo vệ cuộc đua thêm tham chiếu. |
 
-Sơ đồ chọn các cột và quan hệ phục vụ phần KH/KM, không thay thế ERD toàn hệ thống. Xem `docs/db/schema_v1.sql`, entity và các migration để biết toàn bộ cột/CHECK/FK. Migration ảnh ở nhánh nền còn cần người phụ trách CSDL duyệt; tài liệu này không tự cấp approval.
+Sơ đồ chọn các cột và quan hệ phục vụ phần KH/KM, không thay thế ERD toàn hệ thống. Xem `docs/db/schema_postgresql.sql`, entity, `CuaHangDbContext.PostgreSql*.cs` và baseline PostgreSQL để biết toàn bộ cột/CHECK/FK. Trường trạng thái/loại dùng varchar với CHECK, không phải MySQL enum; `lich_su_diem.so_diem` vẫn là integer có dấu, còn ID/số dư là bigint. Việc áp baseline vào Supabase đã có dữ liệu cần kế hoạch adoption và người phụ trách CSDL duyệt; tài liệu này không cấp approval.

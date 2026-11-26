@@ -1,0 +1,139 @@
+{
+  "date": "2026-11-25",
+  "timezone": "Asia/Bangkok",
+  "reviewed_parent": "7c34f0d2d398fe90340643888804d4fd50a1dc98",
+  "base_sha": "770550c9fe76a811ec5db871d57482582852917c",
+  "branch": "fix/bc-kh-km-acceptance-20261124",
+  "snapshot": "working tree tested before commit; compare source git_blob_oid with subsequent commit",
+  "environment": {
+    "sdk": "10.0.401",
+    "postgresql": "17.12",
+    "ef_core": "10.0.12",
+    "npgsql": "10.0.3",
+    "endpoint": "loopback:55448",
+    "shared_database_writes": false
+  },
+  "build": {
+    "configuration": "Release",
+    "warnings": 0,
+    "errors": 0,
+    "log_sha256": "20dadd60c9f896d67c60c59df969287cda7c0f9f99829f2146ebddbb1402a38e"
+  },
+  "full_test": {
+    "total": 825,
+    "passed": 825,
+    "failed": 0,
+    "skipped": 0,
+    "duration": "6m40s",
+    "trx_sha256": "2475676fae733f44a00a10e436256a4a441cd0fa3ee7fb66137a9db52071dfdf"
+  },
+  "publish": {
+    "postgresql_only": true,
+    "development_configuration_included": false,
+    "tested_web_dll_sha256": "34bd0950277c6d6a903d8e07202b83b94420c3dcab8ad73f6e7caedf473ad5af",
+    "published_web_dll_matches_tested": true
+  },
+  "source_files": [
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Services/IOperationalReportDataSource.cs",
+      "sha256": "92fb641b52b44295b7b738601ad3707154cd5c113f9a56361b6edcfee033ed38",
+      "git_blob_oid": "3156ab968cd8737d5ab8b1a34bf52e4fece6fe52"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Services/OperationalReportsService.cs",
+      "sha256": "f707adaf5daf6d549756d64e8ac7c0ef0d0fde1aad10a3d3c02d935a705c8513",
+      "git_blob_oid": "d46b87e1a7993a7b7ac051c5737a37eb11351e4b"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Services/PostgreSqlTransactionalReportsDataSource.cs",
+      "sha256": "d3d3d33cc727b9068f6702b52bcc3c31881b41f2f14890da020ea0b0c1bfad90",
+      "git_blob_oid": "419c6780582b7e9efecebb48c4cd93b77e191c94"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Services/SampleOperationalReportDataSource.cs",
+      "sha256": "55ed16b1cc31e71dfa996e25fa3f9fd6c74c9aa402fd7a16607b0e4634b50012",
+      "git_blob_oid": "30a5fad63e9e8105ed33af1fd60771a253145ccd"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Reports/Views/Reports/Report.cshtml",
+      "sha256": "9553cc089c55d3b228770f0f3fcf83f96bce3e1ff918293d049185cf76a9e52c",
+      "git_blob_oid": "8aac6066a99d98193500c7e01521629cc470dc58"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/OperationalReportsServiceTests.cs",
+      "sha256": "e352dd697cb1c417354e892b60157eccc65ae8090dfc4dd1958a3f4fd777b7dd",
+      "git_blob_oid": "ab77a93c67d1d4d259884b2d4c785ccc202c52c6"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/PostgreSql/PostgreSqlRuntimeTests.cs",
+      "sha256": "03c81fe02bcb5821c6735c6901faf1817028295d771a411fc3e458a5056f865c",
+      "git_blob_oid": "2f579c491ec128a4ed26b785ffb7aac4a8c1176c"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/ReportSnapshotPostgreSqlTests.cs",
+      "sha256": "4e474158c19f1d62f5cf2198e98e2e1ab33bd6190d46242cfe38898d7c8a4e62",
+      "git_blob_oid": "096af2723fb00bb238f5edb9f039bd7544b485cc"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/Returns/ReturnOrderPostgreSqlTests.cs",
+      "sha256": "4e1e11ceb7184a6ef4ffa0e8b356da419989323deaddb22c534b997526a44b65",
+      "git_blob_oid": "d44934f4d3a4d2b3ed264dce5189491d243561a8"
+    }
+  ],
+  "linked_cases": [
+    {
+      "test": "ConvenienceStore.Web.Tests.ReportSnapshotPostgreSqlTests.UnequalLineDiscountsMatchGeneratedInvoiceTotalsAcrossReportsAndDetails",
+      "outcome": "Passed"
+    },
+    {
+      "test": "ConvenienceStore.Web.Tests.Returns.ReturnOrderPostgreSqlTests.InsufficientCashFund_E1_RollsBackReturnAndStock",
+      "outcome": "Passed"
+    },
+    {
+      "test": "ConvenienceStore.Web.Tests.PostgreSql.PostgreSqlRuntimeTests.Returns_RefundAndRestockRecoverPointsExactlyOnce",
+      "outcome": "Passed"
+    },
+    {
+      "test": "ConvenienceStore.Web.Tests.ReportSnapshotPostgreSqlTests.PublishedWholeDongCostAndProfitReconcileAtHalfDong",
+      "outcome": "Passed"
+    },
+    {
+      "test": "ConvenienceStore.Web.Tests.ReportSnapshotPostgreSqlTests.FractionalCostSurvivesLargeSalesReturnsAndWriteoffs(destroyed: False)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "ConvenienceStore.Web.Tests.Returns.ReturnOrderPostgreSqlTests.PointsFailureAfterRestockRollsBackSlipAndStockTogether",
+      "outcome": "Passed"
+    },
+    {
+      "test": "ConvenienceStore.Web.Tests.ReportSnapshotPostgreSqlTests.FractionalCostSurvivesLargeSalesReturnsAndWriteoffs(destroyed: True)",
+      "outcome": "Passed"
+    },
+    {
+      "test": "ConvenienceStore.Web.Tests.PostgreSql.PostgreSqlRuntimeTests.Cancellation_RestoresStockPointsAndCash_AndRetainsInvoiceSnapshot",
+      "outcome": "Passed"
+    },
+    {
+      "test": "ConvenienceStore.Web.Tests.PostgreSql.PostgreSqlRuntimeTests.Checkout_CommitsInvoiceStockPointsAndCash_AndPreventsDuplicateSale",
+      "outcome": "Passed"
+    },
+    {
+      "test": "ConvenienceStore.Web.Tests.ReportSnapshotPostgreSqlTests.BigintIdsSurviveEveryTransactionalAdapterAndSupplierFilter",
+      "outcome": "Passed"
+    },
+    {
+      "test": "ConvenienceStore.Web.Tests.ReportSnapshotPostgreSqlTests.HistoricalCategoryCurrentlyFollowsCatalogChangeAndHasNoInvoiceSnapshot",
+      "outcome": "Passed"
+    },
+    {
+      "test": "ConvenienceStore.Web.Tests.PostgreSql.PostgreSqlRuntimeTests.ConcurrentCheckout_LastItemSoldOnceAndCashLedgerRemainsConsistent",
+      "outcome": "Passed"
+    }
+  ],
+  "unresolved": {
+    "F289_03": "OPEN: category history decision and schema gap tracked for #283",
+    "F289_06": "new CI required after push",
+    "independent_review": "PENDING",
+    "staging": "NOT_RUN"
+  }
+}

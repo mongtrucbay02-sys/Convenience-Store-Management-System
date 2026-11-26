@@ -1,0 +1,22 @@
+{
+  "reviewed_head": "7c34f0d2d398fe90340643888804d4fd50a1dc98",
+  "base_metadata": "770550c9fe76a811ec5db871d57482582852917c",
+  "ci_merge": "890d0105f3b91c9f72797c60964d27b6f7d3ae01",
+  "ci_parents": [
+    "ef3a2557fb7ad825c46086292eb2c42a5fadb97a",
+    "7c34f0d2d398fe90340643888804d4fd50a1dc98"
+  ],
+  "run_id": 45440911416,
+  "job_id": 138611427127,
+  "passed": 819,
+  "failed": 0,
+  "skipped": 0,
+  "scope": "old reviewed head only; not evidence for new working tree",
+  "current_develop": "770550c9fe76a811ec5db871d57482582852917c",
+  "reviewed_head_tree": "8bd0e110a3c5074afa158338435d049233d38573",
+  "ci_merge_tree": "8bd0e110a3c5074afa158338435d049233d38573",
+  "content_equivalent_to_reviewed_head": true,
+  "old_ci_base_ancestor_of_current_base": true,
+  "checked_on": "2026-11-25",
+  "job_url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/45440911416/job/138611427127"
+}

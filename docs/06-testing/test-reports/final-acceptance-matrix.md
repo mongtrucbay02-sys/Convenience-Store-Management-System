@@ -78,7 +78,7 @@
 | #238 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 | #237 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 | #176 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
-| #146 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
+| #146 | Nhánh `feature/nh-09-lich-su-nhap-ncc`, chờ mở PR | PENDING | Local Release 0 lỗi/0 cảnh báo; CI PENDING | [NH09.md](../../05-implementation/NH09.md), [evidence](../evidence/2026-11-26/nh09/verification.json): source `254e9d4`, 31/31 NH-09, 857/857 full PostgreSQL 17.11 riêng | SELF TEST, chưa review độc lập | Thăng PENDING | Chờ CI/review và UI trực quan/staging; chưa nghiệm thu |
 | #253 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 | #193 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 | #189 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |

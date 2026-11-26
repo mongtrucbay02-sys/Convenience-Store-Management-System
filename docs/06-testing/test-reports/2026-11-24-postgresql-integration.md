@@ -1,5 +1,7 @@
 # Báo cáo tích hợp PostgreSQL-only — 24/11/2026
 
+> Bổ sung NH-09 ngày 26/11/2026 (issue #146): source `254e9d4f3805ba342e3a5df427f0a10eda126b97`, nền develop `eb142df`; Release 0 lỗi/0 cảnh báo; full suite **857/857 PASS, 0 skipped**, gồm **31/31 NH-09** trên PostgreSQL 17.11 cô lập tại `127.0.0.1:55459`. [Triển khai và tự chấm 9,5/10](../../05-implementation/NH09.md), [bằng chứng](../evidence/2026-11-26/nh09/verification.json), [ma trận nghiệm thu](final-acceptance-matrix.md). Chưa kiểm tra UI trực quan/staging, CI/review PENDING. Đây là lượt chạy mới riêng, không thay các mốc lịch sử 24/11 bên dưới.
+
 > Bằng chứng tích hợp/test dưới đây ghi nhận snapshot trước khi commit. Trạng thái commit và kiểm tra bổ sung được ghi ở [báo cáo chuẩn bị GitHub](2026-11-24-commit-preparation.md); không suy ra có lần chạy test mới.
 
 Kết quả cục bộ: **763/763 PASS, 0 FAIL, 0 skipped**; build Release **0 warning, 0 error**. Một ứng dụng .NET 10 MVC/Razor, một `CuaHangDbContext`, runtime EF Core/Npgsql duy nhất. Sẵn sàng review thay đổi; chưa đủ gate triển khai/nghiệm thu Supabase.

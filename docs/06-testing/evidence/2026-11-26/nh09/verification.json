@@ -1,0 +1,251 @@
+﻿{
+    "date":  "2026-11-26",
+    "timezone":  "Asia/Saigon",
+    "issue":  146,
+    "sourceSha":  "254e9d4f3805ba342e3a5df427f0a10eda126b97",
+    "baseSha":  "eb142df",
+    "environment":  {
+                        "dotnet":  "10.0.401",
+                        "efCore":  "10.0.12",
+                        "npgsql":  "10.0.3",
+                        "postgresql":  "17.11",
+                        "endpoint":  "127.0.0.1:55459",
+                        "cluster":  "artifacts/nh09/pgdata",
+                        "fixture":  "CsdlPostgreSqlTam",
+                        "sharedDatabaseWrites":  false
+                    },
+    "build":  {
+                  "command":  "dotnet build -c Release --no-restore",
+                  "errors":  0,
+                  "warnings":  0,
+                  "log":  "artifacts/nh09/build.log",
+                  "sha256":  "4fa8ec4b332cee95e2b827ce891299e0db96a7d862ec514fe2b11ff144abe21b"
+              },
+    "red":  {
+                "command":  "dotnet test -c Release --filter FullyQualifiedName~SupplierPurchaseHistoryTests",
+                "total":  29,
+                "passed":  21,
+                "failed":  8,
+                "skipped":  0,
+                "trx":  "artifacts/nh09/red/nh09-red.trx",
+                "sha256":  "1c768aa262eb4694511d2ebb2ef098e99cacfb15349821c4eb7c44a1ffb64042",
+                "failures":  [
+                                 {
+                                     "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?page=100001\")",
+                                     "message":  "Assert.Equal() Failure: Values differ\r\nExpected: BadRequest\r\nActual:   OK"
+                                 },
+                                 {
+                                     "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?from=11%2F01%2F2026\")",
+                                     "message":  "Assert.Equal() Failure: Values differ\r\nExpected: BadRequest\r\nActual:   OK"
+                                 },
+                                 {
+                                     "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_ReceiptPagingPreservesFiltersAndSummaries_AndLinksToDetails",
+                                     "message":  "System.InvalidOperationException : Sequence contains no matching element"
+                                 },
+                                 {
+                                     "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?page=bad\")",
+                                     "message":  "Assert.Equal() Failure: Values differ\r\nExpected: BadRequest\r\nActual:   OK"
+                                 },
+                                 {
+                                     "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_ConfirmedReceiptsOnly_AggregatesTotalsTopProductsAndPriceRange",
+                                     "message":  "Assert.Equal() Failure: Strings differ\r\nExpected: \"2026-11-10\"\r\nActual:   null"
+                                 },
+                                 {
+                                     "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?page=0\")",
+                                     "message":  "Assert.Equal() Failure: Values differ\r\nExpected: BadRequest\r\nActual:   OK"
+                                 },
+                                 {
+                                     "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_RanksByFrequencyThenQuantity_AndUsesLatestReceiptSnapshotWithStableTies",
+                                     "message":  "Assert.Equal() Failure: Strings differ\r\nExpected: \"2026-11-07\"\r\nActual:   null"
+                                 },
+                                 {
+                                     "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_AllProductsAreVisible_AndMoneyUsesInt64WithVietnameseFormatting",
+                                     "message":  "Assert.Equal() Failure: Values differ\r\nExpected: 22\r\nActual:   20"
+                                 }
+                             ]
+            },
+    "full":  {
+                 "command":  "dotnet test -c Release --no-build --no-restore --logger \"trx;LogFileName=all-tests.trx\" --results-directory artifacts/nh09/full",
+                 "total":  857,
+                 "executed":  857,
+                 "passed":  857,
+                 "failed":  0,
+                 "skipped":  0,
+                 "trx":  "artifacts/nh09/full/all-tests.trx",
+                 "sha256":  "6ed0d0060c8eb8d63e6b342b038e749e5f843c70299c061ef6f1f175ac42b59b",
+                 "start":  "2026-11-26T20:49:43.4050372+07:00",
+                 "finish":  "2026-11-26T20:54:46.4219030+07:00",
+                 "nh09Total":  31,
+                 "nh09Passed":  31,
+                 "nh09Cases":  [
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?from=bad-date\")",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_ConfirmedReceiptsOnly_AggregatesTotalsTopProductsAndPriceRange",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?supplierId=abc\")",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_E1_SupplierWithoutConfirmedReceipts_ShowsEmptyMessage",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_OnlyAdminWithSupplierHistoryPermission(role: \"EXPIRED\", expected: 401)",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?from=2026-02-30\")",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_AllProductsAreVisible_AndMoneyUsesInt64WithVietnameseFormatting",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?page=bad\")",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?page=100001\")",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_MenuAndPurchasingButtonFollowPermissionClaim(role: \"NK\", visible: False)",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?supplierId=9223372036854775808\")",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?supplierId=-5\")",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_OnlyAdminWithSupplierHistoryPermission(role: \"REVOKED\", expected: 401)",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_OnlyAdminWithSupplierHistoryPermission(role: \"NK\", expected: 403)",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_MenuAndPurchasingButtonFollowPermissionClaim(role: \"AD\", visible: True)",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_ServiceUsesFourQueriesWithSqlDateAndStatusFilters_WithoutNPlusOne",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_RanksByFrequencyThenQuantity_AndUsesLatestReceiptSnapshotWithStableTies",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_OnlyAdminWithSupplierHistoryPermission(role: null, expected: 401)",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?to=bad-date\")",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_OnlyAdminWithSupplierHistoryPermission(role: \"FORCED\", expected: 403)",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_WithoutSupplier_ShowsPickerOnly_AndUnknownSupplierIsNotFound",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_ReceiptPagingPreservesFiltersAndSummaries_AndLinksToDetails",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_OnlyAdminWithSupplierHistoryPermission(role: \"FORGED\", expected: 401)",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_OnlyAdminWithSupplierHistoryPermission(role: \"LOCKED\", expected: 401)",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_OnlyAdminWithSupplierHistoryPermission(role: \"TN\", expected: 403)",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?supplierId=0\")",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_TotalOverflowThrows_InsteadOfWrappingMoney",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?from=2026-11-03\u0026to=2026-11-01\")",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?page=0\")",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_InvalidFiltersAreRejected(path: \"/NhapHang/LichSuNcc?from=11%2F01%2F2026\")",
+                                       "outcome":  "Passed"
+                                   },
+                                   {
+                                       "test":  "ConvenienceStore.Web.Tests.PostgreSql.SupplierPurchaseHistoryTests.NH09_OnlyAdminWithSupplierHistoryPermission(role: \"AD\", expected: 200)",
+                                       "outcome":  "Passed"
+                                   }
+                               ]
+             },
+    "sourceFiles":  [
+                        {
+                            "path":  "src/ConvenienceStore.Web/Modules/Purchasing/SupplierPurchaseHistoryController.cs",
+                            "sha256":  "7c842ce5365db416fa3818d469d4803d384435e73956811fb95faad98cda6151"
+                        },
+                        {
+                            "path":  "src/ConvenienceStore.Web/Modules/Purchasing/SupplierPurchaseHistoryModels.cs",
+                            "sha256":  "c959dfc14bee205926f9173a453b2412ee809125ce3ada3c01e6e8303b699b5f"
+                        },
+                        {
+                            "path":  "src/ConvenienceStore.Web/Modules/Purchasing/SupplierPurchaseHistoryService.cs",
+                            "sha256":  "33dc880c5ef023115f0050add79333f27810ffb38d21a4849e7026b525780dba"
+                        },
+                        {
+                            "path":  "src/ConvenienceStore.Web/Program.cs",
+                            "sha256":  "eeb1a279aa199956f4d31fcacec27ac6e3ba732b01c761abb8c5961a49377813"
+                        },
+                        {
+                            "path":  "src/ConvenienceStore.Web/Views/Purchasing/Index.cshtml",
+                            "sha256":  "028c3f6ad71e7f2c8d490c1009681d1bd76abb24d47e53d86b0161f6ef14847b"
+                        },
+                        {
+                            "path":  "src/ConvenienceStore.Web/Views/Purchasing/SupplierHistory.cshtml",
+                            "sha256":  "d10d780e2dd5fee17b70ac5dff4248c470f6ed9cacf769082da94e8c95d6a7c5"
+                        },
+                        {
+                            "path":  "src/ConvenienceStore.Web/Views/Shared/_AdminLayout.cshtml",
+                            "sha256":  "5da91948003c203e3041e508fac65678b363a2f52aa8f5c53ec7be080fa09292"
+                        },
+                        {
+                            "path":  "tests/ConvenienceStore.Web.Tests/PostgreSql/SupplierPurchaseHistoryTests.cs",
+                            "sha256":  "a71757e9586738164e7e1a81745795c6ba2539422d58cd5d29d4e29b335c4786"
+                        }
+                    ],
+    "limits":  [
+                   "No browser available in tool session; visual desktop/mobile not run.",
+                   "Staging and independent review pending.",
+                   "Product aggregation memory grows with filtered receipt lines; no large-volume benchmark."
+               ],
+    "cleanup":  {
+                    "remainingFixtureDatabases":  0,
+                    "clusterStopped":  true
+                },
+    "trxVerifier":  "Verified: 857/857 tests passed; no failures or skipped tests."
+}

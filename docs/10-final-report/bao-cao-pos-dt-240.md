@@ -1,12 +1,12 @@
 # Báo cáo module Bán hàng và Đổi trả
 
-Ngày đối chiếu 27/11/2026. Người viết báo cáo gốc: Nguyễn Thị Thu Hoài (#240); bản đối chiếu code và bằng chứng được Trung chuẩn bị để Yến và Thăng review, tổng hợp tại #257. Bản Markdown đi cùng `Bao-cao-POS-DT-Smart-Mart-240.docx`; không thay cho quyết định nghiệm thu của nhóm.
+Ngày đối chiếu 28/11/2026. Người viết báo cáo gốc: Nguyễn Thị Thu Hoài (#240); bản đối chiếu code và bằng chứng được Trung chuẩn bị để Yến và Thăng review, tổng hợp tại #257. Bản Markdown đi cùng `Bao-cao-POS-DT-Smart-Mart-240.docx`; không thay cho quyết định nghiệm thu của nhóm.
 
 ## Kết quả và nguồn mã
 
-Bản kết hợp sử dụng develop `cc20336566ff3ac12933e3c1c65c36a6553b2000` và PR #291 tại `ab05ee2fe5dcfa40b7095604aea5f91039376a2f`. Commit code đã kiểm thử: `17488f9cceb2a19869c955ffdc7bc15c8bf09979`. Build Release 0 lỗi, 0 cảnh báo; toàn bộ suite PostgreSQL 17.12 riêng đạt **900/900**, không failed/skipped. Bằng chứng: [verification.json](../06-testing/evidence/2026-11-27/pr291-292/verification.json); TRX gốc lưu cục bộ; chưa có CI của HEAD này.
+Bản kết hợp sử dụng develop `cc20336566ff3ac12933e3c1c65c36a6553b2000` và PR #291 tại `ab05ee2fe5dcfa40b7095604aea5f91039376a2f`. Commit code đã kiểm thử: `5ecbd3d55b8c803b30c56f79132379d48da4b94e`. Build Release 0 lỗi, 0 cảnh báo; toàn bộ suite PostgreSQL 17.12 riêng đạt **900/900**, không failed/skipped. Bằng chứng: [verification.json](../06-testing/evidence/2026-11-28/pr291-292/verification.json); TRX gốc lưu cục bộ; chưa có CI của HEAD này.
 
-Đã giải quyết 7 file xung đột. Giữ đối soát doanh thu theo `ct_hoa_don`/`ct_phieu_doi_tra`, giá vốn decimal và sửa bigint của develop; không đưa lại phép phân bổ giảm giá cũ. Giữ DT-07 hiện có, bổ sung DT-03/DT-06 và điều hướng phiếu đã duyệt. Có migration nullable jsonb cho phương án đổi, chờ duyệt CSDL; không ghi test hoặc chạy DDL lên Supabase chung.
+Giữ các sửa đối soát, decimal và bigint của develop, fix actor/Admin và contract API của #291. Đã bỏ cột snapshot chưa được duyệt; diff schema khớp develop. Đổi thường hoạt động; đổi ngoại lệ bị chặn trước ghi theo #239. Không ghi hoặc DDL Supabase chung.
 
 ## Kiến trúc và dữ liệu
 
@@ -26,17 +26,17 @@ POS-07 khóa giỏ đang bán, kiểm tra hàng và khuyến mãi, ghi hóa đơ
 
 ![Sequence POS 07](assets/pos-dt-240/pos07-sequence.png)
 
-DT-03 chỉ cho đổi ngang hoặc cao hơn giá trị hàng trả. Hàng mới ghi doanh thu như hóa đơn bán mới; hàng trả giảm doanh thu theo giá trị từng dòng, kể cả đổi ngang không chi tiền mặt. Chỉ thu chênh lệch và cộng điểm trên số thu thêm; hoàn kho hoặc hủy hàng trả và thu hồi điểm trong cùng giao tác. Phiếu ngoại lệ vào CHO_DUYET, chưa được ghi tác động kho/quỹ như hoàn tất.
+DT-03 chỉ cho đổi ngang hoặc cao hơn giá trị hàng trả. Hàng mới ghi doanh thu như hóa đơn bán mới; hàng trả giảm doanh thu theo giá trị từng dòng, kể cả đổi ngang không chi tiền mặt. Chỉ thu chênh lệch và cộng điểm trên số thu thêm; hoàn kho hoặc hủy hàng trả và thu hồi điểm trong cùng giao tác. Riêng đổi hàng ngoại lệ bị chặn trước tạo phiếu cho đến khi thiết kế snapshot được duyệt; phiếu cũ vẫn đọc hoặc từ chối được.
 
-DT-06 dành cho Admin có quyền duyệt. Ghi chú bắt buộc. Duyệt phiếu trả cần xác nhận hoàn tiền và kiểm tra quỹ; phiếu đổi được duyệt chuyển DA_DUYET để chính thu ngân lập phiếu hoàn tất qua POS. Khóa hóa đơn gốc và phiếu ngăn hai quyết định thành công; lỗi khi ghi kho/điểm/quỹ phải rollback.
+DT-06: AD trực tiếp duyệt và xác nhận chi TRA_HANG, audit ghi đúng AD, lỗi phải rollback. DOI_HANG ngoại lệ tạm chặn cả Create, Approve và Complete do schema chưa lưu phương án. AD vẫn reject phiếu cũ; lịch sử hoàn tất vẫn đọc/in được. Không coi HOLD là đã làm xong yêu cầu snapshot.
 
 DT-07 áp quyền trên cả danh sách, chi tiết và in. Admin xem toàn bộ; thu ngân chỉ xem/in phiếu mình lập, truy cập phiếu của người khác trả 404. Bộ lọc có mã phiếu, ngày, hóa đơn gốc, lý do và trạng thái; không có dữ liệu thì hiện trạng thái rỗng.
 
 ## Snapshot phương án đổi và review mới
 
-Admin duyệt toàn bộ phương án; snapshot lưu giỏ, phiên bản và từng dòng hàng. Thay phương án kể cả cùng tổng tiền phải gửi lại chờ duyệt, giữ lịch sử cũ. Phiếu cũ thiếu snapshot phải duyệt lại; quyết định cũ đã biết được giữ riêng. Admin trực tiếp xác nhận hoàn tiền là actor thực tế của quỹ, kho và điểm.
+Quyết định nghiệp vụ vẫn là duyệt toàn bộ phương án đổi. Chưa có thiết kế snapshot được Yến chấp thuận, nên giữ HOLD thay vì dùng giỏ chung, nhét JSON/hash vào ghi chú hoặc dùng file/bộ nhớ. Phiếu cũ chưa hoàn tất không được tự tiêu thụ giỏ hiện tại.
 
-Migration `20261127030000_ExchangePlanSnapshots` thêm một cột nullable jsonb, không thêm bảng. Chưa áp Supabase chung; xem [contract và gate nâng cấp](../04-system-design/api/returns-dt03-dt06.md). Bộ test mới dùng login không owner theo grant baseline; chưa xác nhận ACL thực tế Supabase hoặc PR #300.
+Không có migration/entity/mapping mới trong diff so với develop. Schema baseline 31 bảng/3 view/307 cột giữ nguyên. [Contract và giới hạn hiện tại](../04-system-design/api/returns-dt03-dt06.md). Nhánh schema riêng chỉ là đề xuất; runtime không phụ thuộc nhánh đó.
 
 ## Danh sách use case và phạm vi
 
@@ -56,18 +56,18 @@ Migration `20261127030000_ExchangePlanSnapshots` thêm một cột nullable json
 | POS-12 | Hủy hóa đơn đã thanh toán | Có code; Admin, chống hủy lặp, chặn quỹ thiếu |
 | DT-01 | Tra hóa đơn gốc | Có code; kiểm tra hóa đơn và số lượng còn trả |
 | DT-02 | Lập phiếu trả | Có code; snapshot giá, ngoại lệ chờ duyệt |
-| DT-03 | Đổi hàng | Code #291 đã kết hợp cục bộ; đề nghị giữ, chờ chốt X7 tại #257 |
+| DT-03 | Đổi hàng | Đổi thường có test; đổi ngoại lệ HOLD chờ thiết kế được duyệt |
 | DT-04 | Hoàn tiền mặt | Có code; kiểm tra quỹ và chống chi trùng |
 | DT-05 | Xử lý hàng trả | Có code; nhập lại hoặc hủy theo dòng |
-| DT-06 | Duyệt ngoại lệ | Code #291 đã kết hợp cục bộ; đề nghị giữ, chờ chốt X7 tại #257 |
+| DT-06 | Duyệt ngoại lệ | Duyệt TRA_HANG có test; duyệt phương án DOI_HANG HOLD |
 | DT-07 | Tra cứu và in lại phiếu | Giữ DT-07 của develop và bổ sung điều hướng; chờ chốt X8 tại #257 |
 | DT-08 | Cấu hình chính sách | Không thuộc thay đổi PR #291; không tự quyết định cắt ở báo cáo này |
 
-SRS tổng hợp còn đề xuất cắt DT-03/DT-06 và giữ DT-07 có điều kiện. Có code hoặc test PASS không tự thay đổi quyết định nhóm. Thăng cần đồng bộ SRS Word/PDF sau khi #257 có xác nhận. Trung đã chọn duyệt toàn bộ phương án đổi. Delta snapshot cần được CSDL/API/SRS review; phạm vi release vẫn chờ nhóm chốt.
+Thăng/nhóm chốt phạm vi release tại #257. Bản này giữ DT-03 thường và duyệt TRA_HANG, còn duyệt toàn bộ phương án đổi ngoại lệ là HOLD; không tự chốt cắt use case. Không đóng #238/#239 theo kết quả test cục bộ.
 
 ## Kiểm thử và giới hạn bằng chứng
 
-Các test của bản kết hợp kiểm tra đổi ngang/thu thêm; thiếu tồn, chênh lệch âm và token cũ; kho/quỹ/điểm/doanh thu; cạnh tranh cùng số lượng và cùng phiếu; rollback sau checkout; CSRF, phân quyền, bộ lọc và bản in DT-07. Tổng 900 là **toàn bộ suite**, không phải 900 ca riêng của POS/DT. Danh sách từng test và kết quả có trong TRX.
+Bản hiện tại có 900/900 test toàn suite đạt, không failed/skipped. Gồm actor Admin, transaction/rollback, đổi thường, POS tranh tồn, retry và trả hóa đơn đổi; các ca ngoại lệ xác nhận bị chặn, không phải xác nhận đã triển khai snapshot/reapproval. Có 10 ca login hạn chế theo grant baseline, chưa xác minh live ACL Supabase hoặc exact-role contract của PR #300.
 
 Báo cáo gốc của tác giả ghi 104/104 tại c4d17e6 trên PostgreSQL 17.7. Đây là mốc lịch sử, không phải số test của bản sửa. Kết quả UI MySQL ngày 22/11 cũng chỉ là lịch sử; bốn ảnh dưới đây do nhóm cung cấp ngày 25/11, không phải ảnh chụp lại trên commit mới.
 

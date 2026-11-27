@@ -22,7 +22,7 @@ public sealed class ReturnContractTests
         Assert.DoesNotContain("\n  /returns/{id}/approve:", text);
         Assert.Contains("x-mvc-dt06-routes:", text);
         Assert.Equal("Returns/Approvals", typeof(ReturnApprovalsController).GetCustomAttribute<RouteAttribute>()!.Template);
-        foreach (var name in new[] { "Decide", "CompleteExchange", "Repreview", "Resubmit" })
+        foreach (var name in new[] { "Decide", "CompleteExchange" })
             Assert.NotNull(typeof(ReturnApprovalsController).GetMethod(name)!.GetCustomAttribute<ValidateAntiForgeryTokenAttribute>());
     }
 }

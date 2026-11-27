@@ -1406,10 +1406,6 @@ namespace ConvenienceStore.Web.Data.Migrations
 
             modelBuilder.Entity("ConvenienceStore.Web.Data.Entities.PhieuDoiTra", b =>
                 {
-                    b.Property<string>("PhuongAnDoi")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("phuong_an_doi");
-
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")

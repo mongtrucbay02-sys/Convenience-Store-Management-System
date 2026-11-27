@@ -1,59 +1,47 @@
-# Hợp đồng DT 03 và DT 06 theo PR 291
+# Hợp đồng DT 03 và DT 06 theo schema hiện có
 
-Ngày 27/11/2026. Đối chiếu review Yến trên HEAD `ab05ee2fe5dcfa40b7095604aea5f91039376a2f`. Tài liệu mô tả giao diện thực tế của bản sửa; người phụ trách API/SRS cần review trước khi merge. Các route POS/DT đề xuất khác trong OpenAPI không tự được coi là đã hiện thực.
+Đối chiếu review Yến PR #291 (ab05ee2), issue #238/#239/#293 và CONTRIBUTING 4.1. Bản sửa không thay schema/entity/mapping/migration so với develop cc20336566ff. Bản thử nghiệm 17488f9 có cột JSONB chưa được duyệt, không đại diện cho bản hiện tại.
 
-## DT 03 dùng JSON API và MVC
+## JSON API DT 03
 
-Prefix JSON là `/api/v1`. Thu ngân có quyền `DOI_TRA`; cookie phiên và global XSRF filter vẫn áp dụng, không thêm bộ lọc trùng.
+Prefix /api/v1; TN có quyền DOI_TRA, cookie và global XSRF filter.
 
-| Method | Route sau prefix | Đầu vào và kết quả |
+| Method | Route sau prefix | Kết quả |
 | --- | --- | --- |
-| GET | `/returns/exchange/invoices/{invoiceId}` | Hóa đơn gốc và giỏ hiện tại |
-| POST | `/returns/exchange/preview` | `ExchangeRequest` → `ExchangePreview`, có confirmationToken |
-| POST | `/returns/exchange` | `ExchangeRequest` kèm token → 201 và Location tới receipt |
-| GET | `/returns/exchange/{id}` | Receipt của chính thu ngân |
+| GET | /returns/exchange/invoices/{invoiceId} | Hóa đơn gốc và giỏ hiện tại |
+| POST | /returns/exchange/preview | Giá trị trả, giỏ, chênh lệch và confirmationToken |
+| POST | /returns/exchange | 201 đổi thường; 409 nếu cần duyệt ngoại lệ |
+| GET | /returns/exchange/{id} | Receipt của chính TN, gồm chứng từ lịch sử |
 
-`ExchangeRequest`: `invoiceId` (int64), `lines[]` gồm `productId` (int64), `quantity`, `reason`, `condition`, `note` tùy chọn, `handling` = NHAP_LAI/HUY; `confirmationToken`, `cashReceived` (int64), `cashConfirmed` (boolean). Hàng mới lấy từ giỏ POS của phiên đã xác thực, không lấy từ danh sách do client tự gửi. Preview không thay cho xác nhận; Create kiểm tra lại trong giao tác.
+ExchangeRequest gồm invoiceId int64, lines (productId int64, quantity, reason, condition/note tùy chọn, handling NHAP_LAI/HUY), confirmationToken, cashReceived int64 và cashConfirmed boolean. Hàng mới lấy từ giỏ phiên xác thực, kiểm lại trong transaction. Đổi thường ghi hóa đơn/kho/quỹ/điểm nguyên tử, chênh lệch không âm. NeedsApproval trong preview không cấp quyền Create. Hai route JSON /returns/{id}/exchange và /returns/{id}/approve cũ không phải implementation; không thêm CSRF filter trùng.
 
-`POST /returns/{id}/exchange` trước đây là đề xuất và không phải endpoint hiện thực. OpenAPI đã bỏ route đề xuất này và mô tả đúng bốn route trên. MVC DT-03 hiện có `/Returns/Exchange`, `/Returns/Exchange/Preview`, `/Returns/Exchange/Create`, `/Returns/Exchange/Receipts/{id}`.
+## Form MVC DT 06
 
-## DT 06 dùng form MVC
+Các route ngoài /api/v1, trả HTML/redirect; AD cần DOI_TRA_DUYET_CAU_HINH, TN cần DOI_TRA. Mọi POST có antiforgery token.
 
-Các route dưới đây nằm ngoài `/api/v1`, trả HTML hoặc redirect. Không có JSON `POST /api/v1/returns/{id}/approve`. OpenAPI ghi chúng ở extension `x-mvc-dt06-routes`, không giả lập thành JSON endpoint.
-
-| Actor | Route | Method và form |
+| Actor | Method và route | Hành vi |
 | --- | --- | --- |
-| AD | `/Returns/Approvals` | GET danh sách chờ |
-| AD | `/Returns/Approvals/{id}` | GET chi tiết và snapshot; POST `decision`, `note`, `refundConfirmed` |
-| TN | `/Returns/Approvals/ApprovedExchanges` | GET phiếu đổi của mình đã duyệt |
-| TN | `/Returns/Approvals/ApprovedExchanges/{id}` | GET snapshot/lịch sử; POST `cashReceived`, `cashConfirmed` để hoàn tất |
-| TN | `/Returns/Approvals/ApprovedExchanges/{id}/Repreview` | POST xem phương án giỏ hiện tại, trả HTML có token |
-| TN | `/Returns/Approvals/ApprovedExchanges/{id}/Resubmit` | POST `token`, chuyển lại CHO_DUYET |
+| AD | GET /Returns/Approvals | Danh sách chờ |
+| AD | GET /Returns/Approvals/{id} | Chi tiết, thông báo hold nếu DOI_HANG |
+| AD | POST /Returns/Approvals/{id} | decision, note, refundConfirmed; duyệt TRA_HANG hoặc reject |
+| TN | GET /Returns/Approvals/ApprovedExchanges | Phiếu cũ đã duyệt của mình |
+| TN | GET /Returns/Approvals/ApprovedExchanges/{id} | Trạng thái và thông báo hold |
+| TN | POST /Returns/Approvals/ApprovedExchanges/{id} | Kiểm quyền/trạng thái rồi chặn hoàn tất, không ghi dữ liệu |
 
-Mọi POST MVC cần `__RequestVerificationToken` và cookie antiforgery. AD cần `DOI_TRA_DUYET_CAU_HINH`, TN cần `DOI_TRA`. Quyền còn được kiểm tra lại trong giao tác; khóa tài khoản, khóa tạm hoặc bắt buộc đổi mật khẩu chặn hoàn tất.
+Kiểm lại tài khoản trong transaction: vai trò, hoạt động, khóa tạm và bắt buộc đổi mật khẩu. Không có Repreview/Resubmit trong bản này.
 
-## Ai xác nhận chi tiền
+## Actor hoàn tiền
 
-Luồng hiện tại: Admin nhấn duyệt phiếu trả và trực tiếp đánh dấu xác nhận hoàn tiền. Vì vậy `giao_dich_tien_mat.nguoi_thuc_hien_id`, tác động kho và lịch sử thu hồi điểm ghi Admin đang thực hiện. `phieu_doi_tra.thu_ngan_id` vẫn là người lập; `nguoi_duyet_id` là người duyệt. Không giả danh thu ngân lập phiếu. Dịch vụ hoàn thường của TN vẫn giới hạn đúng thu ngân sở hữu phiếu; đường chi của Admin chỉ gọi nội bộ từ giao tác duyệt và kiểm tra Admin đó trùng người duyệt.
+Admin trực tiếp duyệt và xác nhận chi TRA_HANG: quỹ/kho/điểm ghi đúng Admin thực hiện. thu_ngan_id vẫn là người lập, nguoi_duyet_id là người duyệt. TN sở hữu phiếu đọc receipt có đúng tên người xác nhận chi. Refund thường vẫn giới hạn chủ phiếu; RefundApproved chỉ gọi nội bộ và kiểm actor trùng người duyệt. Không nhận actor tùy ý từ client.
 
-Nếu vận hành muốn TN trực tiếp chi sau khi AD duyệt, cần thiết kế bước xác nhận của TN riêng; bản này không tự mở luồng đó. Biên nhận của TN sở hữu phiếu hiển thị đúng người đã xác nhận chi, kể cả là Admin.
+## Hold đổi ngoại lệ
 
-## Phạm vi duyệt cả phương án đổi
+Trung đã chọn Admin duyệt cả hàng mới. Schema hiện có chưa lưu snapshot được duyệt. Không nhét JSON/hash vào ghi_chu_duyet hoặc bảng lịch sử khác, không dùng bộ nhớ/file để lách quy trình CSDL.
 
-Theo lựa chọn người yêu cầu ngày 27/11: AD duyệt cả hàng trả lẫn danh sách hàng mới. Snapshot gồm ID/phiên bản giỏ, ID và tên sản phẩm, số lượng, giá, giảm giá, ID khuyến mãi, tổng, thu thêm và người/thời điểm đề xuất. Mỗi phiên bản giữ quyết định, người duyệt, thời điểm và ghi chú.
+Theo phương án dự phòng #239: Create DOI_HANG cần duyệt trả 409 DT06_CHO_THIET_KE_PHUONG_AN trước ghi/thu tiền; AD không approve phiếu đổi cũ, TN không complete kể cả DA_DUYET. Không tiêu thụ giỏ POS chung. AD vẫn reject phiếu cũ để giải phóng số lượng chờ. Phiếu hoàn tất lịch sử vẫn đọc/in. TRA_HANG vẫn duyệt/hoàn tiền bình thường.
 
-Hoàn tất phải khớp snapshot đã APPROVED. Thay hàng cùng giá, số lượng, giá, ưu đãi, khách hoặc giỏ đều không được lách kiểm tra chỉ bằng tổng tiền. Bản thay đổi được xem lại bằng Repreview, xác nhận bằng token rồi Resubmit; phiên bản mới chờ duyệt và quyết định cũ vẫn nằm trong lịch sử. Sửa hàng trả gốc cần lập phiếu khác theo quy tắc số lượng, không thay dòng trả bằng Resubmit.
+Đây là HOLD, không phải đã hoàn thành duyệt toàn bộ phương án; không đóng #238/#239 hoặc tự chốt cắt use case. Yến/Thăng cần review thiết kế lưu trữ, API/SRS và regression reapproval trước khi bật lại. Nhánh proposal/dt06-snapshot-schema-20261127 chỉ là đề xuất, chưa approval; runtime hiện tại không phụ thuộc nhánh đó.
 
-Phiếu cũ thiếu snapshot không được suy diễn là đã duyệt phương án hiện tại: phải gửi lại và duyệt lại. Phiếu hoàn tất cũ vẫn tra cứu được và không được backfill lịch sử giả.
+## Giới hạn evidence
 
-## Delta CSDL và gate nâng cấp
-
-Migration `20261127030000_ExchangePlanSnapshots` thêm **một cột nullable jsonb** `smartmart.phieu_doi_tra.phuong_an_doi`, kèm entity, EF mapping và model snapshot. Không thêm bảng: vẫn 31 bảng/3 view; model mục tiêu có 308 cột so với baseline 307. Contract Supabase lịch sử giữ nguyên, test kiểm riêng delta này.
-
-Không chỉnh migration baseline, không tự chạy DDL trên Supabase chung. Cần Yến/Thăng review tại #283/#293, backup và kế hoạch triển khai trước khi dùng runtime mới với Supabase. Smoke EF của bản có cột mới chỉ chạy sau khi môi trường được nâng cấp đúng migration. `Down` từ chối xóa lịch sử; rollback phải dùng phương án backup đã được duyệt.
-
-Các quyết định này cần đồng bộ #257/SRS và được hai reviewer xác nhận. Có code hoặc test đạt không tự tương đương phê duyệt CSDL, staging hoặc nghiệm thu cuối.
-
-## Giới hạn kiểm chứng quyền CSDL
-
-Các regression mới mở kết nối bằng login riêng, không superuser, không BYPASSRLS, không phải database owner; login chỉ kế thừa `smartmart_backend` của migration baseline. Đây là kiểm thử quyền baseline trong PostgreSQL riêng, chưa xác nhận ACL đang chạy trên Supabase hoặc contract bảo mật đề xuất ở PR #300. Không tự áp thay đổi quyền dùng chung trong bản sửa này. Các gate phân quyền toàn hệ thống vẫn theo #283/#293 và review độc lập.
+Test login hạn chế trên PostgreSQL riêng dùng grant baseline smartmart_backend, không owner. Chưa chứng minh ACL thật Supabase hoặc exact current_user/session_user smartmart_backend theo đề xuất PR #300. CI HEAD mới, reviewer độc lập, UAT và K80/MH-20 cần bằng chứng riêng. Không tự DDL/test ghi Supabase; không sửa guard.

@@ -1565,7 +1565,7 @@ x-mvc-dt06-routes:
 - method: GET
   path: /Returns/Approvals/{id}
   actor: AD
-  response: HTML returned lines and replacement snapshot
+  response: HTML returned lines and explicit exchange hold
 - method: POST
   path: /Returns/Approvals/{id}
   actor: AD
@@ -1582,7 +1582,7 @@ x-mvc-dt06-routes:
 - method: GET
   path: /Returns/Approvals/ApprovedExchanges/{id}
   actor: TN
-  response: HTML own plan and history
+  response: HTML legacy exchange status; completion held
 - method: POST
   path: /Returns/Approvals/ApprovedExchanges/{id}
   actor: TN
@@ -1591,16 +1591,6 @@ x-mvc-dt06-routes:
   - cashConfirmed
   - __RequestVerificationToken
   response: 302 or HTML 404/409/422
-- method: POST
-  path: /Returns/Approvals/ApprovedExchanges/{id}/Repreview
-  actor: TN
-  form:
-  - __RequestVerificationToken
-  response: HTML replacement plan preview
-- method: POST
-  path: /Returns/Approvals/ApprovedExchanges/{id}/Resubmit
-  actor: TN
-  form:
-  - token
-  - __RequestVerificationToken
-  response: 302 to pending plan or HTML 404/409/422
+
+x-dt06-exchange-approval-status: PENDING_SCHEMA_DESIGN
+x-dt06-exchange-hold-code: DT06_CHO_THIET_KE_PHUONG_AN

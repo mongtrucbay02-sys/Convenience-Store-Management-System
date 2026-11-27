@@ -45,8 +45,6 @@ public partial class PhieuDoiTra
 
     public string? GhiChuDuyet { get; set; }
 
-    public string? PhuongAnDoi { get; set; }
-
     public DateTime? HoanTatLuc { get; set; }
 
     public virtual ChinhSachDoiTra ChinhSach { get; set; } = null!;

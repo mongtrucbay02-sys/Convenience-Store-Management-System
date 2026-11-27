@@ -42,59 +42,33 @@ public sealed partial class ExchangePostgreSqlTests
     }
 
     [Fact]
-    public async Task SamePriceReplacementRequiresReapprovalAndPreservesEveryDecision_RuntimeRole()
+    public async Task SamePriceReplacementCannotCompleteLegacyApproval_RuntimeRole()
     {
         var s = await SeedApprovalAsync(member: true);
+        var id = await LegacyExchangeAsync(s, approved: true);
         var replacement = await new BoTroGoiDichVuKho(fixture).TaoSanPhamCoTonAsync("DT03-NEW", 3, 5000);
+        await fixture.ChayAsync("UPDATE ct_gio_hang SET san_pham_id=@product WHERE gio_hang_id=@cart", ("@product", replacement), ("@cart", s.Cart));
         await WithRuntimeDb(async db =>
         {
-            var exchange = Service(db);
-            var approvals = Approvals(db);
-            var id = await exchange.CreateAsync(await ConfirmAsync(exchange, s), Cashier(s.Cashier));
-            await approvals.DecideAsync(id, fixture.TaiKhoanAdminId, true, "Duyệt phương án 1", false, default);
-            await fixture.ChayAsync("UPDATE ct_gio_hang SET san_pham_id=@product WHERE gio_hang_id=@cart",
-                ("@product", replacement), ("@cart", s.Cart));
-            var denied = await Assert.ThrowsAsync<LoiNghiepVu>(() => approvals.CompleteExchangeAsync(id, s.Cashier, 10000, true, default));
-            Assert.Equal("DT03_PHUONG_AN_THAY_DOI", denied.Ma);
+            var error = await Assert.ThrowsAsync<LoiNghiepVu>(() => Approvals(db).CompleteExchangeAsync(id, s.Cashier, 10000, true, default));
+            Assert.Equal("DT06_CHO_THIET_KE_PHUONG_AN", error.Ma);
             Assert.Equal(0, await Scalar("SELECT COUNT(*) FROM hoa_don WHERE gio_hang_id=@id", ("@id", s.Cart)));
-            var proposal = await approvals.PreviewResubmissionAsync(id, s.Cashier, default);
-            await Assert.ThrowsAsync<LoiNghiepVu>(() => approvals.ResubmitAsync(id, s.Cashier, "stale-token", default));
-            await approvals.ResubmitAsync(id, s.Cashier, proposal.Token, default);
-            Assert.Equal("CHO_DUYET", (await approvals.DetailsAsync(id, null, default)).Slip.Status);
-            await Assert.ThrowsAsync<LoiNghiepVu>(() => approvals.CompleteExchangeAsync(id, s.Cashier, 10000, true, default));
-            await approvals.DecideAsync(id, fixture.TaiKhoanAdminId, true, "Duyệt phương án 2", false, default);
-            await approvals.CompleteExchangeAsync(id, s.Cashier, 10000, true, default);
-            var detail = await approvals.DetailsAsync(id, null, default);
-            var history = ExchangePlanHistory.Read(detail.Slip.ExchangePlan)!;
-            Assert.Equal(2, history.Versions.Length);
-            Assert.Equal(s.NewProduct, Assert.Single(history.Versions[0].Lines).ProductId);
-            Assert.Equal("Duyệt phương án 1", history.Versions[0].Note);
-            Assert.Equal(replacement, Assert.Single(history.Current.Lines).ProductId);
-            Assert.Equal("Duyệt phương án 2", history.Current.Note);
-            var receipt = await exchange.ReceiptAsync(id, Cashier(s.Cashier));
-            Assert.Equal(replacement, await Scalar("SELECT san_pham_id FROM ct_hoa_don WHERE hoa_don_id=@id", ("@id", receipt.NewInvoiceId)));
+            Assert.Equal(3, await Stock(replacement));
+            Assert.Equal("Quyết định cũ", (await Approvals(db).DetailsAsync(id, null, default)).Slip.ApprovalNote);
         });
     }
 
     [Fact]
-    public async Task LegacyApprovedExchangeWithoutSnapshotCannotBeGrandfathered_RuntimeRole()
+    public async Task PendingLegacyExchangeCannotBeApprovedWithoutAStoredPlan_RuntimeRole()
     {
         var s = await SeedApprovalAsync();
+        var id = await LegacyExchangeAsync(s);
         await WithRuntimeDb(async db =>
         {
-            var exchange = Service(db);
-            var approvals = Approvals(db);
-            var id = await exchange.CreateAsync(await ConfirmAsync(exchange, s), Cashier(s.Cashier));
-            await approvals.DecideAsync(id, fixture.TaiKhoanAdminId, true, "Duyệt", false, default);
-            await fixture.ChayAsync("UPDATE phieu_doi_tra SET phuong_an_doi=NULL WHERE id=@id", ("@id", id));
-            var error = await Assert.ThrowsAsync<LoiNghiepVu>(() => approvals.CompleteExchangeAsync(id, s.Cashier, 10000, true, default));
-            Assert.Equal("DT03_PHUONG_AN_THAY_DOI", error.Ma);
-            var proposal = await approvals.PreviewResubmissionAsync(id, s.Cashier, default);
-            await approvals.ResubmitAsync(id, s.Cashier, proposal.Token, default);
-            var history = ExchangePlanHistory.Read((await approvals.DetailsAsync(id, null, default)).Slip.ExchangePlan)!;
-            Assert.Null(history.Current.Decision);
-            Assert.Equal(fixture.TaiKhoanAdminId, history.LegacyDecision!.DecidedBy);
-            Assert.Equal("Duyệt", history.LegacyDecision.Note);
+            var error = await Assert.ThrowsAsync<LoiNghiepVu>(() => Approvals(db).DecideAsync(id, fixture.TaiKhoanAdminId, true, "Duyệt", false, default));
+            Assert.Equal("DT06_CHO_THIET_KE_PHUONG_AN", error.Ma);
+            Assert.Equal("CHO_DUYET", (await Approvals(db).DetailsAsync(id, null, default)).Slip.Status);
+            Assert.Null(await fixture.DocMotGiaTriAsync("SELECT nguoi_duyet_id FROM phieu_doi_tra WHERE id=@id", ("@id", id)));
         });
     }
 
@@ -108,8 +82,7 @@ public sealed partial class ExchangePostgreSqlTests
         {
             var exchange = Service(db);
             var approvals = Approvals(db);
-            var id = await exchange.CreateAsync(await ConfirmAsync(exchange, s), Cashier(s.Cashier));
-            await approvals.DecideAsync(id, fixture.TaiKhoanAdminId, true, "Duyệt", false, default);
+            var id = await LegacyExchangeAsync(s, approved: true);
             await fixture.ChayAsync(temporary
                 ? "UPDATE tai_khoan SET khoa_tam_den=NOW()+INTERVAL '15 minutes' WHERE id=@id"
                 : "UPDATE tai_khoan SET trang_thai='DA_KHOA', ly_do_khoa='Khóa kiểm thử' WHERE id=@id", ("@id", s.Cashier));
@@ -267,11 +240,9 @@ public sealed partial class ExchangePostgreSqlTests
     public async Task OrdinaryPosUsingOldCartCannotSubstituteAnotherCartForApprovedPlan_RuntimeRole()
     {
         var s = await SeedApprovalAsync();
+        var id = await LegacyExchangeAsync(s, approved: true);
         await WithRuntimeDb(async db =>
         {
-            var exchange = Service(db); var approvals = Approvals(db);
-            var id = await exchange.CreateAsync(await ConfirmAsync(exchange, s), Cashier(s.Cashier));
-            await approvals.DecideAsync(id, fixture.TaiKhoanAdminId, true, "Duyệt giỏ ban đầu", false, default);
             await using (var tx = await db.Database.BeginTransactionAsync())
             {
                 await new PostgreSqlPosCheckoutStore(db, BoTroGoiDichVuKho.TaoDichVu(db), new CashLedgerService(),
@@ -279,9 +250,9 @@ public sealed partial class ExchangePostgreSqlTests
                 await tx.CommitAsync();
             }
             var differentCart = await InsertActiveCartAsync(s.Cashier, s.NewProduct, 30000, null);
-            var error = await Assert.ThrowsAsync<LoiNghiepVu>(() => approvals.CompleteExchangeAsync(id, s.Cashier, 10000, true, default));
-            Assert.Equal("DT03_PHUONG_AN_THAY_DOI", error.Ma);
-            Assert.Equal("DA_DUYET", (await approvals.DetailsAsync(id, null, default)).Slip.Status);
+            var error = await Assert.ThrowsAsync<LoiNghiepVu>(() => Approvals(db).CompleteExchangeAsync(id, s.Cashier, 10000, true, default));
+            Assert.Equal("DT06_CHO_THIET_KE_PHUONG_AN", error.Ma);
+            Assert.Equal("DA_DUYET", (await Approvals(db).DetailsAsync(id, null, default)).Slip.Status);
             Assert.Equal(0, await Scalar("SELECT COUNT(*) FROM hoa_don WHERE gio_hang_id=@id", ("@id", differentCart)));
         });
     }

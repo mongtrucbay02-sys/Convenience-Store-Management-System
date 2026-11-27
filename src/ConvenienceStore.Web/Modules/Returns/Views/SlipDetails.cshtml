@@ -11,7 +11,7 @@
         <a class="btn btn-primary" asp-action="Print" asp-route-id="@Model.Slip.Id">In lại phiếu K80</a>
         @if (User.IsInRole("TN") && (Model.Slip.Status is "CHO_DUYET" or "DA_DUYET") && Model.Slip.Kind == "DOI_HANG")
         {
-            <a class="btn btn-success" asp-controller="ReturnApprovals" asp-action="ApprovedExchange" asp-route-id="@Model.Slip.Id">Hoàn tất phiếu đổi đã duyệt</a>
+            <a class="btn btn-outline-primary" asp-controller="ReturnApprovals" asp-action="ApprovedExchange" asp-route-id="@Model.Slip.Id">Trạng thái phiếu đổi ngoại lệ</a>
         }
     </div>
     @await Html.PartialAsync("~/Modules/Returns/Views/_SlipReceipt.cshtml", Model)

@@ -8,8 +8,8 @@
 <h1>Phiếu đổi hàng @Model.Code</h1>
 <p role="status">@(Model.Status switch
 {
-    "CHO_DUYET" => "Phiếu đổi đang chờ Admin duyệt.",
-    "DA_DUYET" => "Phiếu đổi đã được duyệt.",
+    "CHO_DUYET" => "Phiếu đổi cũ đang chờ; tạm chặn duyệt cho đến khi thiết kế lưu phương án được phê duyệt.",
+    "DA_DUYET" => "Phiếu đổi cũ đã duyệt; tạm chặn hoàn tất vì chưa có snapshot phương án được duyệt.",
     "BI_TU_CHOI" => "Phiếu đổi đã bị từ chối.",
     _ => "Đã hoàn tất đổi hàng."
 })</p>

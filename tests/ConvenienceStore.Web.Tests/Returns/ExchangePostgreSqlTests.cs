@@ -47,8 +47,9 @@ public sealed partial class ExchangePostgreSqlTests(CsdlKhoFixture fixture)
         Assert.Equal(0, await Scalar("SELECT tien_hoan FROM phieu_doi_tra WHERE id=@id", ("@id", id)));
         Assert.Equal(cashBefore + cashDue, await Scalar("SELECT so_du FROM quy_tien_mat"));
         Assert.Equal(cashDue, await Scalar("SELECT COALESCE(SUM(so_tien),0) FROM giao_dich_tien_mat WHERE hoa_don_id=@id", ("@id", receipt.NewInvoiceId)));
-        Assert.Equal(1, await Scalar("SELECT COUNT(*) FROM the_kho WHERE loai_bien_dong='TRA_HANG' AND chung_tu_id=@id", ("@id", id)));
-        Assert.Equal(1, await Scalar("SELECT COUNT(*) FROM the_kho WHERE loai_bien_dong='BAN_HANG' AND chung_tu_id=@id", ("@id", receipt.NewInvoiceId)));
+        // Other fixture scenarios use synthetic document IDs; identify this product's movement too.
+        Assert.Equal(1, await Scalar("SELECT COUNT(*) FROM the_kho WHERE loai_bien_dong='TRA_HANG' AND chung_tu_id=@id AND san_pham_id=@product", ("@id", id), ("@product", s.OriginalProduct)));
+        Assert.Equal(1, await Scalar("SELECT COUNT(*) FROM the_kho WHERE loai_bien_dong='BAN_HANG' AND chung_tu_id=@id AND san_pham_id=@product", ("@id", receipt.NewInvoiceId), ("@product", s.NewProduct)));
         Assert.Equal(pointsEarned, await Scalar("SELECT diem_cong FROM hoa_don WHERE id=@id", ("@id", receipt.NewInvoiceId)));
         Assert.Equal(2, await Scalar("SELECT diem_thu_hoi FROM phieu_doi_tra WHERE id=@id", ("@id", id)));
         Assert.Equal(pointsEarned, await Scalar("SELECT diem_hien_co FROM khach_hang WHERE id=@id", ("@id", s.Customer)));

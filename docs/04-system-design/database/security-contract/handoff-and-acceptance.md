@@ -9,12 +9,12 @@ Mỗi ID là scenario cần triển khai, không phải số test hiện có. D�
 | CT03 | PUBLIC/anon/authenticated, column grants, memberships, schema CREATE, DB CREATE | Denied, no bypass; role flags/owner exact; TEMP recorded |
 | CT04 | 3 views, sequences nextval/RETURNING; setval denied | SELECT works; writes denied; sequence USAGE/SELECT only |
 | CT05 | Function EXECUTE and search_path, trigger firing | Direct execute denied, trigger works; preserve history 23514/42501 as appropriate |
-| CT06 | Fresh baseline vs live-like AS-IS → Up | Same normalized target; 33 policies expected if proposed design unchanged |
+| CT06 | Fresh baseline vs live-like AS-IS → Up | Same normalized target; exact approved policy count; D1 guard count pending |
 | CT07 | Missing role, extra object, ACL drift, mid-migration failure | Fail closed, rollback unchanged |
 | CT08 | Isolated Up/Down/re-Up | Exact pre-state restore, data/history unchanged |
-| SP01 | WR-01/02/03 ngừng SP, mở lại, stale version, stock warning, permission AD | No physical delete, price/stock preserved, UI/API consistent after D1 |
+| SP01 | WR-01/02/03 xóa SP chưa giao dịch, ngừng/mở lại, stale version, stock warning, AD | Eligible cleanup atomic; reject referenced/nonzero stock; preserve history on stop; direct unauthorized child delete denied |
 | SP02 | SP create price, edit threshold, cancel future price, image metadata | Successful under backend role; past price not rewritten |
-| NH01 | WR-04 NCC stop no refs/with history, draft exists | Preserve history; draft blocks; UI/API approved |
+| NH01 | WR-04 NCC delete no receipts, stop with history, draft exists | Delete only no receipts; preserve history; draft blocks; race with receipt create |
 | NH02 | WR-06 draft edit add/update/remove lines | DELETE only removed rows, totals correct, stock unchanged |
 | NH03 | Direct I/U/D detail confirmed/cancelled; parent reassignment | Denied by guard/policy, no data change |
 | NH04 | Confirm vs edit parallel, retry/duplicate confirm | Serialize or safe abort; one stock posting, no post-confirm detail changes |
@@ -25,6 +25,7 @@ Mỗi ID là scenario cần triển khai, không phải số test hiện có. D�
 | AU04 | AD/TN/NK endpoint negative + CSRF, stale version | 403/409 as applicable; no DB changes, not just RLS pass |
 | PO01 | WR-08 cancel paid invoice as AD | Only t locked in auth JOIN; invoice canceled once, restore stock/points, refund/ledger atomic |
 | PO02 | TN/NK cancel denied; insufficient cash; cancel twice; return conflicts | No partial mutation, no double refund, proper business error |
+| PO04 | WR-10 POS-08 hold/resume with real TN role, wrong actor, expired/other cashier cart, stale price/stock/promotion, parallel calls | Lock only t; no UPDATE vai_tro; no cross-owner access; rollback on failure; max 5 held carts per TN |
 | PO03 | Cart create/update/delete/hold/resume/cancel; promotion recalculation; checkout | Correct I/U/D, lock promotions/stock, no oversell |
 | DT01 | Return preview/create/approve/refund per scope; policy FOR SHARE | Correct quantity/threshold, points/stock/quỹ, no double return |
 | QU01 | WR-09 chốt quỹ AD, concurrent chốt, stale balance | One successful chốt, before/after correct, no role UPDATE |
@@ -53,3 +54,6 @@ Thăng phụ trách cung cấp SRS gốc đã duyệt, cập nhật SRS/use case
 - B04–B08: code và contract tương thích, migration mới không sửa lịch sử; fresh và live-like hội tụ; backup/restore rehearsal.
 - B09–B11: toàn bộ 877 test nền và test mới PASS, không skip bắt buộc; exact catalog, real-login write, negative AD/TN/NK tại app, transaction, rollback, race; không còn P0/P1; P2 sửa hoặc có chấp nhận rủi ro.
 - Chỉ rollout Supabase sau owner/lead phê duyệt và isolated PASS. Sau deploy smoke read-only; không test ghi phá hủy live. B12 Trung nghiệm thu, đối chiếu checklist #293 và evidence; không đóng trước khi đủ.
+
+## Re-review gate trước 04/12 (đề xuất)
+WR-06–10 cần test live-like ACL/real-login ngay cùng PR sửa; không hoãn các test bắt buộc. WR-06 cần guard và quyền tối thiểu đã duyệt. Các mục D1/D2/B08 toàn diện chưa xong phải ghi rõ luồng chưa nghiệm thu; không đóng #293. Bổ sung SP race xóa vs phát sinh giao dịch, fault sau xóa giá/tồn; NCC race xóa vs lập phiếu. Không chạy DML shared Supabase.

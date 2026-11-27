@@ -16,17 +16,17 @@ hoan_tien_hoa_don,SI,SI,SI,Giữ quyền đã quan sát; kiểm thử lại bằ
 khach_hang,SIU,SIUD,SIUD,WR-05: DELETE khách không tham chiếu; policy hạn chế + FK
 khuyen_mai_san_pham,SIUD,SIUD,SIUD,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
 lich_su_diem,SI,SI,SI,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
-lich_su_gia,SIU,SIUD,SIU,"WR-01: giữ lịch sử, không DELETE; U hủy giá tương lai"
-nha_cung_cap,SIU,SIUD,SIU,"WR-04: ngừng hợp tác, không xóa cứng (cần duyệt)"
+lich_su_gia,SIU,SIUD,SIUD,WR-01: D ứng viên chỉ dọn giá của SP đủ điều kiện; guard lịch sử chờ duyệt
+nha_cung_cap,SIU,SIUD,SIUD,WR-04: D ứng viên khi không có phiếu nhập
 phien_dang_nhap,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
 phieu_doi_tra,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
 phieu_kiem_ke,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
 phieu_nhap,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
 phieu_xuat_huy,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
 quy_tac_tich_diem,SIU,S,S,B02-12: bỏ I/U nếu KH-07 xác nhận cắt
-quy_tien_mat,SIU,SU,SU,B02-12: bỏ I nếu bootstrap/repair do deployment; U cần chốt quỹ
-san_pham,SIU,SIUD,SIU,"WR-03: ngừng kinh doanh, không xóa cứng (cần duyệt)"
+quy_tien_mat,SIU,SU,SIU,D5: giữ I tới khi seed/repair được xác minh
+san_pham,SIU,SIUD,SIUD,WR-03: D ứng viên theo SP-06; FK/race guard
 tai_khoan,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
 the_kho,SI,SI,SI,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
-ton_kho,SIU,SIUD,SIU,"WR-02: giữ dòng tồn, không DELETE"
-vai_tro,S,SU,S,"WR-07/08/09: sửa khóa, không mở UPDATE"
+ton_kho,SIU,SIUD,SIUD,WR-02: D ứng viên tồn 0 và SP đủ điều kiện; giữ thẻ kho
+vai_tro,S,SU,S,WR-07–10: sửa khóa; không mở UPDATE

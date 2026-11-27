@@ -64,4 +64,7 @@ All 280 C#/SQL files scanned; 458 heuristic candidates (including comments/helpe
 | vai_tro | SELECT | SELECT,UPDATE | UPDATE |  | FAIL |
 
 ## Conclusion
-9 existing static mismatch findings remain; no additional missing table ACL identified in curated paths. Additional configuration/test risks and candidate excess privileges above. B01 technical CI/live smoke pass previously verified; independent review pending. B02 source scan complete for C#/SQL, semantic completeness and runtime verification pending. No merge, no Supabase changes, no Git commits.
+Original scan identified 9 static mismatch findings; re-review adds WR-10 on the same table vai_tro (10 total). Additional configuration/test risks and candidate excess privileges above. B01 technical CI/live smoke pass previously verified; independent review pending. B02 source scan complete for C#/SQL, semantic completeness and runtime verification pending. No merge, no Supabase changes, no Git commits.
+
+## Re-review bổ sung 28/11/2026
+WR-10 — P0, `Services/Pos/PosHeldOrderService.cs:107–118`, JOIN tai_khoan t/vai_tro v FOR UPDATE thiếu OF t; vai_tro chỉ SELECT theo snapshot gốc. [Source develop](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/blob/cc20336566ff3ac12933e3c1c65c36a6553b2000/src/ConvenienceStore.Web/Services/Pos/PosHeldOrderService.cs#L107-L118). Static mismatch, runtime not run. 168 anchors including appended WR-10; original 167 preserved. No new table mismatch.

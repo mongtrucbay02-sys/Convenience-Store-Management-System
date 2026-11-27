@@ -29,7 +29,8 @@ public sealed class SupabaseModelMappingTests
         var name=table.GetProperty("name").GetString()!;
         if(!tables.TryGetValue(name,out var mapped)){errors.Add("Missing table "+name);continue;}
         var expectedColumns=table.GetProperty("columns");
-        if(mapped.Columns.Count()!=expectedColumns.GetArrayLength())errors.Add("Column count "+name);
+        // Keep the captured Supabase baseline unchanged; verify the explicit migration delta separately.
+        if(mapped.Columns.Count()!=expectedColumns.GetArrayLength()+(name=="phieu_doi_tra"?1:0))errors.Add("Column count "+name);
         foreach(var column in expectedColumns.EnumerateArray()) {
             columns++;
             var columnName=column.GetProperty("name").GetString()!;
@@ -94,6 +95,9 @@ public sealed class SupabaseModelMappingTests
     public void NativeTypes_UseSignedBigintDateOnlyAndSessionExpiry()
     {
         using var db = Create();
+        var exchangePlan = db.Model.FindEntityType(typeof(PhieuDoiTra))!.FindProperty("PhuongAnDoi")!;
+        Assert.True(exchangePlan.IsNullable);
+        Assert.Equal("jsonb", exchangePlan.GetColumnType());
         Assert.Equal(typeof(long), db.Model.FindEntityType(typeof(SanPham))!.FindProperty("Id")!.ClrType);
         Assert.Equal(typeof(short), db.Model.FindEntityType(typeof(VaiTro))!.FindProperty("Id")!.ClrType);
         Assert.Equal(typeof(DateOnly), db.Model.FindEntityType(typeof(PhieuNhap))!.FindProperty("NgayNhap")!.ClrType);
@@ -120,11 +124,12 @@ public sealed class SupabaseModelMappingTests
     public void Baseline_IsPostgreSqlOnlyAndMatchesCurrentSnapshot()
     {
         using var db=Create();
-        Assert.Single(db.Database.GetMigrations());
-        Assert.EndsWith("_PostgreSqlBaseline",db.Database.GetMigrations().Single());
+        Assert.Equal(new[] { "20261124050401_PostgreSqlBaseline", "20261127030000_ExchangePlanSnapshots" },
+            db.Database.GetMigrations());
         Assert.False(db.Database.HasPendingModelChanges());
         var script=db.GetService<Microsoft.EntityFrameworkCore.Migrations.IMigrator>().GenerateScript();
         Assert.Contains("CREATE VIEW smartmart.v_gia_ban_hien_hanh",script);
+        Assert.Contains("ADD phuong_an_doi jsonb", script);
         Assert.DoesNotContain("ENGINE=",script);
     }
 }

@@ -1,0 +1,31 @@
+@using ConvenienceStore.Web.Modules.Returns.Services
+@model ApprovalDetails
+@if (Model.Slip.Kind == "DOI_HANG")
+{
+    var history = ExchangePlanHistory.Read(Model.Slip.ExchangePlan);
+    <section class="panel">
+        <h2>Phương án hàng mới cần duyệt</h2>
+        @if (history is null)
+        {
+            <p role="alert">Phiếu cũ chưa có snapshot hàng mới. Thu ngân phải gửi phương án và Admin duyệt trước khi hoàn tất.</p>
+        }
+        else
+        {
+            <p>Phiên bản @history.Current.Revision · Giỏ @history.Current.CartId</p>
+            <div class="table-responsive"><table class="table">
+                <thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Giảm mỗi đơn vị</th></tr></thead>
+                <tbody>@foreach (var line in history.Current.Lines)
+                {<tr><td>@line.Name (#@line.ProductId)</td><td>@line.Quantity</td><td>@line.UnitPrice.ToString("N0") đ</td><td>@line.Discount.ToString("N0") đ</td></tr>}</tbody>
+            </table></div>
+            <p>Tổng hàng mới @history.Current.Total.ToString("N0") đ · Thu thêm @history.Current.CashDue.ToString("N0") đ</p>
+            <p>Thay hàng, số lượng, giá, khuyến mãi hoặc giỏ sau duyệt phải gửi lại phương án để duyệt lại.</p>
+            <h3>Lịch sử phương án</h3>
+            @if (history.LegacyDecision is { } legacy)
+            {
+                <p>Quyết định cũ trước khi có snapshot: @legacy.Status · Người duyệt #@legacy.DecidedBy · @legacy.DecidedAt · @legacy.Note. Không có bằng chứng danh sách hàng mới của quyết định cũ.</p>
+            }
+            <ul>@foreach (var version in history.Versions)
+            {<li>Phiên bản @version.Revision · Người đề xuất #@version.ProposedBy · @version.ProposedAt.ToOffset(TimeSpan.FromHours(7)).ToString("dd/MM/yyyy HH:mm") · @(version.Decision ?? "Chờ duyệt") · Người quyết định @(version.DecidedBy?.ToString() ?? "—") · @version.Note</li>}</ul>
+        }
+    </section>
+}

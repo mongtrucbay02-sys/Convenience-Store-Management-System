@@ -5,11 +5,19 @@
     var slip = Model.Slip;
 }
 @await Html.PartialAsync("~/Modules/Returns/Views/_ApprovalSlip.cshtml", Model)
+@await Html.PartialAsync("~/Modules/Returns/Views/_ExchangePlan.cshtml", Model)
+@if (slip.Status is "CHO_DUYET" or "DA_DUYET")
+{
+    <form method="post" action="@Url.Action("Repreview", "ReturnApprovals", new { id = slip.Id })">
+        @Html.AntiForgeryToken()
+        <button class="btn btn-outline-primary" type="submit">Xem giỏ hiện tại và gửi phương án mới</button>
+    </form>
+}
 @if (slip.Status == "DA_DUYET" && slip.InvoicePaid)
 {
     <p>Tổng hàng mới sau khuyến mãi <strong>@((slip.ReturnValue + slip.CashDue).ToString("N0")) đ</strong></p>
     <p>Khách trả thêm <strong>@slip.CashDue.ToString("N0") đ</strong></p>
-    <p>Chọn hàng trong giỏ POS sao cho tổng sau khuyến mãi khớp giá trị trên phiếu đã duyệt.</p>
+    <p>Giỏ POS phải khớp từng dòng và phiên bản đã duyệt. Thay đổi giỏ phải gửi lại để Admin duyệt lại.</p>
     <a class="btn btn-outline-primary mb-3" href="@Url.Action("Index", "Pos", new { exchangeInvoiceId = slip.InvoiceId })">Mở POS để chọn hàng mới</a>
     <form method="post" action="@Url.Action("CompleteExchange", "ReturnApprovals", new { id = slip.Id })">
         @Html.AntiForgeryToken()

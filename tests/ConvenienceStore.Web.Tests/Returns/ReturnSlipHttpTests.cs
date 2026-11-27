@@ -87,6 +87,11 @@ public sealed class ReturnSlipHttpTests(CsdlKhoFixture database) : IClassFixture
         Assert.DoesNotContain("sidebar-account", printed);
 
         var approvalUrl = $"/Returns/Approvals/{foreign}";
+        var plan = new ConvenienceStore.Web.Modules.Returns.Services.ExchangePlanHistory(1,
+            [new(1, 1, 1, [new(1, "Hàng mới kiểm thử", 1, 15000, 0, null)],
+                15000, 5000, await ActorAsync(other), DateTimeOffset.UtcNow)]);
+        await database.ChayAsync("UPDATE phieu_doi_tra SET phuong_an_doi=CAST(@plan AS jsonb) WHERE id=@id",
+            ("@plan", plan.Json()), ("@id", foreign));
         using var approvalForm = await admin.GetAsync(approvalUrl);
         approvalForm.EnsureSuccessStatusCode();
         var approvalHtml = await approvalForm.Content.ReadAsStringAsync();

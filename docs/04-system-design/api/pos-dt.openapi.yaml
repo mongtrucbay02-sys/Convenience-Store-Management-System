@@ -6,7 +6,7 @@ info:
     cho Trung xac nhan. DT Sau MVP.'
 servers:
 - url: /api/v1
-  description: Cung domain voi React; cookie phien cs_session
+  description: Same origin Razor MVC and JSON API; cookie session cs_session
 tags:
 - name: POS
 - name: DT
@@ -723,46 +723,110 @@ paths:
         '500':
           $ref: '#/components/responses/LoiMayChu'
       operationId: lietKePhieuTra
-  /returns/{id}/exchange:
-    post:
+  /returns/exchange/invoices/{invoiceId}:
+    get:
       tags:
       - DT
-      summary: DT-03 Đổi hàng
-      description: 'Quyen: TN. Ma quyen: DOI_TRA. Uu tien: Sau MVP. Can cu: DT-03; Issue #4 va phan hoi T3-14. '
+      summary: DT-03 Read original invoice and active cart
+      operationId: exchangeForm
+      security:
+      - cookieAuth: []
       responses:
         '200':
-          description: Thành công
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/KhongTimThay'
-        '500':
-          $ref: '#/components/responses/LoiMayChu'
+          description: Success
+        '400': &id001
+          description: Invalid request or CSRF
+        '401': &id002
+          description: Unauthenticated
+        '403': &id003
+          description: Forbidden
+        '404': &id004
+          description: Not found
+        '409': &id005
+          description: Conflict or stale confirmation
+        '422': &id006
+          description: Business validation
       parameters:
-      - name: id
-        in: path
+      - in: path
+        name: invoiceId
         required: true
         schema:
           type: integer
+          format: int64
+          minimum: 1
+  /returns/exchange/preview:
+    post:
+      tags:
+      - DT
+      summary: DT-03 Calculate exchange and confirmation token
+      operationId: exchangePreview
+      security:
+      - cookieAuth: []
+        xsrfHeader: []
+      responses:
+        '200':
+          description: Success
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '422': *id006
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
+              $ref: '#/components/schemas/ExchangeRequest'
+  /returns/exchange:
+    post:
+      tags:
+      - DT
+      summary: DT-03 Create exchange or pending approval slip
       operationId: doiHang
       security:
       - cookieAuth: []
         xsrfHeader: []
+      responses:
+        '201':
+          description: Success
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '422': *id006
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExchangeRequest'
+  /returns/exchange/{id}:
+    get:
+      tags:
+      - DT
+      summary: DT-03 Read own exchange receipt
+      operationId: exchangeReceipt
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: Success
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '422': *id006
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
   /returns/{id}/refund:
     post:
       tags:
@@ -840,47 +904,6 @@ paths:
               type: object
               description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
       operationId: xuLyTonHangTra
-      security:
-      - cookieAuth: []
-        xsrfHeader: []
-  /returns/{id}/approve:
-    post:
-      tags:
-      - DT
-      summary: DT-06 Duyệt ngoại lệ
-      description: 'Quyen: AD. Ma quyen: DOI_TRA_DUYET_CAU_HINH. Uu tien: Sau MVP. Can cu: DT-06; Issue #4 va phan
-        hoi T3-14. '
-      responses:
-        '200':
-          description: Thành công
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/KhongTimThay'
-        '500':
-          $ref: '#/components/responses/LoiMayChu'
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              description: DTO cụ thể trong docs/api/sales.md hoặc returns.md
-      operationId: duyetDoiTraNgoaiLe
       security:
       - cookieAuth: []
         xsrfHeader: []
@@ -1062,6 +1085,66 @@ components:
           schema:
             $ref: '#/components/schemas/Loi'
   schemas:
+    ExchangeRequest:
+      type: object
+      required:
+      - invoiceId
+      - lines
+      properties:
+        invoiceId:
+          type: integer
+          format: int64
+          minimum: 1
+        lines:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+            - productId
+            - quantity
+            - reason
+            - condition
+            properties:
+              productId:
+                type: integer
+                format: int64
+              quantity:
+                type: integer
+                minimum: 1
+              reason:
+                type: string
+                enum:
+                - LOI_SAN_PHAM
+                - HET_HAN
+                - KHONG_DUNG_NHU_CAU
+                - KHAC
+              condition:
+                type: string
+                maxLength: 255
+              note:
+                type: string
+                nullable: true
+                maxLength: 255
+              handling:
+                type: string
+                enum:
+                - NHAP_LAI
+                - HUY
+                default: NHAP_LAI
+        confirmationToken:
+          type: string
+          nullable: true
+          description: Required when creating, from the latest preview
+        cashReceived:
+          type: integer
+          format: int64
+          minimum: 0
+          default: 0
+        cashConfirmed:
+          type: boolean
+          default: false
+
     YeuCauGanKhachHang:
       type: object
       required:
@@ -1473,3 +1556,51 @@ components:
       - size
 security:
 - cookieAuth: []
+
+x-mvc-dt06-routes:
+- method: GET
+  path: /Returns/Approvals
+  actor: AD
+  response: HTML pending slips
+- method: GET
+  path: /Returns/Approvals/{id}
+  actor: AD
+  response: HTML returned lines and replacement snapshot
+- method: POST
+  path: /Returns/Approvals/{id}
+  actor: AD
+  form:
+  - decision
+  - note
+  - refundConfirmed
+  - __RequestVerificationToken
+  response: 302 or HTML 404/409/422
+- method: GET
+  path: /Returns/Approvals/ApprovedExchanges
+  actor: TN
+  response: HTML own approved exchanges
+- method: GET
+  path: /Returns/Approvals/ApprovedExchanges/{id}
+  actor: TN
+  response: HTML own plan and history
+- method: POST
+  path: /Returns/Approvals/ApprovedExchanges/{id}
+  actor: TN
+  form:
+  - cashReceived
+  - cashConfirmed
+  - __RequestVerificationToken
+  response: 302 or HTML 404/409/422
+- method: POST
+  path: /Returns/Approvals/ApprovedExchanges/{id}/Repreview
+  actor: TN
+  form:
+  - __RequestVerificationToken
+  response: HTML replacement plan preview
+- method: POST
+  path: /Returns/Approvals/ApprovedExchanges/{id}/Resubmit
+  actor: TN
+  form:
+  - token
+  - __RequestVerificationToken
+  response: 302 to pending plan or HTML 404/409/422

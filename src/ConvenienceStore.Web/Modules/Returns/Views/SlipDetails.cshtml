@@ -9,7 +9,7 @@
     <div class="return-no-print d-flex flex-wrap gap-3 align-items-center">
         <a asp-action="Index">Về danh sách phiếu</a>
         <a class="btn btn-primary" asp-action="Print" asp-route-id="@Model.Slip.Id">In lại phiếu K80</a>
-        @if (User.IsInRole("TN") && Model.Slip.Status == "DA_DUYET" && Model.Slip.Kind == "DOI_HANG")
+        @if (User.IsInRole("TN") && (Model.Slip.Status is "CHO_DUYET" or "DA_DUYET") && Model.Slip.Kind == "DOI_HANG")
         {
             <a class="btn btn-success" asp-controller="ReturnApprovals" asp-action="ApprovedExchange" asp-route-id="@Model.Slip.Id">Hoàn tất phiếu đổi đã duyệt</a>
         }

@@ -16,7 +16,8 @@ public sealed class PostgreSqlSchemaTests(CsdlPostgreSqlTam database) : IClassFi
         Assert.Equal(17,await Count("SELECT COUNT(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='smartmart' AND NOT t.tgisinternal"));
         Assert.Equal(3,await Count("SELECT COUNT(*) FROM pg_class WHERE relnamespace='smartmart'::regnamespace AND relkind='v' AND 'security_invoker=true'=ANY(reloptions)"));
         await using var db=database.TaoDbContext();
-        Assert.Single(await db.Database.GetAppliedMigrationsAsync());
+        Assert.Equal(new[] { "20261124050401_PostgreSqlBaseline", "20261127030000_ExchangePlanSnapshots" },
+            await db.Database.GetAppliedMigrationsAsync());
         Assert.Empty(await db.Database.GetPendingMigrationsAsync());
         Assert.False(db.Database.HasPendingModelChanges());
     }

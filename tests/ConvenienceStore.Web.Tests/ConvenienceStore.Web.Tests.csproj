@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <None Include="../../docs/04-system-design/api/pos-dt.openapi.yaml" Link="Contracts/pos-dt.openapi.yaml" CopyToOutputDirectory="PreserveNewest" />
     <None Update="PostgreSql\supabase-schema-contract.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\docs\db\schema_v1.sql" Link="SchemaReference\schema_v1.sql" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\docs\db\schema_postgresql.sql" Link="SchemaReference\schema_postgresql.sql" CopyToOutputDirectory="PreserveNewest" />

@@ -833,6 +833,7 @@ public partial class CuaHangDbContext
 
         modelBuilder.Entity<PhieuDoiTra>(entity =>
         {
+            entity.Property(e => e.PhuongAnDoi).HasColumnName("phuong_an_doi").HasColumnType("jsonb");
             entity.HasKey(e => e.Id).HasName("phieu_doi_tra_pkey");
 
             entity.ToTable("phieu_doi_tra", "smartmart");

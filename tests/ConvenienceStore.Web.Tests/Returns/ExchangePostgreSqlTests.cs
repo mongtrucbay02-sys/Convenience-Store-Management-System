@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace ConvenienceStore.Web.Tests.Returns;
 
 [Collection(CsdlKhoCollection.Ten)]
-public sealed class ExchangePostgreSqlTests(CsdlKhoFixture fixture)
+public sealed partial class ExchangePostgreSqlTests(CsdlKhoFixture fixture)
 {
     private static readonly DateTimeOffset Now = new(2026, 11, 24, 10, 0, 0, TimeSpan.FromHours(7));
     private readonly TimeProvider clock = new InvoiceLookupServiceTests.FixedTime(Now);
@@ -226,6 +226,12 @@ public sealed class ExchangePostgreSqlTests(CsdlKhoFixture fixture)
         Assert.Equal(4, await Stock(s.OriginalProduct));
         Assert.Equal(0, await Scalar("SELECT diem_hien_co FROM khach_hang WHERE id=@id", ("@id", s.Customer)));
         Assert.Equal(balance - 20000, await Scalar("SELECT so_du FROM quy_tien_mat"));
+        Assert.NotEqual(s.Cashier, fixture.TaiKhoanAdminId);
+        Assert.Equal(fixture.TaiKhoanAdminId, await Scalar(
+            "SELECT nguoi_thuc_hien_id FROM giao_dich_tien_mat WHERE phieu_doi_tra_id=@id", ("@id", id)));
+        Assert.Equal(s.Cashier, await Scalar("SELECT thu_ngan_id FROM phieu_doi_tra WHERE id=@id", ("@id", id)));
+        var refundReceipt = await new ReturnRefundService(new CashLedgerService()).ReceiptAsync(db, id, s.Cashier);
+        Assert.Equal("Admin test", refundReceipt.Cashier);
     }
 
     [Fact]

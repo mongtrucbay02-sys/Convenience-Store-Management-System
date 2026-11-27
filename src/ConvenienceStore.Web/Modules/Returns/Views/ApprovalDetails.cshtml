@@ -5,10 +5,9 @@
     var slip = Model.Slip;
 }
 @await Html.PartialAsync("~/Modules/Returns/Views/_ApprovalSlip.cshtml", Model)
-@await Html.PartialAsync("~/Modules/Returns/Views/_ExchangePlan.cshtml", Model)
 @if (slip.Kind == "DOI_HANG")
 {
-    <p>Phần chênh lệch khách trả khi hoàn tất đổi <strong>@slip.CashDue.ToString("N0") đ</strong></p>
+    <p class="alert alert-warning" role="alert">Tạm chặn duyệt phương án đổi cho đến khi thiết kế snapshot được phê duyệt. Không nhận tiền hoặc hoàn tất bằng giỏ POS hiện tại. Admin vẫn có thể từ chối phiếu.</p>
 }
 @if (slip.Status == "CHO_DUYET")
 {
@@ -22,7 +21,10 @@
                 Tôi xác nhận trực tiếp hoàn @slip.ReturnValue.ToString("N0") đ tiền mặt cho khách; sổ quỹ ghi tài khoản Admin đang đăng nhập là người thực hiện.
             </label>
         }
-        <button class="btn btn-success" type="submit" name="decision" value="approve">Duyệt</button>
+        @if (slip.Kind == "TRA_HANG")
+        {
+            <button class="btn btn-success" type="submit" name="decision" value="approve">Duyệt</button>
+        }
         <button class="btn btn-outline-danger" type="submit" name="decision" value="reject">Từ chối</button>
     </form>
 }

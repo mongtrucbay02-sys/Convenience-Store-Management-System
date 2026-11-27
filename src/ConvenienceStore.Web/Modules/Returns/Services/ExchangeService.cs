@@ -54,8 +54,7 @@ public sealed class ExchangeService(
                 throw Conflict("Hóa đơn hoặc giỏ POS đã thay đổi. Vui lòng tính lại chênh lệch.");
 
             bool pending = preview.Returned.NeedsApproval;
-            var plan = await CapturePlanAsync(actor, customerId, preview.Returned.Refund, 1, ct);
-            var history = new ExchangePlanHistory(1, [plan]);
+            if (pending) throw ReturnApprovalGuard.ExchangeUnavailable();
 
             var now = time.GetUtcNow();
             var period = now.ToOffset(GioVietNam.DoLech).ToString("yyyyMMdd", CultureInfo.InvariantCulture);
@@ -74,15 +73,15 @@ public sealed class ExchangeService(
             var id = await db.InsertIdAsync("""
                 INSERT INTO phieu_doi_tra(ma_phieu, loai, hoa_don_goc_id, hoa_don_moi_id, khach_hang_id,
                     chinh_sach_id, trang_thai, gia_tri_hang_tra, tien_hoan, tien_thu_them, thu_ngan_id, hoan_tat_luc,
-                    can_duyet_qua_han, can_duyet_danh_muc, can_duyet_vuot_nguong, phuong_an_doi)
+                    can_duyet_qua_han, can_duyet_danh_muc, can_duyet_vuot_nguong)
                 VALUES (@code, 'DOI_HANG', @invoice, @newInvoice, @kh, @policy, @status, @value, 0, @cash, @actor, @now,
-                    @expired, @forbidden, @over, CAST(@plan AS jsonb))
+                    @expired, @forbidden, @over)
                 """, ct, ("@code", code), ("@invoice", request.InvoiceId), ("@newInvoice", order?.InvoiceId),
                 ("@kh", customerId), ("@policy", policyId), ("@value", preview.Returned.Refund),
                 ("@cash", preview.CashDue), ("@actor", actor), ("@now", pending ? null : now),
                 ("@status", pending ? "CHO_DUYET" : "HOAN_TAT"),
                 ("@expired", preview.Returned.Expired), ("@forbidden", preview.Returned.Forbidden),
-                ("@over", preview.Returned.OverThreshold), ("@plan", history.Json()));
+                ("@over", preview.Returned.OverThreshold));
 
             foreach (var line in preview.Returned.Lines)
             {
@@ -142,26 +141,6 @@ public sealed class ExchangeService(
         })));
         return (customerId, policyId, new(returned, newTotal, newTotal - returned.Refund, token,
             items.Select(x => x.Line).ToList()));
-    }
-
-    internal async Task<ExchangePlanVersion> CapturePlanAsync(long actor, long? customerId,
-        long returnValue, int revision, CancellationToken ct)
-    {
-        var (cart, items) = await ReadCartAsync(actor, ct, lockCart: true);
-        var total = ValidateCart(cart, items, customerId, returnValue);
-        return new(revision, cart!.Id, cart.Version, items.Select(x => new ExchangePlanLine(
-            x.Line.ProductId, x.Line.Name, x.Line.Quantity, x.Line.UnitPrice, x.Line.Discount, x.PromotionId)).ToArray(),
-            total, total - returnValue, actor, time.GetUtcNow());
-    }
-
-    internal async Task<PosOrderSaved> CheckoutApprovedCartAsync(long actor, long? customerId,
-        long returnValue, long cashDue, long cashReceived, bool cashConfirmed, ExchangePlanVersion approved, CancellationToken ct)
-    {
-        var current = await CapturePlanAsync(actor, customerId, returnValue, approved.Revision, ct);
-        if (approved.Decision != "APPROVED" || current.CashDue != cashDue
-            || ExchangePlanHistory.Fingerprint(current) != ExchangePlanHistory.Fingerprint(approved))
-            throw ExchangePlanHistory.Changed("Giỏ POS khác phương án đã duyệt. Xem và gửi lại phương án để Admin duyệt lại.");
-        return await CheckoutAsync(actor, returnValue, cashDue, cashReceived, cashConfirmed, ct);
     }
 
     private async Task<PosOrderSaved> CheckoutAsync(long actor, long returnValue, long cashDue,

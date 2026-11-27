@@ -116,57 +116,28 @@ public sealed partial class ExchangePostgreSqlTests(CsdlKhoFixture fixture)
     }
 
     [Fact]
-    public async Task SendsExceptionExchangeForApprovalAndAllowsOnlyOneDecision()
+    public async Task ExceptionExchangeIsBlockedBeforeAnySlipOrInvoiceIsCreated()
     {
         var s = await SeedApprovalAsync();
         await using var db = fixture.TaoDbContext();
-        await using var otherDb = fixture.TaoDbContext();
         var exchange = Service(db);
-        var request = await ConfirmAsync(exchange, s);
-        request.CashReceived = 0;
-        request.CashConfirmed = false;
-        var cashier = Cashier(s.Cashier);
-        var id = await exchange.CreateAsync(request, cashier);
-        var pending = await exchange.ReceiptAsync(id, cashier);
-        Assert.Equal("CHO_DUYET", pending.Status);
-        Assert.Null(pending.NewInvoiceId);
+        var error = await Assert.ThrowsAsync<LoiNghiepVu>(async () =>
+            await exchange.CreateAsync(await ConfirmAsync(exchange, s), Cashier(s.Cashier)));
+        Assert.Equal("DT06_CHO_THIET_KE_PHUONG_AN", error.Ma);
+        Assert.Equal(0, await CountExchanges(s));
         Assert.Equal(3, await Stock(s.NewProduct));
-        var approvals = Approvals(db);
-        var duplicate = Approvals(otherDb);
-        Assert.Contains(await approvals.PendingAsync(default), x => x.Id == id && x.Forbidden);
-        var attempts = await Task.WhenAll(new[] { approvals, duplicate }.Select(async service =>
-            await Record.ExceptionAsync(() => service.DecideAsync(id, fixture.TaiKhoanAdminId, true, "Đã kiểm tra", false, default))));
-        Assert.Single(attempts, error => error == null);
-        Assert.Equal("DT06_XUNG_DOT", Assert.IsType<LoiNghiepVu>(Assert.Single(attempts, error => error != null)).Ma);
-        Assert.Contains(await approvals.ApprovedExchangesAsync(s.Cashier, default), x => x.Id == id);
-        var wrongCashier = await Assert.ThrowsAsync<LoiNghiepVu>(() =>
-            approvals.CompleteExchangeAsync(id, fixture.TaiKhoanThuNganId, 10000, true, default));
-        Assert.Equal(404, wrongCashier.MaHttp);
-
-        await approvals.CompleteExchangeAsync(id, s.Cashier, 10000, true, default);
-        var receipt = await exchange.ReceiptAsync(id, cashier);
-        Assert.Equal("HOAN_TAT", receipt.Status);
-        Assert.NotNull(receipt.NewInvoiceId);
-        Assert.Equal(4, await Stock(s.OriginalProduct));
-        Assert.Equal(2, await Stock(s.NewProduct));
     }
 
     [Fact]
-    public async Task ApprovedExchangeRollsBackWhenPointsCannotBeRecovered()
+    public async Task LegacyApprovedExchangeWithoutSnapshotCannotChangeStockPointsOrCash()
     {
         var s = await SeedApprovalAsync(member: true);
+        var id = await LegacyExchangeAsync(s, approved: true);
         var cashBefore = await Scalar("SELECT so_du FROM quy_tien_mat");
         await using var db = fixture.TaoDbContext();
-        var exchange = Service(db);
-        var request = await ConfirmAsync(exchange, s);
-        var id = await exchange.CreateAsync(request, Cashier(s.Cashier));
-        var approvals = Approvals(db, new FailingPoints());
-        await approvals.DecideAsync(id, fixture.TaiKhoanAdminId, true, "Đã kiểm tra", false, default);
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            approvals.CompleteExchangeAsync(id, s.Cashier, 10000, true, default));
-        var result = await exchange.ReceiptAsync(id, Cashier(s.Cashier));
-        Assert.Equal("DA_DUYET", result.Status);
-        Assert.Null(result.NewInvoiceId);
+        var error = await Assert.ThrowsAsync<LoiNghiepVu>(() => Approvals(db).CompleteExchangeAsync(id, s.Cashier, 10000, true, default));
+        Assert.Equal("DT06_CHO_THIET_KE_PHUONG_AN", error.Ma);
+        Assert.Equal("DA_DUYET", (await Approvals(db).DetailsAsync(id, null, default)).Slip.Status);
         Assert.Equal(0, await Scalar("SELECT COUNT(*) FROM hoa_don WHERE gio_hang_id=@id", ("@id", s.Cart)));
         Assert.Equal(3, await Stock(s.OriginalProduct));
         Assert.Equal(3, await Stock(s.NewProduct));
@@ -180,13 +151,30 @@ public sealed partial class ExchangePostgreSqlTests(CsdlKhoFixture fixture)
         var s = await SeedApprovalAsync();
         await using var db = fixture.TaoDbContext();
         var exchange = Service(db);
-        var id = await exchange.CreateAsync(await ConfirmAsync(exchange, s), Cashier(s.Cashier));
+        var id = await LegacyExchangeAsync(s);
         await Approvals(db).DecideAsync(id, fixture.TaiKhoanAdminId, false, "Không đủ chứng từ", false, default);
         var receipt = await exchange.ReceiptAsync(id, Cashier(s.Cashier));
         Assert.Equal("BI_TU_CHOI", receipt.Status);
         Assert.Null(receipt.NewInvoiceId);
         Assert.Equal(3, await Stock(s.OriginalProduct));
         Assert.Equal(1, Assert.Single((await exchange.FormAsync(Request(s), Cashier(s.Cashier))).Invoice.Lines).Remaining);
+    }
+
+    // Synthetic pre-existing record only: production Create must never insert a new pending exchange.
+    private async Task<long> LegacyExchangeAsync(Seed s, bool approved = false)
+    {
+        await using var db = fixture.TaoDbContext();
+        var returns = new ReturnOrderService(db, BoTroGoiDichVuKho.TaoDichVu(db), new ReturnPointsGateway(), clock);
+        var request = Request(s);
+        request.ConfirmationToken = (await returns.PreviewAsync(request, Cashier(s.Cashier))).ConfirmationToken;
+        var id = await returns.CreateAsync(request, Cashier(s.Cashier));
+        await fixture.ChayAsync("""
+            UPDATE phieu_doi_tra SET loai='DOI_HANG', tien_hoan=0, tien_thu_them=10000,
+              trang_thai=@status, nguoi_duyet_id=@admin, duyet_luc=@at, ghi_chu_duyet=@note WHERE id=@id
+            """, ("@id", id), ("@status", approved ? "DA_DUYET" : "CHO_DUYET"),
+            ("@admin", approved ? fixture.TaiKhoanAdminId : (long?)null),
+            ("@at", approved ? Now.DateTime : (DateTime?)null), ("@note", approved ? "Quyết định cũ" : null));
+        return id;
     }
 
     private async Task<Seed> SeedApprovalAsync(bool member = false)
@@ -302,7 +290,7 @@ public sealed partial class ExchangePostgreSqlTests(CsdlKhoFixture fixture)
     {
         points ??= new ReturnPointsGateway();
         return new(db, BoTroGoiDichVuKho.TaoDichVu(db), points,
-            new ReturnRefundService(new CashLedgerService()), Service(db, points), clock);
+            new ReturnRefundService(new CashLedgerService()), clock);
     }
 
     private async Task<Seed> SeedAsync(long price, int stock, bool sameProduct = false, bool member = false)

@@ -91,34 +91,5 @@ public sealed class ReturnApprovalsController(ReturnApprovalService approvals) :
         }
     }
 
-    [HttpPost("ApprovedExchanges/{id:long}/Repreview"), ValidateAntiForgeryToken]
-    [Authorize(Roles = BangQuyen.ThuNgan, Policy = MaQuyen.DoiTra)]
-    public async Task<IActionResult> Repreview(long id, CancellationToken ct)
-    {
-        try
-        {
-            return View("~/Modules/Returns/Views/ResubmitExchange.cshtml",
-                await approvals.PreviewResubmissionAsync(id, User.LayTaiKhoanId(), ct));
-        }
-        catch (LoiNghiepVu error) when (error.MaHttp is 404 or 409 or 422)
-        {
-            return await RenderAsync(CashierView, id, User.LayTaiKhoanId(), ct, error.Message, error.MaHttp);
-        }
-    }
 
-    [HttpPost("ApprovedExchanges/{id:long}/Resubmit"), ValidateAntiForgeryToken]
-    [Authorize(Roles = BangQuyen.ThuNgan, Policy = MaQuyen.DoiTra)]
-    public async Task<IActionResult> Resubmit(long id, string? token, CancellationToken ct)
-    {
-        try
-        {
-            if (!ModelState.IsValid) return BadRequest("Dữ liệu xác nhận không hợp lệ.");
-            await approvals.ResubmitAsync(id, User.LayTaiKhoanId(), token, ct);
-            return RedirectToAction(nameof(ApprovedExchange), new { id });
-        }
-        catch (LoiNghiepVu error) when (error.MaHttp is 404 or 409 or 422)
-        {
-            return await RenderAsync(CashierView, id, User.LayTaiKhoanId(), ct, error.Message, error.MaHttp);
-        }
-    }
 }

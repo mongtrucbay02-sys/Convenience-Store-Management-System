@@ -1,34 +1,13 @@
 @model ConvenienceStore.Web.Modules.Returns.Services.ApprovalDetails
 @{
     Layout = "_AdminLayout";
-    ViewData["Title"] = "Hoàn tất phiếu đổi đã duyệt";
+    ViewData["Title"] = "Phiếu đổi ngoại lệ";
     var slip = Model.Slip;
 }
 @await Html.PartialAsync("~/Modules/Returns/Views/_ApprovalSlip.cshtml", Model)
-@await Html.PartialAsync("~/Modules/Returns/Views/_ExchangePlan.cshtml", Model)
 @if (slip.Status is "CHO_DUYET" or "DA_DUYET")
 {
-    <form method="post" action="@Url.Action("Repreview", "ReturnApprovals", new { id = slip.Id })">
-        @Html.AntiForgeryToken()
-        <button class="btn btn-outline-primary" type="submit">Xem giỏ hiện tại và gửi phương án mới</button>
-    </form>
-}
-@if (slip.Status == "DA_DUYET" && slip.InvoicePaid)
-{
-    <p>Tổng hàng mới sau khuyến mãi <strong>@((slip.ReturnValue + slip.CashDue).ToString("N0")) đ</strong></p>
-    <p>Khách trả thêm <strong>@slip.CashDue.ToString("N0") đ</strong></p>
-    <p>Giỏ POS phải khớp từng dòng và phiên bản đã duyệt. Thay đổi giỏ phải gửi lại để Admin duyệt lại.</p>
-    <a class="btn btn-outline-primary mb-3" href="@Url.Action("Index", "Pos", new { exchangeInvoiceId = slip.InvoiceId })">Mở POS để chọn hàng mới</a>
-    <form method="post" action="@Url.Action("CompleteExchange", "ReturnApprovals", new { id = slip.Id })">
-        @Html.AntiForgeryToken()
-        @if (slip.CashDue > 0)
-        {
-            <label class="form-label" for="approved-cash">Tiền mặt khách đưa</label>
-            <input class="form-control mb-3" id="approved-cash" name="cashReceived" type="number" min="@slip.CashDue" step="1" required />
-            <label class="d-block mb-3"><input type="checkbox" name="cashConfirmed" value="true" required /> Đã nhận tiền chênh lệch.</label>
-        }
-        <button class="btn btn-success" type="submit">Hoàn tất đổi hàng</button>
-    </form>
+    <p class="alert alert-warning" role="alert">Tạm chặn hoàn tất phiếu đổi ngoại lệ vì chưa có thiết kế lưu phương án đã duyệt. Không nhận thêm tiền và không dùng giỏ POS hiện tại để thay thế.</p>
 }
 else if (slip.Status == "HOAN_TAT")
 {

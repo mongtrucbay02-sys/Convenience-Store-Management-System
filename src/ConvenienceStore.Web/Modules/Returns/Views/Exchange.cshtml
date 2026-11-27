@@ -71,7 +71,7 @@
             }
             @if (preview.Returned.NeedsApproval)
             {
-                <p>Phiếu cần Admin duyệt. Thu tiền sau khi phiếu được duyệt và bạn hoàn tất đổi hàng.</p>
+                <p class="alert alert-warning" role="alert">Tạm chặn đổi hàng ngoại lệ vì chưa có thiết kế lưu phương án đã duyệt. Không nhận tiền hoặc gửi phiếu từ màn hình này.</p>
             }
             else if (preview.CashDue > 0)
             {
@@ -83,7 +83,10 @@
                     Đã nhận tiền chênh lệch
                 </label>
             }
-            <button class="btn btn-success" type="submit">@(preview.Returned.NeedsApproval ? "Gửi phiếu chờ duyệt" : "Hoàn tất đổi hàng")</button>
+            @if (!preview.Returned.NeedsApproval)
+            {
+                <button class="btn btn-success" type="submit">Hoàn tất đổi hàng</button>
+            }
         </form>
     </section>
 }

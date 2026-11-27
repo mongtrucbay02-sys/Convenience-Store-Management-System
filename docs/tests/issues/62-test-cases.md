@@ -1,5 +1,7 @@
 # Issue #62 — SP-07 category listing
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Issue #62 and its comment, PR #169 and the existing audit were inspected. PR #169 merged into an intermediate DB branch, not develop. Initially the local API/repository existed, while UI, navigation, AD-only empty guidance and the common validation error contract were missing. Plan: reuse the existing layers; write HTTP/MySQL tests first; add a server-rendered screen and scoped DI; run focused/regression/full gates; review an isolated staged export before a local commit.
 
 ## Acceptance criteria

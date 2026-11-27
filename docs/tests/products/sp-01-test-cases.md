@@ -1,5 +1,7 @@
 # SP-01 automated test cases
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Management-side list, keyword (code/name, case/accent insensitive), category/status/inclusive current-price range, stable sorting and bounded pagination. AD/NK/TN may view; TN sees active products only; cost only AD. Stock comes from shared inventory service. Empty, malformed and semantic-invalid requests must have safe responses.
 
 Separate DTO/query, validation/application service, EF repository, API and Razor. MySQL effective-price view provides current price. One bounded product query plus count and one batch inventory read avoid per-item queries. Sorting uses a whitelist with ID as final tie-breaker. Original POS lookup remains independent.

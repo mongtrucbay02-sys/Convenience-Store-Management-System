@@ -1,5 +1,7 @@
 # Xác minh tích hợp NH-06 → KHO phục vụ báo cáo giữa kỳ
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 ## 1. Thông tin kiểm thử
 
 | Mục | Thông tin |

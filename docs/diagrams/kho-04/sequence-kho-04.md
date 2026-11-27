@@ -18,7 +18,7 @@ sequenceDiagram
     actor AD as Admin hoặc Quản lý
     participant UI as Giao diện kiểm kê
     participant KK as Điều phối KHO-04 dự kiến
-    participant DB as MySQL
+    participant DB as PostgreSQL 17
     participant KHO as DichVuKho
 
     AD->>UI: Mở phiếu CHO_DUYET

@@ -1,5 +1,7 @@
 # SP requirements traceability matrix
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Base origin/develop `babfe1edae507e5d94a95c422a76ffa344a23c00`. Isolation B only: fresh branch from develop, cherry-pick SP-07 as `86fa911`. Existing NH/uncommitted work preserved in original worktree. No NH commits included. Exact issue bodies/comments and related PR metadata: [snapshot](evidence/requirements-snapshot.json). Full Word SRS could not be located; the issue-published 13/10/2026 use cases, canonical runtime schema and API conventions are the available authority.
 
 PR #168 closed unmerged. #169/#196/#202 merged into intermediate branches, not develop. #204/#207/#219/#220 were merged into develop. Port compatible logic only; one CuaHangDbContext and existing migration chain.

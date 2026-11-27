@@ -1,5 +1,7 @@
 # PR #168: per-file inventory
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 - develop: `7e501094807b8bf20413900ff4f13e5d334a156a`
 - main: `aed862d6097501338e67889fddfe720bec1b83bb`
 - PR #168: `2554bf1d58f8abaf0b8569f7355f5f30193e88c0`

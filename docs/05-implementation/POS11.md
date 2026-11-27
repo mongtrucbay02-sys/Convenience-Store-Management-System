@@ -1,5 +1,7 @@
 # POS-11 — Xem chi tiết và in lại hóa đơn
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Issue: #99. Nhánh: `feature/pos-11`. Phụ thuộc POS-10.
 
 ## Cách dùng

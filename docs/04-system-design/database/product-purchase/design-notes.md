@@ -1,5 +1,7 @@
 # Ghi chú thiết kế T3-09 — Sản phẩm và Nhập hàng
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 ## 1. Phạm vi và tình trạng đầu vào
 
 T3-09 chỉ thiết kế CSDL cho hai module Sản phẩm/Danh mục (SP-01–SP-09) và Nhập hàng/Nhà cung cấp (NH-01–NH-09), cùng các điểm tích hợp Kho. Không triển khai controller/model/view, migration hay thay đổi database.

@@ -10,12 +10,10 @@ Soạn 23/11/2026 · #1 Phạm Gia Thăng. Gắn tag và tạo Release do **#5 T
 - [ ] `develop` gộp vào `main` qua PR, CI xanh trên `main`
 - [ ] Đóng băng tính năng (#260, #262, #266) và sửa lỗi theo test report
 - [ ] Danh sách use case cắt đã chốt và ghi vào SRS bản cuối
-- [ ] CSDL theo ADR-003:
-  - Tag bản lùi MySQL (ví dụ `v0.9-mysql`) gắn **trước** khi gộp thay đổi CSDL.
-  - DDL `smartmart` có trong repo.
-  - CI chạy trên PostgreSQL đạt toàn bộ test, hoặc trưởng nhóm quyết định nộp bằng bản lùi.
-  - README ghi đúng CSDL của bản nộp.
-- [ ] Ngay trước demo, bảo vệ: mở project Supabase (gói Free tự tạm dừng khi không có truy cập); Admin chốt số dư mở quỹ
+- [x] CSDL theo ADR-003: ứng dụng chuyển sang PostgreSQL 17 (#286, 24/11); CI 877/877. Không có tag bản lùi MySQL (ADR-003 mục 7)
+- [ ] Kiểm chứng ghi dữ liệu trên Supabase bằng `smartmart_backend` và chạy thử luồng demo (#293)
+- [ ] README ghi đúng cách chạy bản nộp
+- [ ] Ngay trước demo, bảo vệ (04/12/2026): mở project Supabase (gói Free tự tạm dừng khi không có truy cập); Admin chốt số dư mở quỹ
 
 ## 2. Gắn tag (do #5 thực hiện)
 

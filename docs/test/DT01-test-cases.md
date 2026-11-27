@@ -1,5 +1,7 @@
 # DT-01 — Tra cứu hóa đơn gốc (issue #148)
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 ## Chuẩn bị
 
 Dùng nhánh feature/dt-01 đã cập nhật develop e01c0ad. Đăng nhập website bằng tài khoản TN có DOI_TRA, đã đổi mật khẩu lần đầu. Tài khoản MySQL dev_hoai chỉ dùng cho chuỗi kết nối, không nhập ở form đăng nhập. Cấu hình ConnectionStrings:CuaHang bằng User Secrets; nếu POS còn khóa PosMySql thì dùng cùng database để tạo/tra hóa đơn nhất quán.

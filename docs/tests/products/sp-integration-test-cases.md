@@ -1,5 +1,7 @@
 # Products integration test cases
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 These ten HTTP cases were executed against the real application cookie/session and isolated MySQL fixture. Raw RED and GREEN evidence: `artifacts/sp-module/final/integration-{red,green}.trx`; RED 0 PASS / 10 FAIL, GREEN 10 PASS / 0 FAIL / 0 SKIP. Final full-run identities and source hashes are recorded in [final evidence](evidence/final/summary.json). These are HTTP/Razor tests; browser E2E was NOT RUN.
 
 Source: [ProductsIntegrationHttpTests.cs](../../../tests/ConvenienceStore.Web.Tests/Modules/Products/ProductsIntegrationHttpTests.cs). Tests use the same area/default route templates as `Program.cs`.

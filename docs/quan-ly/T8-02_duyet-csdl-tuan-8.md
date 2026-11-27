@@ -62,3 +62,10 @@ Các quyết định DB-R01 → DB-R05 trong tài liệu đối chiếu của #5
   - Cột `da_chot_so_du_dau`.
   - Cột `anh_url` VARCHAR(2048).
 - Khi có ánh xạ hoặc migration Npgsql, #1 duyệt lại theo 5 tiêu chí; tiêu chí 5 đổi thành "`dotnet test` đạt trên PostgreSQL 17" (xem `nhat-ky-duyet-thay-doi-csdl.md`).
+
+## 7. Cập nhật 27/11/2026
+
+- PR #286 (24/11) thay toàn bộ migration MySQL bằng một migration `20261124050401_PostgreSqlBaseline`. Bốn migration trong biên bản này **không còn chạy** trên bản hiện tại; kết luận "duyệt có điều kiện" chỉ còn giá trị lịch sử.
+- X3, X4 đã chốt ở #257 (không có phản đối trước 25/11). X10 không còn áp dụng.
+- `PostgreSqlBaseline` chưa có biên bản duyệt theo 5 tiêu chí. Việc cần làm: đối chiếu với ERD v1 + phần bổ sung (tiêu chí 3), trigger/CHECK (tiêu chí 4), test trên PostgreSQL 17 (tiêu chí 5: đạt, CI `cc20336` 877/877).
+

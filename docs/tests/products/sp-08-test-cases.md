@@ -1,5 +1,7 @@
 # SP-08 automated test cases
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 AD creates and edits category name, description and KhongDoiTra. Trimmed name required, maximum 100; description maximum 255; database collation enforces unique names. Update requires the current PhienBan. No schema or migration changes.
 
 Compatible PR #196 validation was ported into the current repository/service architecture. CuaHangDbContext remains the only runtime context; its existing DanhMuc concurrency token and version-increment hook own optimistic concurrency. API writes use the existing session/XSRF filter. Razor writes require MVC antiforgery and validate model binding before invoking business logic.

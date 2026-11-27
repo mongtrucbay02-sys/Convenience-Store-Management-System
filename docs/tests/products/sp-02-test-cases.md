@@ -1,5 +1,7 @@
 # SP-02 automated test cases
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Choose a product from SP-01 and display code/name/category/unit/effective price/scheduled prices/stock/threshold/image/description/status. AD additionally sees cost and price history. Deleted product reports 404 with the issue's message. TN visibility restrictions from SP-01 also apply to direct-ID requests.
 
 Separate bounded detail repository and application service reuse CuaHangDbContext, effective-price view and batch inventory service. Database NOW defines scheduled prices; cancelled entries are excluded. AD history includes audit metadata/cancellations. Non-AD metadata/history/cost are null. Dates use the shared +07:00 conversion. Unsafe image URL schemes are omitted. No schema changes.

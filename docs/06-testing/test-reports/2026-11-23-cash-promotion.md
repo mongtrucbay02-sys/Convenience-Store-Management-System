@@ -1,5 +1,7 @@
 # Kiểm thử sửa quỹ, hủy hóa đơn và ảnh khuyến mãi
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Ngày 23/11/2026. Trạng thái: **Đã kiểm thử cục bộ, đang review**. Mã được kiểm thử và commit: `ce06dff`, nhánh `fix/integrate-main-develop-20261122`. Chưa push/triển khai trong đợt này; chưa xác nhận CI GitHub, staging hay review độc lập. Bố cục điện thoại **để sau theo yêu cầu người dùng**.
 
 ## Phạm vi đã sửa

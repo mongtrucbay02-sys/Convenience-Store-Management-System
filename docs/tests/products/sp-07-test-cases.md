@@ -1,5 +1,7 @@
 # SP-07 / #62 verification
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Existing implementation preserved; original 8c8953d cherry-picked as 86fa911. No duplicate implementation. Fresh isolated-MySQL full baseline: 455 total, 417 PASS, 38 FAIL, 0 SKIP; all 45 category cases passed (UNIT 16, HTTP 28, MYSQL 1). Raw evidence: artifacts/sp-module/baseline/full.trx.
 
 PENDING BUSINESS APPROVAL: count-all versus active-only; visibility of hidden categories by role. Retained tested count-all/management status behavior. POS remains active-only. Reviewer/CI/QA/staging pending; no ACCEPTED or INTEGRATED claim.

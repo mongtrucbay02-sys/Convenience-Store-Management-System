@@ -85,3 +85,5 @@ Tiêu chí duyệt một migration:
 | Ngày | Nguồn | Người | Thay đổi CSDL | Kết luận | Ghi chú |
 | --- | --- | --- | --- | --- | --- |
 | 23/11 | [ADR-003](../adr/ADR-003-chuyen-csdl-postgresql-supabase.md); báo cáo kiểm kê Supabase của #2 | #2 Yến dựng schema; nhóm chốt; #1 ghi | Schema `smartmart` trên Supabase (PostgreSQL 17.12): 31 bảng, 62 FK, 89 CHECK, 17 trigger, 3 view, RLS 31/31 | **Nhóm chốt dùng làm CSDL đích**. Chưa duyệt theo 5 tiêu chí vì ứng dụng chưa chạy trên schema này | DDL hiện chỉ nằm trên Supabase, cần đưa vào repo qua PR. Duyệt lại khi có ánh xạ hoặc migration Npgsql và CI PostgreSQL |
+| 24/11 | #286 `[BẢN NHÁP] Tích hợp PostgreSQL 17…` | #2 Yến | Thay mọi migration MySQL bằng `20261124050401_PostgreSqlBaseline`; schema `smartmart`, vai trò `smartmart_backend`, RLS | **Gộp không qua lượt duyệt CSDL** (một người duyệt code: #5) | Tiêu chí 5 đạt (CI 877/877 tại `cc20336`). Tiêu chí 3, 4 chưa đối chiếu; #1 ghi biên bản bổ sung |
+

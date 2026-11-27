@@ -1,5 +1,7 @@
 # Đề xuất sửa sổ quỹ và lưu ảnh khuyến mãi
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Trạng thái: **Đang review, chưa được duyệt thay đổi CSDL theo #1/#234**. Ngày 23/11/2026. Áp dụng sau ba migration hiện có; không thay migration lịch sử hoặc `schema_v1.sql` đã chốt.
 
 ## Vấn đề và xử lý

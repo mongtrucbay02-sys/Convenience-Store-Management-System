@@ -1,5 +1,7 @@
 # PR #168 — Bằng chứng tích hợp vào CuaHangDbContext
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 **Verdict: BLOCKED cho nghiệm thu toàn bộ #168.** Phần port có giới hạn được gửi dưới dạng Draft PR để review; không tự approve/merge/đóng PR nguồn.
 
 ## Commit và môi trường

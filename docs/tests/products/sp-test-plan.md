@@ -1,5 +1,7 @@
 # SP automated test plan
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Execute in order SP-07 review, SP-08, SP-01, SP-02, SP-03, SP-04, SP-05, SP-06, SP-09. Each new feature gets executable RED evidence before implementation, then focused UNIT/HTTP/MYSQL gates, relevant regression and full solution comparison by test identity/cause. At most five evidence-based repairs for a distinct failure. Preserve all TRX/logs under ignored artifacts/sp-module. Never overlap MySQL test hosts against the same container. Check TCP readiness and wait for process exit.
 
 Use existing xUnit/Kestrel real-session infrastructure, Razor/Bootstrap, Oracle MySQL provider and current migrations. HTTP mutations must test real cookie/XSRF; Razor mutations use ASP.NET antiforgery. Browser E2E NOT RUN unless an existing runner is actually executed. No new browser package. Read queries bounded; role restrictions apply server-side including nullable cost/history fields. Write checks include unique/FK/CHECK rules, atomicity, stale/concurrent updates and preserved snapshots.

@@ -73,6 +73,6 @@ Hai loại này làm tồn tăng nên không phát sinh `TON_KHONG_DU`.
 | `HuyHoaDon_NhieuDong_GhiMoiDongMotTheKho_BenGoiRollbackThiKhongConGi` | Hai dòng, bên gọi rollback | Tồn và thẻ kho giữ nguyên |
 | `Ut11_YeuCauSai_DuLieuKhongHopLe` (bổ sung) | Thiếu/âm `giaVon`, số lượng 0, loại không tồn tại | `DU_LIEU_KHONG_HOP_LE` đúng trường |
 
-Kết quả chạy ngày 02/11/2026 trên MySQL 9.7.2: 41/41 test dịch vụ kho đạt; toàn bộ 164/164 test đạt.
+Kết quả chạy ngày 02/11/2026 trên MySQL 9.7.2 (trước khi chuyển CSDL): 41/41 test dịch vụ kho đạt; toàn bộ 164/164 test đạt. Từ 24/11/2026 bộ test chạy trên PostgreSQL 17 (ADR-003); lượt CI `cc20336` ngày 26/11: 877/877 đạt.
 
 Cùng PR này sửa 2 test đang trượt (`Ut04_…` và `Pos07_TonKhongDu_…`): test cũ so cả câu "chỉ còn N sản phẩm", trong khi thông báo đã đổi ở commit `e8bc40f` (POS-07). Test nay chỉ kiểm tra phần "chỉ còn N", không sửa code của POS-07.

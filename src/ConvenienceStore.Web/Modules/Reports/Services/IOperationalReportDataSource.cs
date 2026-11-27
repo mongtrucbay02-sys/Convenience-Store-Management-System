@@ -6,7 +6,11 @@ public sealed record ReportProductFact(
 
 public sealed record ReportInvoiceLineFact(
     long ProductId, string ProductName, long CategoryId, string CategoryName,
-    int Quantity, long ListPriceSnapshot, long UnitCostSnapshot);
+    int Quantity, long ListPriceSnapshot, decimal UnitCostSnapshot, long DiscountPerUnitSnapshot = 0)
+{
+    public long PromotionDiscountSnapshot => checked((long)Quantity * DiscountPerUnitSnapshot);
+    public long NetRevenueSnapshot => checked((long)Quantity * (ListPriceSnapshot - DiscountPerUnitSnapshot));
+}
 
 /// <summary>Only paid invoices are returned; the copied line prices are the report source of truth.</summary>
 public sealed record ReportPaidInvoiceFact(
@@ -21,11 +25,11 @@ public sealed record ReportPurchaseReceiptLineFact(long ProductId, string Produc
 public sealed record ReportPurchaseReceiptFact(long Id, DateTimeOffset ReceivedAt, long SupplierId, string SupplierName,
     IReadOnlyList<ReportPurchaseReceiptLineFact> Lines);
 public sealed record ReportReturnedLineFact(long ProductId, string ProductName, long CategoryId, string CategoryName,
-    int Quantity, long UnitCostSnapshot, int RestockedQuantity, long RefundAmount, long DestroyedValue = 0);
+    int Quantity, decimal UnitCostSnapshot, int RestockedQuantity, long RefundAmount, decimal DestroyedValue = 0);
 public sealed record ReportReturnFact(long Id, long InvoiceId, DateTimeOffset ReturnedAt,
     IReadOnlyList<ReportReturnedLineFact> Lines, long CashierId = 0, string CashierName = "");
 public sealed record ReportWriteOffFact(long Id, DateTimeOffset WrittenOffAt, long ProductId, long CategoryId,
-    int Quantity, long UnitCostSnapshot);
+    int Quantity, decimal UnitCostSnapshot);
 
 /// <summary>
 /// Report input boundary for BC-02 through BC-08. The production adapter queries the PostgreSQL schema;

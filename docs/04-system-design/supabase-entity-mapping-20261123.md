@@ -28,7 +28,7 @@ Có thêm `PhienDangNhap.HetHanLuc` và quan hệ `GiaoDichTienMat.QuyTienMatId`
 
 ## Cấu hình cục bộ
 
-Sao chép `src/ConvenienceStore.Web/.env.postgresql.example` thành `.env` cùng thư mục, thay project ref/password bằng giá trị riêng. Không commit `.env`.
+Sao chép `src/ConvenienceStore.Web/.env.example` thành `.env` cùng thư mục, thay project ref/password bằng giá trị riêng. Không commit `.env`.
 
 ```dotenv
 Database__Provider=PostgreSql

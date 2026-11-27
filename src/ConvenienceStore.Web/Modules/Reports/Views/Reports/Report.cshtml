@@ -172,6 +172,9 @@
                     {
                         <a asp-area="Reports" asp-controller="Reports" asp-action="Detail"
                            asp-route-code="@Model.Code" asp-route-key="@row.Key"
+                           asp-route-CategoryId="@Model.Query.CategoryId" asp-route-ProductId="@Model.Query.ProductId"
+                           asp-route-SupplierId="@Model.Query.SupplierId" asp-route-StockStatus="@Model.Query.StockStatus"
+                           asp-route-TopN="@Model.Query.TopN" asp-route-SortBy="@Model.Query.SortBy"
                            asp-route-ReturnReason="@Model.Query.ReturnReason" asp-route-CashierId="@Model.Query.CashierId" asp-route-PromotionId="@Model.Query.PromotionId"
                            asp-route-Period="@Model.Query.Period" asp-route-From="@Model.Query.From?.ToString("yyyy-MM-dd")"
                            asp-route-To="@Model.Query.To?.ToString("yyyy-MM-dd")" asp-route-GroupBy="@Model.Query.GroupBy">@row.Cells[columnIndex]</a>
@@ -186,6 +189,7 @@
 </div></section>
 
 <p class="small text-muted mt-2 mb-0">Số liệu theo kỳ đã chọn (UTC+7). Doanh thu và giá vốn sử dụng dữ liệu giao dịch lưu tại thời điểm phát sinh.</p>
+@if(Model.Code is "BC-03" or "BC-04" or "BC-08"){<p class="small text-muted">Danh mục được phân loại theo sản phẩm hiện tại. Chuyển danh mục có thể thay đổi cách phân nhóm báo cáo kỳ cũ.</p>}
 @if(Model.Code=="BC-09"){<p class="small text-muted">Biểu đồ: số lượng hàng trả theo lý do. Một phiếu có thể có nhiều lý do; dòng tổng đếm phiếu không trùng. Tỷ lệ trả dùng doanh thu sau khuyến mãi toàn cửa hàng, chưa trừ hàng trả; mẫu số bằng 0 hiển thị 0%.</p>}
 @if(Model.Code=="BC-11"){<p class="small text-muted">Biểu đồ: lượt dùng theo chương trình. Một đơn dùng nhiều chương trình được xuất hiện ở từng dòng; tổng doanh thu tính theo các đơn không trùng. Giá trị trung bình đơn lấy tại lúc bán, sau khuyến mãi. Hàng trả ghi giảm vào ngày hoàn tất.</p>}
 

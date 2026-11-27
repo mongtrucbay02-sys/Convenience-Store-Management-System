@@ -54,6 +54,23 @@ public sealed class ReportPromotionPostgreSqlRegressionTests(CsdlPostgreSqlTam d
     }
 
     [Fact]
+    public async Task ReportCatalogSupportsBigintCategoryIds()
+    {
+        await database.ChayAsync("""
+            INSERT INTO danh_muc(id,ten) VALUES(5000000101,'Bigint category');
+            INSERT INTO tai_khoan(ten_dang_nhap,mat_khau_bam,ho_ten,vai_tro_id,bat_buoc_doi_mk)
+            VALUES('bigint_report','unused','Report test',1,FALSE);
+            INSERT INTO san_pham(ma,ten_san_pham,danh_muc_id,don_vi_tinh,nguoi_tao_id)
+            SELECT 'BIGINT-CAT','Bigint category product',5000000101,'Hộp',id
+            FROM tai_khoan WHERE ten_dang_nhap='bigint_report';
+            """);
+        using var context = database.TaoDbContext();
+        var source = new PostgreSqlTransactionalReportsDataSource(context);
+        var product = Assert.Single(await source.GetProductsAsync(default), x => x.Name == "Bigint category product");
+        Assert.Equal(5000000101, product.CategoryId);
+    }
+
+    [Fact]
     public async Task InventoryValueUsesDecimalCostUntilTheTotalIsCalculated()
     {
         await database.ChayAsync("""

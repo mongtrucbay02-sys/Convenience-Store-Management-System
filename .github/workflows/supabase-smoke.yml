@@ -38,10 +38,33 @@ jobs:
       - name: Build
         run: dotnet build tools/SupabaseSmoke/SupabaseSmoke.csproj --configuration Release --no-restore
 
+      - name: Provision trusted Supabase CA
+        env:
+          SUPABASE_DB_CA_CERT: ${{ secrets.SUPABASE_DB_CA_CERT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_DB_CA_CERT:-}" ]; then
+            echo "::error::SUPABASE_DB_CA_CERT is not configured."
+            exit 1
+          fi
+          umask 077
+          mkdir -p artifacts
+          printf '%s\n' "$SUPABASE_DB_CA_CERT" > artifacts/supabase-ca.pem
+          if ! openssl x509 -in artifacts/supabase-ca.pem -noout >/dev/null 2>&1; then
+            echo "::error::SUPABASE_DB_CA_CERT must contain a valid PEM certificate."
+            exit 1
+          fi
+
       - name: Read 31 tables and 3 views from Supabase
         env:
           SUPABASE_DB_CONNECTION: ${{ secrets.SUPABASE_DB_CONNECTION }}
         run: dotnet tools/SupabaseSmoke/bin/Release/net10.0/SupabaseSmoke.dll artifacts/supabase-smoke/result.json
+
+      - name: Remove runner CA file
+        if: always()
+        shell: bash
+        run: rm -f artifacts/supabase-ca.pem
 
       - name: Upload read-only report
         if: always()

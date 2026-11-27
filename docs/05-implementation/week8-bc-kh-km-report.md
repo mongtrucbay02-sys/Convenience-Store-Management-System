@@ -1,10 +1,10 @@
 # Báo cáo phần BC, KH, KM — tuần 8 / #251
 
-**Thành viên:** #5 Nguyễn Tiến Trung. **Ngày:** 23/11/2026. **Trạng thái:** Đang review; bản để Thăng tổng hợp báo cáo, không phải biên bản nghiệm thu. Nhánh `feature/week8-bc-km-20261123` dựa trên nhánh tích hợp của PR #232, chưa phải khẳng định đã có trên develop/main.
+**Thành viên:** #5 Nguyễn Tiến Trung. **Ngày:** 23/11/2026, cập nhật 24/11/2026. **Trạng thái:** Đang review; bản để Thăng tổng hợp báo cáo, không phải biên bản nghiệm thu. Bản gốc thuộc nhánh `feature/week8-bc-km-20261123`; runtime hiện tại đối chiếu `develop` nền `770550c` sau tích hợp PostgreSQL. Kết quả/ảnh MySQL ngày 23/11 bên dưới là bằng chứng lịch sử, không đại diện cho lần chạy PostgreSQL mới. Xem [kiểm thử bản sửa #266](../06-testing/test-reports/2026-11-24-bc-kh-km-acceptance.md).
 
 ## 1. Phạm vi và kiến trúc
 
-Phần của Trung gồm quản lý khách hàng, tích điểm, khuyến mãi và báo cáo. Runtime dùng C# / ASP.NET Core MVC + Razor, EF Core `CuaHangDbContext` và MySQL; truy vấn tổng hợp trực tiếp theo phương án PA-BC-03.A. Không tạo DbContext thứ hai, không tạo CSDL riêng bằng SQL thay migration. Trong kiểm thử, dùng CSDL tạm độc lập để không ghi vào Dev chung.
+Phần của Trung gồm quản lý khách hàng, tích điểm, khuyến mãi và báo cáo. Runtime dùng C# / ASP.NET Core MVC + Razor, EF Core `CuaHangDbContext`, Npgsql và PostgreSQL 17 (schema `smartmart`); truy vấn tổng hợp trực tiếp theo phương án PA-BC-03.A. Không tạo DbContext thứ hai, không tạo CSDL riêng bằng SQL thay migration. Trong kiểm thử, dùng CSDL tạm độc lập để không ghi vào Supabase chung.
 
 Controller kiểm tra quyền máy chủ bằng AUTH của repo. Trang quản lý khách phục vụ TN/AD; báo cáo và KM-05/06 chỉ AD. Thu ngân không được cấp quyền báo cáo bằng cách gửi `isAdmin` hoặc header tự đặt.
 
@@ -12,7 +12,7 @@ Controller kiểm tra quyền máy chủ bằng AUTH của repo. Trang quản l�
 |---|---|
 | `Modules/Customers` | Tìm/thêm/sửa, lịch sử, ẩn/xóa và điều chỉnh điểm; `CustomerPoints` là cổng ghi điểm dùng chung cho POS/DT |
 | `Modules/Promotions` | Quản lý KM-01..04 hiện có; tuần 8 bổ sung `PromotionUsageStore`, lịch sử và xóa có bảo vệ tham chiếu |
-| `Modules/Reports` | Dashboard và khung kỳ/bộ lọc/detail/Excel; tuần 8 bổ sung `WeekEightReportsService`, nguồn MySQL và BC-09..11 |
+| `Modules/Reports` | Dashboard và khung kỳ/bộ lọc/detail/Excel; `WeekEightReportsService`, nguồn PostgreSQL và BC-09..11 |
 | Bản sao giao dịch | Dòng hóa đơn lưu tên, giá, giảm và giá vốn; lịch sử điểm bất biến; báo cáo không lấy giá hiện tại để tính lại giao dịch cũ |
 
 ## 2. Thiết kế dữ liệu và luồng chính
@@ -40,7 +40,7 @@ KH-06 tích điểm trong transaction thanh toán POS-07. Khi lỗi kho, lưu h�
 | KH-04–06 | Ẩn/xóa có giữ tham chiếu, lịch sử mua/điểm, tích điểm trong thanh toán đã có ở nhánh nền |
 | KH-08 | Điều chỉnh có lý do, chỉ AD, không âm và ghi ledger đã có ở nhánh nền |
 | KH-07 | Bảng/quy tắc hiệu lực được checkout đọc; chưa dùng báo cáo này để xác nhận hoàn thành toàn bộ UI cấu hình KH-07 |
-| KM-01–04 | Danh sách/tạo/sửa/trạng thái đã có; ảnh lưu MySQL thuộc sửa ở nhánh nền PR #232 |
+| KM-01–04 | Danh sách/tạo/sửa/trạng thái đã có; URL ảnh nằm trong `chuong_trinh_khuyen_mai.anh_url`, entity và baseline PostgreSQL hiện tại |
 | KM-05 / #247 | Tuần 8: trang xác nhận và xóa chỉ khi không có tham chiếu; chặn cả hóa đơn hủy/giỏ hàng, gợi ý Kết thúc |
 | KM-06 / #246 | Tuần 8: lịch sử có hóa đơn, thời gian, TN, khách, tiền giảm và tổng; loại hóa đơn hủy; nguồn view dùng chung BC-11 |
 

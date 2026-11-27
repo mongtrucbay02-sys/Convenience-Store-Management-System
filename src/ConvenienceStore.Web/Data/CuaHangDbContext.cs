@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using ConvenienceStore.Web.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,27 +22,6 @@ public partial class CuaHangDbContext : DbContext
     {
         TangPhienBanThucTheBiSua();
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-    }
-
-    private void TangPhienBanThucTheBiSua()
-    {
-        foreach (var entry in ChangeTracker.Entries().Where(e=>e.Entity is DanhMuc or ChuongTrinhKhuyenMai))
-        {
-            if (entry.State == EntityState.Modified)
-            {
-                var phienBanGoc = entry.OriginalValues.GetValue<long>(
-                    nameof(DanhMuc.PhienBan));
-                // Adapt #168's business-property guard while keeping #204/#207's
-                // retry semantics. Detached Update has equal local originals, so
-                // business IsModified flags must remain authoritative.
-                var coThayDoi = entry.Properties.Any(property =>
-                    property.IsModified &&
-                    property.Metadata.Name != nameof(DanhMuc.PhienBan));
-                var phienBan = entry.Property(nameof(DanhMuc.PhienBan));
-                phienBan.CurrentValue = coThayDoi ? checked(phienBanGoc + 1) : phienBanGoc;
-                phienBan.IsModified = coThayDoi;
-            }
-        }
     }
 
     public virtual DbSet<BoDemChungTu> BoDemChungTus { get; set; }
@@ -108,15 +85,36 @@ public partial class CuaHangDbContext : DbContext
     public virtual DbSet<VaiTro> VaiTros { get; set; }
 
     public virtual DbSet<GiaoDichTienMat> GiaoDichTienMats { get; set; }
+
     public virtual DbSet<HoanTienHoaDon> HoanTienHoaDons { get; set; }
+
     public virtual DbSet<QuyTienMat> QuyTienMats { get; set; }
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-        => ConfigurePostgreSqlModel(modelBuilder);
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseNpgsql(pg=>pg.MigrationsHistoryTable("__EFMigrationsHistory","public"));
+        optionsBuilder.UseNpgsql(pg => pg.MigrationsHistoryTable("__EFMigrationsHistory", "public"));
         optionsBuilder.AddInterceptors(new PostgreSqlTimeInterceptor());
         base.OnConfiguring(optionsBuilder);
     }
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+        ConfigurePostgreSqlModel(modelBuilder);
+
+    private void TangPhienBanThucTheBiSua()
+    {
+        foreach (var entry in ChangeTracker.Entries().Where(e => e.Entity is DanhMuc or ChuongTrinhKhuyenMai))
+        {
+            if (entry.State == EntityState.Modified)
+            {
+                var phienBanGoc = entry.OriginalValues.GetValue<long>(nameof(DanhMuc.PhienBan));
+                // Dùng phiên bản gốc để retry không tăng hai lần; giữ cờ IsModified cho detached update.
+                var coThayDoi = entry.Properties.Any(property =>
+                    property.IsModified &&
+                    property.Metadata.Name != nameof(DanhMuc.PhienBan));
+                var phienBan = entry.Property(nameof(DanhMuc.PhienBan));
+                phienBan.CurrentValue = coThayDoi ? checked(phienBanGoc + 1) : phienBanGoc;
+                phienBan.IsModified = coThayDoi;
+            }
+        }
+    }
 }

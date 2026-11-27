@@ -203,7 +203,16 @@ public sealed class SupabaseSmokeTests : IDisposable
         Assert.Equal(0, result.Json.GetProperty("writes").GetInt32());
         Assert.Equal(session.Plan.Select(p => p.QualifiedName), session.Reads);
         Assert.Equal("begin-read-only", session.Events[0]);
-        Assert.Equal("mapping", session.Events[1]);
+        Assert.Equal("role", session.Events[1]);
+        Assert.Equal("mapping", session.Events[2]);
+        Assert.True(result.Json.GetProperty("roleVerified").GetBoolean());
+        Assert.Equal("smartmart_backend", result.Json.GetProperty("currentUser").GetString());
+        Assert.Equal("smartmart_backend", result.Json.GetProperty("sessionUser").GetString());
+        Assert.False(result.Json.GetProperty("isSuperuser").GetBoolean());
+        Assert.False(result.Json.GetProperty("bypassRls").GetBoolean());
+        Assert.False(result.Json.GetProperty("canCreateRole").GetBoolean());
+        Assert.False(result.Json.GetProperty("canCreateDatabase").GetBoolean());
+        Assert.True(result.Json.GetProperty("rowSecurity").GetBoolean());
         Assert.Equal("rollback", session.Events[^2]);
         Assert.Equal("dispose", session.Events[^1]);
         Assert.Equal(1, session.Rollbacks);
@@ -251,6 +260,71 @@ public sealed class SupabaseSmokeTests : IDisposable
             Assert.Contains(mappedObject.Name, sql);
             Assert.Contains("LIMIT", sql);
         }
+    }
+
+    [Theory]
+    [InlineData("current", "UnexpectedDatabaseRole")]
+    [InlineData("session", "UnexpectedSessionRole")]
+    [InlineData("super", "SuperuserNotAllowed")]
+    [InlineData("bypass", "BypassRlsNotAllowed")]
+    [InlineData("create-role", "CreateRoleNotAllowed")]
+    [InlineData("create-db", "CreateDatabaseNotAllowed")]
+    [InlineData("row-security", "RowSecurityNotEnabled")]
+    [InlineData("read-only", "ReadOnlyGuardNotApplied")]
+    public async Task UnsafeRole_FailsBeforeMappingAndRollsBack(string defect, string reason)
+    {
+        var valid = new SmokeRoleEvidence("smartmart_backend", "smartmart_backend",
+            false, false, false, false, true, true);
+        var unsafeRole = defect switch
+        {
+            "current" => valid with { CurrentUser = "private-unexpected-role" },
+            "session" => valid with { SessionUser = "private-unexpected-role" },
+            "super" => valid with { IsSuperuser = true },
+            "bypass" => valid with { BypassRls = true },
+            "create-role" => valid with { CanCreateRole = true },
+            "create-db" => valid with { CanCreateDatabase = true },
+            "row-security" => valid with { RowSecurity = false },
+            "read-only" => valid with { ReadOnly = false },
+            _ => throw new ArgumentOutOfRangeException(nameof(defect))
+        };
+        var session = new FakeSession { Role = unsafeRole };
+        var result = await Run(Remote(), session);
+        Assert.Equal(1, result.Exit);
+        Assert.Equal("failed", result.Json.GetProperty("status").GetString());
+        Assert.Equal(reason, result.Json.GetProperty("reasonCode").GetString());
+        Assert.False(result.Json.GetProperty("roleVerified").GetBoolean());
+        Assert.Equal(0, result.Json.GetProperty("checkedObjects").GetInt32());
+        Assert.Equal(0, session.PlanReads);
+        Assert.Empty(session.Reads);
+        Assert.Equal(1, session.Rollbacks);
+        Assert.True(session.Disposed);
+        Assert.DoesNotContain("private-unexpected-role", result.Text);
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("query")]
+    [InlineData("cancelled")]
+    public async Task RoleEvidenceFailure_FailsClosed(string failure)
+    {
+        Exception error = failure switch
+        {
+            "missing" => new SmokeValidationException("RoleEvidenceUnavailable"),
+            "cancelled" => new OperationCanceledException(TestPassword),
+            _ => new InvalidOperationException(TestPassword)
+        };
+        var session = new FakeSession { RoleFailure = error };
+        var result = await Run(Remote(), session);
+        Assert.Equal(1, result.Exit);
+        Assert.Equal(failure == "missing" ? "RoleEvidenceUnavailable" : "ProbeFailed",
+            result.Json.GetProperty("reasonCode").GetString());
+        Assert.False(result.Json.GetProperty("roleVerified").GetBoolean());
+        Assert.Equal(JsonValueKind.Null, result.Json.GetProperty("currentUser").ValueKind);
+        Assert.Equal(0, session.PlanReads);
+        Assert.Empty(session.Reads);
+        Assert.Equal(1, session.Rollbacks);
+        Assert.True(session.Disposed);
+        Assert.DoesNotContain(TestPassword, result.Text);
     }
 
     [Fact]
@@ -382,6 +456,9 @@ public sealed class SupabaseSmokeTests : IDisposable
     {
         internal IReadOnlyList<SmokeObject> Plan { get; init; } = MappedObjects();
         internal bool ReadOnly { get; init; } = true;
+        internal SmokeRoleEvidence Role { get; init; } = new("smartmart_backend", "smartmart_backend",
+            false, false, false, false, true, true);
+        internal Exception? RoleFailure { get; init; }
         internal Exception? BeginFailure { get; init; }
         internal Exception? Failure { get; init; }
         internal int FailAt { get; init; }
@@ -397,6 +474,11 @@ public sealed class SupabaseSmokeTests : IDisposable
         {
             Events.Add("begin-read-only");
             return BeginFailure is null ? Task.FromResult(ReadOnly) : Task.FromException<bool>(BeginFailure);
+        }
+        public Task<SmokeRoleEvidence> ReadRoleAsync()
+        {
+            Events.Add("role");
+            return RoleFailure is null ? Task.FromResult(Role) : Task.FromException<SmokeRoleEvidence>(RoleFailure);
         }
         public Task<int> ProbeAsync(SmokeObject mappedObject)
         {

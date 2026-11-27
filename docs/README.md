@@ -78,7 +78,6 @@ docs/
 │   └── ui/QuickMart_UI.zip            Bộ giao diện Figma (SVG)
 ├── 05-implementation/
 │   ├── backend-conventions.md         Quy ước Backend
-│   ├── setup/mysql-reports-setup.md   Cấu hình MySQL
 │   └── attachments/Login.zip          Gói chức năng Đăng nhập (chưa gộp)
 ├── 06-testing/                        Kế hoạch, test case, báo cáo kiểm thử
 ├── 07-deployment/                     Hướng dẫn triển khai, release notes
@@ -154,4 +153,4 @@ Lần tái cấu trúc này chỉ **di chuyển** file (giữ nguyên nội dung
 | `docs/QuickMart_UI.zip` | `docs/04-system-design/ui/QuickMart_UI.zip` |
 | `docs/backend/backend-conventions.md` | `docs/05-implementation/backend-conventions.md` |
 | `docs/Login.zip` | `docs/05-implementation/attachments/Login.zip` |
-| `MYSQL-REPORTS-SETUP.md` (gốc repo) | `docs/05-implementation/setup/mysql-reports-setup.md` |
+| `MYSQL-REPORTS-SETUP.md` (gốc repo) | `docs/archive/mysql-runtime/mysql-reports-setup.md` (đã lưu trữ) |

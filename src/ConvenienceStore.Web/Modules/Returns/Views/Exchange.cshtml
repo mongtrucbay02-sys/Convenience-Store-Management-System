@@ -1,5 +1,146 @@
-@model long
-@{ Layout="_AdminLayout";ViewData["Title"]="Chuyển sang đổi hàng"; }
-<h1>Đổi sang hàng khác — DT-03</h1>
-<p>DT-03 được triển khai ở tuần 8. Hiện chưa tạo phiếu đổi, chưa hoàn tiền, chưa thay đổi tồn hoặc điểm.</p>
-<a href="/Returns/New?invoiceId=@Model">Quay lại trả hàng</a>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model ConvenienceStore.Web.Modules.Returns.Models.ExchangePage
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Đổi hàng DT-03";
+}
+
+<h1>Đổi hàng — DT-03</h1>
+<p>Hóa đơn gốc <strong>@Model.Invoice.InvoiceCode</strong> · @Model.Invoice.PurchasedAt.ToString("dd/MM/yyyy HH:mm")</p>
+
+@if (Model.Error is { } error)
+{
+    <div class="alert alert-danger" role="alert">@error</div>
+}
+
+<section class="card p-3 mb-3">
+    <h2>Hàng mới trong giỏ POS</h2>
+    <div>
+        <a class="btn btn-outline-primary" asp-controller="Pos" asp-action="Index"
+           asp-route-exchangeInvoiceId="@Model.Invoice.InvoiceId">Mở POS để chọn hàng mới</a>
+    </div>
+    @if (Model.NewItems.Count == 0)
+    {
+        <p class="mt-3 mb-0">Giỏ POS chưa có hàng mới.</p>
+    }
+    else
+    {
+        <div class="table-responsive mt-3">
+            <table class="table">
+                <thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Giảm mỗi đơn vị</th><th>Thành tiền</th></tr></thead>
+                <tbody>
+                    @foreach (var item in Model.NewItems)
+                    {
+                        <tr>
+                            <td>@item.Name</td><td>@item.Quantity</td>
+                            <td>@item.UnitPrice.ToString("N0") đ</td><td>@item.Discount.ToString("N0") đ</td>
+                            <td>@item.LineTotal.ToString("N0") đ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="mb-0">Tổng hàng mới <strong>@Model.NewItems.Sum(x => x.LineTotal).ToString("N0") đ</strong></p>
+    }
+</section>
+
+@if (Model.Preview is { } preview)
+{
+    <section class="card p-3 mb-3">
+        <h2>Xác nhận đổi hàng</h2>
+        <ul>
+            @foreach (var line in preview.Returned.Lines)
+            {
+                <li>@line.Name × @line.Quantity · @((line.UnitPaid * line.Quantity).ToString("N0")) đ</li>
+            }
+        </ul>
+        <p>Giá trị hàng trả <strong>@preview.Returned.Refund.ToString("N0") đ</strong></p>
+        <p>Khách trả thêm <strong>@preview.CashDue.ToString("N0") đ</strong></p>
+        <form asp-controller="ReturnOrders" asp-action="ExchangeCreate" method="post">
+            <input type="hidden" name="Request.InvoiceId" value="@Model.Invoice.InvoiceId" />
+            <input type="hidden" name="Request.ConfirmationToken" value="@preview.ConfirmationToken" />
+            @for (var i = 0; i < Model.Request.Lines.Count; i++)
+            {
+                var line = Model.Request.Lines[i];
+                <input type="hidden" name="Request.Lines[@i].ProductId" value="@line.ProductId" />
+                <input type="hidden" name="Request.Lines[@i].Quantity" value="@line.Quantity" />
+                <input type="hidden" name="Request.Lines[@i].Reason" value="@line.Reason" />
+                <input type="hidden" name="Request.Lines[@i].Note" value="@line.Note" />
+                <input type="hidden" name="Request.Lines[@i].Condition" value="@line.Condition" />
+                <input type="hidden" name="Request.Lines[@i].Handling" value="@line.Handling" />
+            }
+            @if (preview.Returned.NeedsApproval)
+            {
+                <p class="alert alert-warning" role="alert">Tạm chặn đổi hàng ngoại lệ vì chưa có thiết kế lưu phương án đã duyệt. Không nhận tiền hoặc gửi phiếu từ màn hình này.</p>
+            }
+            else if (preview.CashDue > 0)
+            {
+                <label class="form-label" for="cash">Tiền mặt khách đưa</label>
+                <input class="form-control mb-2" id="cash" name="Request.CashReceived" type="number"
+                       min="@preview.CashDue" step="1" required />
+                <label class="form-check mb-3">
+                    <input class="form-check-input" name="Request.CashConfirmed" type="checkbox" value="true" required />
+                    Đã nhận tiền chênh lệch
+                </label>
+            }
+            @if (!preview.Returned.NeedsApproval)
+            {
+                <button class="btn btn-success" type="submit">Hoàn tất đổi hàng</button>
+            }
+        </form>
+    </section>
+}
+else
+{
+    <section class="card p-3 mb-3">
+        <h2>Chọn hàng trả</h2>
+        <form asp-controller="ReturnOrders" asp-action="ExchangePreview" method="post">
+            <input type="hidden" name="Request.InvoiceId" value="@Model.Invoice.InvoiceId" />
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Sản phẩm</th><th>Còn được đổi</th><th>SL đổi</th><th>Lý do</th><th>Ghi chú</th><th>Tình trạng</th><th>Xử lý</th></tr></thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Invoice.Lines.Count; i++)
+                        {
+                            var line = Model.Invoice.Lines[i];
+                            var entered = Model.Request.Lines?.FirstOrDefault(x => x?.ProductId == line.ProductId);
+                            <tr>
+                                <td>
+                                    @line.Name
+                                    @if (line.Forbidden)
+                                    {
+                                        <span class="text-danger">(danh mục cần duyệt)</span>
+                                    }
+                                </td>
+                                <td>@line.Remaining / @line.Purchased</td>
+                                <td>
+                                    <input type="hidden" name="Request.Lines[@i].ProductId" value="@line.ProductId" />
+                                    <input class="form-control" aria-label="Số lượng đổi" type="number" min="0" max="@line.Remaining"
+                                           name="Request.Lines[@i].Quantity" value="@(entered?.Quantity ?? 0)" />
+                                </td>
+                                <td>
+                                    <select class="form-select" aria-label="Lý do" name="Request.Lines[@i].Reason">
+                                        <option value="LOI_SAN_PHAM" selected="@(entered?.Reason == "LOI_SAN_PHAM")">Lỗi sản phẩm</option>
+                                        <option value="HET_HAN" selected="@(entered?.Reason == "HET_HAN")">Hết hạn</option>
+                                        <option value="KHONG_DUNG_NHU_CAU" selected="@(entered?.Reason == "KHONG_DUNG_NHU_CAU")">Không đúng nhu cầu</option>
+                                        <option value="KHAC" selected="@(entered?.Reason == "KHAC")">Khác</option>
+                                    </select>
+                                </td>
+                                <td><input class="form-control" aria-label="Ghi chú" name="Request.Lines[@i].Note" value="@entered?.Note" maxlength="255" /></td>
+                                <td><input class="form-control" aria-label="Tình trạng" name="Request.Lines[@i].Condition" value="@(entered?.Condition ?? "Nguyên trạng")" maxlength="255" /></td>
+                                <td>
+                                    <select class="form-select" aria-label="Cách xử lý" name="Request.Lines[@i].Handling">
+                                        <option value="NHAP_LAI" selected="@(entered?.Handling == "NHAP_LAI")">Nhập lại kho</option>
+                                        <option value="HUY" selected="@(entered?.Handling == "HUY")">Hủy hàng</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn btn-primary" type="submit" disabled="@(!Model.Invoice.Lines.Any(x => x.Remaining > 0))">Tính chênh lệch</button>
+        </form>
+    </section>
+}
+<a asp-controller="ReturnOrders" asp-action="New" asp-route-invoiceId="@Model.Invoice.InvoiceId">Chuyển sang trả hàng DT-02</a>

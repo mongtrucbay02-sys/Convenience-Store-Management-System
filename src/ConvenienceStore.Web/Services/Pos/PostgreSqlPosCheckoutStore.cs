@@ -55,10 +55,17 @@ public sealed class PostgreSqlPosCheckoutStore(
     // POS-07: HOÀN TẤT ĐƠN HÀNG
     // =====================================================
 
-    public async Task<PosOrderSaved> SaveOrderAsync(
+    public Task<PosOrderSaved> SaveOrderAsync(
         long cashierId,
         long cashReceived,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken) =>
+        SaveOrderAsync(cashierId, cashReceived, cancellationToken, 0);
+
+    internal async Task<PosOrderSaved> SaveOrderAsync(
+        long cashierId,
+        long cashReceived,
+        CancellationToken cancellationToken,
+        long exchangeCredit)
     {
         // Bắt buộc có transaction từ PosCheckoutService.
         if (db.Database.CurrentTransaction is null)
@@ -153,13 +160,19 @@ public sealed class PostgreSqlPosCheckoutStore(
                 "Tổng tiền thanh toán phải lớn hơn 0.");
         }
 
-        if (cashReceived < tongThanhToan)
+        if (exchangeCredit < 0 || exchangeCredit > tongThanhToan)
         {
-            throw new PosCheckoutException(
-                $"Khách đưa chưa đủ. Còn thiếu {tongThanhToan - cashReceived:N0} đ.");
+            throw new PosCheckoutException("Giá trị hàng đổi không hợp lệ.");
         }
 
-        long tienThua = cashReceived - tongThanhToan;
+        long tienCanThu = tongThanhToan - exchangeCredit;
+        if (cashReceived < tienCanThu)
+        {
+            throw new PosCheckoutException(
+                $"Khách đưa chưa đủ. Còn thiếu {tienCanThu - cashReceived:N0} đ.");
+        }
+
+        long tienThua = cashReceived - tienCanThu;
 
         // 5. Lấy thời gian database và cấp mã hóa đơn.
         var bayGio = Convert.ToDateTime(
@@ -224,7 +237,7 @@ public sealed class PostgreSqlPosCheckoutStore(
 
                 diemCong =
                     ConvenienceStore.Web.Modules.Customers.Models.CustomerRules
-                        .EarnedPoints(tongThanhToan, soTienMotDiem);
+                        .EarnedPoints(tienCanThu, soTienMotDiem);
             }
         }
 
@@ -251,7 +264,7 @@ public sealed class PostgreSqlPosCheckoutStore(
                 VALUES
                 (
                     @ma, @g, @t, @kh, @tg,
-                    @tth, @giam, @ttt, 0,
+                    @tth, @giam, @ttt, @credit,
                     @khach, @thua, @stmd, @diem
                 );
 
@@ -265,6 +278,7 @@ public sealed class PostgreSqlPosCheckoutStore(
                 ("@tth", tongTienHang),
                 ("@giam", tongGiam),
                 ("@ttt", tongThanhToan),
+                ("@credit", exchangeCredit),
                 ("@khach", cashReceived),
                 ("@thua", tienThua),
                 ("@stmd", soTienMotDiem),
@@ -377,12 +391,10 @@ public sealed class PostgreSqlPosCheckoutStore(
         // 12. DT-04: Ghi tăng quỹ bằng doanh thu thực thu.
         // Dùng cùng DbContext và transaction của POS.
         // Không commit transaction tại đây.
-        await cashLedger.RecordSaleAsync(
-            db,
-            hoaDonId,
-            cashierId,
-            tongThanhToan,
-            cancellationToken);
+        if (tienCanThu > 0)
+        {
+            await cashLedger.RecordSaleAsync(db, hoaDonId, cashierId, tienCanThu, cancellationToken);
+        }
 
         log.LogInformation(
             "POS-07: Đã ghi hóa đơn {Ma}, ID {Id}, tổng tiền {Tong}. Đang chờ commit.",

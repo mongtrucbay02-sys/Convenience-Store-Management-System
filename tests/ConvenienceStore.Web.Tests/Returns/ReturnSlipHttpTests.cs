@@ -1,5 +1,7 @@
 using System.Net;
+using System.Text.RegularExpressions;
 using ConvenienceStore.Web.Modules.Auth.Security;
+using ConvenienceStore.Web.Modules.Inventory;
 using ConvenienceStore.Web.Modules.Returns;
 using ConvenienceStore.Web.Tests.HaTang;
 using ConvenienceStore.Web.Tests.Inventory;
@@ -16,6 +18,7 @@ public sealed class ReturnSlipHttpTests(CsdlKhoFixture database) : IClassFixture
         await using var app = await ListFeatureHost.Start(database, services =>
         {
             services.AddModuleReturns();
+            services.AddModuleInventory();
             services.AddDataProtection().UseEphemeralDataProtectionProvider();
         });
         await database.ChayAsync("ALTER TABLE tai_khoan ALTER COLUMN id RESTART WITH 2147483648");
@@ -27,6 +30,14 @@ public sealed class ReturnSlipHttpTests(CsdlKhoFixture database) : IClassFixture
 
         var own = await SeedAsync(await ActorAsync(cashier), "TH-DT07-OWN", "HD-DT07-OWN", false);
         var foreign = await SeedAsync(await ActorAsync(other), "DT-DT07-OTHER", "HD-DT07-OTHER", true);
+
+        Assert.Equal(HttpStatusCode.Forbidden, (await cashier.GetAsync("/Returns/Approvals")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await cashier.PostAsync($"/Returns/Approvals/{foreign}",
+            new FormUrlEncodedContent(new Dictionary<string, string> { ["decision"] = "approve" }))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsync($"/Returns/Approvals/{foreign}",
+            new FormUrlEncodedContent(new Dictionary<string, string> { ["decision"] = "approve" }))).StatusCode);
+        Assert.Contains("DT-DT07-OTHER", await PageAsync(admin, "/Returns/Approvals"));
+        Assert.Contains("Có sản phẩm thuộc danh mục không đổi trả", await PageAsync(admin, $"/Returns/Approvals/{foreign}"));
 
         Assert.Equal(HttpStatusCode.Unauthorized, (await guest.GetAsync("/Returns/Slips")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await stockClerk.GetAsync("/Returns/Slips")).StatusCode);
@@ -74,6 +85,37 @@ public sealed class ReturnSlipHttpTests(CsdlKhoFixture database) : IClassFixture
         Assert.Contains("HD-DT07-OTHER", printed);
         Assert.Contains("Thu thêm dự kiến", printed);
         Assert.DoesNotContain("sidebar-account", printed);
+
+        var approvalUrl = $"/Returns/Approvals/{foreign}";
+        using var approvalForm = await admin.GetAsync(approvalUrl);
+        approvalForm.EnsureSuccessStatusCode();
+        var approvalHtml = await approvalForm.Content.ReadAsStringAsync();
+        var csrf = Regex.Match(approvalHtml, "name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value;
+        Assert.NotEmpty(csrf);
+        var sessionCookie = admin.DefaultRequestHeaders.GetValues("Cookie").Single();
+        var csrfCookie = approvalForm.Headers.GetValues("Set-Cookie").Single().Split(';')[0];
+        admin.DefaultRequestHeaders.Remove("Cookie");
+        admin.DefaultRequestHeaders.Add("Cookie", $"{sessionCookie}; {csrfCookie}");
+        using var approved = await admin.PostAsync(approvalUrl, new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["decision"] = "approve",
+            ["note"] = "Đủ điều kiện ngoại lệ",
+            ["__RequestVerificationToken"] = WebUtility.HtmlDecode(csrf)
+        }));
+        Assert.Equal(HttpStatusCode.Conflict, approved.StatusCode);
+        Assert.Contains("Tạm chặn", await PageAsync(admin, approvalUrl));
+        var pendingExchange = await PageAsync(other, $"/Returns/Approvals/ApprovedExchanges/{foreign}");
+        Assert.Contains("Tạm chặn", pendingExchange);
+        Assert.DoesNotContain("name=\"cashReceived\"", pendingExchange);
+        Assert.DoesNotContain("/Repreview", pendingExchange);
+        using var rejected = await admin.PostAsync(approvalUrl, new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["decision"]="reject", ["note"]="Từ chối phương án chưa được duyệt",
+            ["__RequestVerificationToken"]=WebUtility.HtmlDecode(csrf)
+        }));
+        Assert.Equal(HttpStatusCode.Redirect, rejected.StatusCode);
+        Assert.Contains("Từ chối phương án chưa được duyệt", await PageAsync(other, $"/Returns/Slips/{foreign}"));
+        Assert.Equal(HttpStatusCode.NotFound, (await cashier.GetAsync($"/Returns/Approvals/ApprovedExchanges/{foreign}")).StatusCode);
     }
 
     private static async Task<string> PageAsync(HttpClient client, string path) =>

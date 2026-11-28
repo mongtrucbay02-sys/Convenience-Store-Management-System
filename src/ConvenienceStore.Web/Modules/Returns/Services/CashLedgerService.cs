@@ -268,17 +268,24 @@ public sealed class ReturnRefundService(CashLedgerService ledger)
     ///
     /// Điều kiện:
     /// - Có transaction.
-    /// - Tài khoản thực hiện là thu ngân hợp lệ.
+    /// - Luồng thường dùng thu ngân lập phiếu; luồng duyệt dùng Admin đã duyệt và trực tiếp xác nhận chi.
     /// - Phiếu trả đã hoàn tất.
     /// - Người thực hiện trùng thu ngân lập phiếu.
     /// - Chưa có giao dịch hoàn tiền cho phiếu.
     /// - Quỹ đủ tiền hoàn.
     /// </summary>
-    public async Task<long> RefundAsync(
+    public Task<long> RefundAsync(CuaHangDbContext db, long returnId, long cashierId, CancellationToken ct = default) =>
+        RefundCoreAsync(db, returnId, cashierId, false, ct);
+
+    internal Task<long> RefundApprovedAsync(CuaHangDbContext db, long returnId, long adminId, CancellationToken ct) =>
+        RefundCoreAsync(db, returnId, adminId, true, ct);
+
+    private async Task<long> RefundCoreAsync(
         CuaHangDbContext db,
         long returnId,
         long cashierId,
-        CancellationToken ct = default)
+        bool confirmedByApprover,
+        CancellationToken ct)
     {
         CashLedgerService.RequireTransaction(db);
 
@@ -297,19 +304,19 @@ public sealed class ReturnRefundService(CashLedgerService ledger)
             FROM tai_khoan t
             JOIN vai_tro v ON v.id = t.vai_tro_id
             WHERE t.id = @cashier
-              AND v.ma = 'TN'
+              AND v.ma = @role
               AND t.trang_thai = 'HOAT_DONG'
               AND t.bat_buoc_doi_mk = FALSE
             """,
             ct,
-            ("@cashier", cashierId));
+            ("@cashier", cashierId), ("@role", confirmedByApprover ? "AD" : "TN"));
 
         if (validCashier is null)
         {
             throw new LoiNghiepVu(
                 "KHONG_DU_QUYEN",
                 403,
-                "Chỉ thu ngân hợp lệ mới được xác nhận hoàn tiền.");
+                "Tài khoản xác nhận hoàn tiền không hợp lệ.");
         }
 
         // 2. Khóa phiếu trả để tránh hai yêu cầu xử lý cùng phiếu đồng thời.
@@ -319,7 +326,8 @@ public sealed class ReturnRefundService(CashLedgerService ledger)
                 loai,
                 trang_thai,
                 tien_hoan,
-                thu_ngan_id
+                thu_ngan_id,
+                nguoi_duyet_id
             FROM phieu_doi_tra
             WHERE id = @id
             FOR UPDATE
@@ -328,7 +336,7 @@ public sealed class ReturnRefundService(CashLedgerService ledger)
                 r.Chuoi(0),
                 r.Chuoi(1),
                 r.SoNguyenDai(2),
-                r.SoNguyenDai(3)),
+                r.SoNguyenDai(3), r.SoNguyenDaiHoacNull(4)),
             ct,
             ("@id", returnId));
 
@@ -349,7 +357,7 @@ public sealed class ReturnRefundService(CashLedgerService ledger)
         }
 
         // 4. Kiểm tra thu ngân lập phiếu và thu ngân hoàn tiền.
-        if (slip.CashierId != cashierId)
+        if (confirmedByApprover ? slip.ApproverId != cashierId : slip.CashierId != cashierId)
         {
             throw new LoiNghiepVu(
                 "KHONG_DU_QUYEN",
@@ -505,7 +513,7 @@ public sealed class ReturnRefundService(CashLedgerService ledger)
               AND p.loai = 'TRA_HANG'
               AND p.trang_thai = 'HOAN_TAT'
               AND p.thu_ngan_id = @cashier
-              AND g.nguoi_thuc_hien_id = @cashier
+              AND (g.nguoi_thuc_hien_id = @cashier OR g.nguoi_thuc_hien_id = p.nguoi_duyet_id)
             """,
             r => new ReturnRefundReceipt(
                 r.SoNguyenDai(0),
@@ -528,7 +536,8 @@ public sealed class ReturnRefundService(CashLedgerService ledger)
         string Loai,
         string Status,
         long Amount,
-        long CashierId);
+        long CashierId,
+        long? ApproverId);
 }
 
 /// <summary>

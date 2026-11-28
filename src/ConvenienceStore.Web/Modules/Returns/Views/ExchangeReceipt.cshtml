@@ -1,0 +1,50 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model ConvenienceStore.Web.Modules.Returns.Models.ExchangeReceipt
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Phiếu đổi hàng DT-03";
+}
+
+<h1>Phiếu đổi hàng @Model.Code</h1>
+<p role="status">@(Model.Status switch
+{
+    "CHO_DUYET" => "Phiếu đổi cũ đang chờ; tạm chặn duyệt cho đến khi thiết kế lưu phương án được phê duyệt.",
+    "DA_DUYET" => "Phiếu đổi cũ đã duyệt; tạm chặn hoàn tất vì chưa có snapshot phương án được duyệt.",
+    "BI_TU_CHOI" => "Phiếu đổi đã bị từ chối.",
+    _ => "Đã hoàn tất đổi hàng."
+})</p>
+<p>Hóa đơn gốc <strong>@Model.OriginalInvoiceCode</strong></p>
+@if (Model.NewInvoiceId.HasValue)
+{
+    <p>Hóa đơn mới <strong>@Model.NewInvoiceCode</strong></p>
+}
+
+<h2>Hàng trả</h2>
+<div class="table-responsive">
+    <table class="table">
+        <thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Giá thực trả</th><th>Xử lý</th></tr></thead>
+        <tbody>
+            @foreach (var line in Model.ReturnLines)
+            {
+                <tr>
+                    <td>@line.Name</td><td>@line.Quantity</td><td>@line.UnitPaid.ToString("N0") đ</td>
+                    <td>@(line.Handling == "NHAP_LAI" ? "Nhập lại kho" : "Hủy hàng")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<p>Giá trị hàng trả <strong>@Model.ReturnValue.ToString("N0") đ</strong></p>
+<p>Giá trị hàng mới <strong>@Model.NewTotal.ToString("N0") đ</strong></p>
+<p>Khách trả thêm <strong>@Model.CashDue.ToString("N0") đ</strong></p>
+@if (Model.NewInvoiceId.HasValue)
+{
+    <p>Tiền khách đưa <strong>@Model.CashReceived.ToString("N0") đ</strong> · Tiền thừa <strong>@Model.Change.ToString("N0") đ</strong></p>
+    <a class="btn btn-primary" asp-controller="Pos" asp-action="Receipt" asp-route-invoiceId="@Model.NewInvoiceId">Xem và in hóa đơn mới</a>
+}
+@if (Model.Status == "DA_DUYET")
+{
+    <a class="btn btn-primary" asp-controller="ReturnApprovals" asp-action="ApprovedExchange" asp-route-id="@Model.Id">Tiếp tục đổi hàng</a>
+}
+<a class="btn btn-outline-secondary" asp-controller="ReturnSlips" asp-action="Details" asp-route-id="@Model.Id">Xem chi tiết phiếu</a>
+<a class="btn btn-outline-secondary" asp-controller="Returns" asp-action="Index" asp-route-ma="@Model.OriginalInvoiceCode">Quay lại đổi trả</a>

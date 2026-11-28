@@ -1,0 +1,50 @@
+name: QA isolated backup rehearsal
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/qa-backup-rehearsal.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  rehearsal:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Backup and restore synthetic data on disposable PG17
+        shell: bash
+        run: |
+          set -euo pipefail
+          container="qa-pg-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          trap 'docker rm -f "$container" >/dev/null 2>&1 || true' EXIT
+          docker run -d --name "$container" -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17-alpine
+          for i in $(seq 1 60); do
+            if docker exec "$container" pg_isready -U postgres >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          docker exec "$container" pg_isready -U postgres
+          docker exec "$container" createdb -U postgres qa_source
+          docker exec "$container" createdb -U postgres qa_restore
+          docker exec "$container" psql -X -v ON_ERROR_STOP=1 -U postgres -d qa_source -c "CREATE TABLE synthetic_stock(id integer PRIMARY KEY, quantity integer CHECK(quantity >= 0)); INSERT INTO synthetic_stock VALUES (1,20),(2,18);"
+          mkdir -p evidence
+          start=$(date +%s)
+          docker exec "$container" pg_dump -U postgres -Fc qa_source > evidence/synthetic.dump
+          sha256sum evidence/synthetic.dump > evidence/checksum.txt
+          sha256sum -c evidence/checksum.txt
+          docker exec -i "$container" pg_restore -U postgres --exit-on-error --no-owner -d qa_restore < evidence/synthetic.dump
+          for db in qa_source qa_restore; do
+            docker exec "$container" psql -X -At -v ON_ERROR_STOP=1 -U postgres -d "$db" -c 'SELECT id,quantity FROM synthetic_stock ORDER BY id' > "evidence/$db.txt"
+          done
+          diff -u evidence/qa_source.txt evidence/qa_restore.txt
+          printf 'Synthetic PG17 rehearsal PASS; elapsed=%ss; SHA=%s\n' "$(( $(date +%s)-start ))" "$GITHUB_SHA" | tee evidence/result.txt
+          rm evidence/synthetic.dump
+      - name: Upload synthetic rehearsal evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qa-backup-rehearsal
+          path: |
+            evidence/result.txt
+            evidence/checksum.txt
+            evidence/qa_source.txt
+            evidence/qa_restore.txt

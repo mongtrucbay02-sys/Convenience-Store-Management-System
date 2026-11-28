@@ -12,13 +12,31 @@ public sealed class ObservedAclPostgreSqlTests(SmokeRolePostgreSqlFixture fixtur
     [Fact]
     public async Task RealBackendLogin_ObservedAclAndRls_DenyForbiddenWritesAndRollbackAllowedWrite()
     {
-        await fixture.ApplyObservedAclAsync();
+        var baseline = await fixture.ReadBaselineAclFingerprintAsync();
+        await fixture.PrepareObservedDatabaseAsync();
+        try
+        {
+            Assert.Equal(baseline, await fixture.ReadBaselineAclFingerprintAsync());
+            Assert.NotEqual(new NpgsqlConnectionStringBuilder(fixture.BackendConnection).Database,
+                new NpgsqlConnectionStringBuilder(fixture.ObservedBackendConnection).Database);
+            await VerifyObservedAclAsync();
+        }
+        finally
+        {
+            await fixture.DropObservedDatabaseAsync();
+            await fixture.AssertSafeRoleAsync();
+            Assert.Equal(baseline, await fixture.ReadBaselineAclFingerprintAsync());
+        }
+    }
+
+    private async Task VerifyObservedAclAsync()
+    {
         var snapshotPath = Path.Combine(AppContext.BaseDirectory,
             "SchemaReference", "observed-security-contract.json");
         using var snapshot = JsonDocument.Parse(await File.ReadAllTextAsync(snapshotPath));
         var entries = snapshot.RootElement.GetProperty("tables").EnumerateArray().ToArray();
 
-        await using var connection = new NpgsqlConnection(fixture.BackendConnection);
+        await using var connection = new NpgsqlConnection(fixture.ObservedBackendConnection);
         await connection.OpenAsync();
 
         async Task<object?> Scalar(string sql, params NpgsqlParameter[] parameters)

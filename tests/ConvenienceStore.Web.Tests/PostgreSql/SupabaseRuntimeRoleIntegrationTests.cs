@@ -85,6 +85,77 @@ public sealed class SmokeRolePostgreSqlFixture : IAsyncLifetime
         await Execute(server, sql);
     }
 
+    // Replays the B02 read-only ACL catalog in a disposable PG17 role-test database.
+    // This is AS-IS, not the proposed D1-D7 target or an approved migration.
+    internal async Task ApplyObservedAclAsync()
+    {
+        if (!_databaseCreated || !_roleCreated || _server is null)
+            throw new InvalidOperationException("Disposable role fixture has not been initialized.");
+
+        var snapshotPath = Path.Combine(AppContext.BaseDirectory,
+            "SchemaReference", "observed-security-contract.json");
+        using var snapshot = JsonDocument.Parse(await File.ReadAllTextAsync(snapshotPath));
+        var root = snapshot.RootElement;
+        if (root.GetProperty("role").GetProperty("rolname").GetString() != Role ||
+            root.GetProperty("tables").GetArrayLength() != 31 ||
+            root.GetProperty("views").GetArrayLength() != 3 ||
+            root.GetProperty("sequences").GetArrayLength() != 20)
+            throw new InvalidOperationException("Unexpected B02 security snapshot; refuse ACL replay.");
+
+        static string Identifier(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value) ||
+                !System.Text.RegularExpressions.Regex.IsMatch(value, "^[a-z_][a-z0-9_]*$"))
+                throw new InvalidOperationException("Unsafe identifier in ACL snapshot.");
+            return "\"" + value + "\"";
+        }
+        static string Permissions(JsonElement entry, HashSet<string> allowed)
+        {
+            var values = entry.GetProperty("backend").EnumerateArray()
+                .Select(value => value.GetString() ?? "").ToArray();
+            if (values.Length == 0 || values.Any(value => !allowed.Contains(value)))
+                throw new InvalidOperationException("Unexpected privilege in ACL snapshot.");
+            return string.Join(", ", values);
+        }
+
+        await using var connection = new NpgsqlConnection(AdminConnection);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+
+        async Task Sql(string statement)
+        {
+            await using var command = new NpgsqlCommand(statement, connection, transaction);
+            await command.ExecuteNonQueryAsync();
+        }
+
+        await Sql("REVOKE ALL ON ALL TABLES IN SCHEMA smartmart FROM smartmart_backend");
+        foreach (var table in root.GetProperty("tables").EnumerateArray())
+        {
+            var name = "smartmart." + Identifier(table.GetProperty("name").GetString()!);
+            await Sql($"DROP POLICY IF EXISTS backend_access ON {name}");
+            await Sql($"DROP POLICY IF EXISTS smartmart_backend_trusted_server ON {name}");
+            await Sql($"""
+                CREATE POLICY smartmart_backend_trusted_server ON {name}
+                FOR ALL TO smartmart_backend
+                USING (CURRENT_USER = 'smartmart_backend'::name)
+                WITH CHECK (CURRENT_USER = 'smartmart_backend'::name)
+                """);
+            await Sql($"GRANT {Permissions(table, new(["SELECT","INSERT","UPDATE","DELETE"]))} ON TABLE {name} TO smartmart_backend");
+        }
+        foreach (var view in root.GetProperty("views").EnumerateArray())
+        {
+            var name = "smartmart." + Identifier(view.GetProperty("name").GetString()!);
+            await Sql($"GRANT {Permissions(view, new(["SELECT"]))} ON TABLE {name} TO smartmart_backend");
+        }
+        await Sql("REVOKE ALL ON ALL SEQUENCES IN SCHEMA smartmart FROM smartmart_backend");
+        foreach (var sequence in root.GetProperty("sequences").EnumerateArray())
+        {
+            var name = "smartmart." + Identifier(sequence.GetProperty("name").GetString()!);
+            await Sql($"GRANT {Permissions(sequence, new(["USAGE","SELECT"]))} ON SEQUENCE {name} TO smartmart_backend");
+        }
+        await transaction.CommitAsync();
+    }
+
     private static async Task Execute(NpgsqlConnection connection, string sql)
     {
         await using var command = new NpgsqlCommand(sql, connection);

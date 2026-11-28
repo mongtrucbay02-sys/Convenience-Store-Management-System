@@ -42,6 +42,19 @@ Cột “test liên quan” lấy từ ma trận của Thăng và test HTTP mớ
 3. **KHO-01 (MUST-13)**: thêm HTTP/Razor/manual tồn kho và quyền, vì chỉ có service test.
 4. **NH-04 (MUST-16)**: thêm test nháp trước xác nhận, chứng minh chưa nhập tồn.
 
+### Regression thủ công tối thiểu cho 4 nhóm đang thiếu (CHƯA CHẠY)
+
+Thực hiện trên ứng dụng gắn PG17 cô lập và account AD/TN/NK tổng hợp; ghi URL, username giả, screenshot/redacted response, source SHA, dữ liệu trước/sau. Không chạy trên Supabase dùng chung. Các tên route thực tế phải được kiểm tra từ source ở SHA chạy, không tự giả định.
+
+| Case | Steps tối thiểu | Expected và chứng cứ bắt buộc |
+|---|---|---|
+| MUST-15 / NH-02-01 | AD mở tạo NCC → nhập NCC synthetic với mã/SĐT hợp lệ → lưu → sửa tên/SĐT → đọc lại; thử trùng mã và thiếu trường | Một NCC đúng phiên bản; duplicate trả validation, không tạo bản ghi phụ; TN bị từ chối/không mutation; query theo `smartmart_backend` |
+| MUST-20 / POS-02-01 | TN login → tạo giỏ → thêm SP còn tồn → sửa từ 1 lên 2 → xóa dòng → thêm lại → thử 0, âm, vượt tồn và hai yêu cầu song song | Số lượng/giá/tổng hiển thị và DB nhất quán; invalid không làm đổi tồn hay tạo hóa đơn; không xóa giỏ cashier khác |
+| MUST-13 / KHO-01-01 | NK/AD xem trang/API tồn kho, lọc SP/cảnh báo dưới ngưỡng/phân trang; TN thử API kho không được phép | Số tồn bằng sổ/bảng tồn tại snapshot, không thêm thẻ kho, không DML; actor/endpoint phải khớp SRS |
+| MUST-16 / NH-04-01 | NK tạo phiếu NHAP có NCC, 2 dòng nhập synthetic → lưu nháp, tải lại, xem tổng `so_luong * gia_nhap`; tạo phiếu với input sai và sửa dòng nháp theo WR-06 khi code sẵn sàng | Header/detail trạng thái NHAP, tồn/thẻ kho chưa đổi; invalid rollback; chưa xác nhận NH-06; WR-06 bổ sung test terminal/RLS/concurrency riêng |
+
+**Không đánh dấu PASS** cho các ca này nếu thiếu log, ảnh/HTTP, đối soát DB và reviewer. Điều chỉnh bước theo giao diện/các endpoint thực có, tuyệt đối không tự cho chức năng là đã chạy.
+
 ### Các scenario khác ngoài 27 Must
 WR-06…10, SP/KH/DT/POS âm quyền, NFR, đổi trả và LF-01…08 vẫn phải test theo scope (#257/#264/#293), nhưng **không ép thành 27 Must**. POS-08 tạm giữ/gọi lại và NH-03 ngừng NCC là use case khác; theo dõi ở security test plan #300. Nếu chưa có dữ liệu source cho một ngoại lệ SRS thì BLOCKED, không suy diễn theo tài liệu SIMULATED.
 

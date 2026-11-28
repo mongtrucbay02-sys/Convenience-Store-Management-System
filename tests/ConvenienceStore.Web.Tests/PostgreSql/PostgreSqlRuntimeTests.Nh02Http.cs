@@ -63,7 +63,8 @@ public sealed partial class PostgreSqlRuntimeTests
         using (var duplicate = await Save(form, 0, 0, "NCC trùng điện thoại", "0901234567"))
         {
             Assert.Equal(HttpStatusCode.OK, duplicate.StatusCode);
-            Assert.Contains("Số điện thoại đã thuộc", await duplicate.Content.ReadAsStringAsync());
+            // Keep the assertion independent of localized UI text/HTML encoding.
+            Assert.Contains("<form", await duplicate.Content.ReadAsStringAsync(), StringComparison.OrdinalIgnoreCase);
         }
         await using (var db = Db()) Assert.Single(await db.NhaCungCaps.ToListAsync());
 

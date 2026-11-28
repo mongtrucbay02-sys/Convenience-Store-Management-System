@@ -19,10 +19,10 @@ jobs:
           trap 'docker rm -f "$container" >/dev/null 2>&1 || true' EXIT
           docker run -d --name "$container" -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17-alpine
           for i in $(seq 1 60); do
-            if docker exec "$container" pg_isready -U postgres >/dev/null 2>&1; then break; fi
+            if docker exec "$container" pg_isready -h 127.0.0.1 -U postgres >/dev/null 2>&1; then break; fi
             sleep 1
           done
-          docker exec "$container" pg_isready -U postgres
+          docker exec "$container" pg_isready -h 127.0.0.1 -U postgres
           docker exec "$container" createdb -U postgres qa_source
           docker exec "$container" createdb -U postgres qa_restore
           docker exec "$container" psql -X -v ON_ERROR_STOP=1 -U postgres -d qa_source -c "CREATE TABLE synthetic_stock(id integer PRIMARY KEY, quantity integer CHECK(quantity >= 0)); INSERT INTO synthetic_stock VALUES (1,20),(2,18);"

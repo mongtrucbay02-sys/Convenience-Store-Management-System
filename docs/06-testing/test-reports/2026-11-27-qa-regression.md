@@ -1,14 +1,45 @@
 # QA regression report — baseline 27/11, rolling acceptance 28/11/2026
 #264 #293 #300 #243 #244 | **Single final-report candidate**, review pending; actual release acceptance NOT VERIFIED
-## Review reconciliation — QA-01…07 (28/11/2026)
+## New executed QA evidence — 28/11/2026 (supersedes older QA-02/03/04/05 status below)
+
+Source of the executed **application test code**: `5325248f028af730008db64c2600cd0fd0c2cc62`; all write operations ran on disposable GitHub Actions PostgreSQL 17, **never shared Supabase**.
+
+| Gate / run | Evidence | Outcome and limit |
+|---|---|---|
+| QA-03 browser #244 [46165517017](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46165517017) | Chromium E2E **1/1 PASS**, TRX + `pos-receipt.png` + `pos-trace.zip` [artifact 15271232265](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46165517017/artifacts/15271232265); independently inspected ZIP | Actual UI login→add→cash→receipt, invoice/stock/cash reconciliation. **Happy path only**; deploy required-check configuration and negative/browser matrix pending |
+| QA-04 NFR proxy [46165517092](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46165517092) | **1/1 PASS** workload; 30 HTTP samples per HN01–04, 30 checkout responses, 30 rounds × 5 distinct user sessions; raw JSON + TRX [artifact 15271712153](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46165517092/artifacts/15271712153), independently parsed | **MEASURED HTTP PROXY ONLY**, 1,000 synthetic products, 10,000 synthetic invoices spread over 180 days; not keyboard-to-render, live latency or SRS release PASS |
+| QA-05 full baseline restore [46165517023](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46165517023) | pg_dump/sha256/pg_restore on isolated PG17, **31 tables and 3 views**, roles/rule/policy/cash reference rows, source/restored count parity; artifact [15271711914](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46165517023/artifacts/15271711914) | **PASS baseline full-schema + reference-data rehearsal**. Not full 10k-invoice demo snapshot, live Supabase backup or platform migration approval |
+| QA-02 dedicated HTTP cases [46165517162](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46165517162) | 889 tests executed: **888 PASS, 1 FAIL, 0 SKIP** | NH-02, POS-02, NH-04 new HTTP cases passed. KHO-01 failed test assertion comparing Razor HTML-encoded Vietnamese text, not identified as a production inventory defect. Test assertion decoded HTML in subsequent commit `38aadc541d3dce1468f154ab5c9d12c26758093f`; **retest pending**, no final-head CI PASS claim |
+| Security #300/#293 | Prior AS-IS real-login probes | AS-IS subset PASS only; approved TO-BE ACL/RLS, WR-06–10 business writes and D1–D7 sign-offs **BLOCKED** |
+
+### Raw NFR HTTP proxy results (CI runner, milliseconds)
+
+| Official SRS group | 30-sample p50 | p95 | Max | Scope |
+|---|---:|---:|---:|---|
+| NFR-HN-01 | 105.4 | 131.3 | 140.7 | POS search HTTP response, not keypress-to-render |
+| NFR-HN-02 | 62.9 | 78.2 | 109.3 | checkout POST HTTP response and 30 committed synthetic sales |
+| NFR-HN-03 | 33.5 | 48.1 | 48.6 | Dashboard GET HTTP response, not all monthly reports |
+| NFR-HN-04 | 24.3 | 33.2 | 34.7 | inventory list page GET HTTP response, not every specified list |
+| NFR-HN-05 | 171.4 | 217.0 | 233.0 | 150 requests over 30 simultaneous five-session rounds; 3 TN, 1 NK, 1 AD |
+
+**Interpretation:** Measured p95 proxies are below nominal numerical thresholds but **the measured end points differ from the full SRS user-observed latency definitions**, and the percentile convention/production-like environment is not approved. Thus final NFR acceptance is **PARTIAL / NOT VERIFIED**, not PASS. NFR BM/TLS, UAT, online HTTPS and SRS release still HOLD. Data are synthetic and sample-size-specific; no extrapolation to Supabase live.
+
+### What still blocks final acceptance
+- Re-run all 889 ordinary regressions at final PR head after KHO-01 HTML decoding fix; retain artifact and precise run SHA.
+- Verify official Must coverage beyond these four targeted HTTP positives, especially negative authorization, NH-04 terminal-state race and WR-06 V2 under the true backend login.
+- Browser negative/permissions/deploy required check, true HTTPS app deployment, full demo/realistic restore and signed recovery runbook.
+- WR-06–10 and TO-BE ACL/RLS migration not supplied/approved; Security Contract PR #300 was **docs-only**.
+- Final SRS PR #301 and #257 loyalty freeze implementation review; independent Yến/Thăng approvals.
+
+## Historical review reconciliation — QA-01…07 (before new execution)
 
 Review sources: [Yến QA-01…07](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/304#pullrequestreview-6092820134), [REQUEST CHANGES correction](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/304#pullrequestreview-6092830408), [Thăng 27 Must and NFR](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/304#pullrequestreview-6094976252).
 
 - **QA-01 PARTIAL:** isolated real LOGIN smartmart_backend AS-IS table/view/sequence/function ACL + representative denied and rollback probes executed; complete **TO-BE business workflows** WR-06…10 and migration still BLOCKED. postgres must never be counted as business runtime.
-- **QA-02 SOURCE CORRECTED, COVERAGE PENDING:** 27 **official** Must IDs sourced from [Thăng's PR #301 traceability at ff68536](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/blob/ff68536fd6e8fcae4fed20975c3fcd2487b66101/docs/03-requirements/ma-tran-truy-vet-27-must_SRS-chinh-thuc.md) and mapped in `../test-cases/candidate-regression.md`. SRS PR #301 remains unmerged. Historical 25/27 associated classes ≠ 25/27 acceptance PASS; direct NH-02 and POS-02 tests missing; KHO-01 and NH-04 only service-level. NH-03/06 and POS-07/08 formerly confused, now corrected.
-- **QA-03 NOT RUN:** browser E2E #244 still requires real Playwright automation, isolated host, trace and browser assertion. HTTP integration is not a substitute.
-- **QA-04 THRESHOLDS SOURCED, MEASUREMENTS NOT RUN:** official HN-01 ≤1s product suggestions, HN-02 ≤2s finish checkout, HN-03 ≤3s monthly reports, HN-04 ≤2s list page, HN-05 ≥5 concurrent (3 TN/1 NK/1 AD). Scale 1,000 products + 10,000 invoices / 6 months. See `../nfr-verification.md`. Avoid candidate SIMULATED NFR-02…07; release perf acceptance BLOCKED.
-- **QA-05 SYNTHETIC ONLY:** pg_dump/checksum/restore PG17 workflow PASS; **full Smart Mart schema/demo-data restore and reviewer signoff NOT VERIFIED**.
+- **QA-02 SOURCE CORRECTED, COVERAGE PENDING:** 27 **official** Must IDs sourced from [Thăng's PR #301 traceability at ff68536](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/blob/ff68536fd6e8fcae4fed20975c3fcd2487b66101/docs/03-requirements/ma-tran-truy-vet-27-must_SRS-chinh-thuc.md) and mapped in `../test-cases/candidate-regression.md`. SRS PR #301 remains unmerged. Historical 25/27 associated classes ≠ 25/27 acceptance PASS; at that time direct NH-02 and POS-02 tests were missing and KHO-01 and NH-04 only service-level; all four now have dedicated HTTP tests in PR #304 (new evidence above). NH-03/06 and POS-07/08 formerly confused, now corrected.
+- **QA-03 HISTORICAL STATUS:** browser E2E #244 previously required real Playwright automation, isolated host, trace and browser assertion. HTTP integration is not a substitute.
+- **QA-04 HISTORICAL STATUS (before HTTP proxy run):** official HN-01 ≤1s product suggestions, HN-02 ≤2s finish checkout, HN-03 ≤3s monthly reports, HN-04 ≤2s list page, HN-05 ≥5 concurrent (3 TN/1 NK/1 AD). Scale 1,000 products + 10,000 invoices / 6 months. See `../nfr-verification.md`. Avoid candidate SIMULATED NFR-02…07; release perf acceptance BLOCKED.
+- **QA-05 HISTORICAL STATUS (before full-schema baseline rehearsal):** pg_dump/checksum/restore PG17 workflow PASS; **full Smart Mart schema/demo-data restore and reviewer signoff NOT VERIFIED**.
 - **QA-06 HISTORICAL EVIDENCE ADDED:** [CI 46029008105](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46029008105), source `6df3a6a32439b6d8e89dba6ab9a72a9dcecb3294`: log 877 PASS, 0 FAIL, 0 SKIP, **70 seconds**, TRX artifact `test-results-46029008105-1`, artifact ID **15213202308**. Historical only; newer runs and their own SHA recorded separately below.
 - **QA-07 TRACKING:** Issue #264 is consolidated test acceptance; #244 remains independent browser automation dependency; #293 + merged docs-only #300 hold DB integration/security changes. Closed historical sprint issues are not retroactive PASS.
 

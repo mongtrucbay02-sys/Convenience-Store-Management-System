@@ -172,7 +172,7 @@ public sealed partial class PostgreSqlRuntimeTests
             HN04 = Summary((double[])records["HN-04_inventory_page_http"]),
             HN05 = rounds.SelectMany(x => x).ToArray(),
         };
-        var dir = Path.Combine("artifacts", "nfr");
+        var dir = Path.Combine(Environment.GetEnvironmentVariable("GITHUB_WORKSPACE") ?? Directory.GetCurrentDirectory(), "artifacts", "nfr");
         Directory.CreateDirectory(dir);
         await File.WriteAllTextAsync(Path.Combine(dir, "nfr-http-proxies.json"),
             JsonSerializer.Serialize(stats, new JsonSerializerOptions { WriteIndented = true }));

@@ -1,0 +1,197 @@
+{
+  "status": "passed",
+  "reasonCode": null,
+  "errorType": null,
+  "sqlState": null,
+  "causeType": null,
+  "failedObject": null,
+  "tlsMode": "VerifyFull",
+  "certificateConfigured": true,
+  "certificateFileExists": true,
+  "readOnly": true,
+  "roleVerified": true,
+  "currentUser": "smartmart_backend",
+  "sessionUser": "smartmart_backend",
+  "isSuperuser": false,
+  "bypassRls": false,
+  "canCreateRole": false,
+  "canCreateDatabase": false,
+  "rowSecurity": true,
+  "tables": 31,
+  "views": 3,
+  "checkedObjects": 34,
+  "writes": 0,
+  "checkedAtUtc": "2026-11-26T18:13:05.8921915+00:00",
+  "probes": [
+    {
+      "name": "smartmart.bo_dem_chung_tu",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.chinh_sach_doi_tra",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.chuong_trinh_khuyen_mai",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.ct_gio_hang",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.ct_hoa_don",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.ct_kiem_ke",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.ct_phieu_doi_tra",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.ct_phieu_nhap",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.ct_xuat_huy",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.danh_muc",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.giao_dich_tien_mat",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.gio_hang",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.hoa_don",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.hoan_tien_hoa_don",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.khach_hang",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.khuyen_mai_san_pham",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.lich_su_diem",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.lich_su_gia",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.nha_cung_cap",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.phien_dang_nhap",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.phieu_doi_tra",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.phieu_kiem_ke",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.phieu_nhap",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.phieu_xuat_huy",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.quy_tac_tich_diem",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.quy_tien_mat",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.san_pham",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.tai_khoan",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.the_kho",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.ton_kho",
+      "kind": "table",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.v_chuong_trinh_khuyen_mai",
+      "kind": "view",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.v_gia_ban_hien_hanh",
+      "kind": "view",
+      "rowsRead": 1
+    },
+    {
+      "name": "smartmart.v_luot_dung_khuyen_mai",
+      "kind": "view",
+      "rowsRead": 0
+    },
+    {
+      "name": "smartmart.vai_tro",
+      "kind": "table",
+      "rowsRead": 1
+    }
+  ]
+}

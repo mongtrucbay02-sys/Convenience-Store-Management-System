@@ -20,14 +20,14 @@ Cột “test liên quan” lấy từ ma trận của Thăng và test HTTP mớ
 | MUST-10 | SP-05 Cập nhật giá bán | #60 | Sp05PricingHttpTests; Sp05PricingPostgreSqlTests | HTTP + PG — Không sửa giá quá khứ, hiệu lực giá | PENDING per-UC evidence |
 | MUST-11 | SP-07 Danh sách danh mục | #62 | CategoryHttpFeatureTests; CategoryPostgreSqlTests | HTTP + PG — Danh mục; phân trang/role | PENDING per-UC evidence |
 | MUST-12 | SP-08 Thêm/sửa danh mục | #63 | Sp08CategoryHttpTests; Sp08CategoryPostgreSqlTests; DanhMucConcurrencyTests | HTTP + PG — Version/race, quyền CRUD | PENDING per-UC evidence |
-| MUST-13 | KHO-01 Xem tồn kho hiện tại | #89 | DichVuKhoTests.LayTonKho_KhongKhoa_TraDungThuTuVaCoDuoiNguong | Service only; HTTP/manual TODO — Trang tồn, ngưỡng cảnh báo, role, không mutation | PENDING per-UC evidence |
+| MUST-13 | KHO-01 Xem tồn kho hiện tại | #89 | DichVuKhoTests.LayTonKho_KhongKhoa_TraDungThuTuVaCoDuoiNguong; Kho01_HttpStockListFiltersAndNoMutation (new) | Service + HTTP; new HTTP test failed Razor-encoding assertion at 5325248, fixed at 38aadc5, rerun pending — Trang tồn, ngưỡng cảnh báo, role, không mutation | PENDING per-UC evidence |
 | MUST-14 | NH-01 Xem danh sách NCC | #65 | PurchasingParityTests | HTTP + PG — Danh sách, lọc; role | PENDING per-UC evidence |
-| MUST-15 | NH-02 Thêm/sửa NCC | #66 | No dedicated automated case confirmed | HTTP/manual TODO — Create/edit NCC, duplicate code/phone, permission and version | PENDING per-UC evidence |
-| MUST-16 | NH-04 Tạo phiếu nhập nháp | #92 | PurchaseReceiptFlowTests (indirect) | Service only; HTTP/manual TODO — NHAP persisted, lines/totals, stock unchanged until confirm | PENDING per-UC evidence |
+| MUST-15 | NH-02 Thêm/sửa NCC | #66 | Nh02_HttpCreateEditDuplicatePhoneStaleVersionAndCsrf (new) | HTTP test PASS at 5325248; negative role/manual coverage still pending — Create/edit NCC, duplicate code/phone, permission and version | PENDING per-UC evidence |
+| MUST-16 | NH-04 Tạo phiếu nhập nháp | #92 | PurchaseReceiptFlowTests (indirect); Nh04_HttpCreateDraftPersistsLinesAndDoesNotMoveStock (new) | Service + HTTP; HTTP test PASS at 5325248, WR-06 race still pending — NHAP persisted, lines/totals, stock unchanged until confirm | PENDING per-UC evidence |
 | MUST-17 | NH-06 Xác nhận nhập kho | #94 | TichHopDichVuKhoTests.Nh06_*; PurchaseReceiptFlowTests; PostgreSqlRuntimeTests.Purchasing_ConfirmTwice* | PG integration — Stock+ledger exactly once, rollback & concurrency | PENDING per-UC evidence |
 | MUST-18 | NH-07 Tra cứu phiếu nhập | #95 | PurchasingParityTests | HTTP + PG — Lọc NCC/ngày/trạng thái, role | PENDING per-UC evidence |
 | MUST-19 | POS-01 Tạo đơn/tìm/thêm giỏ | #33 | PostgreSqlRuntimeTests.Cart_ConcurrentFirstRequests*; PosPromotionDatabaseTests | PG integration + HTTP — Session cashier, thêm hàng, chính sách giá | PENDING per-UC evidence |
-| MUST-20 | POS-02 Sửa giỏ hàng | #34 | PosHeldOrderTests; PosPromotionDatabaseTests (indirect); PosHttp_CashierCheckoutToReceipt (partial) | HTTP/browser/manual TODO — Sửa số lượng, xóa dòng, vượt tồn, concurrent update | PENDING per-UC evidence |
+| MUST-20 | POS-02 Sửa giỏ hàng | #34 | PosHeldOrderTests; PosPromotionDatabaseTests (indirect); PosHttp_CashierCheckoutToReceipt (partial); Pos02_HttpEditRemoveAndInvalidQuantity_DoNotChangeStockOrCreateInvoice (new) | HTTP test PASS at 5325248; browser negative concurrency still pending — Sửa số lượng, xóa dòng, vượt tồn, concurrent update | PENDING per-UC evidence |
 | MUST-21 | POS-05 Thanh toán tiền mặt | #35 | PostgreSqlRuntimeTests.Checkout_CommitsInvoiceStockPointsAndCash*; PosHttp_CashierCheckoutToReceipt | PG integration + HTTP — Tiền trả thiếu, tiền thừa, atomic cash/stock/points theo #257 | PENDING per-UC evidence |
 | MUST-22 | POS-07 Hoàn tất đơn/in hóa đơn | #97 | TichHopDichVuKhoTests.Pos07_*; PostgreSqlRuntimeTests.ConcurrentCheckout*; PosInvoiceReceiptRenderTests | PG integration + render — Không bán quá tồn, hóa đơn và retry, in lại không ghi | PENDING per-UC evidence |
 | MUST-23 | POS-09 Hủy đơn đang bán | #36 | DichVuXacThucTests.Pos09_*; PosHeldOrderTests | PG integration — Dọn giỏ, không hủy hóa đơn đã thanh toán | PENDING per-UC evidence |
@@ -36,11 +36,11 @@ Cột “test liên quan” lấy từ ma trận của Thăng và test HTTP mớ
 | MUST-26 | BC-02 Doanh thu thời gian | #105 | OperationalReportsServiceTests; PostgreSqlRuntimeTests.Reports_UseVietnamMidnightForUtcPaidAt | Unit + PG — Ngày UTC+7, cancel/refund; REC-D01 | PENDING per-UC evidence |
 | MUST-27 | BC-03 Doanh thu sản phẩm/bán chạy | #106 | OperationalReportsServiceTests; ReportSnapshotPostgreSqlTests | Unit + PG — Dữ liệu bán thực, lịch sử danh mục | PENDING per-UC evidence |
 
-### Bốn khoảng trống review QA-02 của Thăng
-1. **NH-02 (MUST-15)**: cần HTTP/PG riêng tạo/sửa NCC, duplicate, authorization/rollback.
-2. **POS-02 (MUST-20)**: cần HTTP/browser sửa/xóa dòng giỏ, số lượng âm/vượt tồn, đồng thời.
-3. **KHO-01 (MUST-13)**: thêm HTTP/Razor/manual tồn kho và quyền, vì chỉ có service test.
-4. **NH-04 (MUST-16)**: thêm test nháp trước xác nhận, chứng minh chưa nhập tồn.
+### Bốn khoảng trống review QA-02 của Thăng — đã có test HTTP bổ sung, nghiệm thu còn pending
+1. **NH-02 (MUST-15)**: đã thêm test HTTP tạo/sửa NCC, trùng SĐT, stale version, CSRF; cần negative role và per-UC reviewer.
+2. **POS-02 (MUST-20)**: đã thêm test HTTP sửa/xóa dòng, âm/vượt tồn, CSRF và đối soát tồn; cần race/browser-negative.
+3. **KHO-01 (MUST-13)**: đã thêm test HTTP/Razor lọc cảnh báo tồn; source SHA 5325248 FAIL do assertion chưa decode Razor HTML; code đã sửa, chờ re-run xác nhận.
+4. **NH-04 (MUST-16)**: đã thêm test HTTP tạo nháp/đối soát dòng/tổng/tồn; vẫn thiếu WR-06 terminal/race exact-role.
 
 ### Regression thủ công tối thiểu cho 4 nhóm đang thiếu (CHƯA CHẠY)
 

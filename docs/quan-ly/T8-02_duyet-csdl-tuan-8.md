@@ -67,5 +67,6 @@ Các quyết định DB-R01 → DB-R05 trong tài liệu đối chiếu của #5
 
 - PR #286 (24/11) thay toàn bộ migration MySQL bằng một migration `20261124050401_PostgreSqlBaseline`. Bốn migration trong biên bản này **không còn chạy** trên bản hiện tại; kết luận "duyệt có điều kiện" chỉ còn giá trị lịch sử.
 - X3, X4 đã chốt ở #257 (không có phản đối trước 25/11). X10 không còn áp dụng.
+- `PostgreSqlBaseline`: đã duyệt bổ sung ngày 28/11 – [biên bản](T9-duyet-csdl-PostgreSqlBaseline_28-11-2026.md). Nội dung dưới đây giữ làm lịch sử.
 - `PostgreSqlBaseline` chưa có biên bản duyệt theo 5 tiêu chí. Việc cần làm: đối chiếu với ERD v1 + phần bổ sung (tiêu chí 3), trigger/CHECK (tiêu chí 4), test trên PostgreSQL 17 (tiêu chí 5: đạt, CI `cc20336` 877/877).
 

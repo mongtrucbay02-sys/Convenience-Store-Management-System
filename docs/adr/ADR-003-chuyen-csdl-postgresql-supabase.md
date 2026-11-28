@@ -99,6 +99,6 @@ Nếu đến hạn đóng băng tính năng (27/11) chưa đạt điều kiện 
 | 3. Ánh xạ EF | Đã chuyển sang Npgsql; trong `src/`, `tests/` không còn tham chiếu MySQL |
 | 4. SQL thô | Đã chuyển (#286, 220 tệp) |
 | 5. Kết nối Supabase | Vai trò `smartmart_backend` (RLS, không BYPASSRLS), TLS `VerifyFull` (#298, #299) |
-| 6. Điều kiện hoàn tất | CI trên PostgreSQL 17: **877/877** (lượt `cc20336`, 26/11); #1 chạy lại cục bộ 27/11 cũng 877/877. Smoke **đọc** Supabase đạt. **Ghi** dữ liệu trên Supabase và luồng demo chưa có bằng chứng (#293). Migration `PostgreSqlBaseline` chưa có biên bản duyệt CSDL theo 5 tiêu chí |
+| 6. Điều kiện hoàn tất | CI trên PostgreSQL 17: **877/877** (lượt `cc20336`, 26/11); #1 chạy lại cục bộ 27/11 cũng 877/877. Smoke **đọc** Supabase đạt. **Ghi** dữ liệu trên Supabase và luồng demo chưa có bằng chứng (#293). Migration `PostgreSqlBaseline` duyệt bổ sung ngày 28/11 (`docs/quan-ly/T9-duyet-csdl-PostgreSqlBaseline_28-11-2026.md`); đối chiếu Supabase thật ngày 28/11: cấu trúc, trigger, policy khớp |
 | 7. Trước demo, bảo vệ (04/12) | Còn phải làm: mở project Supabase, Admin chốt số dư mở quỹ |
 

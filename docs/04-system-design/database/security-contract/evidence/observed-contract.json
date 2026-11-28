@@ -1,0 +1,1166 @@
+{
+  "kind": "observed security contract, not approved target or executable migration",
+  "issue": 293,
+  "develop_sha": "0117d44a26489e6e607f126b46e23e37be35c509",
+  "catalog_at_utc": "2026-11-26T17:48:50.701658+00:00",
+  "server_version": "17.12",
+  "audit_user": "postgres",
+  "role": {
+    "rolname": "smartmart_backend",
+    "rolcanlogin": true,
+    "rolsuper": false,
+    "rolbypassrls": false,
+    "rolcreaterole": false,
+    "rolcreatedb": false,
+    "rolreplication": false,
+    "rolinherit": false,
+    "rolconnlimit": -1,
+    "rolvaliduntil": null,
+    "rolconfig": null,
+    "memberships": []
+  },
+  "incoming_membership": [
+    {
+      "member": "postgres",
+      "role": "smartmart_backend",
+      "admin": true,
+      "inherit": false,
+      "set": false
+    }
+  ],
+  "schema": {
+    "name": "smartmart",
+    "owner": "postgres",
+    "acl": [
+      "postgres=UC/postgres",
+      "smartmart_backend=U/postgres"
+    ]
+  },
+  "tables": [
+    {
+      "name": "bo_dem_chung_tu",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "chinh_sach_doi_tra",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "chuong_trinh_khuyen_mai",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arwd/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "ct_gio_hang",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arwd/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "ct_hoa_don",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=ar/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "ct_kiem_ke",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "ct_phieu_doi_tra",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=ar/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "ct_phieu_nhap",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "ct_xuat_huy",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "danh_muc",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arwd/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "giao_dich_tien_mat",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=ar/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "gio_hang",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arwd/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "hoa_don",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "hoan_tien_hoa_don",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=ar/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "khach_hang",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "khuyen_mai_san_pham",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arwd/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "lich_su_diem",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=ar/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "lich_su_gia",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "nha_cung_cap",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "phien_dang_nhap",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "phieu_doi_tra",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "phieu_kiem_ke",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "phieu_nhap",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "phieu_xuat_huy",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "quy_tac_tich_diem",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "quy_tien_mat",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "san_pham",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "tai_khoan",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "the_kho",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=ar/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "ton_kho",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=arw/postgres"
+      ],
+      "backend": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    },
+    {
+      "name": "vai_tro",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=r/postgres"
+      ],
+      "backend": [
+        "SELECT"
+      ],
+      "rls": true,
+      "force_rls": false,
+      "policy": {
+        "name": "smartmart_backend_trusted_server",
+        "permissive": "PERMISSIVE",
+        "roles": [
+          "smartmart_backend"
+        ],
+        "cmd": "ALL",
+        "qual": "(CURRENT_USER = 'smartmart_backend'::name)",
+        "with_check": "(CURRENT_USER = 'smartmart_backend'::name)"
+      }
+    }
+  ],
+  "views": [
+    {
+      "name": "v_chuong_trinh_khuyen_mai",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=r/postgres"
+      ],
+      "backend": [
+        "SELECT"
+      ],
+      "options": [
+        "security_invoker=true"
+      ]
+    },
+    {
+      "name": "v_gia_ban_hien_hanh",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=r/postgres"
+      ],
+      "backend": [
+        "SELECT"
+      ],
+      "options": [
+        "security_invoker=true"
+      ]
+    },
+    {
+      "name": "v_luot_dung_khuyen_mai",
+      "owner": "postgres",
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "smartmart_backend=r/postgres"
+      ],
+      "backend": [
+        "SELECT"
+      ],
+      "options": [
+        "security_invoker=true"
+      ]
+    }
+  ],
+  "sequences": [
+    {
+      "name": "chinh_sach_doi_tra_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "chuong_trinh_khuyen_mai_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "danh_muc_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "giao_dich_tien_mat_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "gio_hang_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "hoa_don_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "hoan_tien_hoa_don_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "khach_hang_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "lich_su_diem_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "lich_su_gia_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "nha_cung_cap_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "phien_dang_nhap_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "phieu_doi_tra_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "phieu_kiem_ke_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "phieu_nhap_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "phieu_xuat_huy_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "quy_tac_tich_diem_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "san_pham_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "tai_khoan_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    },
+    {
+      "name": "the_kho_id_seq",
+      "owner": "postgres",
+      "acl": [
+        "postgres=rwU/postgres",
+        "smartmart_backend=rU/postgres"
+      ],
+      "backend": [
+        "USAGE",
+        "SELECT"
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "name": "fn_guard_hoa_don",
+      "owner": "postgres",
+      "acl": [
+        "postgres=X/postgres"
+      ],
+      "security_definer": false,
+      "config": [
+        "search_path=\"\""
+      ],
+      "returns": "trigger",
+      "body": "BEGIN\n  IF TG_OP='DELETE' THEN\n    RAISE EXCEPTION USING ERRCODE='23514', MESSAGE='hoa_don cannot be deleted';\n  END IF;\n  IF OLD.trang_thai IS DISTINCT FROM 'DA_THANH_TOAN'\n     OR NEW.trang_thai IS DISTINCT FROM 'DA_HUY'\n     OR (to_jsonb(NEW) - ARRAY['trang_thai','nguoi_huy_id','huy_luc','ly_do_huy']::text[])\n        IS DISTINCT FROM\n        (to_jsonb(OLD) - ARRAY['trang_thai','nguoi_huy_id','huy_luc','ly_do_huy']::text[])\n  THEN\n    RAISE EXCEPTION USING ERRCODE='23514', MESSAGE='hoa_don only permits cancellation with immutable financial snapshot';\n  END IF;\n  RETURN NEW;\nEND;",
+      "backend_execute": false
+    },
+    {
+      "name": "fn_prevent_history_mutation",
+      "owner": "postgres",
+      "acl": [
+        "postgres=X/postgres"
+      ],
+      "security_definer": false,
+      "config": [
+        "search_path=\"\""
+      ],
+      "returns": "trigger",
+      "body": "BEGIN\n  RAISE EXCEPTION USING ERRCODE='23514',\n    MESSAGE=format('%s is append-only: %s forbidden', TG_TABLE_NAME, TG_OP);\nEND;",
+      "backend_execute": false
+    },
+    {
+      "name": "fn_updated_at",
+      "owner": "postgres",
+      "acl": [
+        "postgres=X/postgres"
+      ],
+      "security_definer": false,
+      "config": [
+        "search_path=\"\""
+      ],
+      "returns": "trigger",
+      "body": "BEGIN NEW.ngay_cap_nhat:=clock_timestamp(); RETURN NEW; END",
+      "backend_execute": false
+    }
+  ],
+  "previous_catalog_checks": {
+    "column_acl": null,
+    "default_acl": null,
+    "database_privileges": {
+      "CONNECT": true,
+      "CREATE": false,
+      "TEMP": true
+    },
+    "public_rls_auto_enable": {
+      "owner": "postgres",
+      "security_definer": true,
+      "returns": "event_trigger",
+      "search_path": "pg_catalog",
+      "execute_backend": false,
+      "execute_public": false,
+      "execute_anon": false,
+      "execute_authenticated": false,
+      "event_trigger": "ensure_rls",
+      "enabled": "O",
+      "event": "ddl_command_end",
+      "scope": "public only"
+    }
+  }
+}

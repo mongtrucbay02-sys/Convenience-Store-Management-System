@@ -34,11 +34,12 @@ public sealed partial class PostgreSqlRuntimeTests
         var page = await context.NewPageAsync();
         try
         {
-            // Browser context's request shares the same cookie jar as the page.
-            var login = await context.Request.PostAsync("/api/v1/auth/login",
-                new() { DataObject = new { tenDangNhap = "pg_cashier", matKhau = Password } });
-            Assert.True(login.Ok, "Synthetic cashier login should succeed");
-
+            // Authenticate in the real Chromium login form.
+            await page.GotoAsync("/login.html");
+            await page.Locator("#username").FillAsync("pg_cashier");
+            await page.Locator("#password").FillAsync(Password);
+            await page.Locator("#loginForm button[type=submit]").ClickAsync();
+            await page.WaitForURLAsync("**/Home/Workspace");
             await page.GotoAsync("/Pos");
             Assert.Contains("Quầy bán hàng", await page.TitleAsync());
             await page.Locator(".pos-product form[action*='/Pos/Add'] button[type=submit]").First.ClickAsync();

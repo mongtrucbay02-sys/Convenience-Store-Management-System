@@ -11,6 +11,8 @@ public sealed class SmokeRolePostgreSqlFixture : IAsyncLifetime
 {
     private const string Role = "smartmart_backend";
     private readonly string _database = "smartmart_role_test_" + Guid.NewGuid().ToString("N");
+    private readonly string _observedDatabase = "smartmart_role_test_" + Guid.NewGuid().ToString("N");
+    private bool _observedDatabaseCreated;
     private readonly string _password = Guid.NewGuid().ToString("N");
     private string? _server;
     private bool _roleCreated;
@@ -64,8 +66,80 @@ public sealed class SmokeRolePostgreSqlFixture : IAsyncLifetime
     internal string AdminConnection => new NpgsqlConnectionStringBuilder(_server!)
         { Database = _database, SearchPath = "smartmart", Pooling = false }.ConnectionString;
 
-    internal string BackendConnection => new NpgsqlConnectionStringBuilder(AdminConnection)
+    internal string BackendConnection => BackendFor(AdminConnection);
+
+    private string ObservedAdminConnection => new NpgsqlConnectionStringBuilder(AdminConnection)
+        { Database = _observedDatabase }.ConnectionString;
+
+    internal string ObservedBackendConnection => BackendFor(ObservedAdminConnection);
+
+    private string BackendFor(string adminConnection) => new NpgsqlConnectionStringBuilder(adminConnection)
         { Username = Role, Password = _password, SslMode = SslMode.Disable }.ConnectionString;
+
+    internal async Task AssertSafeRoleAsync()
+    {
+        await using var connection = new NpgsqlConnection(BackendConnection);
+        await connection.OpenAsync();
+        await using var command = new NpgsqlCommand("""
+            SELECT current_user = 'smartmart_backend'
+               AND session_user = 'smartmart_backend'
+               AND current_setting('row_security') = 'on'
+               AND rolcanlogin AND NOT rolsuper AND NOT rolbypassrls
+               AND NOT rolcreaterole AND NOT rolcreatedb AND NOT rolreplication AND NOT rolinherit
+            FROM pg_roles WHERE rolname = current_user
+            """, connection);
+        Assert.True(await command.ExecuteScalarAsync() is true, "Runtime role was not restored to its safe state.");
+    }
+
+    internal async Task PrepareObservedDatabaseAsync()
+    {
+        await AssertSafeRoleAsync();
+        if (_observedDatabaseCreated)
+            throw new InvalidOperationException("Observed database must be prepared only once per owned lifetime.");
+        await using var server = new NpgsqlConnection(_server!);
+        await server.OpenAsync();
+        await Execute(server, $"CREATE DATABASE {_observedDatabase}");
+        _observedDatabaseCreated = true;
+        try
+        {
+            await using var db = new CuaHangDbContext(new DbContextOptionsBuilder<CuaHangDbContext>()
+                .UseNpgsql(ObservedAdminConnection, pg => pg.SetPostgresVersion(17, 0)).Options);
+            await db.Database.MigrateAsync();
+            await db.Database.ExecuteSqlRawAsync("INSERT INTO smartmart.vai_tro(id,ma,ten) VALUES (1,'AD','Admin test')");
+            await ApplyObservedAclAsync(ObservedAdminConnection);
+        }
+        catch
+        {
+            await DropObservedDatabaseAsync();
+            throw;
+        }
+    }
+
+    internal async Task DropObservedDatabaseAsync()
+    {
+        if (!_observedDatabaseCreated) return;
+        await using var server = new NpgsqlConnection(_server!);
+        await server.OpenAsync();
+        await Execute(server, $"DROP DATABASE IF EXISTS {_observedDatabase} WITH (FORCE)");
+        _observedDatabaseCreated = false;
+    }
+
+    internal async Task<string> ReadBaselineAclFingerprintAsync()
+    {
+        await using var connection = new NpgsqlConnection(AdminConnection);
+        await connection.OpenAsync();
+        await using var command = new NpgsqlCommand("""
+            SELECT jsonb_build_object(
+                'objects', (SELECT jsonb_agg(jsonb_build_array(c.relname, c.relkind, c.relacl::text,
+                    c.relrowsecurity, c.relforcerowsecurity) ORDER BY c.relname)
+                    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+                    WHERE n.nspname='smartmart' AND c.relkind IN ('r','p','v','S')),
+                'policies', (SELECT jsonb_agg(to_jsonb(p) ORDER BY p.tablename,p.policyname)
+                    FROM pg_policies p WHERE p.schemaname='smartmart')
+            )::text
+            """, connection);
+        return (string)(await command.ExecuteScalarAsync())!;
+    }
 
     internal async Task SetRoleStateAsync(string state)
     {
@@ -87,7 +161,9 @@ public sealed class SmokeRolePostgreSqlFixture : IAsyncLifetime
 
     // Replays the B02 read-only ACL catalog in a disposable PG17 role-test database.
     // This is AS-IS, not the proposed D1-D7 target or an approved migration.
-    internal async Task ApplyObservedAclAsync()
+    internal Task ApplyObservedAclAsync() => ApplyObservedAclAsync(AdminConnection);
+
+    private async Task ApplyObservedAclAsync(string adminConnection)
     {
         if (!_databaseCreated || !_roleCreated || _server is null)
             throw new InvalidOperationException("Disposable role fixture has not been initialized.");
@@ -118,7 +194,7 @@ public sealed class SmokeRolePostgreSqlFixture : IAsyncLifetime
             return string.Join(", ", values);
         }
 
-        await using var connection = new NpgsqlConnection(AdminConnection);
+        await using var connection = new NpgsqlConnection(adminConnection);
         await connection.OpenAsync();
         await using var transaction = await connection.BeginTransactionAsync();
 
@@ -167,16 +243,28 @@ public sealed class SmokeRolePostgreSqlFixture : IAsyncLifetime
         if (_server is null) return;
         await using var server = new NpgsqlConnection(_server);
         await server.OpenAsync();
+        var errors = new List<Exception>();
+        try { await DropObservedDatabaseAsync(); }
+        catch (Exception ex) { errors.Add(ex); }
         if (_databaseCreated)
         {
-            await Execute(server, $"DROP DATABASE IF EXISTS {_database} WITH (FORCE)");
-            _databaseCreated = false;
+            try
+            {
+                await Execute(server, $"DROP DATABASE IF EXISTS {_database} WITH (FORCE)");
+                _databaseCreated = false;
+            }
+            catch (Exception ex) { errors.Add(ex); }
         }
         if (_roleCreated)
         {
-            await Execute(server, $"DROP ROLE IF EXISTS {Role}");
-            _roleCreated = false;
+            try
+            {
+                await Execute(server, $"DROP ROLE IF EXISTS {Role}");
+                _roleCreated = false;
+            }
+            catch (Exception ex) { errors.Add(ex); }
         }
+        if (errors.Count != 0) throw new AggregateException("Role fixture cleanup failed.", errors);
     }
 }
 
@@ -253,12 +341,17 @@ public sealed class SupabaseRuntimeRoleIntegrationTests(SmokeRolePostgreSqlFixtu
     {
         try
         {
+            await fixture.AssertSafeRoleAsync();
             await fixture.SetRoleStateAsync(state);
             var result = await Run(fixture.BackendConnection);
             AssertRejected(result.Exit, result.Report, reason);
             Assert.Equal(expected, result.Report.GetProperty(property).GetBoolean());
         }
-        finally { await fixture.SetRoleStateAsync("reset"); }
+        finally
+        {
+            await fixture.SetRoleStateAsync("reset");
+            await fixture.AssertSafeRoleAsync();
+        }
     }
 
     [Fact]

@@ -159,6 +159,9 @@ public sealed class CustomerService(CuaHangDbContext db)
 
     public async Task AdjustAsync(long id, PointAdjustment input, long actor, CancellationToken ct)
     {
+        // Final scope: freeze manual adjustments, including callers bypassing MVC.
+        // Automatic awards/recovery and historical ledgers use CustomerPoints independently.
+        await EnsureManualAdjustmentAvailableAsync();
         if (string.IsNullOrWhiteSpace(input.Reason) || input.Reason.Trim().Length > 500)
             throw LoiNghiepVu.DuLieuKhongHopLe("reason", "Lý do bắt buộc, tối đa 500 ký tự.");
         await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
@@ -169,6 +172,10 @@ public sealed class CustomerService(CuaHangDbContext db)
             input.InvoiceId, null, input.Reason.Trim(), ct);
         await tx.CommitAsync(ct);
     }
+
+    private static Task EnsureManualAdjustmentAvailableAsync() => Task.FromException(
+        new LoiNghiepVu("CHUC_NANG_DANG_KHOA", StatusCodes.Status403Forbidden,
+            "KH-08 đang khóa trong phạm vi hiện tại."));
 
     private async Task<long> LockAsync(long id, CancellationToken ct)
     {

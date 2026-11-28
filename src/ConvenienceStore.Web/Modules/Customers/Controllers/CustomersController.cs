@@ -85,6 +85,7 @@ public sealed class CustomersController(CustomerService customers, PosCartServic
     }
 
     [Authorize(Roles = CustomerRoles.Admin), HttpPost, ValidateAntiForgeryToken]
+    [ConvenienceStore.Web.Shared.Security.LockedFeature("KH-08")]
     public async Task<IActionResult> Adjust(long id, PointAdjustment input, CancellationToken ct)
     {
         try

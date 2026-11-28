@@ -1,5 +1,5 @@
 # Test Plan — Smart Mart
-Version 1.1 security-contract review | 28/11/2026 | Source of truth #264 / PR #304 | Owner Tester/DevOps | Review pending
+Version 1.2 QA merge/release gate review | 28/11/2026 | Source of truth #264 / PR #304 | Owner Tester/DevOps | Review pending
 ## Scope and basis
 One store; AUTH, SP, NH, KHO, POS, KH, KM, DT, BC. Use current PostgreSQL runtime, candidate FR/AC in ../03-requirements/acceptance-criteria.md and actual approved SRS when supplied. Original 27 Must list is outside repository; do not infer equivalence. Bank integration, real customer data and production destructive tests excluded.
 ## Loyalty DISABLE & FREEZE — #257
@@ -25,7 +25,7 @@ Scope source: [#257 decision](https://github.com/mongtrucbay02-sys/Convenience-S
 4. Log actual vs expected, evidence, status PASS/FAIL/BLOCKED/NOT RUN; retest fixes and full regression.
 5. Review defect list, backup/restore, staging HTTPS and schema adoption #283 before release.
 ## Entry/exit
-Entry: reviewed scope, reproducible build, synthetic seed, isolated DB, accounts and expected results. Exit: all approved Must cases mapped and executed, no unresolved critical/high defects unless formally accepted, CI no fail/skip, NFR thresholds approved and met, browser E2E and backup/restore verified, two reviewers approve. CI alone is not release acceptance.
+Entry: reviewed scope, reproducible build, synthetic seed, isolated DB, accounts and expected results. System release exit: all approved Must cases mapped and executed, no unresolved critical/high defects unless formally accepted, CI no fail/skip, NFR thresholds approved and met, browser E2E and backup/restore verified, two reviewers approve. CI alone is not release acceptance.
 ## Defects
 Issue title [BUG][module] symptom; include SHA, environment, case ID, steps, expected/actual, redacted evidence, severity and owner. High target fix within two days per #41; retest before closure. Daily triage near release.
 ## Roles and schedule
@@ -37,16 +37,16 @@ This is the **one** canonical test plan for #264. The final factual test report 
 
 ### Environment and role separation
 - Service A: existing CI PostgreSQL 17 loopback fixture (ordinary regression; may use \`postgres\` exclusively for database setup and administration). It does **not** prove runtime effective grants.
-- Service B: separate disposable PostgreSQL 17 instance (CI \`postgres-role\`), random test database. Admin creates schema, disposable LOGIN \`smartmart_backend\`, seed and grants. Business probes connect **with real username/password** as \`smartmart_backend\`, verify \`current_user = session_user = smartmart_backend\`, \`row_security=on\`, LOGIN without SUPERUSER/BYPASSRLS/CREATEDB/CREATEROLE. \`SET ROLE\` alone is not valid proof.
-- The fixture replays the checked-in B02 **observed** table/view/sequence ACL from the JSON contract; explicitly removes baseline broad table/sequence grants and replaces permissive baseline policy. It is not a substitute for applying the future approved migration with restrictive policies and trigger guards. Fail on drift/unknown objects, never broaden grants to make a test green.
+- Service B: separate disposable PostgreSQL 17 instance (CI \`postgres-role\`), separate disposable baseline and observed databases. Admin creates schema, disposable LOGIN \`smartmart_backend\`, seed and grants. Business probes connect **with real username/password** as \`smartmart_backend\`, verify \`current_user = session_user = smartmart_backend\`, \`row_security=on\`, LOGIN without SUPERUSER/BYPASSRLS/CREATEDB/CREATEROLE. \`SET ROLE\` alone is not valid proof.
+- The fixture replays the checked-in B02 **observed** table/view/sequence/function ACL from the JSON contract; explicitly removes baseline broad table/sequence grants and replaces permissive baseline policy. It is not a substitute for applying the future approved migration with restrictive policies and trigger guards. Fail on drift/unknown objects, never broaden grants to make a test green; explicit temporary fault-injection grants in the isolated observed profile are separately identified and revoked.
 - No Supabase shared write, reset, migration, or large-scale seed. No passwords, connection strings, business PII, TRX secret fields or backup dumps in commits/artifacts. Production TLS VerifyFull is separate from ephemeral loopback testing.
 - On backend/migration branch changes, produce both fresh-baseline and live-like AS-IS → TO-BE fixtures, apply reviewed Up/Down/re-Up, assert effective privileges and policy/trigger behavior under the same login, then execute business operations. Build/CI source SHA must match the release candidate.
 
 ### Prioritized security test IDs
 | ID | Issue | Setup and action under exact runtime login | Expected / evidence gate | State |
 |---|---|---|---|---|
-| SC-ACL-01 | #300 B02-11 | Recreate observed grants for 31 tables, 3 views, 20 sequences; inspect current/session user, RLS, has_table_privilege | Exact AS-IS grants; no TRUNCATE; role guard | Test added to #304, CI pending |
-| SC-ACL-02 | #300 B02-11 | Real backend insert category, transaction rollback; DELETE vai_tro and UPDATE ct_hoa_don | Allowed insert visible in tx then rolled back; 42501 denied; invariant unchanged | Test added to #304, CI pending |
+| SC-ACL-01 | #300 B02-11 | Recreate observed grants for 31 tables, 3 views, 20 sequences; inspect current/session user, RLS, has_table_privilege | Exact AS-IS grants; no TRUNCATE; role guard | PASS at baa30035; named TRX evidence in rolling report |
+| SC-ACL-02 | #300 B02-11 | Real backend insert category, transaction rollback; DELETE vai_tro and UPDATE ct_hoa_don | Allowed insert visible in tx then rolled back; 42501 denied; invariant unchanged | PASS at baa30035; named TRX evidence in rolling report |
 | SC-ACL-03 | #293 B08 | Apply *approved* migration on both isolated fresh and live-like databases; exact catalog diff/Up/Down/re-Up | Same TO-BE and reversion; policy/trigger/ACL, fail closed | BLOCKED: migration/approvals |
 | WR-06 / NH02–04 | #300 D3 | NHAP draft add/update/remove line, concurrent confirm, terminal insert/update/delete, reopen header | Accurate totals/version, stock unaffected until confirm, no terminal edits, safe rollback/race | NOT RUN; WR-06 V2 pending |
 | WR-07 / AU01–04 | #300 D4 | Bootstrap Admin under backend role; two concurrent initializations; role table SELECT only; negative ADMIN/TN/NK+CSRF | Exactly one admin; no role UPDATE; denied cases no mutations | NOT RUN under AS-IS ACL |
@@ -67,4 +67,9 @@ The 27 rows in \`test-cases/candidate-regression.md\` are **candidate test scena
 1. Huy: fixture and baseline RED/GREEN coverage under B02 observed login; update #304 with TRX and acceptance report. Yến: WR-06–10 implementation and ACL/guard migration in separate code PR; do not change the test expected result to accommodate a regression.
 2. Trung/Thăng/Hoài: approve D1–D7, WR-06 V2 and 27 Must source; contract MUST precede TO-BE migration acceptance.
 3. Repeat exact-role test under reviewed migration and module code; require security negative, transaction, rollback and concurrency. After green CI, execute browser #244, realistic demo #103 validation, NFR and full backup/restore on isolated PG17.
-4. Freeze final HEAD, publish TRX/test totals/open defects, obtain two independent reviews of #264, then update deploy #242/#44 and manual demo evidence. No merge/closure solely on historical 877/878.
+4. Freeze final HEAD, publish TRX/test totals/open defects, obtain two independent reviews of #264, then update deploy #242/#44 and manual demo evidence. No merge or release solely on historical CI; apply the separate gates below.
+
+## Gate distinction — PR #304 vs system release
+- **Merge gate (QA contribution):** reviewed QA/test/workflow diff; verified final PR-head CI (expected 885 tests, zero fail/skip), traceable TRX, isolated-only execution, consistent scope/evidence and independent reviewer approval. Unresolved in-scope defects must be fixed or explicitly accepted by reviewers; do not silently waive fixture isolation evidence. Status: PENDING final CI and review.
+- **Release gate (system):** approved SRS/Must mapping, WR-06–10 and TO-BE ACL/RLS, live read-only catalog/runtime verification, #257 freeze implementation and LF tests, browser E2E, NFR/UAT, full-schema restore, schema adoption, HTTPS/staging, release SHA and required sign-offs. Status: HOLD. These outstanding system gates are tracked separately; they do not automatically block merging a correctly scoped QA contribution, nor does QA merge authorize release, migration or issue closure.
+- Evidence: [rolling QA report](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/blob/docs/qa-devops-deliverables-20261127/docs/06-testing/test-reports/2026-11-27-qa-regression.md); last verified case-level evidence at `baa30035`: 885/885, 16 named security cases PASS in isolated PG17. Re-run on final head; do not relabel prior evidence as current-head PASS.

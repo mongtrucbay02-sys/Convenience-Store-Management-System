@@ -27,8 +27,8 @@ Nguồn: "Câu hỏi bảo vệ bắt buộc" trong Project Guidelines mục 5 (
 | 8 | Hủy hóa đơn ảnh hưởng tồn, điểm, quỹ thế nào? | #3, #5 | Một giao tác: trả tồn, thu hồi điểm, ghi hoàn tiền và chi quỹ; chỉ hủy được một lần |
 | 9 | Báo cáo lợi nhuận gộp tính giá vốn thế nào? | #5 | Giá vốn bình quân gia quyền lưu trên dòng hóa đơn lúc bán |
 | 10 | Bảo mật: phiên, mật khẩu, phân quyền? | #1 | Cookie HttpOnly, token băm, XSRF, 27 mã quyền kiểm ở máy chủ |
-| 11 | Test nào chứng minh chức năng chạy đúng? Vì sao không dùng InMemory? | #4, #5 | Test chạy trên CSDL thật trong CI (709/709 trên MySQL 8.4 ngày 23/11; số liệu PostgreSQL cập nhật khi chuyển xong); InMemory không kiểm được trigger, CHECK, khóa dòng |
-| 12 | Vì sao đổi từ MySQL sang PostgreSQL/Supabase ở cuối kỳ? Đã chuyển xong chưa? | #5, #2 | ADR-003: lý do, phương án đã cân nhắc, điều kiện hoàn tất, tag bản lùi MySQL; trả lời đúng hiện trạng tại tag bản cuối |
+| 11 | Test nào chứng minh chức năng chạy đúng? Vì sao không dùng InMemory? | #4, #5 | 877 test chạy trên PostgreSQL 17 cô lập trong CI cho mỗi PR (lượt `cc20336`: 877/877; chạy lại cục bộ 27/11 cũng đạt); InMemory không kiểm được trigger, CHECK, khóa dòng |
+| 12 | Vì sao đổi từ MySQL sang PostgreSQL/Supabase ở cuối kỳ? Đã chuyển xong chưa? | #2, #5 | ADR-003: lý do, phương án đã cân nhắc; chuyển xong 24/11 (#286), CI 877/877. Thừa nhận: không gắn tag bản lùi; ghi trên Supabase kiểm chứng ở #293 |
 
 ### 3. Quy trình, AI và đóng góp
 

@@ -2,6 +2,8 @@
 
 > **Trục chính:** 01 Khảo sát → 02 Định nghĩa sản phẩm → 03 Yêu cầu → 04 Thiết kế → 05 Hiện thực → **06 Kiểm thử** → 07 Triển khai → 08 Nghiệm thu
 
+> **Hiện trạng 27/11/2026:** toàn bộ test chạy trên PostgreSQL 17 cô lập. CI lượt `cc20336` trên `develop`: **877/877 đạt**; chạy lại cục bộ (PostgreSQL 17.12 trong Docker, #1) cũng 877/877. Các dòng nhắc MySQL bên dưới là kết quả lịch sử trước PR #286 (24/11).
+
 ## Mục đích
 Chứng minh hệ thống **làm đúng yêu cầu** ở `03` và **đúng thiết kế** ở `04`, trước khi triển khai.
 

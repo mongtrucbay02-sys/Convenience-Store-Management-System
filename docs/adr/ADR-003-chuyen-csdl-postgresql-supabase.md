@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Dự án** | Hệ thống quản lý cửa hàng tiện lợi – Nhóm 7, học phần INFO2005 |
-| **Trạng thái** | **Đã chấp nhận** – nhóm chốt ngày 23/11/2026. Việc chuyển ứng dụng **đang thực hiện** (xem mục 4) |
+| **Trạng thái** | **Đã chấp nhận** – nhóm chốt ngày 23/11/2026. **Đã chuyển ứng dụng** ngày 24/11/2026 (PR #286); kết quả ở mục 7 |
 | **Ngày** | 23/11/2026 |
 | **Người ghi** | #1 Phạm Gia Thăng |
 | **Người xác nhận** | Các thành viên ghi "Chốt" trong PR đưa ADR này vào repo |
@@ -39,7 +39,7 @@
 | Thời gian | Lưu `timestamptz`; hiển thị theo `Asia/Ho_Chi_Minh` ở ứng dụng (thay `time_zone '+07:00'` của MySQL) |
 | CI | Dịch vụ `postgres:17` tạm trong GitHub Actions; không trỏ CI vào project Supabase thật |
 
-## 3. Hiện trạng tại thời điểm chốt (23/11/2026, nhánh `develop`)
+## 3. Hiện trạng tại thời điểm chốt (23/11/2026, nhánh `develop`; xem mục 7 cho hiện trạng sau khi chuyển)
 
 Ứng dụng **vẫn chạy MySQL**:
 
@@ -89,3 +89,16 @@ Nếu đến hạn đóng băng tính năng (27/11) chưa đạt điều kiện 
 - Các migration MySQL đã duyệt (T8-02) vẫn có giá trị cho bản lùi. Nội dung của chúng (bảng quỹ, hoàn tiền, `anh_url`) đã có trong schema `smartmart`, và sẽ được duyệt lại khi có migration/ánh xạ Npgsql.
 - Gỡ gói `MySql.EntityFrameworkCore` và `docker-compose` MySQL sau khi chuyển xong, không gỡ trước.
 - Rủi ro: thời gian chuyển ngắn trước đóng băng 27/11; bộ test phải viết lại phần hạ tầng. Phương án lùi ở bước 1 mục 4 giảm rủi ro này.
+
+## 7. Kết quả sau khi chuyển (cập nhật 27/11/2026)
+
+| Điều kiện ở mục 4 | Kết quả |
+|---|---|
+| 1. Tag bản lùi MySQL trước khi gộp | **Không thực hiện.** Repo chưa có tag nào. Bản MySQL cuối cùng vẫn truy lại được trong lịch sử `develop` (trước PR #282, #286) |
+| 2. Một nguồn schema | Migration `PostgreSqlBaseline` (#286) là nguồn duy nhất; kiểm tra khớp với schema Supabase bằng `supabase-schema-contract.json` và smoke test |
+| 3. Ánh xạ EF | Đã chuyển sang Npgsql; trong `src/`, `tests/` không còn tham chiếu MySQL |
+| 4. SQL thô | Đã chuyển (#286, 220 tệp) |
+| 5. Kết nối Supabase | Vai trò `smartmart_backend` (RLS, không BYPASSRLS), TLS `VerifyFull` (#298, #299) |
+| 6. Điều kiện hoàn tất | CI trên PostgreSQL 17: **877/877** (lượt `cc20336`, 26/11); #1 chạy lại cục bộ 27/11 cũng 877/877. Smoke **đọc** Supabase đạt. **Ghi** dữ liệu trên Supabase và luồng demo chưa có bằng chứng (#293). Migration `PostgreSqlBaseline` duyệt bổ sung ngày 28/11 (`docs/quan-ly/T9-duyet-csdl-PostgreSqlBaseline_28-11-2026.md`); đối chiếu Supabase thật ngày 28/11: cấu trúc, trigger, policy khớp |
+| 7. Trước demo, bảo vệ (04/12) | Còn phải làm: mở project Supabase, Admin chốt số dư mở quỹ |
+

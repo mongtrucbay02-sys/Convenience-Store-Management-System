@@ -1,5 +1,7 @@
 # SRS v1.1: danh sách thay đổi phát sinh trong sprint 1–2 (T5-02)
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 | | |
 | --- | --- |
 | Issue | #87 – T5-02 |

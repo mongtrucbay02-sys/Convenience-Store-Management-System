@@ -1,5 +1,7 @@
 # SP module test report
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Tested source worktree at `06f70abceb7a9991537b98bcda6eb8219bf46edc`; manifest in evidence/final/source-manifest.json. Target baseline develop `babfe1edae507e5d94a95c422a76ffa344a23c00`, initial executable SP-07 tree `86fa911`. Current fetched develop `a024757b73e696b5f4285f070c642db0c3a467cd`. Isolation B only; original dirty worktrees/NH work preserved. Local commits only; no push/PR/merge/issue closure.
 
 Fresh baseline: 455 total, 417 PASS, 38 FAIL, 0 SKIP. Final: 682 total, 644 PASS, 38 FAIL, 0 SKIP. New failures: 0; removed baseline cases: 0; baseline fixes: 0; changed failure causes: 0. Overall solution FAIL. Filtered runs overlap and are never summed.

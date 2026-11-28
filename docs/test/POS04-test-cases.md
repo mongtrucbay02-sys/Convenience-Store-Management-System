@@ -1,5 +1,7 @@
 # POS-04: kiểm thử khuyến mãi tự động
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Nhánh: feature/pos-04. Không thay cấu trúc CSDL.
 
 ## Chạy giao diện

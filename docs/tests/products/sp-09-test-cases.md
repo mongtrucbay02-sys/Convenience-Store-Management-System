@@ -1,5 +1,7 @@
 # SP-09 automated test cases
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Issue disposition: VERIFIED_LOCAL. Executed gates and unexecuted acceptance dependencies are reported separately.
 
 AD confirms empty-category deletion; any product reference (including inactive products) blocks deletion and offers existing SP-04 move or hide. Category-scoped inventory documents also retain their FK/history. Hiding preserves products/snapshots and existing POS active-category filtering. Current category version is required.

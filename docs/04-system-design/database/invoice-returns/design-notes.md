@@ -1,5 +1,7 @@
 # Design Notes – Hóa đơn / Đổi trả (Issue #9)
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 ## Phạm vi
 - INVOICES / INVOICE_DETAILS: hóa đơn và dòng sản phẩm bán ra.
 - CASH_TRANSACTIONS: giao dịch thu tiền mặt hoặc hoàn tiền; `transaction_type` = `SALE`/`REFUND`.

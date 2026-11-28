@@ -10,6 +10,10 @@ info:
     **Trạng thái:** Đề xuất – chờ nhóm xác nhận (issue T3-05). Khi code xong, Swagger sinh tự động
     từ controller là bản chính thức; file này phải được cập nhật cho khớp trong cùng PR.
 
+    **Đối chiếu code 28/11/2026 (`develop` `cc20336`):** 12/14 thao tác đã hiện thực đúng đường dẫn.
+    Chưa hiện thực: `GET /me`, `PUT /me` (AUTH-04, mức Could, issue #110 đóng ngày 04/11 chỉ kèm
+    tệp giao diện, không có code). Chi tiết: `DOI-CHIEU-API-CODE_28-11-2026.md`.
+
     **Ưu tiên (Bảng MoSCoW 13/10):**
     - MVP: AUTH-01, 02, 03, 05, 06, 10 (Must); AUTH-08 (Should, được chọn vào MVP)
     - Tầng 2: AUTH-07, AUTH-09 (Should)
@@ -209,7 +213,7 @@ paths:
     get:
       tags: [AUTH – Hồ sơ cá nhân]
       operationId: xemHoSoCaNhan
-      summary: AUTH-04 Xem hồ sơ cá nhân (người đang đăng nhập)
+      summary: AUTH-04 Xem hồ sơ cá nhân (người đang đăng nhập) – CHƯA HIỆN THỰC (28/11)
       description: |
         **Quyền:** AD, TN, NK. **Ưu tiên:** MVP (giao diện gọi khi tải trang để biết ai đang đăng nhập,
         vai trò, danh sách quyền để hiển thị menu). **Căn cứ:** AUTH-04 bước 2.
@@ -226,7 +230,7 @@ paths:
     put:
       tags: [AUTH – Hồ sơ cá nhân]
       operationId: capNhatHoSoCaNhan
-      summary: AUTH-04 Cập nhật hồ sơ cá nhân
+      summary: AUTH-04 Cập nhật hồ sơ cá nhân – CHƯA HIỆN THỰC (28/11)
       description: |
         **Quyền:** AD, TN, NK. **Ưu tiên:** Could – Sau MVP (#6). **Căn cứ:** AUTH-04; BR-AUTH-05; PA-AUTH-05.A.
 

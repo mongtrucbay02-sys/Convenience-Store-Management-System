@@ -39,7 +39,7 @@ Mô tả **hệ thống được thiết kế ra sao** để đáp ứng yêu c�
 | [`ui/QuickMart_UI.zip`](ui/QuickMart_UI.zip) | Bộ SVG giao diện Figma (bản gốc + thư mục `Nang_Cap`) | Toàn hệ thống |
 
 ## Việc nên làm tiếp
-- Thêm `architecture/overview.md` mô tả kiến trúc ASP.NET Core MVC theo module (`src/ConvenienceStore.Web/Modules/*`) và nguồn dữ liệu MySQL.
+- Thêm `architecture/overview.md` mô tả kiến trúc ASP.NET Core MVC theo module (`src/ConvenienceStore.Web/Modules/*`) và nguồn dữ liệu PostgreSQL 17 (ADR-003).
 - `api/sales.md` hiện là bản gộp: chép lại nguyên văn `pos-dt.openapi.yaml` (không nằm trong khối code), `returns.md`, hợp đồng POS và `PHOI_HOP_AUTH_POS03_POS04.md`. Nên tách phần hợp đồng POS thành `api/pos.md` và bỏ phần trùng, để mỗi nội dung chỉ có một bản chính.
 - Cân nhắc giải nén `ui/QuickMart_UI.zip` thành thư mục `ui/` để xem trực tiếp trên GitHub và review được thay đổi.
 - Thêm `database/` cho các module còn thiếu (KH, KM, BC, AUTH) nếu có ERD riêng.

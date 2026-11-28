@@ -17,7 +17,7 @@ sequenceDiagram
     actor NKAD as NK hoặc AD
     participant UI as Giao diện nhập hàng
     participant NH as Điều phối NH-06 dự kiến
-    participant DB as MySQL
+    participant DB as PostgreSQL 17
     participant KHO as DichVuKho
 
     NKAD->>UI: Mở phiếu và chọn xác nhận nhập kho

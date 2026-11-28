@@ -1,5 +1,7 @@
 # Từ điển dữ liệu — Sản phẩm và Nhập hàng
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 ## 1. Trạng thái tài liệu và quy ước
 
 Tài liệu này mô tả thiết kế logic cho MySQL 8.0 trong phạm vi T3-09. Workspace hiện không có SRS v1.0.1, đặc tả 81 Use Case, bảng MoSCoW, ERD Kho, ERD Tài khoản/Vai trò hoặc hợp đồng dịch vụ kho. Vì vậy:

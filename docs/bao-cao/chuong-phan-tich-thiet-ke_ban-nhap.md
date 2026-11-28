@@ -1,5 +1,7 @@
 # Chương 3. Phân tích và thiết kế hệ thống (bản nháp)
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Bản nháp cho báo cáo cuối kỳ (T7-01, issue #170). Người viết: #1 Phạm Gia Thăng, 02/11/2026. Các thành viên bổ sung phần của mình ở chỗ ghi **[Bổ sung – tên]**. Số liệu lấy từ SRS v1.0.3, Đặc tả Use Case 18/10, Bảng MoSCoW 13/10, ERD v1 và repo ngày 02/11/2026.
 
 ## 3.1. Phân tích yêu cầu

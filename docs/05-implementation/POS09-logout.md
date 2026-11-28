@@ -1,5 +1,7 @@
 # POS-09: bản sửa từ develop
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 PR #129 dùng Session và bảng pos_cancelled_orders không còn phù hợp ERD v1. Bản này tách từ origin/develop bd4b7b5, không đưa bảng hoặc SQL rời đó sang.
 
 Nút hủy và đăng xuất TN dùng chung HuyGioDangBan. Khóa dòng giỏ DANG_BAN, chuyển DA_HUY, lưu THU_NGAN_HUY, huy_luc, gia_tri_khi_huy trong gio_hang. Giữ chi tiết giỏ để đối soát; không cập nhật kho, điểm hoặc hóa đơn. Bỏ qua giỏ rỗng. Đăng xuất hủy giỏ và thu hồi phiên trong một transaction. Gửi lại logout của phiên đã hủy không tác động giỏ mới. AD/NK chỉ thu hồi phiên.

@@ -1,5 +1,7 @@
 # Tái tích hợp schema của PR #168
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Ngày kiểm kê: 14/11/2026 (Asia/Saigon). Đây là bản tích hợp chọn lọc để review độc lập, không phải merge nguyên PR nguồn.
 
 ## Nguồn và phạm vi

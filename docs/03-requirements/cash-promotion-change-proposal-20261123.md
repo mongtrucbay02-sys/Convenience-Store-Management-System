@@ -1,5 +1,7 @@
 # Đề xuất cập nhật SRS: hủy hóa đơn, quỹ và ảnh khuyến mãi
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Trạng thái: **Đang review / chưa được nhóm duyệt**, 23/11/2026. Bổ sung cho bản đối chiếu `migration-srs-review-2026-11-23.md`; không thay SRS gốc khi chưa có quyết định của nhóm.
 
 | Mã đề xuất | Yêu cầu và tiêu chí chấp nhận |

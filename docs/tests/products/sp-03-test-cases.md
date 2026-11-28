@@ -1,5 +1,7 @@
 # SP-03 automated test cases
 
+> **Tài liệu lịch sử.** Nội dung ghi lại thời điểm hệ thống còn dùng MySQL (trước 24/11/2026). Từ PR #286 ứng dụng chạy PostgreSQL 17 (`docs/adr/ADR-003-chuyen-csdl-postgresql-supabase.md`); số liệu test, kiểu dữ liệu và câu lệnh MySQL trong tệp này không áp dụng cho bản hiện tại.
+
 Issue disposition: BLOCKED. Executed gates and unexecuted acceptance dependencies are reported separately.
 
 AD/NK standalone creation with optional unique/generated code <=20, name<=200, active category, unit<=20, positive integral VND price divisible by 100, threshold>=0 default5, description<=1000 and optional JPG/PNG <=2MiB. Product + initial effective-now history + zero-stock row must commit/rollback together. NK may only set the initial price, not edit price by overposting.

@@ -1,0 +1,28 @@
+@model IReadOnlyList<ConvenienceStore.Web.Modules.Returns.Services.ApprovalSlip>
+@{
+    Layout = "_AdminLayout";
+    var forCashier = ViewData["ForCashier"] is true;
+    ViewData["Title"] = forCashier ? "Phiếu đổi đã duyệt" : "Duyệt đổi trả ngoại lệ";
+}
+<h1>@ViewData["Title"]</h1>
+@if (Model.Count == 0)
+{
+    <p>@(forCashier ? "Không có phiếu đổi đã duyệt cần hoàn tất." : "Không có phiếu chờ duyệt.")</p>
+}
+else
+{
+    <table class="table">
+        <thead><tr><th>Phiếu</th><th>Loại</th><th>Hóa đơn gốc</th><th>Thu ngân</th><th>Giá trị hàng trả</th></tr></thead>
+        <tbody>
+            @foreach (var slip in Model)
+            {
+                <tr>
+                    <td><a href="@Url.Action(forCashier ? "ApprovedExchange" : "Details", "ReturnApprovals", new { id = slip.Id })">@slip.Code</a></td>
+                    <td>@(slip.Kind == "DOI_HANG" ? "Đổi hàng" : "Trả hàng")</td>
+                    <td>@slip.InvoiceCode</td><td>@slip.Cashier</td><td>@slip.ReturnValue.ToString("N0") đ</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<a href="@(forCashier ? Url.Action("Index", "Returns") : Url.Content("~/"))">Quay lại</a>

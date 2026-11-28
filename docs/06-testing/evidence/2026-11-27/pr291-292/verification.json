@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-27",
+  "base": "cc20336566ff3ac12933e3c1c65c36a6553b2000",
+  "pr291Head": "ab05ee2fe5dcfa40b7095604aea5f91039376a2f",
+  "pr292Head": "975981c7b2c280e27a131f73b0431a6351be1290",
+  "codeCommit": "17488f9cceb2a19869c955ffdc7bc15c8bf09979",
+  "codeTree": "88e31742ac10f6aeb445bcba8907f5227e0ef4b1",
+  "build": {
+    "configuration": "Release",
+    "errors": 0,
+    "warnings": 0
+  },
+  "tests": {
+    "failed": 0,
+    "trx": "evidence/full-regression.trx",
+    "passed": 900,
+    "skipped": 0,
+    "runtimeRoleScope": "Local PostgreSQL smartmart_backend baseline grants; not live Supabase ACL",
+    "total": 900,
+    "restrictedRuntimeRoleCases": 10,
+    "sha256": "B5D74BBDCBFF227735CD9A22F4A0005C97CE16DDF1C8CC936911ADD4EBFEE4BE"
+  },
+  "environment": "Windows .NET 10, two isolated PostgreSQL 17.12 loopback clusters",
+  "sharedSupabaseWrites": 0,
+  "sharedSupabaseDdl": 0,
+  "migration": {
+    "id": "20261127030000_ExchangePlanSnapshots",
+    "columns": 308,
+    "views": 3,
+    "tables": 31,
+    "sharedDeployment": "PENDING DB review and backup",
+    "delta": "nullable jsonb smartmart.phieu_doi_tra.phuong_an_doi"
+  },
+  "pending": [
+    "CI on pushed HEAD",
+    "Independent reviewers",
+    "DB migration and API/SRS approval",
+    "Live Supabase runtime ACL verification",
+    "POS/DT staging or UAT",
+    "Release scope #257",
+    "K80 comparison against original MH-20"
+  ],
+  "testClustersStopped": true,
+  "documentQa": {
+    "sourceScreenshots": "Original team report 2026-11-25",
+    "pages": 11,
+    "visualInspection": "All pages inspected after rendering; unchanged page images compared by SHA256",
+    "newScreenshots": false
+  }
+}

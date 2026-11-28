@@ -1,0 +1,46 @@
+@model ConvenienceStore.Web.Modules.Returns.Services.ApprovalDetails
+@{
+    var slip = Model.Slip;
+    string reasonLabel(string reason) => reason switch
+    {
+        "LOI_SAN_PHAM" => "Lỗi sản phẩm",
+        "HET_HAN" => "Hết hạn",
+        "KHONG_DUNG_NHU_CAU" => "Không đúng nhu cầu",
+        _ => "Khác"
+    };
+}
+<h1>Phiếu @slip.Code</h1>
+<p>Hóa đơn gốc <strong>@slip.InvoiceCode</strong> · Thu ngân @slip.Cashier</p>
+<p>Trạng thái <strong>@(slip.Status switch {
+    "CHO_DUYET" => "Chờ duyệt", "DA_DUYET" => "Đã duyệt",
+    "BI_TU_CHOI" => "Bị từ chối", "HOAN_TAT" => "Hoàn tất", _ => slip.Status
+})</strong></p>
+@if (slip.ApprovalNote is not null)
+{
+    <p>Ghi chú của người duyệt: @slip.ApprovalNote</p>
+}
+@if (ViewData["Error"] is string error)
+{
+    <div class="alert alert-danger" role="alert">@error</div>
+}
+<h2>Lý do cần duyệt</h2>
+<ul>
+    @if (slip.Expired) { <li>Quá hạn đổi trả</li> }
+    @if (slip.Forbidden) { <li>Có sản phẩm thuộc danh mục không đổi trả</li> }
+    @if (slip.OverThreshold) { <li>Vượt ngưỡng theo chính sách đổi trả</li> }
+</ul>
+<h2>Hàng trả</h2>
+<table class="table">
+    <thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Giá thực trả</th><th>Lý do</th><th>Ghi chú</th><th>Tình trạng</th><th>Xử lý</th></tr></thead>
+    <tbody>
+        @foreach (var line in Model.Lines)
+        {
+            <tr>
+                <td>@line.Name</td><td>@line.Quantity</td><td>@line.UnitPaid.ToString("N0") đ</td>
+                <td>@reasonLabel(line.Reason)</td><td>@line.Note</td><td>@line.Condition</td>
+                <td>@(line.Handling == "NHAP_LAI" ? "Nhập lại kho" : "Hủy")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<p>Giá trị hàng trả <strong>@slip.ReturnValue.ToString("N0") đ</strong></p>

@@ -25,10 +25,10 @@ Issue #10 giao DT-01 đến DT-08, nhưng Issue #4 đánh dấu `/returns` **Sau
 | DT-01 | `GET /returns/invoice-lookup?ma=...` | TN (`DOI_TRA`) | 200 | Đúng mã; gồm dòng hàng, số lượng còn trả và điều kiện |
 | DT-01 | `GET /returns/invoice-lookup?soDienThoai=...&page=1&size=20` | TN (`DOI_TRA`) | 200 | Hóa đơn của mọi thu ngân, khớp số điện thoại và còn trong hạn |
 | DT-02 | `POST /returns` | TN (`DOI_TRA`) | 201 | Tạo phiếu trả; Location `/api/v1/returns/{id}` |
-| DT-03 | `POST /returns/{id}/exchange` | TN (`DOI_TRA`) | 200 | Đổi hàng, liên kết hóa đơn mới |
+| DT-03 | `POST /returns/exchange` | TN (`DOI_TRA`) | 201 | Route thực tế; xem `returns-dt03-dt06.md` |
 | DT-04 | `POST /returns/{id}/refund` | TN (`DOI_TRA`) | 200 | Ghi nhận hoàn tiền mặt |
 | DT-05 | `POST /returns/{id}/process-stock` | TN (`DOI_TRA`) | 200 | Nhập lại hoặc xuất hủy qua dịch vụ kho |
-| DT-06 | `POST /returns/{id}/approve` | AD (`DOI_TRA_DUYET_CAU_HINH`) | 200 | Duyệt ngoại lệ; cần thêm `/reject` nếu SRS yêu cầu |
+| DT-06 | `POST /Returns/Approvals/{id}` (ngoài `/api/v1`) | AD (`DOI_TRA_DUYET_CAU_HINH`) | 302/HTML | MVC form + antiforgery; không có JSON `/returns/{id}/approve` |
 | DT-07 | `GET /returns` | TN/AD (`DOI_TRA` / `DOI_TRA_DUYET_CAU_HINH`) | 200 | `{items,total,page,size}` |
 | DT-07 | `GET /returns/{id}` | TN/AD (`DOI_TRA` / `DOI_TRA_DUYET_CAU_HINH`) | 200 | Chi tiết phiếu |
 | DT-07 | `GET /returns/{id}/print` | TN/AD (`DOI_TRA` / `DOI_TRA_DUYET_CAU_HINH`) | 200 | **ĐỀ XUẤT** dữ liệu in |
@@ -120,3 +120,5 @@ Chỉ AD; kiểm tra trạng thái `CHO_DUYET` (nếu enum này được ERD DT 
 7. Số điện thoại của khách được che trong kết quả trả cho TN theo T6-02 KH3. Mã và điện thoại được so khớp chính xác bằng tham số SQL.
 
 > Phạm vi Sau MVP nêu trong tài liệu tuần 3 không thay thế kế hoạch tuần 6 của DT-01. Các quyết định T6-02 và mục C6/B7 trong danh sách thay đổi SRS v1.2 được dùng làm căn cứ; #1 tiếp tục chốt tài liệu SRS chính thức qua review.
+
+> Cập nhật DT-03/DT-06 theo review #291 ngày 27/11: [contract thực tế và snapshot](returns-dt03-dt06.md). Các endpoint đề xuất còn lại giữ trạng thái cũ, không được suy diễn là đã triển khai.

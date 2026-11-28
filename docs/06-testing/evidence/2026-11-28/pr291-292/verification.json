@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-28",
+  "base": "cc20336566ff3ac12933e3c1c65c36a6553b2000",
+  "codeCommit": "5ecbd3d55b8c803b30c56f79132379d48da4b94e",
+  "codeTree": "4f3aa2d43ad7711b66c27ba267dc869cbf3f2899",
+  "build": {
+    "configuration": "Release",
+    "errors": 0,
+    "warnings": 0
+  },
+  "tests": {
+    "sha256": "5C637536C3D54B91F8D67334908F663C955DC0C069E500EAB80C2EC847CE4E00",
+    "scope": "Local PostgreSQL 17.12, baseline runtime grants; not live Supabase or PR300 exact-role acceptance",
+    "total": 900,
+    "trx": "isolated-20261128-000043/full-regression.trx",
+    "failed": 0,
+    "restrictedRuntimeRoleCases": 10,
+    "skipped": 0,
+    "passed": 900
+  },
+  "schema": {
+    "views": 3,
+    "tables": 31,
+    "newMigration": false,
+    "protectedFileDiff": 0,
+    "columns": 307
+  },
+  "guard": {
+    "committedNonExampleEnvFiles": 0,
+    "scope": "Local comparison only; GitHub CI pending push",
+    "workflowChanged": false
+  },
+  "testClustersStopped": true,
+  "sharedSupabaseWrites": 0,
+  "sharedSupabaseDdl": 0,
+  "heldFeatures": [
+    "DOI_HANG exception Create/Approve/Complete pending approved snapshot design; TRA_HANG and normal exchange retained"
+  ],
+  "pending": [
+    "CI on pushed HEAD",
+    "Independent review",
+    "Snapshot design approval and SRS scope #257",
+    "Live Supabase ACL verification",
+    "UAT",
+    "Original MH-20 comparison"
+  ],
+  "documentQa": {
+    "pages": 11,
+    "sourceScreenshots": "Team report 2026-11-25; no new UAT screenshots",
+    "visualInspection": "All changed pages inspected; unchanged pages SHA256 matched previous render"
+  }
+}

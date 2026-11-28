@@ -46,7 +46,8 @@ public sealed class ReturnPointsGateway : IReturnPointsGateway
             return -Convert.ToInt32(existing);
 
         var previous = await db.DocMotDongAsync("""
-            SELECT COALESCE(SUM(p.tien_hoan),0), COALESCE(SUM(p.diem_thu_hoi),0)
+            SELECT COALESCE(SUM(CASE WHEN p.loai = 'DOI_HANG' THEN p.gia_tri_hang_tra ELSE p.tien_hoan END),0),
+                COALESCE(SUM(p.diem_thu_hoi),0)
             FROM phieu_doi_tra p
             WHERE p.id<>@return AND p.trang_thai='HOAN_TAT'
                 AND p.hoa_don_goc_id=@invoice

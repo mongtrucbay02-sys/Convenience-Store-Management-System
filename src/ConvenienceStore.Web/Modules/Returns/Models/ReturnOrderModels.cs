@@ -12,7 +12,7 @@ public sealed class ReturnLineRequest
     public string Handling { get; set; } = "NHAP_LAI";
 }
 
-public sealed class ReturnOrderRequest
+public class ReturnOrderRequest
 {
     public long InvoiceId { get; set; }
     public List<ReturnLineRequest> Lines { get; set; } = [];

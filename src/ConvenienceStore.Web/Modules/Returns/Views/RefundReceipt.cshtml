@@ -9,7 +9,7 @@
     <p>Hóa đơn gốc: <strong>@Model.InvoiceCode</strong></p>
     <h2>Số tiền đã hoàn: @Model.Amount.ToString("N0") đ</h2>
     <p>Hình thức: Tiền mặt</p>
-    <p>Thu ngân xác nhận: @Model.Cashier</p>
+    <p>Người xác nhận hoàn tiền: @Model.Cashier</p>
     <p>Thời điểm ghi nhận: @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</p>
     <p>Số dư quỹ sau hoàn: @Model.BalanceAfter.ToString("N0") đ</p>
     <button type="button" onclick="window.print()">In biên nhận</button>

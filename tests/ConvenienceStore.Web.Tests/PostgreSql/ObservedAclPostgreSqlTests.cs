@@ -5,9 +5,9 @@ namespace ConvenienceStore.Web.Tests.PostgreSql;
 
 // The exact B02 AS-IS grants are replayed on a dedicated disposable PG17 cluster,
 // and all business SQL uses a real smartmart_backend login (not SET ROLE / postgres).
+[Collection("BackendRoleContract")]
 [Trait("Database", "PostgreSql")]
 public sealed class ObservedAclPostgreSqlTests(SmokeRolePostgreSqlFixture fixture)
-    : IClassFixture<SmokeRolePostgreSqlFixture>
 {
     [Fact]
     public async Task RealBackendLogin_ObservedAclAndRls_DenyForbiddenWritesAndRollbackAllowedWrite()

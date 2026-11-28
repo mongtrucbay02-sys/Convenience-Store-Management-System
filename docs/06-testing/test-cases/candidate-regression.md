@@ -1,35 +1,49 @@
-# Candidate regression matrix — #16
-27 proposed cases, NOT RUN as individual cases. Based on candidate AC and issue criteria, not the authoritative 27 Must list dated 12/10 (not available in repository). Review and map before acceptance. Each row: seed prerequisite; action; expected. Record actual, status, SHA and evidence per execution.
-| ID | Trace | Given / When | Expected |
-|---|---|---|---|
-| TC-01 (AUTH-01) | NFR-03 | valid cashier; login | session with cashier rights |
-| TC-02 (AUTH-02) | NFR-03 | cashier; request admin operation | server denies; no mutation |
-| TC-03 (AUTH-03) | NFR-03 | expired session; request protected page | login required |
-| TC-04 (SP-01) | AC-01a | active product; search by name | correct product |
-| TC-05 (SP-02) | AC-01b | inactive product; add to cart | rejected |
-| TC-06 (SP-03) | AC-10a | cashier; change price | denied |
-| TC-07 (NH-01) | AC-06a | delivery 12, received 10; save | difference -2 |
-| TC-08 (NH-02) | AC-06b | negative received quantity; submit | validation error |
-| TC-09 (NH-03) | AC-07a | authorized confirmation of 10 | stock +10 once |
-| TC-10 (NH-04) | AC-07b | pending receipt; inspect stock | no confirmed movement |
-| TC-11 (NH-05) | AC-07c | confirmed receipt; retry | no duplicate stock |
-| TC-12 (KHO-01) | AC-08a | stock 18 count 17; save | pending -1, stock unchanged |
-| TC-13 (KHO-02) | AC-09a | authorized approval of count | decision audit and correct stock |
-| TC-14 (POS-01) | AC-02a | 2 x 12000 + 9000; tender 50000 | total 33000 change 17000 |
-| TC-15 (POS-02) | AC-02b | unpaid cart; cancel | no completed invoice |
-| TC-16 (POS-03) | AC-03a | stock sufficient; checkout | stock decreases exactly once |
-| TC-17 (POS-04) | AC-03b | retry same checkout | no duplicate invoice/movement |
-| TC-18 (POS-05) | AC-03c | inject failure mid checkout | atomic rollback |
-| TC-19 (POS-06) | AC-04a | saved invoice; lookup | same invoice, no new sale |
-| TC-20 (POS-07) | AC-05a | authorized reprint | no new transaction |
-| TC-21 (POS-08) | #102 | last item; two simultaneous checkouts | one sale, no negative stock |
-| TC-22 (KH-01) | #257 / KH-06 | eligible customer; checkout after approved disable cutoff | zero awarded points, NULL conversion snapshot, no accrual ledger or balance increase; NOT RUN |
-| TC-23 (KM-01) | #182 | eligible promotion; checkout | correct discount per approved rule |
-| TC-24 (DT-01) | #243 / #257 | retained return flow for new or historical invoice | refund and stock consistent; no new accrual; legitimate historical reversal only, no negative balance or duplicate movement; NOT RUN |
-| TC-25 (DT-02) | #243 | repeat same return | no duplicate refund |
-| TC-26 (BC-01) | AC-11a | paid and unpaid transactions; report | only eligible transactions |
-| TC-27 (BC-02) | F289-03 | move product category; historical report | compare with approved category policy; BLOCKED until decision |
-Execution priority proposed: AUTH/SP/NH/POS first, then KHO and cross-module regression. IDs in parentheses are local labels, not official UC codes.
+# Ma trận kiểm thử 27 Must theo SRS chính thức — Issue #264
+
+**Nguồn:** [Ma trận 27 Must/NFR của Thăng, PR #301, commit ff68536](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/blob/ff68536fd6e8fcae4fed20975c3fcd2487b66101/docs/03-requirements/ma-tran-truy-vet-27-must_SRS-chinh-thuc.md); SRS v1.0.3 mục 3.2 / use case mục 3.4–3.12. **PR #301 đang OPEN, chưa merge/được nghiệm thu cuối**. Đây là 27 ID Must do Thăng cung cấp, khác 27 ca TC ứng viên ban đầu. Tên tệp giữ `candidate-regression.md` để các liên kết PR không gãy.
+
+Cột “test liên quan” lấy từ ma trận của Thăng và test HTTP mới của #304; **không phải chứng cứ từng use case đã nghiệm thu**. Source ghi 25/27 có test liên quan tại baseline 877/877; 2 chưa có test riêng. Không đồng nhất số ca PASS với coverage luồng chính/ngoại lệ. Để xác nhận từng dòng phải bổ sung method/actor, expected, PASS/FAIL/SKIP, SHA, TRX hoặc screenshot, và hai reviewer.
+
+**Cảnh báo sửa mã sai:** NH-03 *chính thức* = ngừng hợp tác/xóa NCC; xác nhận nhập kho = **NH-06**. POS-08 *chính thức* = tạm giữ/gọi lại đơn; bán đồng thời món cuối thuộc **POS-07**. Không dùng nhãn TC-09(NH-03), TC-21(POS-08) cũ làm official trace. Những ca cũ vẫn là ý tưởng hồi quy, không được coi là use case Must chính thức.
+
+| ID test | UC Must chính thức | Issue | Test tự động có liên quan (baseline/historical) | Lớp và việc còn thiếu | Trạng thái nghiệm thu |
+|---|---|---|---|---|---|
+| MUST-01 | AUTH-01 Đăng nhập | #23 | DichVuXacThucTests; PostgreSqlRuntimeTests.Auth_CreateLoginChangePasswordLogout_AndLockAfterFiveFailures | PG integration + HTTP — Đúng/mất mật khẩu, khóa tạm, session; role | PENDING per-UC evidence |
+| MUST-02 | AUTH-02 Đăng xuất | #24 | DichVuXacThucTests; PostgreSqlRuntimeTests.Auth_*Logout* | PG integration — Hủy session/giỏ hợp lệ, deny protected request after logout | PENDING per-UC evidence |
+| MUST-03 | AUTH-03 Đổi mật khẩu | #25 | DichVuTaiKhoanTests; PostgreSqlRuntimeTests.SM01_* | PG integration — Mật khẩu cũ/mới, forced-change, revoke old session | PENDING per-UC evidence |
+| MUST-04 | AUTH-05 Xem tài khoản | #26 | DichVuTaiKhoanQuanTriTests | PG integration; HTTP TODO — Danh sách Admin, TN/NK bị từ chối | PENDING per-UC evidence |
+| MUST-05 | AUTH-06 Tạo tài khoản | #27 | DichVuTaiKhoanQuanTriTests; KhoiTaoAdminDauTienTests | PG integration; exact role TODO — Tạo role hợp lệ, SĐT tùy chọn, bootstrap đồng thời WR-07 | PENDING per-UC evidence |
+| MUST-06 | AUTH-10 Gán vai trò và phân quyền | #28 | QuyenVaTokenTests; DichVuTaiKhoanTests.GanVaiTro_* | Unit + PG integration — 27 mã quyền, actor AD, không UPDATE vai_tro trái ACL | PENDING per-UC evidence |
+| MUST-07 | SP-01 Xem/tìm/lọc sản phẩm | #56 | Sp01ProductHttpTests; Sp01ProductPostgreSqlTests | HTTP + PG — Tìm dấu tiếng Việt, lọc danh mục và trạng thái | PENDING per-UC evidence |
+| MUST-08 | SP-03 Thêm sản phẩm | #58 | Sp03ProductHttpTests; Sp03ProductPostgreSqlTests | HTTP + PG — SP+giá+tồn 0 atomic; role; WR-03 guard | PENDING per-UC evidence |
+| MUST-09 | SP-04 Sửa sản phẩm | #59 | Sp04ProductHttpTests; Sp04ProductPostgreSqlTests | HTTP + PG — Validation, version và quyền | PENDING per-UC evidence |
+| MUST-10 | SP-05 Cập nhật giá bán | #60 | Sp05PricingHttpTests; Sp05PricingPostgreSqlTests | HTTP + PG — Không sửa giá quá khứ, hiệu lực giá | PENDING per-UC evidence |
+| MUST-11 | SP-07 Danh sách danh mục | #62 | CategoryHttpFeatureTests; CategoryPostgreSqlTests | HTTP + PG — Danh mục; phân trang/role | PENDING per-UC evidence |
+| MUST-12 | SP-08 Thêm/sửa danh mục | #63 | Sp08CategoryHttpTests; Sp08CategoryPostgreSqlTests; DanhMucConcurrencyTests | HTTP + PG — Version/race, quyền CRUD | PENDING per-UC evidence |
+| MUST-13 | KHO-01 Xem tồn kho hiện tại | #89 | DichVuKhoTests.LayTonKho_KhongKhoa_TraDungThuTuVaCoDuoiNguong | Service only; HTTP/manual TODO — Trang tồn, ngưỡng cảnh báo, role, không mutation | PENDING per-UC evidence |
+| MUST-14 | NH-01 Xem danh sách NCC | #65 | PurchasingParityTests | HTTP + PG — Danh sách, lọc; role | PENDING per-UC evidence |
+| MUST-15 | NH-02 Thêm/sửa NCC | #66 | No dedicated automated case confirmed | HTTP/manual TODO — Create/edit NCC, duplicate code/phone, permission and version | PENDING per-UC evidence |
+| MUST-16 | NH-04 Tạo phiếu nhập nháp | #92 | PurchaseReceiptFlowTests (indirect) | Service only; HTTP/manual TODO — NHAP persisted, lines/totals, stock unchanged until confirm | PENDING per-UC evidence |
+| MUST-17 | NH-06 Xác nhận nhập kho | #94 | TichHopDichVuKhoTests.Nh06_*; PurchaseReceiptFlowTests; PostgreSqlRuntimeTests.Purchasing_ConfirmTwice* | PG integration — Stock+ledger exactly once, rollback & concurrency | PENDING per-UC evidence |
+| MUST-18 | NH-07 Tra cứu phiếu nhập | #95 | PurchasingParityTests | HTTP + PG — Lọc NCC/ngày/trạng thái, role | PENDING per-UC evidence |
+| MUST-19 | POS-01 Tạo đơn/tìm/thêm giỏ | #33 | PostgreSqlRuntimeTests.Cart_ConcurrentFirstRequests*; PosPromotionDatabaseTests | PG integration + HTTP — Session cashier, thêm hàng, chính sách giá | PENDING per-UC evidence |
+| MUST-20 | POS-02 Sửa giỏ hàng | #34 | PosHeldOrderTests; PosPromotionDatabaseTests (indirect); PosHttp_CashierCheckoutToReceipt (partial) | HTTP/browser/manual TODO — Sửa số lượng, xóa dòng, vượt tồn, concurrent update | PENDING per-UC evidence |
+| MUST-21 | POS-05 Thanh toán tiền mặt | #35 | PostgreSqlRuntimeTests.Checkout_CommitsInvoiceStockPointsAndCash*; PosHttp_CashierCheckoutToReceipt | PG integration + HTTP — Tiền trả thiếu, tiền thừa, atomic cash/stock/points theo #257 | PENDING per-UC evidence |
+| MUST-22 | POS-07 Hoàn tất đơn/in hóa đơn | #97 | TichHopDichVuKhoTests.Pos07_*; PostgreSqlRuntimeTests.ConcurrentCheckout*; PosInvoiceReceiptRenderTests | PG integration + render — Không bán quá tồn, hóa đơn và retry, in lại không ghi | PENDING per-UC evidence |
+| MUST-23 | POS-09 Hủy đơn đang bán | #36 | DichVuXacThucTests.Pos09_*; PosHeldOrderTests | PG integration — Dọn giỏ, không hủy hóa đơn đã thanh toán | PENDING per-UC evidence |
+| MUST-24 | POS-10 Tra cứu hóa đơn | #98 | PosInvoiceDetailsTests; PosInvoiceStoreTests | Unit + PG — Tìm hóa đơn, không phát sinh bán mới | PENDING per-UC evidence |
+| MUST-25 | BC-01 Dashboard tổng quan | #45 | DashboardServiceTests | Unit only; HTTP TODO — Tổng hợp chính xác theo BR-BC-02 sau quyết định REC-D01 | PENDING per-UC evidence |
+| MUST-26 | BC-02 Doanh thu thời gian | #105 | OperationalReportsServiceTests; PostgreSqlRuntimeTests.Reports_UseVietnamMidnightForUtcPaidAt | Unit + PG — Ngày UTC+7, cancel/refund; REC-D01 | PENDING per-UC evidence |
+| MUST-27 | BC-03 Doanh thu sản phẩm/bán chạy | #106 | OperationalReportsServiceTests; ReportSnapshotPostgreSqlTests | Unit + PG — Dữ liệu bán thực, lịch sử danh mục | PENDING per-UC evidence |
+
+### Bốn khoảng trống review QA-02 của Thăng
+1. **NH-02 (MUST-15)**: cần HTTP/PG riêng tạo/sửa NCC, duplicate, authorization/rollback.
+2. **POS-02 (MUST-20)**: cần HTTP/browser sửa/xóa dòng giỏ, số lượng âm/vượt tồn, đồng thời.
+3. **KHO-01 (MUST-13)**: thêm HTTP/Razor/manual tồn kho và quyền, vì chỉ có service test.
+4. **NH-04 (MUST-16)**: thêm test nháp trước xác nhận, chứng minh chưa nhập tồn.
+
+### Các scenario khác ngoài 27 Must
+WR-06…10, SP/KH/DT/POS âm quyền, NFR, đổi trả và LF-01…08 vẫn phải test theo scope (#257/#264/#293), nhưng **không ép thành 27 Must**. POS-08 tạm giữ/gọi lại và NH-03 ngừng NCC là use case khác; theo dõi ở security test plan #300. Nếu chưa có dữ liệu source cho một ngoại lệ SRS thì BLOCKED, không suy diễn theo tài liệu SIMULATED.
 
 ## Additional loyalty freeze scenarios (outside the 27 candidate rows)
 Scope source: [#257 decision](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/257#issuecomment-7241048563), [lead agreement](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/257#issuecomment-7241091898). Scope agreed; implementation and acceptance pending.

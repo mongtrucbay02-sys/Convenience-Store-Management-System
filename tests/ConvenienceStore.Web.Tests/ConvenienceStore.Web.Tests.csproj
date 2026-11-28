@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.58.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
 
@@ -20,6 +21,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <None Include="..\..\docs\04-system-design\database\security-contract\evidence\observed-contract.json" Link="SchemaReference\observed-security-contract.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="PostgreSql\supabase-schema-contract.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\docs\db\schema_v1.sql" Link="SchemaReference\schema_v1.sql" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\docs\db\schema_postgresql.sql" Link="SchemaReference\schema_postgresql.sql" CopyToOutputDirectory="PreserveNewest" />

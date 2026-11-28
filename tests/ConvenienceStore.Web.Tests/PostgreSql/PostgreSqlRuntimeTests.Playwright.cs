@@ -14,7 +14,7 @@ public sealed partial class PostgreSqlRuntimeTests
     {
         var product = await Product(stock: 20);
         var address = await StartWeb();
-        var evidence = Path.Combine("artifacts", "browser-e2e");
+        var evidence = Path.Combine(Environment.GetEnvironmentVariable("GITHUB_WORKSPACE") ?? Directory.GetCurrentDirectory(), "artifacts", "browser-e2e");
         Directory.CreateDirectory(evidence);
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new()

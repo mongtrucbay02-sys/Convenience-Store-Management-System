@@ -1,0 +1,69 @@
+name: QA POS browser E2E
+
+on:
+  pull_request:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-browser-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pos-browser:
+    name: Browser POS cashier -> receipt (isolated PG17)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: ci-only-postgres-password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432/tcp
+        options: >-
+          --health-cmd="pg_isready -U postgres -d postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      DOTNET_NOLOGO: 'true'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      ConnectionStrings__CuaHangPostgreSqlTest: "Host=127.0.0.1;Port=${{ job.services.postgres.ports['5432'] }};Database=postgres;Username=postgres;Password=ci-only-postgres-password;Pooling=false;"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore
+        run: dotnet restore ConvenienceStoreManagement.slnx
+      - name: Build app and tests
+        run: dotnet build ConvenienceStoreManagement.slnx -c Release --no-restore
+      - name: Install Chromium and OS libraries
+        shell: pwsh
+        run: ./tests/ConvenienceStore.Web.Tests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      - name: Run real-browser test on disposable local database
+        run: >-
+          dotnet test tests/ConvenienceStore.Web.Tests/ConvenienceStore.Web.Tests.csproj
+          --configuration Release --no-build --no-restore
+          --filter "Category=BrowserE2E"
+          --results-directory artifacts/browser-e2e
+          --logger "trx;LogFileName=browser.trx"
+      - name: Upload browser TRX, traces and redacted synthetic screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-pos-e2e-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/browser-e2e/**
+          if-no-files-found: warn
+          retention-days: 7

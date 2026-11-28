@@ -180,9 +180,13 @@ public sealed class SmokeRolePostgreSqlFixture : IAsyncLifetime
     }
 }
 
+// Cluster-wide smartmart_backend and fresh-cluster preconditions require one shared fixture.
+[CollectionDefinition("BackendRoleContract", DisableParallelization = true)]
+public sealed class BackendRoleContractCollection : ICollectionFixture<SmokeRolePostgreSqlFixture> { }
+
+[Collection("BackendRoleContract")]
 [Trait("Database", "PostgreSql")]
 public sealed class SupabaseRuntimeRoleIntegrationTests(SmokeRolePostgreSqlFixture fixture)
-    : IClassFixture<SmokeRolePostgreSqlFixture>
 {
     private static async Task<(int Exit, JsonElement Report, string Output)> Run(string connection)
     {

@@ -1,5 +1,27 @@
 # QA regression report — baseline 27/11, rolling acceptance 28/11/2026
 #264 #293 #300 #243 #244 | **Single final-report candidate**, review pending; actual release acceptance NOT VERIFIED
+## Final executed QA contribution recheck — 28/11/2026 (latest verified source)
+
+**Tested source SHA:** `9433da3a0992660cd687e3b926727d24759fc712` (PR #304, base `develop`, NOT deployed/merged). This recheck supersedes older pending/failed KHO-01 assertions below. A subsequent *report-only* commit must separately pass CI before being called final-head tested.
+
+| QA workflow | Result | Evidence |
+|---|---|---|
+| Full SmartMart CI | **889 / 889 PASS, 0 FAIL, 0 SKIP, 0 ERROR, 0 TIMEOUT; 2m24s test** | [run 46165960573](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46165960573), [TRX artifact 15271887149](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46165960573/artifacts/15271887149) |
+| Real Chromium browser POS E2E #244 | **PASS 1/1** | [run 46165960505](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46165960505) |
+| Isolated NFR HTTP-proxy workload | **PASS 1/1 execution**; SRS release thresholds only PARTIAL/NOT VERIFIED | [run 46165960545](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46165960545) |
+| Full-schema baseline + reference-data dump/restore | **PASS**, not real Supabase data or 10k-invoice demo restore | [run 46165960673](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46165960673) |
+| DB schema/secret guard | **PASS** | [run 46165960549](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46165960549) |
+
+**Independent TRX inspection:** downloaded GitHub artifact `15271887149`, parsed TRX `Counters` and all four named `UnitTestResult` records:
+- `Nh02_HttpCreateEditDuplicatePhoneStaleVersionAndCsrf` — **Passed**
+- `Pos02_HttpEditRemoveAndInvalidQuantity_DoNotChangeStockOrCreateInvoice` — **Passed**
+- `Kho01_HttpStockListFiltersAndNoMutation` — **Passed**
+- `Nh04_HttpCreateDraftPersistsLinesAndDoesNotMoveStock` — **Passed**
+
+All four are HTTP tests on isolated PG17 with ordinary app role/permissions; **not** approved TO-BE `smartmart_backend` business writer acceptance or browser E2E of each Must. Browser #244 currently covers one happy path only. No changes to the shared Supabase.
+
+**Disposition:** QA contribution technical regression/CI evidence **PASS at tested source only**. PR remains **DRAFT, review requested/pending**, with Yến's REQUEST CHANGES not autonomously dismissed. System **RELEASE HOLD** for #293 security backend/migration WR-06–10, final-scope loyalty freeze #257, broader negative/browser coverage, production-like NFR acceptance, full real demo recovery, HTTPS/deploy, official SRS PR #301 review and independent approval. Do not close #264/#244/#293 based solely on the green workflows.
+
 ## New executed QA evidence — 28/11/2026 (supersedes older QA-02/03/04/05 status below)
 
 Source of the executed **application test code**: `5325248f028af730008db64c2600cd0fd0c2cc62`; all write operations ran on disposable GitHub Actions PostgreSQL 17, **never shared Supabase**.

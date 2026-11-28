@@ -1,6 +1,6 @@
 # T3-14 — Hợp đồng API DT (Đổi trả)
 
-> **Trạng thái:** Đề xuất để review; chưa phải API đã triển khai. Căn cứ: Issue #10 (phạm vi), Issue #4 (quy ước chung, phiên bản 1.0 ngày 16/10/2026). Đường dẫn/DTO chưa có trong Issue #4 được đánh dấu **ĐỀ XUẤT** và cần người phụ trách duyệt. Không tạo API AUTH thay cho #1 Thăng (Issue #5); module KH/KM do #5 Trung phụ trách.
+> **Trạng thái:** DT-01 được triển khai trên nhánh `feature/dt-01` cho issue #148 theo bản rà T6-02 ngày 02/11/2026; các use case DT-02 trở đi bên dưới vẫn là đề xuất, chưa được triển khai trong thay đổi này. Hợp đồng DT-01: [returns-lookup.openapi.yaml](returns-lookup.openapi.yaml).
 
 ## Quy ước áp dụng
 
@@ -22,8 +22,8 @@ Issue #10 giao DT-01 đến DT-08, nhưng Issue #4 đánh dấu `/returns` **Sau
 
 | UC | HTTP + đường dẫn (bỏ `/api/v1`) | Quyền đề xuất | Thành công | Ghi chú |
 |---|---|---|---|---|
-| DT-01 | `GET /invoices?keyword=...` | TN (`DOI_TRA`) | 200 | Tra hóa đơn gốc bằng mã; tái sử dụng POS |
-| DT-01 | `GET /invoices/{id}` | TN (`DOI_TRA`) | 200 | Lấy dòng và số lượng đã trả |
+| DT-01 | `GET /returns/invoice-lookup?ma=...` | TN (`DOI_TRA`) | 200 | Đúng mã; gồm dòng hàng, số lượng còn trả và điều kiện |
+| DT-01 | `GET /returns/invoice-lookup?soDienThoai=...&page=1&size=20` | TN (`DOI_TRA`) | 200 | Hóa đơn của mọi thu ngân, khớp số điện thoại và còn trong hạn |
 | DT-02 | `POST /returns` | TN (`DOI_TRA`) | 201 | Tạo phiếu trả; Location `/api/v1/returns/{id}` |
 | DT-03 | `POST /returns/{id}/exchange` | TN (`DOI_TRA`) | 200 | Đổi hàng, liên kết hóa đơn mới |
 | DT-04 | `POST /returns/{id}/refund` | TN (`DOI_TRA`) | 200 | Ghi nhận hoàn tiền mặt |
@@ -106,15 +106,17 @@ Chỉ AD; kiểm tra trạng thái `CHO_DUYET` (nếu enum này được ERD DT 
 - Áp dụng hạn đổi trả mặc định 7 ngày; ngoại lệ và ngưỡng phê duyệt 500.000 VND cần xác nhận cách tính với #1/#6.
 - Không hoàn tiền hoặc nhập kho hai lần khi mạng gửi lại; dùng kiểm tra trạng thái + `phienBan`.
 - Khi hoàn tiền, đổi hàng hoặc nhập lại tồn, ghi chứng từ và biến động liên quan trong cùng transaction.
-- DT tái sử dụng `/invoices` của POS; không sao chép dữ liệu khách hàng hay viết API AUTH riêng.
+- DT-01 dùng endpoint riêng `/returns/invoice-lookup` theo BR-DT-08; không nới quyền xem `/invoices` của POS-10/11. Không sao chép dữ liệu khách hàng hay viết API AUTH riêng.
 - Lỗi, cookie phiên, CSRF và phân quyền giống Issue #4; không đưa token vào request body.
 
-## 5. Cần trưởng nhóm xác nhận
+## 5. Đối chiếu bản rà T6-02 ngày 02/11/2026
 
-1. DT-01 đến DT-08 có cần chi tiết ngay tuần 3 hay chỉ bảng do `/returns` là Sau MVP?
-2. Tên bảng/enum DT theo ERD đã hợp nhất; ai có quyền duyệt ngoại lệ?
-3. Thời hạn 7 ngày tính từ ngày mua hay thời điểm thanh toán; ngưỡng 500.000 áp dụng theo phiếu hay hóa đơn?
-4. Cách xử lý hoàn tiền khi hóa đơn đã giảm giá, tích điểm, hoặc đã trả một phần.
-5. Tên tài nguyên `/return-policies` và endpoint in có cần bổ sung vào Issue #4 không?
+1. DT-01 triển khai tuần 6 theo issue #148. DT-02 trở đi là bước tiếp theo, không tạo phiếu hoặc giả lập duyệt trong DT-01.
+2. Chính sách: dòng có `hieu_luc_tu` gần nhất không sau thời điểm tra cứu; hòa thời điểm thì lấy `id` lớn hơn. Không có chính sách hiệu lực trả 409, không tự giả định cấu hình.
+3. Hạn: hết ngày mua cộng N ngày lịch Việt Nam. Mua 10/11 lúc 21:00 với N=7 thì hết hạn sau ngày 17/11. Tra bằng mã vẫn hiện hóa đơn quá hạn để đánh dấu ngoại lệ; tra bằng điện thoại chỉ hiện hóa đơn còn trong hạn.
+4. Số lượng đã trả/đang xử lý gồm phiếu `CHO_DUYET`, `DA_DUYET`, `HOAN_TAT`; bỏ `BI_TU_CHOI`. Giá thực trả đơn vị là `ct_hoa_don.don_gia - giam_don_vi`.
+5. Cờ không đổi trả lấy từ danh mục tại lúc tra cứu. Quá hạn hoặc danh mục cấm là ngoại lệ cần AD duyệt ở DT-06. Hóa đơn đã hủy và dòng hết số lượng không thể bỏ qua bằng cờ ngoại lệ.
+6. DT-01 chỉ đọc dữ liệu, không giữ chỗ hoặc ghi biến động kho/điểm. DT-02/03 phải kiểm tra lại quyền, trạng thái, chính sách và số lượng trong giao tác trước khi tạo phiếu.
+7. Số điện thoại của khách được che trong kết quả trả cho TN theo T6-02 KH3. Mã và điện thoại được so khớp chính xác bằng tham số SQL.
 
-> Theo phản hồi #1 Thăng: toàn bộ DT thuộc **Sau MVP**; chỉ cần bảng endpoint, DTO chi tiết chưa bắt buộc. DT-07 TN/AD là đề xuất phân quyền của #1, chờ thống nhất ma trận.
+> Phạm vi Sau MVP nêu trong tài liệu tuần 3 không thay thế kế hoạch tuần 6 của DT-01. Các quyết định T6-02 và mục C6/B7 trong danh sách thay đổi SRS v1.2 được dùng làm căn cứ; #1 tiếp tục chốt tài liệu SRS chính thức qua review.

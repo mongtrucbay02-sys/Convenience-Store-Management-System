@@ -1,0 +1,18 @@
+@using ConvenienceStore.Web.Modules.Products.DTOs
+@model ProductLifecyclePreview
+@{Layout = "~/Views/Shared/_Layout.cshtml"; var operation = (ProductLifecycleOperation)ViewData["Operation"]!; var command = (ProductLifecycleCommand)ViewData["Command"]!; var label = operation == ProductLifecycleOperation.Delete ? "Xóa sản phẩm" : operation == ProductLifecycleOperation.Discontinue ? "Ngừng kinh doanh" : "Mở bán lại"; ViewData["Title"] = label;}
+<h1>@label: @Model.TenSanPham</h1><p>Tồn hiện tại: @Model.TonKho. Trạng thái: @Model.TrangThai</p>
+<p role="status">Đơn tạm giữ: @Model.DonTamGiu · Phiếu nhập nháp: @Model.PhieuNhapNhap. Các chứng từ đang dở vẫn giữ dữ liệu đã lưu.</p>
+@if(Model.DonTamGiu > 0 || Model.PhieuNhapNhap > 0){<p role="alert">Cảnh báo: sản phẩm có trong đơn tạm giữ hoặc phiếu nhập nháp.</p>}
+@if(Model.DanhMucTrangThai == "DA_AN"){<p role="alert">Danh mục đang ẩn; trạng thái danh mục tiếp tục chi phối bộ lọc POS.</p>}
+@Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
+@if(!Model.CoDuLieuTonKho){<p role="alert">Thiếu dữ liệu tồn kho. Cần đối soát trước khi thay đổi.</p>}
+else if(operation == ProductLifecycleOperation.Delete && (Model.CoThamChieu || Model.TonKho > 0)){<p role="alert">Sản phẩm còn tồn hoặc được tham chiếu. Hãy ngừng kinh doanh thay vì xóa hẳn.</p><a href="/Products/@Model.Id/Discontinue">Ngừng kinh doanh</a>}
+else
+{
+<form method="post" action="/Products/@Model.Id/@operation">@Html.AntiForgeryToken()<input name="PhienBan" type="hidden" value="@command.PhienBan" />
+<label><input name="XacNhan" type="checkbox" value="true" checked="@command.XacNhan" required />Tôi xác nhận thao tác sau khi xem tồn và cảnh báo</label>
+@if(operation == ProductLifecycleOperation.Discontinue && Model.TonKho > 0){<label><input name="XacNhanTonKho" type="checkbox" value="true" checked="@command.XacNhanTonKho" required />Tôi xác nhận thêm việc ngừng kinh doanh khi vẫn còn tồn kho</label>}
+<button type="submit">@label</button></form>
+}
+<a href="/Products/@Model.Id/@operation">Tải lại dữ liệu</a><a href="/Products/@Model.Id">Quay lại</a>

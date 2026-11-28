@@ -1,0 +1,965 @@
+openapi: 3.0.3
+
+info:
+  title: Hệ thống quản lý cửa hàng tiện lợi – Module Xác thực và phân quyền (AUTH)
+  version: 1.0.0
+  description: |
+    Hợp đồng API của module AUTH (AUTH-01 → AUTH-10), viết theo `docs/api/API_CONVENTIONS.md` v1.0
+    và ADR-001. Người sở hữu: #1 Phạm Gia Thăng (AUTH-04: #6 Cao Huyền Trang).
+
+    **Trạng thái:** Đề xuất – chờ nhóm xác nhận (issue T3-05). Khi code xong, Swagger sinh tự động
+    từ controller là bản chính thức; file này phải được cập nhật cho khớp trong cùng PR.
+
+    **Ưu tiên (Bảng MoSCoW 13/10):**
+    - MVP: AUTH-01, 02, 03, 05, 06, 10 (Must); AUTH-08 (Should, được chọn vào MVP)
+    - Tầng 2: AUTH-07, AUTH-09 (Should)
+    - Sau MVP: phần *sửa* hồ sơ của AUTH-04 (Could). `GET /me` vẫn thuộc MVP vì giao diện cần biết ai đang đăng nhập.
+
+    **Xác thực:** cookie phiên HttpOnly (`cs_session`), phiên hết hạn sau 30 phút không thao tác (BR-AUTH-02).
+    Mọi yêu cầu POST/PUT/DELETE (trừ đăng nhập) phải gửi header `X-XSRF-TOKEN` lấy từ cookie `XSRF-TOKEN`.
+
+    **Vai trò:** AD = Admin/Quản lý · TN = Thu ngân · NK = Nhân viên kho.
+  contact:
+    name: Nhóm 7 – INFO2005
+
+servers:
+  - url: /api/v1
+    description: Cùng domain với giao diện (môi trường phát triển và triển khai)
+
+tags:
+  - name: AUTH – Phiên đăng nhập
+    description: Đăng nhập, đăng xuất, đổi mật khẩu (AUTH-01, 02, 03)
+  - name: AUTH – Hồ sơ cá nhân
+    description: Người đang đăng nhập xem và sửa hồ sơ của mình (AUTH-04)
+  - name: AUTH – Quản trị tài khoản
+    description: Admin quản lý tài khoản nhân sự và vai trò (AUTH-05 → AUTH-10)
+
+# Mặc định mọi endpoint cần đăng nhập. Endpoint ghi dữ liệu khai báo thêm xsrfHeader.
+security:
+  - cookieAuth: []
+
+paths:
+
+  # ---------------------------------------------------------------- AUTH-01
+  /auth/login:
+    post:
+      tags: [AUTH – Phiên đăng nhập]
+      operationId: dangNhap
+      summary: AUTH-01 Đăng nhập
+      description: |
+        **Quyền:** Công khai. **Ưu tiên:** Must. **Căn cứ:** AUTH-01; BR-AUTH-01, 02, 11; PA-AUTH-01.A, 02.B, 03.A.
+
+        Thứ tự xử lý ở máy chủ (đề xuất cho vấn đề mở số 8 trong SRS 7.2):
+        1. Thiếu trường → `422 DU_LIEU_KHONG_HOP_LE` (E1).
+        2. Không có tên đăng nhập → `401 SAI_THONG_TIN_DANG_NHAP` (không cho biết sai trường nào).
+        3. Đang khóa tạm (`khoaTamDen` > hiện tại) → `423 TAI_KHOAN_KHOA_TAM` (E3); **không** kiểm tra mật khẩu, **không** tăng bộ đếm.
+        4. Sai mật khẩu → tăng `so_lan_sai`. Chưa đủ 5 lần → `401 SAI_THONG_TIN_DANG_NHAP` (E2).
+           Đủ 5 lần → đặt khóa tạm 15 phút, trả `423 TAI_KHOAN_KHOA_TAM` (BR-AUTH-11).
+        5. Đúng mật khẩu nhưng tài khoản `DA_KHOA` → `423 TAI_KHOAN_BI_KHOA` (E4).
+        6. Thành công: đặt `so_lan_sai = 0`, xóa khóa tạm, ghi `lan_dang_nhap_cuoi`, tạo phiên,
+           đặt cookie `cs_session` và `XSRF-TOKEN`, trả `200`.
+
+        Nếu `batBuocDoiMatKhau = true` (A1), giao diện chuyển ngay sang màn hình đổi mật khẩu;
+        mọi API khác trả `403 PHAI_DOI_MAT_KHAU` cho đến khi đổi xong.
+        Endpoint này **không** yêu cầu header `X-XSRF-TOKEN`.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/YeuCauDangNhap' }
+            example:
+              tenDangNhap: thungan01
+              matKhau: MatKhau123
+      responses:
+        '200':
+          description: Đăng nhập thành công. Máy chủ đặt cookie phiên và cookie chống CSRF.
+          headers:
+            Set-Cookie:
+              description: |
+                `cs_session=<chuỗi ngẫu nhiên>; Path=/; HttpOnly; Secure; SameSite=Strict` và
+                `XSRF-TOKEN=<chuỗi>; Path=/; Secure; SameSite=Strict` (không HttpOnly để giao diện đọc được).
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/KetQuaDangNhap' }
+              example:
+                nguoiDung:
+                  id: 2
+                  tenDangNhap: thungan01
+                  hoTen: Nguyễn Văn An
+                  vaiTro: { ma: TN, ten: Thu ngân }
+                  quyen: [TAI_KHOAN_CA_NHAN, SAN_PHAM_XEM, TON_KHO_XEM, BAN_HANG, HOA_DON_XEM_CUA_MINH, KHACH_HANG_QUAN_LY, KHUYEN_MAI_XEM, DOI_TRA]
+                batBuocDoiMatKhau: false
+                manHinhChinh: POS
+        '401':
+          description: Sai tên đăng nhập hoặc mật khẩu (E2).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Loi' }
+              example:
+                code: SAI_THONG_TIN_DANG_NHAP
+                message: Tên đăng nhập hoặc mật khẩu không đúng.
+                details: null
+                traceId: 0HN7F2K8V3Q1A:00000001
+        '422': { $ref: '#/components/responses/DuLieuKhongHopLe' }
+        '423':
+          description: Tài khoản đang khóa tạm (E3, hoặc vừa sai lần thứ 5) hoặc bị Admin khóa (E4).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Loi' }
+              examples:
+                khoaTam:
+                  summary: Khóa tạm do sai mật khẩu nhiều lần
+                  value:
+                    code: TAI_KHOAN_KHOA_TAM
+                    message: Tài khoản tạm khóa, vui lòng thử lại sau 12 phút.
+                    details: { conLaiPhut: 12, khoaTamDen: '2026-10-16T09:15:00+07:00' }
+                    traceId: 0HN7F2K8V3Q1A:00000002
+                adminKhoa:
+                  summary: Bị Admin khóa
+                  value:
+                    code: TAI_KHOAN_BI_KHOA
+                    message: Tài khoản đã bị khóa, vui lòng liên hệ quản lý.
+                    details: null
+                    traceId: 0HN7F2K8V3Q1A:00000003
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+
+  # ---------------------------------------------------------------- AUTH-02
+  /auth/logout:
+    post:
+      tags: [AUTH – Phiên đăng nhập]
+      operationId: dangXuat
+      summary: AUTH-02 Đăng xuất
+      description: |
+        **Quyền:** AD, TN, NK. **Ưu tiên:** Must. **Căn cứ:** AUTH-02; BR-AUTH-02.
+
+        Hủy phiên ở máy chủ (điền `huy_luc`), xóa cookie `cs_session` và `XSRF-TOKEN`.
+        Luồng A1 (thu ngân còn đơn đang bán) do giao diện hỏi xác nhận và gọi API hủy đơn của POS (POS-09)
+        **trước** khi gọi endpoint này.
+        Được phép gọi cả khi đang bị bắt buộc đổi mật khẩu.
+      security:
+        - cookieAuth: []
+          xsrfHeader: []
+      responses:
+        '204':
+          description: Đã đăng xuất.
+          headers:
+            Set-Cookie:
+              description: Xóa cookie `cs_session` và `XSRF-TOKEN` (Max-Age=0).
+              schema: { type: string }
+        '401': { $ref: '#/components/responses/ChuaDangNhap' }
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+
+  # ---------------------------------------------------------------- AUTH-03
+  /auth/change-password:
+    post:
+      tags: [AUTH – Phiên đăng nhập]
+      operationId: doiMatKhau
+      summary: AUTH-03 Đổi mật khẩu
+      description: |
+        **Quyền:** AD, TN, NK. **Ưu tiên:** Must. **Căn cứ:** AUTH-03; BR-AUTH-01, 04.
+
+        - Bình thường: bắt buộc gửi `matKhauHienTai`.
+        - Đang bị bắt buộc đổi mật khẩu (A1): được bỏ trống `matKhauHienTai` (gửi `null`).
+        - Mật khẩu mới: ≥ 8 ký tự, có ít nhất một chữ cái và một chữ số, khác mật khẩu hiện tại (BR-AUTH-04).
+        - Thành công: lưu mật khẩu đã băm, đặt `bat_buoc_doi_mk = false`, giữ phiên hiện tại.
+      security:
+        - cookieAuth: []
+          xsrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/YeuCauDoiMatKhau' }
+            example:
+              matKhauHienTai: MatKhau123
+              matKhauMoi: MatKhauMoi456
+              nhapLaiMatKhauMoi: MatKhauMoi456
+      responses:
+        '204':
+          description: Đổi mật khẩu thành công.
+        '401': { $ref: '#/components/responses/ChuaDangNhap' }
+        '422':
+          description: |
+            Mật khẩu hiện tại sai (E1, mã `SAI_MAT_KHAU_HIEN_TAI`), hoặc mật khẩu mới không đạt chính sách,
+            trùng mật khẩu cũ (E2), hai lần nhập không khớp (E3) – mã `DU_LIEU_KHONG_HOP_LE` kèm lỗi theo trường.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Loi' }
+              examples:
+                saiMatKhauHienTai:
+                  value:
+                    code: SAI_MAT_KHAU_HIEN_TAI
+                    message: Mật khẩu hiện tại không đúng.
+                    details: [{ truong: matKhauHienTai, loi: Mật khẩu hiện tại không đúng. }]
+                    traceId: 0HN7F2K8V3Q1A:00000004
+                chinhSach:
+                  value:
+                    code: DU_LIEU_KHONG_HOP_LE
+                    message: Dữ liệu chưa hợp lệ, vui lòng kiểm tra lại.
+                    details:
+                      - { truong: matKhauMoi, loi: Mật khẩu tối thiểu 8 ký tự, có ít nhất một chữ cái và một chữ số. }
+                      - { truong: nhapLaiMatKhauMoi, loi: Hai lần nhập mật khẩu mới không khớp. }
+                    traceId: 0HN7F2K8V3Q1A:00000005
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+
+  # ---------------------------------------------------------------- AUTH-04
+  /me:
+    get:
+      tags: [AUTH – Hồ sơ cá nhân]
+      operationId: xemHoSoCaNhan
+      summary: AUTH-04 Xem hồ sơ cá nhân (người đang đăng nhập)
+      description: |
+        **Quyền:** AD, TN, NK. **Ưu tiên:** MVP (giao diện gọi khi tải trang để biết ai đang đăng nhập,
+        vai trò, danh sách quyền để hiển thị menu). **Căn cứ:** AUTH-04 bước 2.
+
+        Người dùng lấy từ phiên; không nhận `id` từ giao diện. Được phép gọi cả khi đang bị bắt buộc đổi mật khẩu.
+      responses:
+        '200':
+          description: Hồ sơ của người đang đăng nhập.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HoSoCaNhan' }
+        '401': { $ref: '#/components/responses/ChuaDangNhap' }
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+    put:
+      tags: [AUTH – Hồ sơ cá nhân]
+      operationId: capNhatHoSoCaNhan
+      summary: AUTH-04 Cập nhật hồ sơ cá nhân
+      description: |
+        **Quyền:** AD, TN, NK. **Ưu tiên:** Could – Sau MVP (#6). **Căn cứ:** AUTH-04; BR-AUTH-05; PA-AUTH-05.A.
+
+        Chỉ sửa được họ tên, số điện thoại, email. Tên đăng nhập và vai trò không tự đổi được (BR-AUTH-05).
+      security:
+        - cookieAuth: []
+          xsrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/YeuCauCapNhatHoSo' }
+      responses:
+        '200':
+          description: Hồ sơ sau khi cập nhật.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HoSoCaNhan' }
+        '401': { $ref: '#/components/responses/ChuaDangNhap' }
+        '403': { $ref: '#/components/responses/KhongDuQuyen' }
+        '409': { $ref: '#/components/responses/XungDotHoacTrung' }
+        '422': { $ref: '#/components/responses/DuLieuKhongHopLe' }
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+
+  # ---------------------------------------------------------------- AUTH-05, AUTH-06
+  /accounts:
+    get:
+      tags: [AUTH – Quản trị tài khoản]
+      operationId: xemDanhSachTaiKhoan
+      summary: AUTH-05 Xem danh sách tài khoản
+      description: |
+        **Quyền:** AD. **Ưu tiên:** Must. **Căn cứ:** AUTH-05.
+
+        Tìm theo tên đăng nhập hoặc họ tên (`keyword`), lọc theo vai trò, trạng thái. Có phân trang.
+        Kết quả rỗng vẫn trả `200` với `items = []` (E1 do giao diện hiển thị).
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+        - name: keyword
+          in: query
+          description: Tìm trong tên đăng nhập và họ tên, không phân biệt hoa thường và dấu.
+          schema: { type: string, maxLength: 100 }
+        - name: vaiTro
+          in: query
+          schema: { $ref: '#/components/schemas/MaVaiTro' }
+        - name: trangThai
+          in: query
+          schema: { $ref: '#/components/schemas/TrangThaiTaiKhoan' }
+        - name: sort
+          in: query
+          description: |
+            Sắp xếp. Cho phép: `tenDangNhap`, `hoTen`, `lanDangNhapCuoi`, `ngayTao`; thêm `-` để giảm dần.
+            Mặc định `tenDangNhap`.
+          schema: { type: string, example: '-lanDangNhapCuoi' }
+      responses:
+        '200':
+          description: Danh sách tài khoản.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TrangTaiKhoan' }
+        '401': { $ref: '#/components/responses/ChuaDangNhap' }
+        '403': { $ref: '#/components/responses/KhongDuQuyen' }
+        '422': { $ref: '#/components/responses/DuLieuKhongHopLe' }
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+    post:
+      tags: [AUTH – Quản trị tài khoản]
+      operationId: taoTaiKhoan
+      summary: AUTH-06 Tạo tài khoản (gồm AUTH-10 Gán vai trò)
+      description: |
+        **Quyền:** AD. **Ưu tiên:** Must. **Căn cứ:** AUTH-06 «include» AUTH-10; BR-AUTH-01, 04, 06, 07.
+
+        Tài khoản mới ở trạng thái `HOAT_DONG`, `batBuocDoiMatKhau = true`.
+        Tên đăng nhập duy nhất, không phân biệt hoa thường, không đổi sau khi tạo (BR-AUTH-06).
+      security:
+        - cookieAuth: []
+          xsrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/YeuCauTaoTaiKhoan' }
+            example:
+              tenDangNhap: thungan02
+              hoTen: Trần Thị Bình
+              soDienThoai: '0912345678'
+              email: null
+              matKhauTam: TamThoi2026
+              vaiTro: TN
+      responses:
+        '201':
+          description: Đã tạo tài khoản.
+          headers:
+            Location:
+              description: Đường dẫn tới tài khoản vừa tạo, ví dụ `/api/v1/accounts/7`.
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaiKhoan' }
+        '401': { $ref: '#/components/responses/ChuaDangNhap' }
+        '403': { $ref: '#/components/responses/KhongDuQuyen' }
+        '409':
+          description: Tên đăng nhập đã tồn tại (E1, `TRUNG_TEN_DANG_NHAP`) hoặc số điện thoại, email trùng tài khoản khác (`TRUNG_DU_LIEU`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Loi' }
+              example:
+                code: TRUNG_TEN_DANG_NHAP
+                message: Tên đăng nhập đã tồn tại.
+                details: [{ truong: tenDangNhap, loi: Tên đăng nhập đã tồn tại. }]
+                traceId: 0HN7F2K8V3Q1A:00000006
+        '422': { $ref: '#/components/responses/DuLieuKhongHopLe' }
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+
+  # ---------------------------------------------------------------- AUTH-07
+  /accounts/{id}:
+    parameters:
+      - $ref: '#/components/parameters/idTaiKhoan'
+    get:
+      tags: [AUTH – Quản trị tài khoản]
+      operationId: xemTaiKhoan
+      summary: Xem một tài khoản (dùng cho AUTH-07, AUTH-08, AUTH-09, AUTH-10)
+      description: '**Quyền:** AD. Lấy dữ liệu hiện tại để hiển thị biểu mẫu sửa (AUTH-07 bước 2).'
+      responses:
+        '200':
+          description: Tài khoản.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaiKhoan' }
+        '401': { $ref: '#/components/responses/ChuaDangNhap' }
+        '403': { $ref: '#/components/responses/KhongDuQuyen' }
+        '404': { $ref: '#/components/responses/KhongTimThay' }
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+    put:
+      tags: [AUTH – Quản trị tài khoản]
+      operationId: suaTaiKhoan
+      summary: AUTH-07 Sửa thông tin tài khoản
+      description: |
+        **Quyền:** AD. **Ưu tiên:** Should – tầng 2. **Căn cứ:** AUTH-07.
+
+        Sửa họ tên, số điện thoại, email. **Đổi vai trò dùng `PUT /accounts/{id}/role` (AUTH-10)**, để quy tắc
+        "còn ít nhất một Admin" (BR-AUTH-08) chỉ kiểm tra ở một nơi. Gửi kèm `phienBan` để phát hiện sửa đồng thời.
+      security:
+        - cookieAuth: []
+          xsrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/YeuCauSuaTaiKhoan' }
+      responses:
+        '200':
+          description: Tài khoản sau khi sửa.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaiKhoan' }
+        '401': { $ref: '#/components/responses/ChuaDangNhap' }
+        '403': { $ref: '#/components/responses/KhongDuQuyen' }
+        '404': { $ref: '#/components/responses/KhongTimThay' }
+        '409': { $ref: '#/components/responses/XungDotHoacTrung' }
+        '422': { $ref: '#/components/responses/DuLieuKhongHopLe' }
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+
+  # ---------------------------------------------------------------- AUTH-08
+  /accounts/{id}/lock:
+    parameters:
+      - $ref: '#/components/parameters/idTaiKhoan'
+    post:
+      tags: [AUTH – Quản trị tài khoản]
+      operationId: khoaTaiKhoan
+      summary: AUTH-08 Khóa tài khoản
+      description: |
+        **Quyền:** AD. **Ưu tiên:** Should – MVP. **Căn cứ:** AUTH-08; BR-AUTH-08, 09.
+
+        Đặt `trangThai = DA_KHOA`, lưu `lyDoKhoa`, hủy mọi phiên đang mở của tài khoản đó.
+        Từ chối khi Admin tự khóa mình (`KHONG_THAO_TAC_CHINH_MINH`) hoặc khóa Admin hoạt động cuối cùng
+        (`MAT_ADMIN_CUOI_CUNG`) – E1. Tài khoản đã khóa rồi → `DA_DUOC_XU_LY`.
+      security:
+        - cookieAuth: []
+          xsrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/YeuCauKhoaTaiKhoan' }
+            example:
+              lyDo: Nhân viên nghỉ việc từ 15/10/2026
+      responses:
+        '200':
+          description: Tài khoản sau khi khóa.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaiKhoan' }
+        '401': { $ref: '#/components/responses/ChuaDangNhap' }
+        '403': { $ref: '#/components/responses/KhongDuQuyen' }
+        '404': { $ref: '#/components/responses/KhongTimThay' }
+        '409':
+          description: '`KHONG_THAO_TAC_CHINH_MINH`, `MAT_ADMIN_CUOI_CUNG` hoặc `DA_DUOC_XU_LY`.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Loi' }
+              example:
+                code: MAT_ADMIN_CUOI_CUNG
+                message: Không thể khóa vì hệ thống phải còn ít nhất một Admin đang hoạt động.
+                details: null
+                traceId: 0HN7F2K8V3Q1A:00000007
+        '422': { $ref: '#/components/responses/DuLieuKhongHopLe' }
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+
+  /accounts/{id}/unlock:
+    parameters:
+      - $ref: '#/components/parameters/idTaiKhoan'
+    post:
+      tags: [AUTH – Quản trị tài khoản]
+      operationId: moKhoaTaiKhoan
+      summary: AUTH-08 Mở khóa tài khoản
+      description: |
+        **Quyền:** AD. **Ưu tiên:** Should – MVP. **Căn cứ:** AUTH-08, A1; BR-AUTH-11; PA-AUTH-02.B.
+
+        Mở cả hai loại khóa: Admin khóa (`DA_KHOA` → `HOAT_DONG`, xóa `lyDoKhoa`) và khóa tạm do sai mật khẩu
+        (xóa `khoaTamDen`). Luôn đặt bộ đếm sai về 0. Tài khoản không bị khóa loại nào → `409 DA_DUOC_XU_LY`.
+      security:
+        - cookieAuth: []
+          xsrfHeader: []
+      responses:
+        '200':
+          description: Tài khoản sau khi mở khóa.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaiKhoan' }
+        '401': { $ref: '#/components/responses/ChuaDangNhap' }
+        '403': { $ref: '#/components/responses/KhongDuQuyen' }
+        '404': { $ref: '#/components/responses/KhongTimThay' }
+        '409': { $ref: '#/components/responses/XungDotHoacTrung' }
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+
+  # ---------------------------------------------------------------- AUTH-09
+  /accounts/{id}/reset-password:
+    parameters:
+      - $ref: '#/components/parameters/idTaiKhoan'
+    post:
+      tags: [AUTH – Quản trị tài khoản]
+      operationId: datLaiMatKhau
+      summary: AUTH-09 Đặt lại mật khẩu cho người dùng
+      description: |
+        **Quyền:** AD. **Ưu tiên:** Should – tầng 2. **Căn cứ:** AUTH-09; BR-AUTH-04; PA-AUTH-03.A.
+
+        `matKhauTam = null` → máy chủ tự sinh mật khẩu ngẫu nhiên đạt BR-AUTH-04.
+        Lưu bản băm, đặt `batBuocDoiMatKhau = true`, hủy mọi phiên cũ của tài khoản.
+        Mật khẩu tạm **chỉ trả về một lần** trong phản hồi này; máy chủ không lưu bản rõ, không ghi vào log.
+        Tài khoản đang bị Admin khóa → `409 TAI_KHOAN_DANG_KHOA` (E1).
+      security:
+        - cookieAuth: []
+          xsrfHeader: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/YeuCauDatLaiMatKhau' }
+      responses:
+        '200':
+          description: Đã đặt lại; trả mật khẩu tạm để Admin bàn giao.
+          headers:
+            Cache-Control:
+              description: '`no-store` – không cho trình duyệt hay proxy lưu phản hồi chứa mật khẩu.'
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/KetQuaDatLaiMatKhau' }
+              example:
+                taiKhoanId: 7
+                tenDangNhap: thungan02
+                matKhauTam: Kx7mP2qa
+        '401': { $ref: '#/components/responses/ChuaDangNhap' }
+        '403': { $ref: '#/components/responses/KhongDuQuyen' }
+        '404': { $ref: '#/components/responses/KhongTimThay' }
+        '409':
+          description: Tài khoản đang bị khóa, cần mở khóa trước (E1).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Loi' }
+              example:
+                code: TAI_KHOAN_DANG_KHOA
+                message: Tài khoản đang bị khóa, vui lòng mở khóa trước khi đặt lại mật khẩu.
+                details: null
+                traceId: 0HN7F2K8V3Q1A:00000008
+        '422': { $ref: '#/components/responses/DuLieuKhongHopLe' }
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+
+  # ---------------------------------------------------------------- AUTH-10
+  /accounts/{id}/role:
+    parameters:
+      - $ref: '#/components/parameters/idTaiKhoan'
+    put:
+      tags: [AUTH – Quản trị tài khoản]
+      operationId: ganVaiTro
+      summary: AUTH-10 Gán vai trò
+      description: |
+        **Quyền:** AD. **Ưu tiên:** Must. **Căn cứ:** AUTH-10; BR-AUTH-03, 07, 08, 10; PA-AUTH-04.A.
+
+        Mỗi tài khoản đúng một vai trò. Quyền mới có hiệu lực từ yêu cầu kế tiếp của tài khoản đó
+        (máy chủ đọc vai trò từ CSDL theo phiên ở mỗi yêu cầu, nên không cần hủy phiên).
+        Từ chối nếu làm hệ thống không còn Admin hoạt động (`MAT_ADMIN_CUOI_CUNG`, E1). Gán đúng vai trò
+        hiện có → `200`, không thay đổi gì.
+      security:
+        - cookieAuth: []
+          xsrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/YeuCauGanVaiTro' }
+            example:
+              vaiTro: NK
+      responses:
+        '200':
+          description: Tài khoản sau khi đổi vai trò.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaiKhoan' }
+        '401': { $ref: '#/components/responses/ChuaDangNhap' }
+        '403': { $ref: '#/components/responses/KhongDuQuyen' }
+        '404': { $ref: '#/components/responses/KhongTimThay' }
+        '409': { $ref: '#/components/responses/XungDotHoacTrung' }
+        '422': { $ref: '#/components/responses/DuLieuKhongHopLe' }
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+
+  /roles:
+    get:
+      tags: [AUTH – Quản trị tài khoản]
+      operationId: xemDanhSachVaiTro
+      summary: AUTH-10 Xem vai trò và quyền cài sẵn
+      description: |
+        **Quyền:** AD. **Ưu tiên:** Must. **Căn cứ:** AUTH-10 bước 2; PA-AUTH-04.A; Đặc tả mục 13.
+
+        Chỉ đọc: 3 vai trò cố định và danh sách quyền của từng vai trò. Không có API thêm, sửa, xóa vai trò.
+      responses:
+        '200':
+          description: Danh sách vai trò.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DanhSachVaiTro' }
+        '401': { $ref: '#/components/responses/ChuaDangNhap' }
+        '403': { $ref: '#/components/responses/KhongDuQuyen' }
+        '500': { $ref: '#/components/responses/LoiMayChu' }
+
+components:
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: cs_session
+      description: Cookie phiên HttpOnly do `POST /auth/login` đặt. Hết hạn sau 30 phút không thao tác.
+    xsrfHeader:
+      type: apiKey
+      in: header
+      name: X-XSRF-TOKEN
+      description: Giá trị lấy từ cookie `XSRF-TOKEN`. Bắt buộc với POST/PUT/DELETE (trừ đăng nhập).
+
+  parameters:
+    page:
+      name: page
+      in: query
+      description: Số trang, bắt đầu từ 1.
+      schema: { type: integer, minimum: 1, default: 1 }
+    size:
+      name: size
+      in: query
+      description: Số bản ghi mỗi trang; lớn hơn 100 thì máy chủ tự hạ xuống 100.
+      schema: { type: integer, minimum: 1, default: 20 }
+    idTaiKhoan:
+      name: id
+      in: path
+      required: true
+      description: Mã định danh tài khoản.
+      schema: { type: integer, format: int64, minimum: 1 }
+
+  responses:
+    ChuaDangNhap:
+      description: Chưa đăng nhập (`CHUA_DANG_NHAP`) hoặc phiên đã hết hạn sau 30 phút không thao tác (`HET_PHIEN`).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Loi' }
+          example:
+            code: HET_PHIEN
+            message: Phiên làm việc đã hết hạn, vui lòng đăng nhập lại.
+            details: null
+            traceId: 0HN7F2K8V3Q1A:00000010
+    KhongDuQuyen:
+      description: |
+        Vai trò không có quyền (`KHONG_DU_QUYEN`), hoặc tài khoản đang bị bắt buộc đổi mật khẩu (`PHAI_DOI_MAT_KHAU`).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Loi' }
+          example:
+            code: KHONG_DU_QUYEN
+            message: Bạn không có quyền thực hiện thao tác này.
+            details: null
+            traceId: 0HN7F2K8V3Q1A:00000011
+    KhongTimThay:
+      description: Không có tài khoản với `id` đã cho (`KHONG_TIM_THAY`).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Loi' }
+          example:
+            code: KHONG_TIM_THAY
+            message: Không tìm thấy tài khoản.
+            details: null
+            traceId: 0HN7F2K8V3Q1A:00000012
+    XungDotHoacTrung:
+      description: |
+        Xung đột với trạng thái hiện tại. Mã có thể gặp ở module AUTH:
+        `TRUNG_DU_LIEU` (số điện thoại, email trùng), `XUNG_DOT_DU_LIEU` (`phienBan` không khớp),
+        `MAT_ADMIN_CUOI_CUNG`, `KHONG_THAO_TAC_CHINH_MINH`, `DA_DUOC_XU_LY`.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Loi' }
+          example:
+            code: XUNG_DOT_DU_LIEU
+            message: Dữ liệu đã được người khác thay đổi, vui lòng tải lại.
+            details: null
+            traceId: 0HN7F2K8V3Q1A:00000013
+    DuLieuKhongHopLe:
+      description: Dữ liệu vi phạm quy tắc (`DU_LIEU_KHONG_HOP_LE`), kèm danh sách lỗi theo trường.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Loi' }
+          example:
+            code: DU_LIEU_KHONG_HOP_LE
+            message: Dữ liệu chưa hợp lệ, vui lòng kiểm tra lại.
+            details: [{ truong: tenDangNhap, loi: Vui lòng nhập đầy đủ thông tin. }]
+            traceId: 0HN7F2K8V3Q1A:00000014
+    LoiMayChu:
+      description: Lỗi không lường trước hoặc lỗi CSDL (`LOI_MAY_CHU`). Không lộ chi tiết lỗi gốc.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Loi' }
+          example:
+            code: LOI_MAY_CHU
+            message: Hệ thống đang gặp sự cố, vui lòng thử lại sau.
+            details: null
+            traceId: 0HN7F2K8V3Q1A:00000015
+
+  schemas:
+
+    # ---------- Giá trị liệt kê
+    MaVaiTro:
+      type: string
+      description: AD = Admin/Quản lý, TN = Thu ngân, NK = Nhân viên kho (bảng `vai_tro.ma`).
+      enum: [AD, TN, NK]
+    TrangThaiTaiKhoan:
+      type: string
+      description: |
+        `HOAT_DONG` hoặc `DA_KHOA` (Admin khóa, AUTH-08). Khóa tạm do sai mật khẩu **không** đổi trạng thái
+        mà thể hiện qua `khoaTamDen`.
+      enum: [HOAT_DONG, DA_KHOA]
+    ManHinhChinh:
+      type: string
+      description: Màn hình giao diện mở sau khi đăng nhập (AUTH-01 hậu điều kiện). AD → DASHBOARD, TN → POS, NK → KHO.
+      enum: [DASHBOARD, POS, KHO]
+    MaQuyen:
+      type: string
+      description: |
+        Mã quyền cài sẵn theo ma trận mục 13 Đặc tả (PA-AUTH-04.A). Máy chủ kiểm tra theo **mã quyền**,
+        không theo tên vai trò. Ý nghĩa từng mã: xem `docs/api/auth-giai-thich.md` mục 5.4.
+      enum:
+        - TAI_KHOAN_CA_NHAN
+        - QUAN_TRI_TAI_KHOAN
+        - SAN_PHAM_XEM
+        - SAN_PHAM_SUA
+        - SAN_PHAM_GIA_DANH_MUC
+        - TON_KHO_XEM
+        - THE_KHO_CANH_BAO_XEM
+        - NGUONG_TON_SUA
+        - KIEM_KE_XUAT_HUY_LAP
+        - KIEM_KE_XUAT_HUY_DUYET
+        - NHA_CUNG_CAP_QUAN_LY
+        - NHA_CUNG_CAP_NGUNG
+        - PHIEU_NHAP_LAP
+        - PHIEU_NHAP_XAC_NHAN
+        - PHIEU_NHAP_XEM
+        - NHAP_HANG_LICH_SU_NCC
+        - BAN_HANG
+        - HOA_DON_XEM_TAT_CA
+        - HOA_DON_XEM_CUA_MINH
+        - HOA_DON_HUY
+        - BAO_CAO_XEM
+        - KHACH_HANG_QUAN_LY
+        - KHACH_HANG_QUAN_TRI
+        - KHUYEN_MAI_XEM
+        - KHUYEN_MAI_QUAN_LY
+        - DOI_TRA
+        - DOI_TRA_DUYET_CAU_HINH
+
+    # ---------- Lỗi
+    Loi:
+      type: object
+      description: Dạng lỗi chung của toàn hệ thống (API_CONVENTIONS mục 8.1).
+      required: [code, message, details, traceId]
+      properties:
+        code:
+          type: string
+          description: Mã lỗi cố định, giao diện dựa vào đây để xử lý.
+          example: DU_LIEU_KHONG_HOP_LE
+        message:
+          type: string
+          description: Câu tiếng Việt hiển thị được ngay cho người dùng.
+        details:
+          nullable: true
+          description: Lỗi theo trường (mảng `LoiTruong`) hoặc dữ liệu riêng của lỗi (đối tượng); `null` nếu không có.
+          oneOf:
+            - type: array
+              items: { $ref: '#/components/schemas/LoiTruong' }
+            - type: object
+              additionalProperties: true
+        traceId:
+          type: string
+          description: Mã truy vết để tìm trong log máy chủ.
+    LoiTruong:
+      type: object
+      required: [truong, loi]
+      properties:
+        truong: { type: string, description: Tên trường JSON bị lỗi., example: matKhauMoi }
+        loi: { type: string, description: Câu mô tả lỗi hiển thị dưới ô nhập. }
+
+    # ---------- Đối tượng dùng chung
+    VaiTroTomTat:
+      type: object
+      required: [ma, ten]
+      properties:
+        ma: { $ref: '#/components/schemas/MaVaiTro' }
+        ten: { type: string, example: Thu ngân }
+    NguoiDungDangNhap:
+      type: object
+      description: Thông tin tối thiểu về người đang đăng nhập, dùng để hiển thị tên và dựng menu.
+      required: [id, tenDangNhap, hoTen, vaiTro, quyen]
+      properties:
+        id: { type: integer, format: int64 }
+        tenDangNhap: { type: string }
+        hoTen: { type: string }
+        vaiTro: { $ref: '#/components/schemas/VaiTroTomTat' }
+        quyen:
+          type: array
+          description: Danh sách mã quyền của vai trò; giao diện dùng để ẩn/hiện menu (máy chủ vẫn kiểm tra lại).
+          items: { $ref: '#/components/schemas/MaQuyen' }
+
+    # ---------- AUTH-01
+    YeuCauDangNhap:
+      type: object
+      required: [tenDangNhap, matKhau]
+      properties:
+        tenDangNhap: { type: string, minLength: 1, maxLength: 50 }
+        matKhau: { type: string, format: password, minLength: 1, maxLength: 128 }
+    KetQuaDangNhap:
+      type: object
+      required: [nguoiDung, batBuocDoiMatKhau, manHinhChinh]
+      properties:
+        nguoiDung: { $ref: '#/components/schemas/NguoiDungDangNhap' }
+        batBuocDoiMatKhau:
+          type: boolean
+          description: true → giao diện chuyển ngay sang đổi mật khẩu (AUTH-01 A1).
+        manHinhChinh: { $ref: '#/components/schemas/ManHinhChinh' }
+
+    # ---------- AUTH-03
+    YeuCauDoiMatKhau:
+      type: object
+      required: [matKhauHienTai, matKhauMoi, nhapLaiMatKhauMoi]
+      properties:
+        matKhauHienTai:
+          type: string
+          format: password
+          nullable: true
+          maxLength: 128
+          description: Bắt buộc, trừ khi đang bị bắt buộc đổi mật khẩu (AUTH-03 A1) thì gửi `null`.
+        matKhauMoi:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          pattern: '^(?=.*[A-Za-z])(?=.*\d).{8,128}$'
+          description: BR-AUTH-04 – tối thiểu 8 ký tự, có chữ cái và chữ số, khác mật khẩu hiện tại.
+        nhapLaiMatKhauMoi:
+          type: string
+          format: password
+          maxLength: 128
+
+    # ---------- AUTH-04
+    HoSoCaNhan:
+      type: object
+      required: [id, tenDangNhap, hoTen, vaiTro, quyen, soDienThoai, email, ngayTao, batBuocDoiMatKhau, phienBan]
+      properties:
+        id: { type: integer, format: int64 }
+        tenDangNhap: { type: string }
+        hoTen: { type: string }
+        vaiTro: { $ref: '#/components/schemas/VaiTroTomTat' }
+        quyen:
+          type: array
+          items: { $ref: '#/components/schemas/MaQuyen' }
+        soDienThoai: { type: string, nullable: true }
+        email: { type: string, format: email, nullable: true }
+        ngayTao: { type: string, format: date-time, example: '2026-10-01T08:00:00+07:00' }
+        batBuocDoiMatKhau: { type: boolean }
+        phienBan: { type: integer, description: Dùng khi gửi `PUT /me`. }
+    YeuCauCapNhatHoSo:
+      type: object
+      required: [hoTen, soDienThoai, email, phienBan]
+      properties:
+        hoTen: { type: string, minLength: 1, maxLength: 100 }
+        soDienThoai: { $ref: '#/components/schemas/SoDienThoai' }
+        email: { type: string, format: email, maxLength: 100, nullable: true }
+        phienBan: { type: integer }
+
+    # ---------- AUTH-05 → AUTH-09
+    SoDienThoai:
+      type: string
+      nullable: true
+      description: Số điện thoại Việt Nam 10 chữ số, bắt đầu bằng 0 (đề xuất, chờ nhóm chốt).
+      pattern: '^0\d{9}$'
+      example: '0912345678'
+    TaiKhoan:
+      type: object
+      description: Tài khoản như Admin thấy (bảng `tai_khoan`). Không bao giờ có trường mật khẩu.
+      required: [id, tenDangNhap, hoTen, soDienThoai, email, vaiTro, trangThai, lyDoKhoa, khoaTamDen,
+                 batBuocDoiMatKhau, lanDangNhapCuoi, ngayTao, ngayCapNhat, phienBan]
+      properties:
+        id: { type: integer, format: int64, example: 7 }
+        tenDangNhap: { type: string, example: thungan02 }
+        hoTen: { type: string, example: Trần Thị Bình }
+        soDienThoai: { type: string, nullable: true, example: '0912345678' }
+        email: { type: string, format: email, nullable: true }
+        vaiTro: { $ref: '#/components/schemas/VaiTroTomTat' }
+        trangThai: { $ref: '#/components/schemas/TrangThaiTaiKhoan' }
+        lyDoKhoa: { type: string, nullable: true, description: Có giá trị khi `trangThai = DA_KHOA`. }
+        khoaTamDen:
+          type: string
+          format: date-time
+          nullable: true
+          description: Còn giá trị và lớn hơn hiện tại nghĩa là đang khóa tạm do sai mật khẩu.
+        batBuocDoiMatKhau: { type: boolean }
+        lanDangNhapCuoi: { type: string, format: date-time, nullable: true }
+        ngayTao: { type: string, format: date-time }
+        ngayCapNhat: { type: string, format: date-time }
+        phienBan: { type: integer, example: 1 }
+    TrangTaiKhoan:
+      type: object
+      required: [items, total, page, size]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/TaiKhoan' }
+        total: { type: integer, description: Tổng số tài khoản khớp bộ lọc. }
+        page: { type: integer }
+        size: { type: integer }
+    YeuCauTaoTaiKhoan:
+      type: object
+      required: [tenDangNhap, hoTen, matKhauTam, vaiTro]
+      properties:
+        tenDangNhap:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: '^[A-Za-z0-9._]{3,50}$'
+          description: Chữ không dấu, số, dấu chấm, gạch dưới (đề xuất). Không phân biệt hoa thường; không đổi sau khi tạo.
+        hoTen: { type: string, minLength: 1, maxLength: 100 }
+        soDienThoai: { $ref: '#/components/schemas/SoDienThoai' }
+        email: { type: string, format: email, maxLength: 100, nullable: true }
+        matKhauTam:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          pattern: '^(?=.*[A-Za-z])(?=.*\d).{8,128}$'
+        vaiTro: { $ref: '#/components/schemas/MaVaiTro' }
+    YeuCauSuaTaiKhoan:
+      type: object
+      required: [hoTen, soDienThoai, email, phienBan]
+      properties:
+        hoTen: { type: string, minLength: 1, maxLength: 100 }
+        soDienThoai: { $ref: '#/components/schemas/SoDienThoai' }
+        email: { type: string, format: email, maxLength: 100, nullable: true }
+        phienBan: { type: integer }
+    YeuCauKhoaTaiKhoan:
+      type: object
+      required: [lyDo]
+      properties:
+        lyDo:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Bắt buộc khi khóa (AUTH-08 bước 2).
+    YeuCauDatLaiMatKhau:
+      type: object
+      properties:
+        matKhauTam:
+          type: string
+          format: password
+          nullable: true
+          minLength: 8
+          maxLength: 128
+          pattern: '^(?=.*[A-Za-z])(?=.*\d).{8,128}$'
+          description: Bỏ trống hoặc `null` thì máy chủ tự sinh (AUTH-09 bước 2).
+    KetQuaDatLaiMatKhau:
+      type: object
+      required: [taiKhoanId, tenDangNhap, matKhauTam]
+      properties:
+        taiKhoanId: { type: integer, format: int64 }
+        tenDangNhap: { type: string }
+        matKhauTam:
+          type: string
+          description: Hiển thị một lần duy nhất cho Admin; giao diện không lưu lại.
+
+    # ---------- AUTH-10
+    YeuCauGanVaiTro:
+      type: object
+      required: [vaiTro]
+      properties:
+        vaiTro: { $ref: '#/components/schemas/MaVaiTro' }
+    VaiTro:
+      type: object
+      required: [ma, ten, quyen]
+      properties:
+        ma: { $ref: '#/components/schemas/MaVaiTro' }
+        ten: { type: string }
+        quyen:
+          type: array
+          items: { $ref: '#/components/schemas/MaQuyen' }
+    DanhSachVaiTro:
+      type: object
+      required: [items, total, page, size]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/VaiTro' }
+        total: { type: integer, example: 3 }
+        page: { type: integer, example: 1 }
+        size: { type: integer, example: 3 }

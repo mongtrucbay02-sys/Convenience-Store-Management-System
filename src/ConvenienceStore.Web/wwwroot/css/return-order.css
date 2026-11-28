@@ -1,0 +1,16 @@
+.return-order { max-width: 1000px; margin: 0 auto; color: #153047; }
+.return-line { background: #fff; border: 1px solid #dce5ee; border-radius: 12px; padding: 20px; margin: 16px 0; }
+.return-order label { display: block; margin: 12px 0; }
+.return-order input:not([type=checkbox]), .return-order select { display: block; width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #b8c8d8; border-radius: 6px; }
+.return-order button { padding: 12px 18px; background: #176da6; color: white; border: 0; border-radius: 6px; cursor: pointer; }
+.return-order button:disabled { opacity: .5; cursor: not-allowed; }
+.return-warning { background: #fff3d6; color: #604005; padding: 14px; margin: 16px 0; border-radius: 8px; }
+.return-receipt { background: white; padding: 24px; max-width: 560px; margin: 20px auto; }
+.return-sign { margin-top: 32px; }
+@media print {
+  @page { size: 80mm auto; margin: 4mm; }
+  .sidebar, .top, .admin-footer, .return-no-print { display: none !important; }
+  .main, .content, .return-order, .return-receipt { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  .return-receipt h1, .return-receipt h2 { font-size: 15px; }
+  .return-line { padding: 6px 0; border: 0; border-bottom: 1px dashed black; border-radius: 0; break-inside: avoid; }
+}

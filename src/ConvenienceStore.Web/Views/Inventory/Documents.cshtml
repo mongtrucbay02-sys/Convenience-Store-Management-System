@@ -1,0 +1,54 @@
+@using ConvenienceStore.Web.Data.Entities
+@using ConvenienceStore.Web.Modules.Auth.Security
+@{
+    ViewData["Title"] = "Chứng từ kho";
+    var counts = (IReadOnlyList<PhieuKiemKe>)ViewBag.Counts;
+    var disposals = (IReadOnlyList<PhieuXuatHuy>)ViewBag.Disposals;
+    var categories = (IReadOnlyList<DanhMuc>)ViewBag.Categories;
+    var products = (IReadOnlyList<SanPham>)ViewBag.Products;
+}
+<h1>Chứng từ kho</h1>
+<p><a class="btn btn-outline-success" asp-controller="StockOverview" asp-action="Index">Tồn kho hiện tại</a></p>
+@if (TempData["Loi"] is string error) { <p class="alert alert-danger">@error</p> }
+<h2>Kiểm kê</h2>
+@if (User.HasClaim("quyen", MaQuyen.KiemKeXuatHuyLap))
+{
+    <form asp-action="CreateCount" method="post" class="vstack gap-2 mb-3">
+        <label>Phạm vi <select name="scope" class="form-select">
+            <option value="TOAN_BO">Toàn bộ</option><option value="DANH_MUC">Theo danh mục</option><option value="CHON_SAN_PHAM">Sản phẩm được chọn</option>
+        </select></label>
+        <label>Danh mục <select name="categoryId" class="form-select">
+            <option value="">Chọn khi kiểm kê theo danh mục</option>
+            @foreach (var category in categories) { <option value="@category.Id">@category.Ten</option> }
+        </select></label>
+        <label>Sản phẩm <select name="productIds" multiple size="4" class="form-select">
+            @foreach (var product in products) { <option value="@product.Id">@product.Ma · @product.TenSanPham</option> }
+        </select></label>
+        <div><button class="btn btn-primary">Tạo phiếu kiểm kê</button></div>
+    </form>
+}
+@if (counts.Count == 0) { <p>Chưa có phiếu kiểm kê.</p> }
+else
+{
+    <ul>
+    @foreach (var row in counts)
+    {
+        <li><a asp-action="Count" asp-route-id="@row.Id">@row.MaPhieu</a> · @row.TrangThai · @row.NgayLap.ToString("dd/MM/yyyy")</li>
+    }
+    </ul>
+}
+<h2>Xuất hủy</h2>
+@if (User.HasClaim("quyen", MaQuyen.KiemKeXuatHuyLap))
+{
+    <p><a class="btn btn-outline-primary" asp-action="NewDisposal">Lập phiếu xuất hủy</a></p>
+}
+@if (disposals.Count == 0) { <p>Chưa có phiếu xuất hủy.</p> }
+else
+{
+    <ul>
+    @foreach (var row in disposals)
+    {
+        <li><a asp-action="Disposal" asp-route-id="@row.Id">@row.MaPhieu</a> · @row.TrangThai · @row.NgayLap.ToString("dd/MM/yyyy")</li>
+    }
+    </ul>
+}

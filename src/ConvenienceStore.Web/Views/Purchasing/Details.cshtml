@@ -1,0 +1,41 @@
+@model ConvenienceStore.Web.Data.Entities.PhieuNhap
+@using ConvenienceStore.Web.Modules.Auth.Security
+@{ ViewData["Title"] = "Chi tiết phiếu nhập"; }
+<h1>Phiếu @Model.MaPhieu</h1>
+<p>@Model.NhaCungCap.Ten · @Model.NgayNhap.ToString("dd/MM/yyyy") · @Model.TrangThai</p>
+<p>Người lập: @Model.NguoiLap.HoTen · @Model.NgayLap.ToString("dd/MM/yyyy HH:mm")</p>
+@if (Model.NguoiXacNhan is { } approver)
+{
+    <p>Người xác nhận: @approver.HoTen · @Model.XacNhanLuc?.ToString("dd/MM/yyyy HH:mm")</p>
+}
+@if (TempData["ThongBao"] is string notice) { <p class="alert alert-success">@notice</p> }
+@if (TempData["Loi"] is string error) { <p class="alert alert-danger">@error</p> }
+<table class="table">
+    <thead><tr><th>Sản phẩm</th><th>Đơn vị</th><th>Số lượng</th><th>Giá nhập</th><th>Thành tiền</th></tr></thead>
+    <tbody>
+    @foreach (var line in Model.CtPhieuNhaps)
+    {
+        <tr><td>@line.TenSanPham</td><td>@line.DonViTinh</td><td>@line.SoLuong</td><td>@line.GiaNhap.ToString("N0") đ</td><td>@(((long)line.SoLuong * line.GiaNhap).ToString("N0")) đ</td></tr>
+    }
+    </tbody>
+</table>
+<p><strong>Tổng cộng: @Model.TongTien.ToString("N0") đ</strong></p>
+<p>@Model.CtPhieuNhaps.Count mặt hàng · @Model.CtPhieuNhaps.Sum(line => (long)line.SoLuong) đơn vị</p>
+@if (Model.TrangThai == "NHAP" && User.HasClaim("quyen", MaQuyen.PhieuNhapLap))
+{
+    <p><a asp-action="Edit" asp-route-id="@Model.Id">Sửa phiếu nháp</a></p>
+    <form class="d-print-none mb-2" asp-action="Cancel" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Hủy phiếu nháp này?')">
+        <label>Lý do hủy <input name="reason" required maxlength="255"></label>
+        <button class="btn btn-outline-danger">Hủy phiếu</button>
+    </form>
+}
+@if (Model.TrangThai == "NHAP" && User.HasClaim("quyen", MaQuyen.PhieuNhapXacNhan))
+{
+    <form class="d-print-none" asp-action="Confirm" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Xác nhận ghi nhận phiếu và cập nhật tồn kho?')">
+        <button class="btn btn-primary" type="submit">Xác nhận nhập kho</button>
+    </form>
+}
+<div class="d-print-none mt-3">
+    <button type="button" class="btn btn-outline-secondary" onclick="window.print()">In phiếu</button>
+    <a asp-action="Index" class="btn btn-link">Về danh sách phiếu</a>
+</div>

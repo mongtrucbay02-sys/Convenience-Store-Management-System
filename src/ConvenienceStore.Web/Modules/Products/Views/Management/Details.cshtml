@@ -1,0 +1,28 @@
+@model ConvenienceStore.Web.Modules.Products.DTOs.ProductDetailsDto
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Chi tiết sản phẩm"; }
+<a href="/Products">Danh sách sản phẩm</a>
+@if(ViewData["DetailError"] is string error){<p role="alert">@error</p><a href="@Context.Request.Path">Thử lại</a>}
+else
+{
+<h1>@Model.TenSanPham</h1>
+@if(User.HasClaim("quyen", "SAN_PHAM_SUA")){<a href="/Products/@Model.Id/Edit">Sửa thông tin</a>}
+@if(User.HasClaim("quyen", "SAN_PHAM_GIA_DANH_MUC") && Model.TrangThai == "DANG_KINH_DOANH"){<a href="/Products/@Model.Id/Price">Đổi giá</a>}
+@if(User.HasClaim("quyen", "SAN_PHAM_GIA_DANH_MUC")){
+    @if(Model.TrangThai == "DANG_KINH_DOANH"){<a href="/Products/@Model.Id/Discontinue">Ngừng kinh doanh</a>}else{<a href="/Products/@Model.Id/Reactivate">Mở bán lại</a>}
+    <a href="/Products/@Model.Id/Delete">Xóa sản phẩm</a>
+}
+<dl><dt>Mã</dt><dd>@Model.Ma</dd><dt>Danh mục</dt><dd>@Model.DanhMuc.Ten</dd><dt>Đơn vị</dt><dd>@Model.DonViTinh</dd>
+<dt>Giá bán hiện tại</dt><dd>@Model.GiaBan</dd><dt>Tồn kho</dt><dd>@Model.TonKho</dd><dt>Ngưỡng tối thiểu</dt><dd>@Model.NguongToiThieu</dd>
+<dt>Trạng thái</dt><dd>@Model.TrangThai</dd><dt>Mô tả</dt><dd>@Model.MoTa</dd><dt>Cập nhật</dt><dd>@Model.NgayCapNhat</dd>
+@if(User.IsInRole("AD")){<dt data-cost>Giá vốn</dt><dd data-cost>@Model.GiaVon</dd>}</dl>
+@if(Model.AnhUrl is not null){<img src="@Model.AnhUrl" alt="@Model.TenSanPham" width="200" />}
+<h2>Giá đã lên lịch</h2>
+@if(Model.GiaDaLenLich.Total == 0){<p>Chưa có giá đã lên lịch</p>}
+else{<table class="table"><thead><tr><th>Giá</th><th>Hiệu lực từ</th></tr></thead><tbody>@foreach(var p in Model.GiaDaLenLich.Items){<tr><td>@p.GiaBan</td><td>@p.HieuLucTu</td></tr>}</tbody></table><p>Tổng: @Model.GiaDaLenLich.Total</p>}
+<a href="/Products/@Model.Id/Prices">Xem tất cả giá đã lên lịch</a>
+@if(User.IsInRole("AD") && Model.LichSuGia is {} history)
+{
+<section data-price-history><h2>Lịch sử giá</h2><table class="table"><thead><tr><th>Giá</th><th>Hiệu lực từ</th><th>Hủy lúc</th><th>Người tạo</th></tr></thead><tbody>@foreach(var p in history.Items){<tr><td>@p.GiaBan</td><td>@p.HieuLucTu</td><td>@p.HuyLuc</td><td>@p.NguoiTaoId</td></tr>}</tbody></table>
+<p>Tổng: @history.Total</p><a href="/Products/@Model.Id/Prices?daLenLich=false">Xem toàn bộ lịch sử giá</a></section>
+}
+}

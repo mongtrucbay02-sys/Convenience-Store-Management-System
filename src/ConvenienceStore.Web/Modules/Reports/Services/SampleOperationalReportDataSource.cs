@@ -7,7 +7,7 @@ namespace ConvenienceStore.Web.Modules.Reports.Services;
 public sealed class SampleOperationalReportDataSource : IOperationalReportDataSource
 {
     private static readonly TimeSpan VietnamOffset = TimeSpan.FromHours(7);
-    private static readonly (int Id, string Name)[] Categories =
+    private static readonly (long Id, string Name)[] Categories =
     [
         (1, "Đồ uống"), (2, "Thực phẩm khô"), (3, "Sữa và lạnh"), (4, "Chăm sóc cá nhân")
     ];
@@ -28,7 +28,7 @@ public sealed class SampleOperationalReportDataSource : IOperationalReportDataSo
     ];
     private static readonly (long Id, string Name)[] Cashiers =
     [(1, "Nguyễn An"), (2, "Trần Bình"), (3, "Lê Chi")];
-    private static readonly (int Id, string Name)[] Suppliers =
+    private static readonly (long Id, string Name)[] Suppliers =
     [(1, "Công ty Minh Phát"), (2, "Nhà phân phối An Khang"), (3, "Thực phẩm Việt")];
 
     private readonly IReadOnlyList<ReportProductFact> _products;
@@ -100,13 +100,15 @@ public sealed class SampleOperationalReportDataSource : IOperationalReportDataSo
                 }
 
                 if (lines.Count == 0) continue;
+                if (n % 4 == 0)
+                    lines[0] = lines[0] with { DiscountPerUnitSnapshot = Math.Min(2_000, lines[0].ListPriceSnapshot) };
                 var cashier = Cashiers[(dayIndex + n) % Cashiers.Length];
                 var gross = lines.Sum(l => (long)l.Quantity * l.ListPriceSnapshot);
-                var promotion = n % 4 == 0 ? Math.Min(2_000, gross) : 0;
+                var promotion = lines.Sum(l => l.PromotionDiscountSnapshot);
                 var refund = n % 13 == 12 ? Math.Min(3_000, gross - promotion) : 0;
-                var net = gross - promotion - refund;
+                var net = gross - promotion;
                 invoices.Add(new ReportPaidInvoiceFact(
-                    invoiceId++, paidAt, cashier.Id, cashier.Name, lines, promotion, refund, net));
+                    invoiceId++, paidAt, cashier.Id, cashier.Name, lines, promotion, 0, net));
 
                 if (refund > 0 && lines.Count > 0)
                 {

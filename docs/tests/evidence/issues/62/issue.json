@@ -1,0 +1,54 @@
+{
+  "issue": {
+    "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/62",
+    "title": "[SP-07] Xem danh sách danh mục",
+    "issue_number": 62,
+    "body": "**Người phụ trách:** #2 Phan Hải Yến (Developer – Hàng vào kho)\n\n**SP-07. Xem danh sách danh mục** · module Sản phẩm và danh mục · ưu tiên **Must**\n\n- **Lý do xếp Must** (Bảng MoSCoW 13/10): Sản phẩm phải thuộc danh mục; POS cũng lọc theo danh mục\n- **Actor:** AD, TN, NK\n- **Mô tả:** Xem các nhóm hàng (đồ uống, bánh kẹo, đồ dùng cá nhân...).\n- **Tiền điều kiện:** Đã đăng nhập.\n- **Hậu điều kiện:** Danh sách danh mục kèm số sản phẩm được hiển thị.\n\n**Luồng chính**\n1. Mở \"Danh mục\" (hoặc bộ lọc danh mục ở POS).\n2. Hiển thị tên danh mục, số sản phẩm, trạng thái.\n\n**Ngoại lệ**\n- E1. Chưa có danh mục: hiển thị hướng dẫn tạo danh mục (chỉ với AD).\n\n**Quy tắc nghiệp vụ**\n- BR-SP-09: Danh mục một cấp (không có danh mục con).\n\n**Phụ thuộc và lưu ý trong tuần 4**\n- POS-01 (#3) dùng danh sách này làm bộ lọc ở màn hình bán hàng.\n\n_Nguồn: Đặc tả Use Case bản 13/10/2026, mục đặc tả SP-07. Nhánh gợi ý: `feature/sp-07`; ghi `Closes #<số issue>` trong PR._\n\n**Tiêu chí xong** (Kế hoạch v3, mục 1.4):\n- [ ] Làm đủ luồng chính\n- [ ] Xử lý ngoại lệ E1\n- [ ] Tuân thủ BR-SP-09\n- [ ] Kiểm tra quyền ở máy chủ theo actor: AD, TN, NK\n- [ ] Nếu đổi cấu trúc CSDL: có tệp migration trong PR, #1 đã duyệt\n- [ ] PR được review (người review: #3 Hoài), CI đạt\n- [ ] #4 test đạt theo test case\n- [ ] Chạy được trên staging\n- [ ] Cập nhật SRS nếu lệch đặc tả\n\n_Mã: T4-17 · Kế hoạch 9 tuần v3_",
+    "state": "open",
+    "user": {
+      "login": "zlatanofficial111-netizen",
+      "name": "zlatanofficial111-netizen",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/237690537?v=4",
+      "id": 237690537
+    },
+    "assignees": [
+      {
+        "login": "phanyen06ym-ien",
+        "name": "phanyen06ym-ien",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/232926377?v=4",
+        "id": 232926377
+      }
+    ],
+    "labels": [
+      {
+        "name": "code",
+        "color": "1d76db",
+        "description": ""
+      },
+      {
+        "name": "Must",
+        "color": "B60205",
+        "description": "MoSCoW: Must"
+      },
+      {
+        "name": "SP",
+        "color": "bfdadc",
+        "description": ""
+      }
+    ],
+    "milestone": 2,
+    "state_reason": null,
+    "comments": 1,
+    "created_at": "2026-10-14T02:58:59Z",
+    "updated_at": "2026-10-17T03:07:14Z",
+    "closed_at": null,
+    "display_url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/62",
+    "display_title": "[SP-07] Xem danh sách danh mục"
+  },
+  "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/62",
+  "title": "[SP-07] Xem danh sách danh mục",
+  "display_url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/62",
+  "display_title": "[SP-07] Xem danh sách danh mục"
+}

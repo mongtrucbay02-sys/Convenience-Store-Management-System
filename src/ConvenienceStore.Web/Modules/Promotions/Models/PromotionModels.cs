@@ -39,7 +39,8 @@ public sealed record PromotionDto(
     PromotionStatus Status,
     PromotionDisplayStatus DisplayStatus,
     int UsageCount,
-    string? ImageUrl);
+    string? ImageUrl,
+    long Version = 1);
 
 public sealed record PromotionListResponse(
     int Page,
@@ -83,6 +84,7 @@ public sealed record UpdatePromotionRequest(
     DateTimeOffset? StartAt,
     DateTimeOffset? EndAt,
     bool? MembersOnly,
-    string? ImageUrl);
+    string? ImageUrl,
+    long? Version = null);
 
-public sealed record ChangePromotionStatusRequest(PromotionTargetStatus? TargetStatus);
+public sealed record ChangePromotionStatusRequest(PromotionTargetStatus? TargetStatus, long? Version = null);

@@ -22,5 +22,5 @@ public interface IPromotionService
 
     /// <summary>KM-04. Chỉ Admin.</summary>
     Task<PromotionResult<PromotionDto>> ChangeStatusAsync(
-        long id, PromotionTargetStatus target, CancellationToken cancellationToken);
+        long id, PromotionTargetStatus target, CancellationToken cancellationToken, long? version = null);
 }

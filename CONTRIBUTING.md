@@ -48,3 +48,39 @@ Các cặp dự phòng của SP/NH/KHO, POS/DT, BC/KH/KM và dịch vụ kho l�
 | `Must`, `Should`, `Could` | Mức ưu tiên MoSCoW |
 | `sprint-N`, `tuan-N` | Sprint và tuần thực hiện |
 | `tv-1` … `tv-6` | Thành viên phụ trách |
+
+## 4. Quy tắc code với cơ sở dữ liệu
+
+CSDL của nhóm là project Supabase `cgspynsairbgvawfuhbu`, schema `smartmart` (31 bảng, 3 view). Schema này **đã chốt**.
+
+### 4.1. Ai được đổi cấu trúc CSDL
+
+- **Chỉ #2 Phan Hải Yến** được thêm, sửa, xóa bảng, cột, view, index, trigger, ràng buộc trên Supabase.
+- Thành viên khác cần đổi cấu trúc: tạo issue nhãn `thay đổi yêu cầu` (mục 1), ghi bảng/cột cần đổi và lý do, gán Yến. Không tự sửa.
+- Các file sau do Yến duyệt bắt buộc (CODEOWNERS) và CI chặn PR của người khác nếu có thay đổi:
+  - `src/ConvenienceStore.Web/Data/Migrations/`
+  - `src/ConvenienceStore.Web/Data/Entities/`
+  - `src/ConvenienceStore.Web/Data/CuaHangDbContext*.cs`
+- **Cấm** chạy `dotnet ef database update`, `dotnet ef migrations add` hay bất kỳ lệnh `CREATE/ALTER/DROP` nào trỏ vào Supabase. Không chạy lệnh `dotnet ef` nào để cập nhật CSDL; cấu trúc CSDL chỉ do Yến thay đổi.
+
+### 4.2. Kết nối CSDL để code task
+
+1. Lấy code mới nhất: `git switch develop` rồi `git pull origin develop`.
+2. Sao chép `src/ConvenienceStore.Web/.env.example` thành `src/ConvenienceStore.Web/.env` (cùng thư mục với `ConvenienceStore.Web.csproj`). Repo chỉ có **một** file mẫu này.
+3. Điền `ConnectionStrings__CuaHang` theo mẫu; host, project ref, mật khẩu và file CA do Yến gửi riêng (tin nhắn riêng, không gửi vào nhóm chat chung, không dán vào issue/PR/chat AI).
+   - `Username` luôn là `smartmart_backend.<PROJECT_REF>` (qua pooler). Role này chỉ đọc/ghi dữ liệu, **không có quyền tạo hay sửa bảng**.
+   - Không dùng tài khoản `postgres` (quản trị). Chỉ Yến giữ mật khẩu này.
+4. Chạy `dotnet run --project src/ConvenienceStore.Web`. `Data/KetNoiCsdl.cs` tự đọc theo thứ tự: biến môi trường → `.env` → `appsettings`, tự ép `Search Path=smartmart` và múi giờ `Asia/Ho_Chi_Minh`.
+5. **Không cần cài PostgreSQL hay chạy `dotnet test` trên máy.** Khi mở PR, CI (`SmartMart CI / Build and test`) tự dựng PostgreSQL 17 tạm, chạy toàn bộ test rồi xóa. Xem kết quả ở tab **Checks** của PR; đỏ thì bấm vào để xem test lỗi.
+
+### 4.3. Không đưa bí mật lên Git
+
+- **Không commit file `.env`** hay bất kỳ file chứa mật khẩu, host thật, chứng chỉ, `secrets.json`. `.gitignore` đã chặn; CI cũng báo lỗi nếu có.
+- Chỉ commit file mẫu `*.env.example` với giá trị giả (`YOUR_SECRET`, `YOUR_SUPABASE_HOST`).
+- Trước khi commit, chạy `git status` và kiểm tra không có `.env` trong danh sách.
+- Lỡ đẩy mật khẩu lên GitHub: báo Yến **ngay** để đổi mật khẩu `smartmart_backend`. Xóa commit không đủ, vì mật khẩu đã lộ.
+
+### 4.4. Dữ liệu trên Supabase dùng chung
+
+- Supabase là dữ liệu chung của cả nhóm và dữ liệu demo. Chỉ thao tác qua giao diện app khi chạy thử; không xóa hàng loạt, không reset, không seed đại trà.
+- Test tự động chỉ chạy trên CI, với PostgreSQL 17 tạm bị xóa sau mỗi lần chạy. Fixture test từ chối mọi host không phải `localhost`, nên không bao giờ ghi vào Supabase.

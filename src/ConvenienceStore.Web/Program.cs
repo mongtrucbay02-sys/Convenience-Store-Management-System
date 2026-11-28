@@ -1,77 +1,258 @@
+using ConvenienceStore.Web.Modules.Products;
+
+using ConvenienceStore.Web.Data;
+using ConvenienceStore.Web.Modules.Auth;
+using ConvenienceStore.Web.Modules.Auth.Security;
+using ConvenienceStore.Web.Modules.Auth.Services;
+using ConvenienceStore.Web.Modules.Inventory;
+using ConvenienceStore.Web.Modules.Purchasing;
 using ConvenienceStore.Web.Modules.Products.Services;
 using ConvenienceStore.Web.Modules.Promotions.Services;
 using ConvenienceStore.Web.Modules.Reports;
 using ConvenienceStore.Web.Modules.Reports.Services;
-using ConvenienceStore.Web.Data;
+using ConvenienceStore.Web.Modules.Returns;
+using ConvenienceStore.Web.Services.Pos;
+using ConvenienceStore.Web.Shared.Data;
+using ConvenienceStore.Web.Shared.Errors;
 using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+// ==========================================
+// 1. MVC VÀ WEB API
+// ==========================================
 
-builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>(
-    options =>
-    {
-        options.AreaViewLocationFormats.Insert(
-            0,
-            "/Modules/{2}/Views/{1}/{0}.cshtml");
+builder.Services.AddControllersWithViews().AddRazorOptions(options =>
+    options.AreaViewLocationFormats.Insert(0, "/Modules/{2}/Views/{1}/{0}.cshtml"));
+builder.Services.AddHttpContextAccessor();
 
-        options.AreaViewLocationFormats.Insert(
-            1,
-            "/Modules/{2}/Views/Shared/{0}.cshtml");
-    });
-
-builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<
+    ConvenienceStore.Web.Modules.Customers.Services.CustomerService>();
 
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<IDashboardDataSource, MySqlDashboardDataSource>();
-builder.Services.AddScoped<IDashboardService, DashboardService>();
-builder.Services.AddScoped<IOperationalReportDataSource, MySqlTransactionalReportsDataSource>();
-builder.Services.AddScoped<ITransactionalReportsDataSource, MySqlTransactionalReportsDataSource>();
-builder.Services.AddScoped<IOperationalReportsService, OperationalReportsService>();
-builder.Services.AddScoped<IPromotionDataSource, MySqlPromotionDataSource>();
-builder.Services.AddScoped<IProductLookup, MySqlProductLookup>();
-builder.Services.AddScoped<IPromotionService, PromotionService>();
+builder.Services.AddScoped<ReportFilterService>();
+builder.Services.AddScoped<PromotionUsageStore>();
+builder.Services.AddScoped<IWeekEightReportDataSource, PostgreSqlWeekEightReportDataSource>();
+builder.Services.AddScoped<WeekEightReportsService>();
+
+// Dashboard
+builder.Services.AddScoped<
+    IDashboardDataSource,
+    PostgreSqlDashboardDataSource>();
+
+builder.Services.AddScoped<
+    IDashboardService,
+    DashboardService>();
+
+// Báo cáo
+builder.Services.AddScoped<
+    IOperationalReportDataSource,
+    PostgreSqlTransactionalReportsDataSource>();
+
+builder.Services.AddScoped<
+    ITransactionalReportsDataSource,
+    PostgreSqlTransactionalReportsDataSource>();
+
+builder.Services.AddScoped<
+    IOperationalReportsService,
+    OperationalReportsService>();
+
+// Khuyến mãi
+builder.Services.AddScoped<
+    IPromotionDataSource,
+    PostgreSqlPromotionDataSource>();
+
+builder.Services.AddScoped<
+    IProductLookup,
+    PostgreSqlProductLookup>();
+
+builder.Services.AddScoped<
+    IPromotionService,
+    PromotionService>();
+
+// ==========================================
+// 2. KẾT NỐI CSDL
+// ==========================================
+
+// Đọc .env / biến môi trường, chuẩn hóa chuỗi kết nối và đăng ký DbContext (Data/KetNoiCsdl.cs).
+builder.AddCuaHangDatabase();
+
+// ==========================================
+// 3. SERVICE POS-01, POS-02, POS-05, POS-07, POS-09
+// ==========================================
+
+// POS-01: Danh mục và sản phẩm
+builder.Services.AddScoped<PostgreSqlPosCatalog>();
+
+// POS-01, POS-02, POS-09: Giỏ hàng
+builder.Services.AddScoped<PosCartService>();
+builder.Services.AddScoped<PosHeldOrderService>();
+
+// POS-05: Thanh toán tiền mặt
+builder.Services.AddScoped<PosPaymentService>();
+
+// POS-07: Hoàn tất đơn hàng
+builder.Services.AddScoped<PosCheckoutService>();
+
+// POS-07: Đọc và in hóa đơn
+builder.Services.AddScoped<PosInvoiceService>();
+builder.Services.AddScoped<PosInvoiceCancellationService>();
+
+// POS-07: Store lưu đơn hàng
+builder.Services.AddScoped<
+    IPosCheckoutStore,
+    PostgreSqlPosCheckoutStore>();
+
+// POS-07: Store đọc hóa đơn
+builder.Services.AddScoped<
+    IPosInvoiceStore,
+    PostgreSqlPosInvoiceStore>();
+
+// ==========================================
+// 4. SERVICE POS-10, POS-11
+// ==========================================
+
+// POS-10: Tra cứu danh sách hóa đơn
+builder.Services.AddScoped<PosInvoiceListService>();
+
+builder.Services.AddScoped<
+    IPosInvoiceListStore,
+    PostgreSqlPosInvoiceListStore>();
+
+// ==========================================
+// 5. MODULE CỦA NHÓM
+// ==========================================
+
+// Xử lý lỗi API
+builder.Services.AddXuLyLoiApi();
+
+// AUTH: Đăng nhập và phân quyền
+builder.Services.AddModuleAuth();
+
+// Quản lý tồn kho
+builder.Services.AddModuleInventory();
+builder.Services.AddModuleProducts();
+builder.Services.AddScoped<PurchaseReceiptService>();
+builder.Services.AddScoped<SupplierPurchaseHistoryService>();
+
+// Đổi trả
+builder.Services.AddModuleReturns();
+
+// ==========================================
+// 6. PHÂN QUYỀN
+// ==========================================
+
 builder.Services.AddAuthorization(options =>
+{
+    // Quyền Admin theo cấu hình AUTH hiện tại
     options.AddPolicy(
         AuthorizationPolicies.AdminOnly,
-        policy => policy.RequireRole(AuthorizationPolicies.AdminRole)));
+        policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireRole(
+                AuthorizationPolicies.AdminRole);
+        });
 
-var connectionString =
-    builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException(
-        "Missing DefaultConnection configuration.");
+    // POS: Admin hoặc tài khoản có quyền BAN_HANG
+    options.AddPolicy(
+        MaQuyen.BanHang,
+        policy =>
+        {
+            policy.RequireAuthenticatedUser();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySQL(connectionString));
+            policy.RequireAssertion(context =>
+                context.User.IsInRole(
+                    AuthorizationPolicies.AdminRole)
+                ||
+                context.User.HasClaim(
+                    ThongTinXacThuc.ClaimQuyen,
+                    MaQuyen.BanHang));
+        });
+
+    // POS-10, POS-11: Xem hóa đơn
+    options.AddPolicy(
+        PosInvoiceAccess.PolicyXem,
+        policy =>
+        {
+            policy.RequireAuthenticatedUser();
+
+            policy.RequireAssertion(context =>
+                PosInvoiceAccess.CoQuyenXem(
+                    context.User));
+        });
+
+    // POS-12: Chỉ Admin được hủy hóa đơn đã thanh toán
+    options.AddPolicy(
+        MaQuyen.HoaDonHuy,
+        policy =>
+        {
+            policy.RequireAuthenticatedUser();
+
+            policy.RequireRole(
+                AuthorizationPolicies.AdminRole);
+        });
+});
+
+// ==========================================
+// 7. KHỞI TẠO ADMIN
+// ==========================================
+
+builder.Services.Configure<AdminDauTienOptions>(
+    builder.Configuration.GetSection(
+        AdminDauTienOptions.TenMuc));
+
+builder.Services.AddScoped<KhoiTaoAdminDauTien>();
+
+// ==========================================
+// 8. BUILD APPLICATION
+// ==========================================
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+await KhoiTaoAdminDauTien.ChayKhiKhoiDongAsync(
+    app.Services);
+
+// ==========================================
+// 9. HTTP PIPELINE
+// ==========================================
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
+app.UseXuLyLoiApi();
+
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
+// ==========================================
+// 10. ROUTING
+// ==========================================
 
 app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "areas",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}")
+    .WithStaticAssets();
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+app.MapControllers();
 
+// ==========================================
+// 11. RUN
+// ==========================================
 
 app.Run();
-

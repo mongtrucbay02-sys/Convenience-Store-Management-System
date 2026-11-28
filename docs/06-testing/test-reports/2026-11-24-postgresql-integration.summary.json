@@ -1,0 +1,176 @@
+{
+  "checked_at_utc": "2026-11-24T10:23:49.467027+00:00",
+  "branch": "integration/smartmart-postgresql-only",
+  "baseline": "2e8d94b35d1426fa168c42417cae831677133208",
+  "working_tree_uncommitted": true,
+  "source_sha256": "02c2fad6433dc56886de6fa657d97b9de33b76407c5ecc58a1a9ab64ea2c4fad",
+  "source_file_count": 546,
+  "assembly_sha256": {
+    "src/ConvenienceStore.Web/bin/Release/net10.0/ConvenienceStore.Web.dll": "60d4dfec45ea640cf21a5b01fb6534915a2189a6d19faaa25e753c31447b0243",
+    "tests/ConvenienceStore.Web.Tests/bin/Release/net10.0/ConvenienceStore.Web.dll": "60d4dfec45ea640cf21a5b01fb6534915a2189a6d19faaa25e753c31447b0243",
+    "artifacts/postgresql-integration/publish/ConvenienceStore.Web.dll": "60d4dfec45ea640cf21a5b01fb6534915a2189a6d19faaa25e753c31447b0243",
+    "tools/SupabaseSmoke/bin/Release/net10.0/ConvenienceStore.Web.dll": "60d4dfec45ea640cf21a5b01fb6534915a2189a6d19faaa25e753c31447b0243"
+  },
+  "test_counters": {
+    "total": "763",
+    "executed": "763",
+    "passed": "763",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "test_start_finish": {
+    "creation": "2026-11-24T17:16:51.5939294+07:00",
+    "queuing": "2026-11-24T17:16:51.5939298+07:00",
+    "start": "2026-11-24T17:16:49.4716833+07:00",
+    "finish": "2026-11-24T17:19:45.9812641+07:00"
+  },
+  "packages": [
+    "Microsoft.EntityFrameworkCore/10.0.12",
+    "Microsoft.EntityFrameworkCore.Relational/10.0.12",
+    "Npgsql/10.0.3",
+    "Npgsql.EntityFrameworkCore.PostgreSQL/10.0.3"
+  ],
+  "sdk": "10.0.401",
+  "postgresql": "17.11, isolated native Windows cluster, 127.0.0.1:55439",
+  "shared_supabase_writes": 0,
+  "smoke": {
+    "server": "127.0.0.1:55439",
+    "shared_supabase_used": false,
+    "results": [
+      {
+        "case": "missing-config",
+        "exit": 2,
+        "status": "failed",
+        "readOnly": false,
+        "checkedObjects": 0,
+        "sqlState": null,
+        "expected_exit": 2,
+        "verification_result": "PASS"
+      },
+      {
+        "case": "read-only-34",
+        "exit": 0,
+        "status": "passed",
+        "readOnly": true,
+        "checkedObjects": 34,
+        "sqlState": null,
+        "expected_exit": 0,
+        "verification_result": "PASS"
+      },
+      {
+        "case": "missing-schema",
+        "exit": 1,
+        "status": "failed",
+        "readOnly": true,
+        "checkedObjects": 0,
+        "sqlState": "42P01",
+        "expected_exit": 1,
+        "verification_result": "PASS"
+      }
+    ]
+  },
+  "parity": {
+    "baseline": "2e8d94b35d1426fa168c42417cae831677133208",
+    "view_count": 68,
+    "controller_count": 47,
+    "missing_views": [],
+    "missing_controllers": [],
+    "changed_views": [
+      "src/ConvenienceStore.Web/Modules/Promotions/Views/Promotions/Delete.cshtml",
+      "src/ConvenienceStore.Web/Modules/Promotions/Views/Promotions/Form.cshtml",
+      "src/ConvenienceStore.Web/Modules/Promotions/Views/Promotions/Index.cshtml",
+      "src/ConvenienceStore.Web/Views/Purchasing/Index.cshtml"
+    ],
+    "archived_provider_tests": [
+      {
+        "path": "docs/archive/mysql-tests/HaTang/SchemaMappingTests.cs",
+        "fact_methods": 3,
+        "theory_methods": 0,
+        "inline_data_rows": 0
+      },
+      {
+        "path": "docs/archive/mysql-tests/HaTang/SchemaReference.cs",
+        "fact_methods": 0,
+        "theory_methods": 0,
+        "inline_data_rows": 0
+      },
+      {
+        "path": "docs/archive/mysql-tests/Integration/Database/Schema/MigrationExtensionMySqlTests.cs",
+        "fact_methods": 4,
+        "theory_methods": 0,
+        "inline_data_rows": 0
+      },
+      {
+        "path": "docs/archive/mysql-tests/Integration/Database/Schema/SchemaStructureTests.cs",
+        "fact_methods": 12,
+        "theory_methods": 1,
+        "inline_data_rows": 3
+      }
+    ],
+    "static_asset_count": 99,
+    "missing_static_assets": [],
+    "changed_route_attribute_files": []
+  },
+  "git_audit": {
+    "initial": {
+      "head": "0a0bd208431ee67ad8de6121ef7e0236ae2b0589",
+      "source": "5a400938774122b1c4023b399694f797b81aa2b6",
+      "merge_base": "b2ed284f746b01de2333ce0ff7c0b9ce6a7ff8f5",
+      "overlapping_paths": [],
+      "source_changed_paths": 180,
+      "left_right_counts": "17 2"
+    },
+    "current": {
+      "branch": "integration/smartmart-postgresql-only",
+      "head": "2e8d94b35d1426fa168c42417cae831677133208",
+      "origin_develop": "2e8d94b35d1426fa168c42417cae831677133208",
+      "pr282_head": "53a886c702b8ce1cc271c36b173a7cf1c66f4630",
+      "merge_base_with_pr282": "53a886c702b8ce1cc271c36b173a7cf1c66f4630",
+      "left_right_counts": "18\t0",
+      "index_clean": true,
+      "local_develop": "0a0bd208431ee67ad8de6121ef7e0236ae2b0589",
+      "local_main": "fb625af51571175190e0db15f1b3b6ffd712900b",
+      "pr282_merged_upstream_at": "2026-11-24T09:30:42Z",
+      "source_remote_branch_no_longer_exists": true
+    }
+  },
+  "backend_role_local_probe": {
+    "isolated": true,
+    "host": "127.0.0.1:55439",
+    "rolled_back": true,
+    "result": "PASS",
+    "checks": [
+      {
+        "role": "smartmart_backend",
+        "superuser": false,
+        "bypassRls": false,
+        "ownedBusinessTables": 0
+      },
+      {
+        "operation": "insert",
+        "affected": 1
+      },
+      {
+        "operation": "update",
+        "affected": 1
+      },
+      {
+        "operation": "delete",
+        "affected": 1
+      }
+    ],
+    "effective_role_via_set_role": true
+  },
+  "isolated_cluster_stopped": true
+}

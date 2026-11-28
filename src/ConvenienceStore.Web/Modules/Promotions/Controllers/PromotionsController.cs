@@ -2,6 +2,7 @@ using ConvenienceStore.Web.Modules.Promotions.Models;
 using ConvenienceStore.Web.Modules.Promotions.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ConvenienceStore.Web.Shared.Errors;
 
 namespace ConvenienceStore.Web.Modules.Promotions.Controllers;
 
@@ -103,6 +104,7 @@ public class PromotionsController : Controller
             MembersOnly = p.MembersOnly,
             ImageUrl = p.ImageUrl,
             UsageCount = p.UsageCount,
+            Version = p.Version,
         }, isEdit: true, cancellationToken);
     }
 
@@ -120,7 +122,7 @@ public class PromotionsController : Controller
                 form.DiscountValue, form.MaxDiscountAmount ?? 0,
                 form.ProductIds.Count > 0 ? form.ProductIds : null,
                 ToVietnamTime(form.StartAt), ToVietnamTime(form.EndAt),
-                form.MembersOnly, form.ImageUrl ?? string.Empty),
+                form.MembersOnly, form.ImageUrl ?? string.Empty, form.Version),
             cancellationToken);
 
         if (result.IsSuccess)
@@ -140,14 +142,39 @@ public class PromotionsController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     [Authorize(Roles = PromotionRoles.Admin)]
     public async Task<IActionResult> ChangeStatus(
-        long id, PromotionTargetStatus target, CancellationToken cancellationToken)
+        long id, PromotionTargetStatus target, CancellationToken cancellationToken, long? version = null)
     {
-        var result = await _promotionService.ChangeStatusAsync(id, target, cancellationToken);
+        var result = await _promotionService.ChangeStatusAsync(id, target, cancellationToken, version);
         if (result.IsSuccess)
             TempData["Message"] = $"Đã cập nhật trạng thái chương trình {result.Value!.Code}.";
         else
             TempData["Error"] = result.Error!.Title;
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet,Authorize(Roles=PromotionRoles.Admin)]
+    [ConvenienceStore.Web.Shared.Security.RequirePasswordChanged]
+    public async Task<IActionResult> Usage(long id,[FromServices] PromotionUsageStore store,CancellationToken ct)
+    {
+        try {return View("Usage",await store.HistoryAsync(id,ct));}
+        catch(LoiNghiepVu e) when(e.MaHttp==404) {return NotFound();}
+    }
+
+    [HttpGet,Authorize(Roles=PromotionRoles.Admin)]
+    [ConvenienceStore.Web.Shared.Security.RequirePasswordChanged]
+    public async Task<IActionResult> Delete(long id,[FromServices] PromotionUsageStore store,CancellationToken ct)
+    {
+        try {return View("Delete",await store.HistoryAsync(id,ct));}
+        catch(LoiNghiepVu e) when(e.MaHttp==404) {return NotFound();}
+    }
+
+    [HttpPost,ActionName("Delete"),ValidateAntiForgeryToken,Authorize(Roles=PromotionRoles.Admin)]
+    [ConvenienceStore.Web.Shared.Security.RequirePasswordChanged]
+    public async Task<IActionResult> DeleteConfirmed(long id,bool confirmed,[FromServices] PromotionUsageStore store,CancellationToken ct,long? version = null)
+    {
+        if(!confirmed) return BadRequest("Cần xác nhận xóa chương trình.");
+        try {await store.DeleteAsync(id,ct,version);TempData["Message"]="Đã xóa chương trình chưa được sử dụng.";return RedirectToAction(nameof(Index));}
+        catch(LoiNghiepVu e) when(e.MaHttp is 404 or 409) {TempData["Error"]=e.Message;return RedirectToAction(nameof(Index));}
     }
 
     // Chọn sản phẩm: tìm kiếm có phân trang (danh mục có thể có hàng nghìn sản phẩm).

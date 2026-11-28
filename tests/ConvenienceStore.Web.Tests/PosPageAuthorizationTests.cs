@@ -1,0 +1,63 @@
+using System.Net;
+using ConvenienceStore.Web.Modules.Inventory;
+using ConvenienceStore.Web.Modules.Returns;
+using ConvenienceStore.Web.Services.Pos;
+using ConvenienceStore.Web.Tests.HaTang;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace ConvenienceStore.Web.Tests;
+
+public sealed class PosPageAuthorizationTests(CsdlPostgreSqlTam database) : IClassFixture<CsdlPostgreSqlTam>
+{
+    private Task<WebApplication> Start() => ListFeatureHost.Start(database, services =>
+    {
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?> { ["ConnectionStrings:CuaHang"] = database.ChuoiKetNoi }).Build());
+        services.AddHttpContextAccessor();
+        services.AddModuleInventory();
+        services.AddModuleReturns();
+        services.AddScoped<PostgreSqlPosCatalog>();
+        services.AddScoped<PosCartService>();
+        services.AddScoped<PosHeldOrderService>();
+        services.AddScoped<PosPaymentService>();
+        services.AddScoped<PosCheckoutService>();
+        services.AddScoped<IPosCheckoutStore, PostgreSqlPosCheckoutStore>();
+        services.AddScoped<PosInvoiceService>();
+        services.AddScoped<IPosInvoiceStore, PostgreSqlPosInvoiceStore>();
+    });
+
+    [Theory]
+    [InlineData(null, 401)]
+    [InlineData("AD", 403)]
+    [InlineData("NK", 403)]
+    [InlineData("TN", 200)]
+    public async Task SalesPageRequiresCashierWithoutThrowingForAdmin(string? actor, int expected)
+    {
+        await using var app = await Start();
+        using var client = await ListFeatureHost.Client(app, database, actor);
+        using var response = await client.GetAsync("/Pos");
+        Assert.Equal(expected, (int)response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AdminCannotUseSalesActionsButRetainsReceiptAccess()
+    {
+        await using var app = await Start();
+        using var client = await ListFeatureHost.Client(app, database, "AD");
+        foreach (var action in new[] { "Checkout", "Cash" })
+        {
+            using var response = await client.GetAsync("/Pos/" + action);
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+        foreach (var action in new[] { "Hold", "Recall", "Add", "Update", "Remove", "Calculate", "ConfirmCash", "CompleteOrder", "Cancel" })
+        {
+            using var response = await client.PostAsync("/Pos/" + action, new FormUrlEncodedContent([]));
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+        // A malformed invoice id reaches Receipt's validation rather than a cashier-only gate.
+        using var receipt = await client.GetAsync("/Pos/Receipt?invoiceId=0");
+        Assert.Equal(HttpStatusCode.BadRequest, receipt.StatusCode);
+    }
+}

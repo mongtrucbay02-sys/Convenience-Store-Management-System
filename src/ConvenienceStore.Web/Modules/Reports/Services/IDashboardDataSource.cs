@@ -30,4 +30,3 @@ public interface IDashboardDataSource
     Task<(int Stocktake, int WriteOff, int Returns)> GetPendingApprovalCountsAsync(
         CancellationToken cancellationToken);
 }
-

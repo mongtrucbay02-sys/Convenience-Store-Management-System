@@ -96,4 +96,3 @@ public sealed class DashboardService : IDashboardService
     private static DateTimeOffset StartOfDay(DateOnly date) =>
         new(date.ToDateTime(TimeOnly.MinValue), VietnamOffset);
 }
-

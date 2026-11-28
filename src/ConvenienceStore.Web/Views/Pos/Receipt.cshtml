@@ -1,0 +1,186 @@
+@model ConvenienceStore.Web.Models.Pos.PosInvoiceViewModel
+
+@{
+    ViewData["Title"] = "Hóa đơn thanh toán";
+    Layout = "_AdminLayout";
+
+}
+
+<!-- CSS riêng của hóa đơn POS-07 -->
+<link rel="stylesheet"
+      href="~/css/receipt.css"
+      asp-append-version="true" />
+
+<div class="receipt-page">
+
+    <!-- TIÊU ĐỀ TRANG -->
+    <div class="receipt-heading">
+        <h1>🧾 Hóa đơn thanh toán</h1>
+        <p>
+            Smart Mart / Bán hàng POS /
+            Hoàn tất đơn hàng
+        </p>
+    </div>
+
+    <!-- THÔNG BÁO THÀNH CÔNG -->
+    @if (TempData["Success"] is string success)
+    {
+        <div class="receipt-success" role="status">
+            ✓ @success
+        </div>
+
+        <!-- POS-07 bước 7: hỏi "In hóa đơn?" ngay sau khi thanh toán thành công -->
+        <div class="receipt-print-prompt" id="printPrompt" role="alertdialog"
+             aria-labelledby="printPromptTitle">
+            <div>
+                <strong id="printPromptTitle">In hóa đơn?</strong>
+                <span>Bản in khổ K80 mở qua hộp thoại in của trình duyệt.</span>
+            </div>
+
+            <div class="receipt-print-prompt-actions">
+                <button type="button"
+                        id="printYes"
+                        class="receipt-btn receipt-btn-primary">
+                    🖨️ In hóa đơn
+                </button>
+
+                <button type="button"
+                        id="printNo"
+                        class="receipt-btn receipt-btn-secondary">
+                    Không in
+                </button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["Error"] is string error)
+    {
+        <div class="receipt-alert-error" role="alert">
+            ⚠️ @error
+        </div>
+    }
+
+    <!-- KHUNG HÓA ĐƠN K80 -->
+    <!-- A1: Trạng thái in hóa đơn -->
+    <div id="printStatus"
+         class="receipt-print-status"
+         role="status"
+         aria-live="polite"
+         hidden>
+    </div>
+
+    <div class="receipt-wrapper">
+
+        <partial name="_ReceiptPaper" model="Model" />
+    </div>
+
+    <!-- NÚT THAO TÁC -->
+    <div class="receipt-actions">
+
+        <button type="button"
+                class="receipt-btn receipt-btn-primary"
+                onclick="window.print()">
+            🖨️ In hóa đơn K80
+        </button>
+
+        <a asp-controller="Pos"
+           asp-action="Index"
+           class="receipt-btn receipt-btn-secondary">
+            ← Bán đơn tiếp theo
+        </a>
+
+    </div>
+
+</div>
+
+<style>
+    .receipt-print-prompt {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 12px 0;
+        padding: 14px 16px;
+        border: 1px solid #b6d4fe;
+        border-radius: 12px;
+        background: #eef6ff;
+    }
+
+        .receipt-print-prompt span {
+            display: block;
+            font-size: 13px;
+            color: #52607a;
+        }
+
+    .receipt-print-prompt-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    @@media print {
+        .receipt-print-prompt {
+            display: none !important;
+        }
+    }
+</style>
+
+<script>
+    (function () {
+        const prompt = document.getElementById("printPrompt");
+        const printYes = document.getElementById("printYes");
+        const printNo = document.getElementById("printNo");
+        const printStatus = document.getElementById("printStatus");
+
+        function showStatus(message) {
+            if (!printStatus) return;
+
+            printStatus.textContent = message;
+            printStatus.hidden = false;
+        }
+
+        function hidePrompt() {
+            if (prompt) {
+                prompt.style.display = "none";
+            }
+        }
+
+        function printReceipt() {
+            hidePrompt();
+
+            showStatus(
+                "Hóa đơn đã được lưu. " +
+                "Nếu máy in không hoạt động hoặc bạn hủy in, " +
+                "có thể in lại sau qua POS-11."
+            );
+
+            try {
+                window.print();
+            } catch (error) {
+                console.error("Không mở được hộp thoại in:", error);
+
+                showStatus(
+                    "Không mở được hộp thoại in. " +
+                    "Hóa đơn vẫn được lưu trong hệ thống. " +
+                    "Thu ngân có thể in lại qua POS-11."
+                );
+            }
+        }
+
+        if (printYes) {
+            printYes.addEventListener("click", printReceipt);
+        }
+
+        if (printNo) {
+            printNo.addEventListener("click", function () {
+                hidePrompt();
+
+                showStatus(
+                    "Đã chọn không in hóa đơn. " +
+                    "Hóa đơn vẫn được lưu thành công. " +
+                    "Thu ngân có thể in lại sau qua POS-11."
+                );
+            });
+        }
+    })();
+</script>

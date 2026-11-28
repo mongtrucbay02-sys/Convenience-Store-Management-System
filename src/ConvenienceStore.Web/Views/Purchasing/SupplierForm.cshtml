@@ -1,0 +1,15 @@
+@model ConvenienceStore.Web.Modules.Purchasing.SupplierInput
+@{ ViewData["Title"] = Model.Id == 0 ? "Thêm nhà cung cấp" : "Sửa nhà cung cấp"; }
+<h1>@ViewData["Title"]</h1>
+<form asp-action="Save" method="post" class="vstack gap-2">
+    <input asp-for="Id" type="hidden"><input asp-for="Version" type="hidden">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <label>Tên<input asp-for="Name" class="form-control" required maxlength="200"></label>
+    <label>Số điện thoại<input asp-for="Phone" class="form-control" type="tel" required maxlength="11"></label>
+    <label>Người liên hệ<input asp-for="Contact" class="form-control" maxlength="100"></label>
+    <label>Email<input asp-for="Email" type="email" class="form-control" maxlength="100"></label>
+    <label>Địa chỉ<input asp-for="Address" class="form-control" maxlength="255"></label>
+    <label>Mã số thuế<input asp-for="TaxId" class="form-control" maxlength="14"></label>
+    <label>Ghi chú<textarea asp-for="Notes" class="form-control" maxlength="500"></textarea></label>
+    <div class="smartmart-form-actions"><button class="btn btn-primary" type="submit">@(Model.Id == 0 ? "Thêm nhà cung cấp" : "Lưu thay đổi")</button> <a class="btn btn-outline-secondary" asp-action="Index">Quay lại</a></div>
+</form>

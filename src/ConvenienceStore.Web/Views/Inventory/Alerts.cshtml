@@ -1,0 +1,17 @@
+@model IReadOnlyList<ConvenienceStore.Web.Modules.Inventory.Controllers.StockAlertRow>
+@{ ViewData["Title"] = "Cảnh báo tồn kho"; }
+<h1>Cảnh báo tồn kho (@Model.Count)</h1>
+@if (Model.Count == 0) { <p>Tồn kho ổn định.</p> }
+else
+{
+    <table class="table">
+        <thead><tr><th>Sản phẩm</th><th>Tồn</th><th>Ngưỡng</th><th>Nhà cung cấp gần nhất</th></tr></thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr><td><a asp-action="History" asp-route-id="@item.Id">@item.Code · @item.Name</a></td><td>@item.Quantity</td><td>@item.Threshold</td><td>@(item.LatestSupplier ?? "Chưa có")</td></tr>
+        }
+        </tbody>
+    </table>
+}
+<div class="smartmart-action-row"><partial name="~/Views/Inventory/_BackToStock.cshtml" /></div>

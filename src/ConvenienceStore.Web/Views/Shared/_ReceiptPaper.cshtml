@@ -1,0 +1,158 @@
+@model ConvenienceStore.Web.Models.Pos.PosInvoiceViewModel
+@{ var culture = new System.Globalization.CultureInfo("vi-VN"); string Money(long amount) => amount.ToString("N0", culture) + " đ"; }
+<div class="receipt-paper" id="receipt-print-area">
+
+            <!-- THÔNG TIN CỬA HÀNG -->
+            <div class="receipt-store">
+                <h2>SMART MART</h2>
+                <p>CỬA HÀNG TIỆN LỢI</p>
+            </div>
+
+            <hr class="receipt-line" />
+
+            <!-- TIÊU ĐỀ HÓA ĐƠN -->
+            <div class="receipt-title">
+                PHIẾU THANH TOÁN BÁN HÀNG
+            </div>
+
+            @if (Model.IsReprint)
+{
+    <div class="receipt-stamp">In lại</div>
+}
+@if (Model.IsCancelled)
+{
+    <div class="receipt-stamp receipt-cancelled">ĐÃ HỦY</div>
+}
+<!-- THÔNG TIN HÓA ĐƠN -->
+            <div class="receipt-info-row">
+                <span>Mã hóa đơn:</span>
+                <strong>@Model.InvoiceCode</strong>
+            </div>
+
+            <div class="receipt-info-row">
+                <span>Ngày bán:</span>
+                <span>
+                    @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                </span>
+            </div>
+
+            <div class="receipt-info-row">
+                <span>Thu ngân:</span>
+                <span>
+                    @(string.IsNullOrWhiteSpace(Model.CashierName)
+                        ? "Nhân viên bán hàng"
+                        : Model.CashierName)
+                </span>
+            </div>
+
+            <div class="receipt-info-row">
+                <span>Khách hàng:</span>
+                <span>@(string.IsNullOrWhiteSpace(Model.CustomerName) ? "Khách lẻ" : Model.CustomerName)
+                    @if (!string.IsNullOrWhiteSpace(Model.CustomerPhone)) { <br />@Model.CustomerPhone }
+                </span>
+            </div>
+
+            <div class="receipt-info-row">
+                <span>Thanh toán:</span>
+                <strong>@(Model.ExchangeCredit > 0 ? "Tiền mặt + hàng đổi" : "Tiền mặt")</strong>
+            </div>
+
+            <div class="receipt-info-row">
+                <span>Trạng thái:</span>
+                <strong>@(Model.IsCancelled ? "ĐÃ HỦY" : "Đã thanh toán")</strong>
+            </div>
+
+            <hr class="receipt-line" />
+
+            <!-- DANH SÁCH SẢN PHẨM -->
+            <table class="receipt-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Sản phẩm</th>
+                        <th scope="col">SL</th>
+                        <th scope="col">Đơn giá</th>
+                        <th scope="col">Thành tiền</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.ProductName</strong><div>@item.Unit</div>
+
+                                @if (item.Discount > 0)
+                                {
+                                    <div class="receipt-item-discount">
+                                        Giảm: @Money(item.Discount) @if (item.PromotionId.HasValue) { <span> · KM: @(item.PromotionCode ?? $"#{item.PromotionId}")</span> }
+                                    </div>
+                                }
+                            </td>
+
+                            <td>
+                                @item.Quantity
+                            </td>
+
+                            <td>
+                                @item.UnitPrice.ToString("N0", culture)
+                            </td>
+
+                            <td>
+                                @item.LineTotal.ToString("N0", culture)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <hr class="receipt-line" />
+
+            <!-- TỔNG TIỀN -->
+            <div class="receipt-info-row">
+                <span>Tạm tính:</span>
+                <strong>@Money(Model.Subtotal)</strong>
+            </div>
+
+            <div class="receipt-info-row">
+                <span>Giảm giá:</span>
+                <strong>-@Money(Model.Discount)</strong>
+            </div>
+
+            <div class="receipt-info-row receipt-total">
+                <span>TỔNG THANH TOÁN:</span>
+                <strong>@Money(Model.Total)</strong>
+            </div>
+
+            @if (Model.ExchangeCredit > 0)
+{
+    <div class="receipt-info-row"><span>Trừ hàng đổi:</span><strong>@Money(Model.ExchangeCredit)</strong></div>
+}
+<!-- THÔNG TIN THANH TOÁN -->
+            <div class="receipt-info-row">
+                <span>Tiền khách đưa:</span>
+                <strong>@Money(Model.CashReceived)</strong>
+            </div>
+
+            <div class="receipt-info-row">
+                <span>Tiền thừa:</span>
+                <strong>@Money(Model.Change)</strong>
+            </div>
+
+            <hr class="receipt-line" />
+
+            <div class="receipt-info-row"><span>Điểm đã cộng lúc bán:</span><strong>@Model.PointsEarned</strong></div>
+@if (Model.IsCancelled)
+{
+    <p>Hóa đơn đã hủy, không có giá trị thanh toán.</p>
+}
+<!-- CHÂN HÓA ĐƠN -->
+            <div class="receipt-footer">
+                <p><strong>CẢM ƠN QUÝ KHÁCH!</strong></p>
+                <p>Hẹn gặp lại quý khách.</p>
+                <p>Giá bán đã bao gồm thuế GTGT.</p>
+                <p><strong>PHIẾU TÍNH TIỀN NỘI BỘ</strong></p>
+                <p>Không phải hóa đơn điện tử theo quy định thuế.</p>
+            </div>
+
+        </div>

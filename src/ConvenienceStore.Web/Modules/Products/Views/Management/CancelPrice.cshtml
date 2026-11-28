@@ -1,0 +1,8 @@
+@model ConvenienceStore.Web.Modules.Products.DTOs.ProductPriceResult
+@{Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Hủy giá đã lên lịch";}
+<h1>Hủy giá đã lên lịch</h1><p>Giá: @Model.GiaBan đ · Hiệu lực từ: @Model.HieuLucTu</p>
+<p>Chỉ hủy khi mức giá chưa bị hủy và chưa đến thời điểm hiệu lực. Lịch sử được giữ lại.</p>
+@Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
+<form method="post" action="/Products/@Model.SanPhamId/Prices/@Model.Id/Cancel">@Html.AntiForgeryToken()
+<input name="PhienBan" type="hidden" value="@Model.PhienBan" /><button type="submit">Xác nhận hủy mức giá</button>
+</form><a href="/Products/@Model.SanPhamId/Prices/@Model.Id/Cancel">Tải lại dữ liệu</a><a href="/Products/@Model.SanPhamId/Price">Quay lại</a>

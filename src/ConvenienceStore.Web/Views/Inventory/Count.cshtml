@@ -1,0 +1,56 @@
+@model ConvenienceStore.Web.Data.Entities.PhieuKiemKe
+@using ConvenienceStore.Web.Modules.Auth.Security
+@{
+    ViewData["Title"] = "Phiếu kiểm kê";
+    var canEdit = (Model.TrangThai is "NHAP" or "BI_TU_CHOI") && User.HasClaim("quyen", MaQuyen.KiemKeXuatHuyLap);
+    var lines = Model.CtKiemKes.OrderBy(line => line.SanPham.TenSanPham).ToArray();
+    var showCost = User.IsInRole(BangQuyen.Admin);
+}
+<h1>Kiểm kê @Model.MaPhieu</h1>
+<p>@Model.TrangThai @Model.LyDoTuChoi</p>
+@if (TempData["Loi"] is string error) { <p class="alert alert-danger">@error</p> }
+@if (Model.TrangThai != "DA_DIEU_CHINH" && lines.Any(line => line.TonLucLap != line.SanPham.TonKho?.SoLuongTon))
+{
+    <p class="alert alert-warning">Tồn đã thay đổi từ lúc lập phiếu. Chênh lệch khi duyệt sẽ tính theo tồn tại thời điểm duyệt.</p>
+}
+<form asp-action="SaveCount" asp-route-id="@Model.Id" method="post">
+    <input type="hidden" name="version" value="@Model.PhienBan">
+    <table class="table">
+        <thead><tr><th>Sản phẩm</th><th>Tồn lúc lập</th><th>Tồn hiện tại</th><th>Đếm thực tế</th><th>Chênh lệch</th><th>Lý do</th>@if (showCost) { <th>Giá trị chênh lệch</th> }</tr></thead>
+        <tbody>
+        @for (var i = 0; i < lines.Length; i++)
+        {
+            var line = lines[i];
+            var delta = line.ChenhLechLucDuyet ?? (line.SoLuongThucTe - (line.SanPham.TonKho?.SoLuongTon ?? 0));
+            var cost = line.GiaVonLucDuyet ?? line.SanPham.TonKho?.GiaVonBinhQuan;
+            <tr>
+                <td>@line.SanPham.TenSanPham</td><td>@line.TonLucLap</td><td>@line.SanPham.TonKho?.SoLuongTon</td>
+                @if (canEdit)
+                {
+                    <td><input name="lines[@i].ProductId" type="hidden" value="@line.SanPhamId"><input type="number" name="lines[@i].Quantity" min="0" value="@line.SoLuongThucTe" aria-label="Đếm thực tế"></td>
+                    <td>@delta</td><td><input name="lines[@i].Note" maxlength="255" value="@line.LyDoChenhLech" aria-label="Lý do"></td>
+                }
+                else
+                {
+                    <td>@line.SoLuongThucTe</td><td>@delta</td><td>@line.LyDoChenhLech</td>
+                }
+                @if (showCost) { <td>@((delta * cost)?.ToString("N2"))</td> }
+            </tr>
+        }
+        </tbody>
+    </table>
+    @if (canEdit)
+    {
+        <button class="btn btn-outline-secondary" name="submit" value="false">Lưu nháp</button>
+        <button class="btn btn-primary" name="submit" value="true">Gửi duyệt</button>
+    }
+</form>
+@if (Model.TrangThai == "CHO_DUYET" && User.HasClaim("quyen", MaQuyen.KiemKeXuatHuyDuyet))
+{
+    <form asp-action="ReviewCount" asp-route-id="@Model.Id" method="post" class="mb-3">
+        <button class="btn btn-primary" name="approve" value="true">Duyệt và điều chỉnh tồn</button>
+        <label>Lý do từ chối <input name="reason" maxlength="255"></label>
+        <button class="btn btn-outline-danger" name="approve" value="false">Từ chối</button>
+    </form>
+}
+<p><a asp-action="Index">Về chứng từ kho</a></p>

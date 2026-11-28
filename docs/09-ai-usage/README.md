@@ -10,7 +10,7 @@ Minh bạch việc dùng công cụ AI (ChatGPT, Gemini, Copilot…) trong dự 
 | Tài liệu | Mô tả | Trạng thái |
 |---|---|---|
 | `ai-policy.md` | Quy định của nhóm: được dùng AI cho việc gì, không được dùng cho việc gì, yêu cầu kiểm chứng | Chưa có |
-| [`ai-usage-log.md`](ai-usage-log.md) | Nhật ký từng lần dùng AI, gắn với giai đoạn và tài liệu/PR bị ảnh hưởng | Khung sẵn |
+| [`ai-usage-log.md`](ai-usage-log.md) | Nhật ký từng lần dùng AI, gắn với giai đoạn và tài liệu/PR bị ảnh hưởng | Có bản ghi; chưa xác nhận đầy đủ lịch sử hoặc kiểm chứng độc lập |
 | `prompts/` | Lưu prompt quan trọng có thể tái sử dụng | Chưa có |
 | `evaluation.md` | Đánh giá cuối kỳ: AI giúp ở đâu, sai ở đâu, bài học | Chưa có |
 

@@ -23,8 +23,14 @@ Mô tả **hệ thống được thiết kế ra sao** để đáp ứng yêu c�
 
 | Tài liệu | Mô tả | Module |
 |---|---|---|
+| [`supabase-entity-mapping-20261123.md`](supabase-entity-mapping-20261123.md) | Ánh xạ 31 bảng Supabase từ catalog thật; chỉ đọc đã xác minh, chuyển SQL/E2E còn chờ | Toàn hệ thống |
 | [`database/product-purchase/`](database/product-purchase/) | T3-09 — ERD, từ điển dữ liệu, ghi chú thiết kế Sản phẩm & Nhập hàng | SP, NH, KHO |
 | [`database/invoice-returns/`](database/invoice-returns/) | Issue #9 — ERD (drawio/mmd/dot/svg), từ điển dữ liệu Hóa đơn & Đổi trả | POS, DT |
+| [`database/reconciliation-20261123/`](database/reconciliation-20261123/) | Đối chiếu ba migration với schema/ERD/SRS; ERD bổ sung, từ điển và DDL tham chiếu **chờ duyệt** | POS, DT, BC, CSDL |
+| [`database/cash-promotion-20261123.md`](database/cash-promotion-20261123.md) | Đề xuất sửa đồng bộ hủy hóa đơn/quỹ, chốt số dư và lưu ảnh KM; hai migration mới **chờ duyệt** | POS, DT, KM |
+| [`database/customers-promotions/`](database/customers-promotions/README.md) | ERD KH/KM, quan hệ điểm và snapshot, phần thiết kế #251; đang review | KH, KM |
+| [`sequences/kh06-bc08.md`](sequences/kh06-bc08.md) | Sequence KH-06/POS-07 và BC-08 theo mã thực tế; #252 | KH, POS, BC |
+| [`api/week8-reports-promotions.md`](api/week8-reports-promotions.md) | Hợp đồng tuần 8 và OpenAPI JSON cho KM-05/06, BC-09..11 | KM, BC |
 | [`api/pos-dt.openapi.yaml`](api/pos-dt.openapi.yaml) | T3-14 — OpenAPI POS và Đổi trả | POS, DT |
 | [`api/openapi-report-customer-promotion.yaml`](api/openapi-report-customer-promotion.yaml) | OpenAPI Báo cáo, Khách hàng, Khuyến mãi | BC, KH, KM |
 | [`api/sales.md`](api/sales.md) | T3-14 — Bản gộp hợp đồng API POS + DT + phối hợp AUTH | POS, DT |

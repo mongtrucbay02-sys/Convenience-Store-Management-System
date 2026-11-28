@@ -1,0 +1,41 @@
+@using ConvenienceStore.Web.Modules.Products.DTOs
+@model PagedResultDto<ProductListItemDto>
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Sản phẩm"; var query = ViewData["Query"] as ProductListQuery ?? new(); }
+<h1>Sản phẩm</h1>
+@if(User.HasClaim("quyen", "SAN_PHAM_SUA")){<a href="/Products/Create">Thêm sản phẩm</a>}
+<form method="get" action="/Products" class="mb-3">
+    <label>Từ khóa <input name="keyword" value="@query.Keyword" maxlength="200" /></label>
+    <label>Danh mục <input name="danhMucId" list="product-categories" type="number" min="1" value="@query.DanhMucId" /></label>
+    <datalist id="product-categories">
+    @foreach(var category in ViewData["Categories"] as IReadOnlyList<CategoryListItemDto> ?? []){<option value="@category.Id">@category.Ten</option>}
+    </datalist>
+    <a href="/Categories">Tra danh mục khác (nhập ID)</a>
+    <label>Trạng thái <select name="trangThai">
+        <option value="">Tất cả</option>
+        <option value="DANG_KINH_DOANH" selected="@(query.TrangThai == "DANG_KINH_DOANH")">Đang kinh doanh</option>
+        @if(!User.IsInRole("TN")){<option value="NGUNG_KINH_DOANH" selected="@(query.TrangThai == "NGUNG_KINH_DOANH")">Ngừng kinh doanh</option>}
+    </select></label>
+    <label>Giá từ <input name="giaBanTu" type="number" min="0" value="@query.GiaBanTu" /></label>
+    <label>Giá đến <input name="giaBanDen" type="number" min="0" value="@query.GiaBanDen" /></label>
+    <label>Sắp xếp <select name="sort">
+    @foreach(var sort in new[]{"tenSanPham","-tenSanPham","ma","-ma","giaBan","-giaBan","trangThai","-ngayTao"}){<option value="@sort" selected="@(query.Sort == sort)">@sort</option>}
+    </select></label>
+    <label>Số dòng <input name="size" type="number" min="1" max="100" value="@Model.Size" /></label>
+    <button type="submit">Tìm kiếm</button><a href="/Products">Xóa bộ lọc</a>
+</form>
+@if(ViewData["ListError"] is string error){<p role="alert">@error</p><a href="/Products">Thử lại</a>}
+else if(Model.Items.Count == 0){<p data-empty="products">Không tìm thấy sản phẩm</p>}
+else
+{
+<table class="table"><thead><tr><th>Mã</th><th>Tên</th><th>Danh mục</th><th>Đơn vị</th><th>Giá bán</th><th>Tồn kho</th><th>Trạng thái</th>@if(User.IsInRole("AD")){<th data-cost>Giá vốn</th>}</tr></thead>
+<tbody>@foreach(var p in Model.Items){<tr><td>@p.Ma</td><td><a href="/Products/@p.Id">@p.TenSanPham</a></td><td>@p.DanhMuc.Ten</td><td>@p.DonViTinh</td><td>@p.GiaBan</td><td>@p.TonKho</td><td>@p.TrangThai</td>@if(User.IsInRole("AD")){<td data-cost>@p.GiaVon</td>}</tr>}</tbody></table>
+}
+<p>Trang @Model.Page · Tổng @Model.Total sản phẩm</p>
+@functions {
+    string PageLink(int page) {
+        var pairs = Context.Request.Query.ToDictionary(x => x.Key, x => (string?)x.Value.ToString()); pairs["page"] = page.ToString();
+        return "/Products" + Microsoft.AspNetCore.Http.QueryString.Create(pairs);
+    }
+}
+@if(Model.Page > 1){<a rel="prev" href="@PageLink(Model.Page - 1)">Trước</a>}
+@if((long)Model.Page * Model.Size < Model.Total){<a rel="next" href="@PageLink(Model.Page + 1)">Sau</a>}

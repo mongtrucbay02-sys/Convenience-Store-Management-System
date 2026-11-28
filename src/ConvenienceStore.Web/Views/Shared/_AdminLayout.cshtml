@@ -1,3 +1,111 @@
+@using ConvenienceStore.Web.Modules.Auth.Security
+@{
+    var admin = User.IsInRole(BangQuyen.Admin);
+    var cashier = User.IsInRole(BangQuyen.ThuNgan);
+    var warehouse = User.IsInRole(BangQuyen.NhanVienKho);
+    var roleName = admin ? "Admin" : cashier ? "Thu ngân" : warehouse ? "Nhân viên kho" : "Khách";
+    var reports = new (string Action, string Label)[]
+    {
+        ("Dashboard", "Tổng quan báo cáo"), ("Revenue", "Doanh thu theo thời gian"),
+        ("Products", "Doanh thu theo sản phẩm"), ("Categories", "Doanh thu theo danh mục"),
+        ("Cashiers", "Doanh thu theo thu ngân"), ("Inventory", "Báo cáo tồn kho"),
+        ("Purchases", "Báo cáo nhập hàng"), ("GrossProfit", "Lợi nhuận gộp"),
+        ("Returns", "Báo cáo đổi trả"), ("Customers", "Khách hàng và tích điểm"), ("Promotions", "Hiệu quả khuyến mãi")
+    };
+    bool InArea(string area) => string.Equals(ViewContext.RouteData.Values["area"] as string, area, StringComparison.OrdinalIgnoreCase);
+}
 <!DOCTYPE html>
-<html lang="vi"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>@ViewData["Title"] - Smart Mart</title><link rel="stylesheet" href="~/css/admin-layout.css" asp-append-version="true"/></head>
-<body><div class="shell"><aside class="sidebar"><a class="brand" asp-controller="Dashboard" asp-action="Index">▣ Smart Mart</a><div class="sub">QUẢN LÝ CỬA HÀNG</div><nav><a asp-controller="Dashboard" asp-action="Index">▦ Tổng quan</a><a asp-controller="Pos" asp-action="Index">▤ Bán hàng POS</a><a asp-controller="Returns" asp-action="Index">↺ Đổi trả</a></nav><div class="sidefoot">Giao diện mẫu</div></aside><div class="main"><header class="top"><div><strong>@ViewData["Title"]</strong><span> / Hệ thống quản lý cửa hàng tiện lợi</span></div><span class="chip">Giao diện quản lý</span></header><main class="content">@RenderBody()</main><footer>Smart Mart · Khung giao diện dùng chung · Chưa kết nối dữ liệu thật</footer></div></div>@await RenderSectionAsync("Scripts", required: false)</body></html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · Smart Mart</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/admin-layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/smartmart-theme.css" asp-append-version="true" />
+</head>
+<body class="smartmart-workspace smartmart-app">
+    <a class="visually-hidden-focusable skip-content" href="#main-content">Đến nội dung</a>
+    <div class="shell">
+        <aside class="sidebar">
+            <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">SM</span> Smart Mart</a>
+            <nav aria-label="Chức năng Smart Mart">
+                @if (admin)
+                {
+                    <a asp-area="" asp-controller="Dashboard" asp-action="Index">Bảng điều khiển</a>
+                    <a asp-area="" asp-controller="CashLedger" asp-action="Index">Quỹ tiền mặt</a>
+                    <details open="@InArea("Reports")">
+                        <summary>Báo cáo và thống kê</summary>
+                        <div class="sidebar-submenu">
+                            @foreach (var report in reports)
+                            {
+                                <a asp-area="Reports" asp-controller="Reports" asp-action="@report.Action">@report.Label</a>
+                            }
+                        </div>
+                    </details>
+                }
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-area="" asp-controller="Home" asp-action="Workspace">Vận hành cửa hàng</a>
+                }
+                @if (User.HasClaim("quyen", MaQuyen.NhaCungCapQuanLy))
+                {
+                    <a asp-area="" asp-controller="Suppliers" asp-action="Index">Nhà cung cấp</a>
+                }
+                @if (User.HasClaim("quyen", MaQuyen.PhieuNhapXem))
+                {
+                    <a asp-area="" asp-controller="PurchaseReceipts" asp-action="Index">Phiếu nhập hàng</a>
+                }
+                @if (User.HasClaim("quyen", MaQuyen.NhapHangLichSuNcc))
+                {
+                    <a asp-area="" asp-controller="SupplierPurchaseHistory" asp-action="Index">Lịch sử nhập theo NCC</a>
+                }
+                @if (User.HasClaim("quyen", MaQuyen.TonKhoXem))
+                {
+                    <a asp-area="" asp-controller="StockOverview" asp-action="Index">Tồn kho</a>
+                }
+                @if (cashier)
+                {
+                    <a asp-area="" asp-controller="Pos" asp-action="Index">Quầy bán hàng POS</a>
+                }
+                @if ((cashier && User.HasClaim("quyen", MaQuyen.DoiTra))
+                    || (admin && User.HasClaim("quyen", MaQuyen.DoiTraDuyetCauHinh)))
+                {
+                    <a asp-area="" asp-controller="ReturnSlips" asp-action="Index">Đổi trả</a>
+                }
+                @if (admin || cashier)
+                {
+                    <a asp-area="" asp-controller="Invoices" asp-action="Index">Hóa đơn</a>
+                    <a asp-area="" asp-controller="Customers" asp-action="Index">Khách hàng</a>
+                    <a asp-area="Promotions" asp-controller="Promotions" asp-action="Index">Khuyến mãi</a>
+                }
+            </nav>
+            <div class="sidebar-account">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <span>@(User.Identity.Name ?? roleName)</span>
+                    <a href="/doi-mat-khau.html">Đổi mật khẩu</a>
+                    <button id="smartmart-logout" type="button">Đăng xuất</button>
+                    <span id="smartmart-logout-message" role="status"></span>
+                }
+                else
+                {
+                    <a href="/login.html">Đăng nhập</a>
+                }
+            </div>
+        </aside>
+        <div class="main">
+            <header class="top">
+                <strong>@ViewData["Title"]</strong>
+                <span class="chip">@roleName</span>
+            </header>
+            <main class="content" id="main-content">@RenderBody()</main>
+            <footer class="admin-footer">© @DateTime.Now.Year Smart Mart</footer>
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/smartmart-logout.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

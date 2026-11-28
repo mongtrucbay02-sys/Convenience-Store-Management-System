@@ -1,0 +1,54 @@
+sequenceDiagram
+    autonumber
+    actor NKAD as NK hoặc AD
+    participant UI as Giao diện nhập hàng
+    participant NH as Điều phối NH-06 dự kiến
+    participant DB as MySQL
+    participant KHO as DichVuKho
+
+    NKAD->>UI: Mở phiếu và chọn xác nhận nhập kho
+    UI->>NH: Gửi yêu cầu xác nhận phiếu
+    NH->>NH: Kiểm tra quyền PHIEU_NHAP_XAC_NHAN
+    NH->>DB: Đọc phiếu, chi tiết và dữ liệu tóm tắt
+    DB-->>NH: Trạng thái, dòng hàng, tổng tiền
+    NH-->>UI: Hiển thị tóm tắt và hỏi xác nhận
+    UI-->>NKAD: Hiển thị số mặt hàng, lượng, tiền
+    NKAD->>UI: Đồng ý xác nhận
+    UI->>NH: Xác nhận lần cuối
+
+    alt Sản phẩm đã ngừng kinh doanh (E1)
+        NH-->>UI: Cảnh báo#59; yêu cầu xử lý phiếu hoặc mở bán lại theo quyền
+        UI-->>NKAD: Chờ người dùng hoàn tất xử lý hợp lệ rồi gửi yêu cầu mới
+    else Phiếu và dòng hợp lệ
+        NH->>DB: BeginTransactionAsync()
+        NH->>DB: Khóa phieu_nhap FOR UPDATE, đọc lại trạng thái và chi tiết
+        alt Phiếu không còn NHAP hoặc dữ liệu không hợp lệ
+            NH->>DB: RollbackAsync()
+            NH-->>UI: Báo xung đột hoặc yêu cầu sửa phiếu
+        else Có thể xác nhận
+            NH->>KHO: GhiNhanBienDongAsync(NHAP_HANG, ID/mã phiếu, các dòng)
+            KHO->>DB: Khóa ton_kho FOR UPDATE theo SanPhamId tăng dần
+            KHO->>DB: Tăng tồn, tính giá vốn bình quân, INSERT the_kho
+            alt GhiNhanBienDongAsync ném exception (E2)
+                KHO-->>NH: Ném exception
+                NH->>DB: RollbackAsync()
+                NH-->>UI: Báo lỗi, phiếu và tồn giữ trạng thái cũ
+            else KHO trả KetQuaBienDong
+                KHO-->>NH: KetQuaBienDong
+                NH->>DB: UPDATE phieu_nhap WHERE trang_thai = NHAP
+                alt UPDATE ném exception hoặc cập nhật 0 dòng (E2)
+                    DB-->>NH: Exception hoặc 0 dòng
+                    NH->>DB: RollbackAsync()
+                    NH-->>UI: Báo lỗi hoặc xung đột, tải lại phiếu
+                else Cập nhật đúng 1 dòng
+                    DB-->>NH: 1 dòng
+                    NH->>DB: CommitAsync()
+                    NH-->>UI: Phiếu DA_NHAP_KHO, kết quả nhập
+                    opt Giá vốn mới >= giá bán hiện hành (A1)
+                        NH-->>UI: Liệt kê sản phẩm để AD cân nhắc SP-05
+                    end
+                    UI-->>NKAD: Hiển thị kết quả, không tự đổi giá bán
+                end
+            end
+        end
+    end

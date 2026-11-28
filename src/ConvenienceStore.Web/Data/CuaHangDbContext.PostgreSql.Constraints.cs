@@ -1,0 +1,122 @@
+using Microsoft.EntityFrameworkCore;
+
+namespace ConvenienceStore.Web.Data;
+
+public partial class CuaHangDbContext
+{
+    // Giữ metadata từ catalog để model khớp schema; không chạy DDL trên CSDL.
+    private static void ConfigurePostgreSqlConstraints(ModelBuilder modelBuilder)
+    {
+        var tables = modelBuilder.Model.GetEntityTypes().Where(e => e.GetSchema() == "smartmart" && e.GetTableName() is not null)
+            .ToDictionary(e => e.GetTableName()!);
+        Check("bo_dem_chung_tu", "ck_bo_dem_tien_to", "((tien_to)::text = ANY ((ARRAY['PN'::character varying, 'HD'::character varying, 'TH'::character varying, 'KK'::character varying, 'XH'::character varying, 'SP'::character varying, 'NCC'::character varying, 'KM'::character varying])::text[]))");
+        Check("chuong_trinh_khuyen_mai", "ck_chuong_trinh_khuyen_mai_loai_giam_enum", "((loai_giam)::text = ANY ((ARRAY['PHAN_TRAM'::character varying, 'SO_TIEN'::character varying])::text[]))");
+        Check("chuong_trinh_khuyen_mai", "ck_chuong_trinh_khuyen_mai_trang_thai_enum", "((trang_thai)::text = ANY ((ARRAY['NHAP'::character varying, 'DA_KICH_HOAT'::character varying, 'TAM_DUNG'::character varying, 'DA_KET_THUC'::character varying])::text[]))");
+        Check("ct_phieu_doi_tra", "ck_ct_phieu_doi_tra_cach_xu_ly_enum", "((cach_xu_ly)::text = ANY ((ARRAY['NHAP_LAI'::character varying, 'HUY'::character varying])::text[]))");
+        Check("ct_phieu_doi_tra", "ck_ct_phieu_doi_tra_ly_do_enum", "((ly_do)::text = ANY ((ARRAY['LOI_SAN_PHAM'::character varying, 'HET_HAN'::character varying, 'KHONG_DUNG_NHU_CAU'::character varying, 'KHAC'::character varying])::text[]))");
+        Check("ct_xuat_huy", "ck_ct_xuat_huy_ly_do_enum", "((ly_do)::text = ANY ((ARRAY['HONG'::character varying, 'HET_HAN'::character varying, 'MAT'::character varying, 'KHAC'::character varying])::text[]))");
+        Check("ct_phieu_doi_tra", "ck_ctdt_khac", "(((ly_do)::text <> 'KHAC'::text) OR (ghi_chu_ly_do IS NOT NULL))");
+        Check("ct_phieu_doi_tra", "ck_ctdt_so_luong", "(so_luong > 0)");
+        Check("ct_gio_hang", "ck_ctgh_giam", "((giam_don_vi <= don_gia) AND ((giam_don_vi % (100)::bigint) = 0))");
+        Check("ct_gio_hang", "ck_ctgh_km", "((khuyen_mai_id IS NOT NULL) OR (giam_don_vi = 0))");
+        Check("ct_gio_hang", "ck_ctgh_so_luong", "(so_luong > 0)");
+        Check("ct_hoa_don", "ck_cthd_giam", "((giam_don_vi <= don_gia) AND ((giam_don_vi % (100)::bigint) = 0))");
+        Check("ct_hoa_don", "ck_cthd_km", "((khuyen_mai_id IS NOT NULL) OR (giam_don_vi = 0))");
+        Check("ct_hoa_don", "ck_cthd_so_luong", "(so_luong > 0)");
+        Check("ct_kiem_ke", "ck_ctkk_thuc_te", "((so_luong_thuc_te IS NULL) OR (so_luong_thuc_te >= 0))");
+        Check("chuong_trinh_khuyen_mai", "ck_ctkm_gia_tri", "((((loai_giam)::text = 'PHAN_TRAM'::text) AND ((gia_tri >= 1) AND (gia_tri <= 100)) AND ((giam_toi_da IS NULL) OR ((giam_toi_da > 0) AND ((giam_toi_da % (100)::bigint) = 0)))) OR (((loai_giam)::text = 'SO_TIEN'::text) AND (gia_tri > 0) AND ((gia_tri % (100)::bigint) = 0) AND (giam_toi_da IS NULL)))");
+        Check("chuong_trinh_khuyen_mai", "ck_ctkm_thoi_gian", "(ket_thuc_luc > bat_dau_luc)");
+        Check("ct_phieu_nhap", "ck_ctpn_so_luong", "(so_luong > 0)");
+        Check("ct_xuat_huy", "ck_ctxh_khac", "(((ly_do)::text <> 'KHAC'::text) OR (ghi_chu_ly_do IS NOT NULL))");
+        Check("ct_xuat_huy", "ck_ctxh_so_luong", "(so_luong > 0)");
+        Check("danh_muc", "ck_danh_muc_trang_thai_enum", "((trang_thai)::text = ANY ((ARRAY['HOAT_DONG'::character varying, 'DA_AN'::character varying])::text[]))");
+        Check("giao_dich_tien_mat", "ck_gdtm_balance", "((((loai)::text = 'THU_BAN_HANG'::text) AND (so_du_sau = (so_du_truoc + so_tien))) OR (((loai)::text = ANY ((ARRAY['CHI_HOAN_TRA'::character varying, 'CHI_HUY_HOA_DON'::character varying])::text[])) AND (so_du_truoc = (so_du_sau + so_tien))) OR ((loai)::text = 'CHOT_SO_DU_DAU'::text))");
+        Check("giao_dich_tien_mat", "ck_gdtm_link", "((((loai)::text = ANY ((ARRAY['THU_BAN_HANG'::character varying, 'CHI_HUY_HOA_DON'::character varying])::text[])) AND (hoa_don_id IS NOT NULL) AND (phieu_doi_tra_id IS NULL) AND (so_tien > 0)) OR (((loai)::text = 'CHI_HOAN_TRA'::text) AND (hoa_don_id IS NULL) AND (phieu_doi_tra_id IS NOT NULL) AND (so_tien > 0)) OR (((loai)::text = 'CHOT_SO_DU_DAU'::text) AND (hoa_don_id IS NULL) AND (phieu_doi_tra_id IS NULL) AND (NULLIF(btrim((ghi_chu)::text), ''::text) IS NOT NULL)))");
+        Check("ton_kho", "ck_gia_von_khong_am", "(gia_von_binh_quan >= (0)::numeric)");
+        Check("gio_hang", "ck_gio_hang_ly_do_huy_enum", "((ly_do_huy)::text = ANY ((ARRAY['THU_NGAN_HUY'::character varying, 'HET_HAN_TAM_GIU'::character varying])::text[]))");
+        Check("gio_hang", "ck_gio_hang_trang_thai_enum", "((trang_thai)::text = ANY ((ARRAY['DANG_BAN'::character varying, 'TAM_GIU'::character varying, 'DA_HOAN_TAT'::character varying, 'DA_HUY'::character varying])::text[]))");
+        Check("gio_hang", "ck_gio_huy", "(((trang_thai)::text <> 'DA_HUY'::text) OR ((huy_luc IS NOT NULL) AND (ly_do_huy IS NOT NULL) AND (gia_tri_khi_huy IS NOT NULL)))");
+        Check("gio_hang", "ck_gio_tam_giu", "(((trang_thai)::text <> 'TAM_GIU'::text) OR (tam_giu_luc IS NOT NULL))");
+        Check("hoa_don", "ck_hd_diem", "((khach_hang_id IS NOT NULL) OR ((diem_cong = 0) AND (so_tien_mot_diem IS NULL)))");
+        Check("hoa_don", "ck_hd_huy", "(((trang_thai)::text <> 'DA_HUY'::text) OR ((nguoi_huy_id IS NOT NULL) AND (huy_luc IS NOT NULL) AND (ly_do_huy IS NOT NULL)))");
+        Check("hoa_don", "ck_hd_tien_thua", "((tien_khach_dua + tien_tru_hang_doi) = (tong_thanh_toan + tien_thua))");
+        Check("hoa_don", "ck_hd_tong", "((tong_thanh_toan + tong_giam) = tong_tien_hang)");
+        Check("hoa_don", "ck_hd_tru_doi", "(tien_tru_hang_doi <= tong_thanh_toan)");
+        Check("hoa_don", "ck_hoa_don_trang_thai_enum", "((trang_thai)::text = ANY ((ARRAY['DA_THANH_TOAN'::character varying, 'DA_HUY'::character varying])::text[]))");
+        Check("khach_hang", "ck_kh_hoat_dong", "(((trang_thai)::text <> 'HOAT_DONG'::text) OR ((ho_ten IS NOT NULL) AND (so_dien_thoai IS NOT NULL)))");
+        Check("khach_hang", "ck_kh_sdt", "((so_dien_thoai IS NULL) OR ((so_dien_thoai)::text ~ '^0[0-9]{9}$'::text))");
+        Check("khach_hang", "ck_khach_hang_gioi_tinh_enum", "((gioi_tinh)::text = ANY ((ARRAY['NAM'::character varying, 'NU'::character varying, 'KHAC'::character varying])::text[]))");
+        Check("khach_hang", "ck_khach_hang_trang_thai_enum", "((trang_thai)::text = ANY ((ARRAY['HOAT_DONG'::character varying, 'DA_AN'::character varying])::text[]))");
+        Check("lich_su_diem", "ck_lich_su_diem_loai_enum", "((loai)::text = ANY ((ARRAY['TICH_DIEM'::character varying, 'THU_HOI_TRA_HANG'::character varying, 'THU_HOI_HUY_HOA_DON'::character varying, 'DIEU_CHINH'::character varying])::text[]))");
+        Check("lich_su_diem", "ck_lsd_huong", "((((loai)::text = 'TICH_DIEM'::text) AND (so_diem > 0) AND (hoa_don_id IS NOT NULL)) OR (((loai)::text = 'THU_HOI_TRA_HANG'::text) AND (so_diem < 0) AND (phieu_doi_tra_id IS NOT NULL)) OR (((loai)::text = 'THU_HOI_HUY_HOA_DON'::text) AND (so_diem < 0) AND (hoa_don_id IS NOT NULL)) OR (((loai)::text = 'DIEU_CHINH'::text) AND (ly_do IS NOT NULL)))");
+        Check("lich_su_diem", "ck_lsd_khac_0", "(so_diem <> 0)");
+        Check("lich_su_gia", "ck_lsg_gia", "((gia_ban > 0) AND ((gia_ban % (100)::bigint) = 0))");
+        Check("lich_su_gia", "ck_lsg_huy", "((huy_luc IS NULL) = (nguoi_huy_id IS NULL))");
+        Check("nha_cung_cap", "ck_ncc_sdt", "((so_dien_thoai)::text ~ '^0[0-9]{9,10}$'::text)");
+        Check("ton_kho", "ck_nguong_khong_am", "(nguong_toi_thieu >= 0)");
+        Check("nha_cung_cap", "ck_nha_cung_cap_trang_thai_enum", "((trang_thai)::text = ANY ((ARRAY['HOAT_DONG'::character varying, 'NGUNG_HOP_TAC'::character varying])::text[]))");
+        Check("phieu_doi_tra", "ck_pdt_can_duyet", "((NOT (can_duyet_qua_han OR can_duyet_danh_muc OR can_duyet_vuot_nguong)) OR ((trang_thai)::text = 'CHO_DUYET'::text) OR ((nguoi_duyet_id IS NOT NULL) AND (duyet_luc IS NOT NULL)))");
+        Check("phieu_doi_tra", "ck_pdt_da_duyet", "(((trang_thai)::text <> 'DA_DUYET'::text) OR ((loai)::text = 'DOI_HANG'::text))");
+        Check("phieu_doi_tra", "ck_pdt_doi", "(((loai)::text <> 'DOI_HANG'::text) OR ((tien_hoan = 0) AND (((trang_thai)::text <> 'HOAN_TAT'::text) OR (hoa_don_moi_id IS NOT NULL))))");
+        Check("phieu_doi_tra", "ck_pdt_hoan_tat", "(((trang_thai)::text <> 'HOAN_TAT'::text) OR (hoan_tat_luc IS NOT NULL))");
+        Check("phieu_doi_tra", "ck_pdt_khong_can_duyet", "(can_duyet_qua_han OR can_duyet_danh_muc OR can_duyet_vuot_nguong OR (((trang_thai)::text = 'HOAN_TAT'::text) AND (nguoi_duyet_id IS NULL)))");
+        Check("phieu_doi_tra", "ck_pdt_tra", "(((loai)::text <> 'TRA_HANG'::text) OR ((hoa_don_moi_id IS NULL) AND (tien_thu_them = 0) AND (tien_hoan = gia_tri_hang_tra)))");
+        Check("phien_dang_nhap", "ck_phien_het_han", "(het_han_luc > ngay_tao)");
+        Check("phien_dang_nhap", "ck_phien_token_hash", "(token_bam ~ '^[0-9a-f]{64}$'::text)");
+        Check("phieu_doi_tra", "ck_phieu_doi_tra_loai_enum", "((loai)::text = ANY ((ARRAY['TRA_HANG'::character varying, 'DOI_HANG'::character varying])::text[]))");
+        Check("phieu_doi_tra", "ck_phieu_doi_tra_trang_thai_enum", "((trang_thai)::text = ANY ((ARRAY['CHO_DUYET'::character varying, 'DA_DUYET'::character varying, 'HOAN_TAT'::character varying, 'BI_TU_CHOI'::character varying])::text[]))");
+        Check("phieu_kiem_ke", "ck_phieu_kiem_ke_pham_vi_enum", "((pham_vi)::text = ANY ((ARRAY['TOAN_BO'::character varying, 'DANH_MUC'::character varying, 'CHON_SAN_PHAM'::character varying])::text[]))");
+        Check("phieu_kiem_ke", "ck_phieu_kiem_ke_trang_thai_enum", "((trang_thai)::text = ANY ((ARRAY['NHAP'::character varying, 'CHO_DUYET'::character varying, 'BI_TU_CHOI'::character varying, 'DA_DIEU_CHINH'::character varying])::text[]))");
+        Check("phieu_nhap", "ck_phieu_nhap_trang_thai_enum", "((trang_thai)::text = ANY ((ARRAY['NHAP'::character varying, 'DA_NHAP_KHO'::character varying, 'DA_HUY'::character varying])::text[]))");
+        Check("phieu_xuat_huy", "ck_phieu_xuat_huy_trang_thai_enum", "((trang_thai)::text = ANY ((ARRAY['NHAP'::character varying, 'CHO_DUYET'::character varying, 'BI_TU_CHOI'::character varying, 'DA_XUAT_HUY'::character varying])::text[]))");
+        Check("phieu_kiem_ke", "ck_pkk_danh_muc", "(((pham_vi)::text = 'DANH_MUC'::text) = (danh_muc_id IS NOT NULL))");
+        Check("phieu_kiem_ke", "ck_pkk_duyet", "(((trang_thai)::text <> ALL ((ARRAY['BI_TU_CHOI'::character varying, 'DA_DIEU_CHINH'::character varying])::text[])) OR ((nguoi_duyet_id IS NOT NULL) AND (duyet_luc IS NOT NULL)))");
+        Check("phieu_kiem_ke", "ck_pkk_tu_choi", "(((trang_thai)::text <> 'BI_TU_CHOI'::text) OR (ly_do_tu_choi IS NOT NULL))");
+        Check("phieu_nhap", "ck_pn_huy", "(((trang_thai)::text <> 'DA_HUY'::text) OR ((nguoi_huy_id IS NOT NULL) AND (huy_luc IS NOT NULL) AND (ly_do_huy IS NOT NULL)))");
+        Check("phieu_nhap", "ck_pn_xac_nhan", "(((trang_thai)::text <> 'DA_NHAP_KHO'::text) OR ((nguoi_xac_nhan_id IS NOT NULL) AND (xac_nhan_luc IS NOT NULL)))");
+        Check("phieu_xuat_huy", "ck_pxh_duyet", "(((trang_thai)::text <> ALL ((ARRAY['BI_TU_CHOI'::character varying, 'DA_XUAT_HUY'::character varying])::text[])) OR ((nguoi_duyet_id IS NOT NULL) AND (duyet_luc IS NOT NULL)))");
+        Check("phieu_xuat_huy", "ck_pxh_tu_choi", "(((trang_thai)::text <> 'BI_TU_CHOI'::text) OR (ly_do_tu_choi IS NOT NULL))");
+        Check("quy_tac_tich_diem", "ck_qttd_so_tien", "(so_tien_mot_diem > 0)");
+        Check("san_pham", "ck_san_pham_trang_thai_enum", "((trang_thai)::text = ANY ((ARRAY['DANG_KINH_DOANH'::character varying, 'NGUNG_KINH_DOANH'::character varying])::text[]))");
+        Check("tai_khoan", "ck_tai_khoan_khoa", "(((trang_thai)::text <> 'DA_KHOA'::text) OR (ly_do_khoa IS NOT NULL))");
+        Check("tai_khoan", "ck_tai_khoan_sdt", "((so_dien_thoai IS NULL) OR ((so_dien_thoai)::text ~ '^0[0-9]{9}$'::text))");
+        Check("tai_khoan", "ck_tai_khoan_ten", "((ten_dang_nhap)::text ~ '^[A-Za-z0-9._]{3,50}$'::text)");
+        Check("tai_khoan", "ck_tai_khoan_trang_thai_enum", "((trang_thai)::text = ANY ((ARRAY['HOAT_DONG'::character varying, 'DA_KHOA'::character varying])::text[]))");
+        Check("the_kho", "ck_the_kho_huong", "((((loai_bien_dong)::text = ANY ((ARRAY['NHAP_HANG'::character varying, 'HUY_HOA_DON'::character varying, 'TRA_HANG'::character varying])::text[])) AND (so_luong_thay_doi > 0)) OR (((loai_bien_dong)::text = ANY ((ARRAY['BAN_HANG'::character varying, 'XUAT_HUY'::character varying])::text[])) AND (so_luong_thay_doi < 0)) OR ((loai_bien_dong)::text = 'KIEM_KE'::text))");
+        Check("the_kho", "ck_the_kho_khac_0", "(so_luong_thay_doi <> 0)");
+        Check("the_kho", "ck_the_kho_loai_bien_dong_enum", "((loai_bien_dong)::text = ANY ((ARRAY['NHAP_HANG'::character varying, 'BAN_HANG'::character varying, 'HUY_HOA_DON'::character varying, 'TRA_HANG'::character varying, 'KIEM_KE'::character varying, 'XUAT_HUY'::character varying])::text[]))");
+        Check("the_kho", "ck_the_kho_ton_sau", "(ton_sau >= 0)");
+        Check("ton_kho", "ck_ton_khong_am", "(so_luong_ton >= 0)");
+        Check("vai_tro", "ck_vai_tro_ma", "(ma = ANY (ARRAY['AD'::bpchar, 'TN'::bpchar, 'NK'::bpchar]))");
+        Check("giao_dich_tien_mat", "giao_dich_tien_mat_loai_check", "((loai)::text = ANY ((ARRAY['THU_BAN_HANG'::character varying, 'CHI_HOAN_TRA'::character varying, 'CHI_HUY_HOA_DON'::character varying, 'CHOT_SO_DU_DAU'::character varying])::text[]))");
+        Check("giao_dich_tien_mat", "giao_dich_tien_mat_so_du_sau_check", "(so_du_sau >= 0)");
+        Check("giao_dich_tien_mat", "giao_dich_tien_mat_so_du_truoc_check", "(so_du_truoc >= 0)");
+        Check("giao_dich_tien_mat", "giao_dich_tien_mat_so_tien_check", "(so_tien >= 0)");
+        Check("hoan_tien_hoa_don", "hoan_tien_hoa_don_diem_chua_thu_hoi_check", "(diem_chua_thu_hoi >= 0)");
+        Check("hoan_tien_hoa_don", "hoan_tien_hoa_don_diem_da_thu_hoi_check", "(diem_da_thu_hoi >= 0)");
+        Check("hoan_tien_hoa_don", "hoan_tien_hoa_don_ly_do_check", "(length(btrim((ly_do)::text)) > 0)");
+        Check("hoan_tien_hoa_don", "hoan_tien_hoa_don_phuong_thuc_check", "((phuong_thuc)::text = 'TIEN_MAT'::text)");
+        Check("hoan_tien_hoa_don", "hoan_tien_hoa_don_so_tien_hoan_check", "(so_tien_hoan > 0)");
+        Check("quy_tien_mat", "quy_tien_mat_so_du_check", "(so_du >= 0)");
+        Trigger("ct_hoa_don", "tr_ct_hoa_don_append_only");
+        Trigger("ct_phieu_doi_tra", "tr_ct_phieu_doi_tra_append_only");
+        Trigger("giao_dich_tien_mat", "tr_giao_dich_tien_mat_append_only");
+        Trigger("hoa_don", "tr_hoa_don_guard");
+        Trigger("hoan_tien_hoa_don", "tr_hoan_tien_hoa_don_append_only");
+        Trigger("lich_su_diem", "tr_lich_su_diem_append_only");
+        Trigger("the_kho", "tr_the_kho_append_only");
+        Trigger("chuong_trinh_khuyen_mai", "trg_chuong_trinh_khuyen_mai_updated");
+        Trigger("danh_muc", "trg_danh_muc_updated");
+        Trigger("gio_hang", "trg_gio_hang_updated");
+        Trigger("khach_hang", "trg_khach_hang_updated");
+        Trigger("nha_cung_cap", "trg_nha_cung_cap_updated");
+        Trigger("phieu_nhap", "trg_phieu_nhap_updated");
+        Trigger("quy_tien_mat", "trg_quy_tien_mat_updated");
+        Trigger("san_pham", "trg_san_pham_updated");
+        Trigger("tai_khoan", "trg_tai_khoan_updated");
+        Trigger("ton_kho", "trg_ton_kho_updated");
+
+        void Check(string table, string name, string expression) => tables[table].AddCheckConstraint(name, expression);
+        void Trigger(string table, string name) => tables[table].AddTrigger(name);
+    }
+}

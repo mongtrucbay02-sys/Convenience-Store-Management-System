@@ -1,0 +1,13 @@
+@model ConvenienceStore.Web.Modules.Products.Models.CategoryEditModel
+@{Layout="~/Views/Shared/_Layout.cshtml";ViewData["Title"]=Model.Id==0?"Thêm danh mục":"Sửa danh mục";}
+<h1>@ViewData["Title"]</h1>
+@Html.ValidationSummary(false,"",new{@class="alert alert-danger"})
+<form method="post" action="@(Model.Id==0?"/Categories/Create":$"/Categories/{Model.Id}/Edit")">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="PhienBan" value="@Model.PhienBan" />
+    <label for="category-name">Tên danh mục</label><input id="category-name" name="Ten" value="@Model.Ten" maxlength="100" required />
+    <label for="category-description">Mô tả</label><textarea id="category-description" name="MoTa" maxlength="255">@Model.MoTa</textarea>
+    <label><input type="checkbox" name="KhongDoiTra" value="true" checked="@Model.KhongDoiTra" />Không đổi trả</label>
+    <button type="submit" class="btn btn-primary">Lưu</button><a href="/Categories">Quay lại</a>
+    @if(Model.Id!=0){<a href="/Categories/@Model.Id/Edit">Tải lại dữ liệu</a>}
+</form>

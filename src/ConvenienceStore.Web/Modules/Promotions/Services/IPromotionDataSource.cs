@@ -17,11 +17,12 @@ public sealed record PromotionRecord(
     bool MembersOnly,
     PromotionStatus Status,
     int UsageCount,
-    string? ImageUrl = null);
+    string? ImageUrl = null,
+    long Version = 1);
 
 /// <summary>
-/// Nơi lưu khuyến mãi. Hiện là bản lưu trong bộ nhớ (chưa có bảng, chờ ERD/migration được duyệt ở #1,
-/// dữ liệu mất khi khởi động lại); thay bằng bản dùng ApplicationDbContext mà không phải đổi PromotionService.
+/// Hợp đồng lưu khuyến mãi. Runtime dùng PostgreSqlPromotionDataSource và CuaHangDbContext;
+/// bản trong bộ nhớ chỉ dùng cho kiểm thử.
 /// </summary>
 public interface IPromotionDataSource
 {

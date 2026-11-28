@@ -1,0 +1,50 @@
+{
+  "status": "BLOCKED",
+  "targetSha": "a024757b73e696b5f4285f070c642db0c3a467cd",
+  "sourceHead": "06f70abceb7a9991537b98bcda6eb8219bf46edc",
+  "worktree": "C:\\Users\\Admin\\yen-sp-target-verification-20261116",
+  "restore": "PASS after sandbox network retry",
+  "build": "FAIL: six CS8300 compiler errors in committed target source",
+  "markers": [
+    {
+      "line": 22,
+      "text": "<<<<<<< HEAD"
+    },
+    {
+      "line": 28,
+      "text": "======="
+    },
+    {
+      "line": 31,
+      "text": ">>>>>>> origin/develop"
+    },
+    {
+      "line": 307,
+      "text": "<<<<<<< HEAD"
+    },
+    {
+      "line": 309,
+      "text": "======="
+    },
+    {
+      "line": 390,
+      "text": ">>>>>>> origin/develop"
+    }
+  ],
+  "sourceFile": "src/ConvenienceStore.Web/Modules/Returns/Services/ReturnOrderService.cs",
+  "committedSourceSha256": "08df3a6cedbdfc2604b0aa7beed4375df038273fc5457aa9401092b4a6f57e24",
+  "cleanTarget": true,
+  "patchSha256": "dc350c698bb5c18a3aff211a5411f753323f878dcdb3f5b679c009a26c0bb774",
+  "patchApplyCheck": "PASS; text compatibility only",
+  "sourceOverlap": [],
+  "patchApplied": false,
+  "discovery": "NOT RUN: build failed",
+  "targetBaselineTests": "NOT RUN: build failed",
+  "targetCandidateTests": "NOT RUN: target build blocked",
+  "candidateRegression": "UNKNOWN; no runtime compatibility claim",
+  "environmentFailures": [
+    "Initial sandbox NuGet socket denied; escalated restore PASS",
+    "Initial sandbox obj access denied; escalated build isolated six committed-source errors"
+  ],
+  "remediation": "Returns owner must resolve committed conflict markers in target; no out-of-scope source changed"
+}

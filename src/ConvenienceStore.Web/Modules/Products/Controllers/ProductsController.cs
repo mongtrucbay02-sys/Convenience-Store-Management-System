@@ -1,21 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using ConvenienceStore.Web.Modules.Products.Services;
+using Microsoft.AspNetCore.Mvc;
+using ConvenienceStore.Web.Modules.Auth.Security;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ConvenienceStore.Web.Modules.Products.Controllers;
 
 [Area("Products")]
+[Authorize(Policy = MaQuyen.SanPhamXem)]
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class ProductsController : Controller
 {
-    private readonly IProductService _productService;
-
-    public ProductsController(IProductService productService)
-    {
-        _productService = productService;
-    }
-
-    public IActionResult Index()
-    {
-        ViewData["Message"] = _productService.GetWelcomeMessage();
-        return View();
-    }
+    // Keep old module bookmarks on the authenticated management workflow.
+    [HttpGet]
+    public IActionResult Index() => User.DangPhaiDoiMatKhau() ? Forbid() : Redirect("/Products");
 }

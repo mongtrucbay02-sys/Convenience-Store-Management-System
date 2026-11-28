@@ -1,0 +1,43 @@
+@model ConvenienceStore.Web.Modules.Products.DTOs.PagedResultDto<ConvenienceStore.Web.Modules.Products.DTOs.CategoryListItemDto>
+@using ConvenienceStore.Web.Modules.Auth.Security
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Danh mục"; }
+<h1>Danh mục</h1>
+@if(User.HasClaim("quyen","SAN_PHAM_GIA_DANH_MUC")){<a class="btn btn-primary" href="/Categories/Create">Thêm danh mục</a>}
+@if (ViewData["ListError"] is string error)
+{
+    <p role="alert" class="alert alert-danger" data-list-error>@error</p>
+    <a href="/Categories">Thử lại</a>
+}
+else
+{
+    <form method="get" action="/Categories" class="mb-3">
+        <label for="category-size">Số dòng mỗi trang</label>
+        <select id="category-size" name="size">
+            @foreach (var size in new[] { 20, 50, 100 })
+            { <option value="@size" selected="@(size == Model.Size)">@size</option> }
+        </select>
+        <button type="submit" class="btn btn-primary">Hiển thị</button>
+    </form>
+    @if (Model.Items.Count == 0)
+    {
+        <p data-empty="categories">@(Model.Total == 0 ? "Chưa có danh mục." : "Không có danh mục ở trang này.")</p>
+        @if (Model.Total == 0 && User.IsInRole(BangQuyen.Admin))
+        { <p data-create-guidance>Để bắt đầu, hãy tạo danh mục tại chức năng Thêm/sửa danh mục (SP-08).</p> }
+    }
+    else
+    {
+        <table class="table"><thead><tr><th>Tên danh mục</th><th>Số sản phẩm</th><th>Trạng thái</th></tr></thead>
+        <tbody>
+            @foreach (var category in Model.Items)
+            {
+                <tr><td>@category.Ten @if(User.HasClaim("quyen","SAN_PHAM_GIA_DANH_MUC")){<a href="/Categories/@category.Id/Edit">Sửa</a><a href="/Categories/@category.Id/Delete">Xóa</a>@if(category.TrangThai != "DA_AN"){<a href="/Categories/@category.Id/Hide">Ẩn</a>}}</td><td>@category.SoSanPham</td><td>@(category.TrangThai == "DA_AN" ? "Đã ẩn" : "Hoạt động")</td></tr>
+            }
+        </tbody></table>
+    }
+    <nav aria-label="Phân trang danh mục">
+        @if (Model.Page > 1) { <a href="/Categories?page=@(Model.Page - 1)&amp;size=@Model.Size">Trang trước</a> }
+        <span>Trang @Model.Page · Tổng @Model.Total danh mục</span>
+        @if ((long)Model.Page * Model.Size < Model.Total) { <a href="/Categories?page=@(Model.Page + 1)&amp;size=@Model.Size">Trang sau</a> }
+        <a href="/Categories">Về trang đầu</a>
+    </nav>
+}

@@ -13,8 +13,10 @@ Tài liệu đi kèm mã nguồn: **quy ước viết code, cách dựng môi tr
 
 | Tài liệu | Mô tả |
 |---|---|
+| [postgresql-only-integration-20261124.md](postgresql-only-integration-20261124.md) | PostgreSQL-only integration, module/file inventory và các gate còn lại | Working tree đã kiểm chứng cục bộ; chưa commit/push |
+| [`setup/postgresql-runtime-setup.md`](setup/postgresql-runtime-setup.md) | Cấu hình Supabase, dữ liệu nền, đăng nhập và test PostgreSQL riêng |
 | [`backend-conventions.md`](backend-conventions.md) | Quy ước phát triển Backend (công nghệ, kiến trúc, đặt tên, xử lý lỗi…) |
-| [`setup/mysql-reports-setup.md`](setup/mysql-reports-setup.md) | Cấu hình chuỗi kết nối MySQL (Aiven) để chạy Báo cáo và Khuyến mãi — trước đây là `MYSQL-REPORTS-SETUP.md` ở gốc repo |
+| [`week8-bc-kh-km-report.md`](week8-bc-kh-km-report.md) | Báo cáo phần BC/KH/KM của #5, thiết kế/kết quả/phạm vi và giới hạn; #251 |
 | [`attachments/Login.zip`](attachments/Login.zip) | Gói mã nguồn chức năng Đăng nhập (Views/Account, `_AdminLayout`, `auth-login-setup.md`) — chưa gộp vào `src/` |
 
 ## Cấu trúc đề xuất

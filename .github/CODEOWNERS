@@ -7,8 +7,10 @@
 # GitHub, CI
 /.github/                             @mongtrucbay02-sys @zlatanofficial111-netizen
 
-# Migration CSDL: #1 duyệt
-/src/ConvenienceStore.Web/Migrations/ @zlatanofficial111-netizen @mongtrucbay02-sys
+# Cấu trúc CSDL: chỉ #2 Yến duyệt (CONTRIBUTING.md mục 4)
+/src/ConvenienceStore.Web/Data/Migrations/          @phanyen06ym-ien
+/src/ConvenienceStore.Web/Data/Entities/            @phanyen06ym-ien
+/src/ConvenienceStore.Web/Data/CuaHangDbContext*.cs @phanyen06ym-ien
 
 # Giao diện: #6 duyệt
 /src/ConvenienceStore.Web/Views/      @caotrang250226-png @mongtrucbay02-sys

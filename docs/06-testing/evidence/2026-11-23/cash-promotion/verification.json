@@ -1,0 +1,149 @@
+{
+  "date": "2026-11-23",
+  "sourceCommit": "ce06dff4b56fda0ecbf907ad414ff546e89b473b",
+  "branch": "fix/integrate-main-develop-20261122",
+  "environment": "disposable native MySQL 8.4.13, loopback 33592; not Aiven or staging",
+  "build": {
+    "configuration": "Release",
+    "errors": 0,
+    "warnings": 0
+  },
+  "tests": {
+    "total": 707,
+    "regressions": [
+      {
+        "outcome": "Passed",
+        "name": "ConvenienceStore.Web.Tests.Returns.CashCancellationMySqlTests.OpeningRequiresAdminRejectsStaleBalanceAndIsRecordedOnce"
+      },
+      {
+        "outcome": "Passed",
+        "name": "ConvenienceStore.Web.Tests.Returns.CashCancellationMySqlTests.LaterFailureRollsBackRecordedCashAndOtherEffects"
+      },
+      {
+        "outcome": "Passed",
+        "name": "ConvenienceStore.Web.Tests.Returns.CashCancellationMySqlTests.DatabaseRejectsDuplicateCashEvents"
+      },
+      {
+        "outcome": "Passed",
+        "name": "ConvenienceStore.Web.Tests.PromotionImageMySqlTests.ImageSurvivesContextRecreationAndCanBeReplacedOrRemoved"
+      },
+      {
+        "outcome": "Passed",
+        "name": "ConvenienceStore.Web.Tests.Returns.CashCancellationMySqlTests.InsufficientFundRollsBackStockPointsAndInvoice"
+      },
+      {
+        "outcome": "Passed",
+        "name": "ConvenienceStore.Web.Tests.Returns.CashCancellationMySqlTests.CancelReconcilesCashStockPointsAndCannotRefundTwice"
+      },
+      {
+        "outcome": "Passed",
+        "name": "ConvenienceStore.Web.Tests.Returns.CashCancellationMySqlTests.ConcurrentCancellationHasOneWinner"
+      }
+    ],
+    "trxSha256": "b5e3b8130d58251aade9eea0448b3d3bc373ddb1e824ca577ca5937f258d11ae",
+    "failed": 0,
+    "skipped": 0,
+    "passed": 707
+  },
+  "httpChecks": {
+    "errors": 0,
+    "total": 41
+  },
+  "browser": {
+    "cashOpeningAmount": 1000000,
+    "note": "Desktop cash form submitted and history verified. Full-page screenshot tool timed out; viewport screenshots saved after recovery.",
+    "promotionImageSavedAndLoadedAfterReload": true,
+    "openingConfirmed": true,
+    "promotionImage": "http://127.0.0.1:33593/images/smartmart-test/sp01.png",
+    "openingEntries": 1,
+    "mobile": "DEFERRED_BY_USER"
+  },
+  "schema": {
+    "triggers": 14,
+    "migrations": 5,
+    "views": 3,
+    "businessTables": 31,
+    "businessColumns": 305
+  },
+  "notVerified": [
+    "GitHub CI run",
+    "staging",
+    "independent human review",
+    "database design approval",
+    "MySQL 9.7.2"
+  ],
+  "sourceFiles": [
+    {
+      "path": "src/ConvenienceStore.Web/Controllers/CashLedgerController.cs",
+      "sha256": "6c0fd39d5239eb2b2612002f6cabab310ebdf779385553039496e67c37f47e23"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Data/CuaHangDbContext.cs",
+      "sha256": "0c79fb921be8dec3626dfac6b62cd7177afc6bc8ab90016f99a7f7caf1dba107"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Data/Entities/ChuongTrinhKhuyenMai.cs",
+      "sha256": "1c1c8ac6bacef6343f87f79971a5cdb9c06dd6cf76c52cb8a1016445473e01cc"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Data/Migrations/20261123090000_CashLedgerReconciliation.cs",
+      "sha256": "f939a86199e4967efb1886bc3238d352e1456f5ef40a5a205d565afdc7b65c53"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Data/Migrations/20261123091000_PromotionImage.cs",
+      "sha256": "f3bc93a212387b6ba2d1e30cc2095fd770cfe05b36e9bb74c5c3d8b5bcc29e98"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Data/Migrations/CuaHangDbContextModelSnapshot.cs",
+      "sha256": "dadfec595ee0cb620f5970ea323379028c9b3728c8ea7922ada2cc7c0bd27fa2"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Promotions/Services/IPromotionDataSource.cs",
+      "sha256": "af791df3434da11bc13fe53ce0944414afd7ec4961bad70e61b3fb9f04c0f9a2"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Promotions/Services/MySqlPromotionDataSource.cs",
+      "sha256": "32e3b51a96b45639395f698178cd3c926019adb6388d4bb9cac157dc59ec2c4f"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Modules/Returns/Services/CashLedgerService.cs",
+      "sha256": "432f58e554611c5bc99a8d704d7fcd710d5d26796355f9adf9e408933a6f7867"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Services/Pos/PosInvoiceCancellationService.cs",
+      "sha256": "deb8ec35e386af4e4e89b931fd88ad299ac7d46bd34f3e45816516186adb55dc"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Views/CashLedger/Index.cshtml",
+      "sha256": "cd765d370dc010f212c04efbc06bc0db9a2291b0b4212fa3d797e44198ceebfb"
+    },
+    {
+      "path": "src/ConvenienceStore.Web/Views/Shared/_AdminLayout.cshtml",
+      "sha256": "4d0f0efef814f5b6f40e3cbd939693a2ccf878d10666e3fb1751135ee4193213"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/HaTang/CsdlMySqlTam.cs",
+      "sha256": "9eea419615bf51de333a65c5ca020b0a9642b06f0082f31cda2f6cf86a2fdc14"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/Integration/Database/Schema/MigrationExtensionMySqlTests.cs",
+      "sha256": "b51794b627a0d4fb73063d199674ef533906a6054906740ea50257225c020c27"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/Integration/Database/Schema/SchemaStructureTests.cs",
+      "sha256": "401d528506b665d13095e0f87cb0e4f9f14e9777aadcdafe80274044efb3c5c4"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/Inventory/HaTangTestKhoTests.cs",
+      "sha256": "65d29b764647185e120f29febefd9c0d3c6f36932b25a355d1b2a54ba2b7b4c2"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/PromotionImageMySqlTests.cs",
+      "sha256": "f789ebf096ea0d6ba507daaf2db5599527f115619b6f962611373b92c5649ed9"
+    },
+    {
+      "path": "tests/ConvenienceStore.Web.Tests/Returns/CashCancellationMySqlTests.cs",
+      "sha256": "6f75417cd49a8778a6ec00984f1edf5adab35cd4770d5e61614c386f099c2c8a"
+    }
+  ]
+}

@@ -110,6 +110,7 @@ public sealed class PromotionService : IPromotionService
     {
         var record = await _dataSource.GetByIdAsync(id, cancellationToken);
         if (record is null) return NotFound();
+        if (request.Version != record.Version) return ConcurrentChange();
 
         var now = _timeProvider.GetUtcNow();
         if (GetDisplayStatus(record.Status, record.StartAt, record.EndAt, now) == PromotionDisplayStatus.Ended)
@@ -175,7 +176,7 @@ public sealed class PromotionService : IPromotionService
             ImageUrl = imageUrl,
         };
 
-        if (!await _dataSource.UpdateAsync(updated, cancellationToken)) return NotFound();
+        if (!await _dataSource.UpdateAsync(updated, cancellationToken)) return ConcurrentChange();
         // Return the persisted shape (some storage schemas may not support optional display metadata).
         var persisted = await _dataSource.GetByIdAsync(id, cancellationToken) ?? updated;
         return PromotionResult<PromotionDto>.Ok(ToDto(persisted, now));
@@ -184,7 +185,7 @@ public sealed class PromotionService : IPromotionService
     // ---------------- KM-04 ----------------
 
     public async Task<PromotionResult<PromotionDto>> ChangeStatusAsync(
-        long id, PromotionTargetStatus target, CancellationToken cancellationToken)
+        long id, PromotionTargetStatus target, CancellationToken cancellationToken, long? version = null)
     {
         if (!Enum.IsDefined(typeof(PromotionTargetStatus), target))
         {
@@ -195,6 +196,7 @@ public sealed class PromotionService : IPromotionService
 
         var record = await _dataSource.GetByIdAsync(id, cancellationToken);
         if (record is null) return NotFound();
+        if (version != record.Version) return ConcurrentChange();
 
         var now = _timeProvider.GetUtcNow();
         // BR-KM-04: chương trình đã kết thúc (kể cả tự hết hạn) không đổi trạng thái được nữa.
@@ -223,7 +225,8 @@ public sealed class PromotionService : IPromotionService
 
         var updated = record with { Status = next };
         if (next != record.Status && !await _dataSource.UpdateAsync(updated, cancellationToken))
-            return NotFound();
+            return ConcurrentChange();
+        if (next != record.Status) updated = updated with { Version = checked(record.Version + 1) };
         return PromotionResult<PromotionDto>.Ok(ToDto(updated, now));
     }
 
@@ -326,6 +329,11 @@ public sealed class PromotionService : IPromotionService
 
     // ---------------- Lỗi và ánh xạ ----------------
 
+    private static PromotionResult<PromotionDto> ConcurrentChange() =>
+        PromotionResult<PromotionDto>.Fail(new PromotionError(
+            PromotionErrorKind.Conflict, "PROMOTION_CONFLICT",
+            "Chương trình đã thay đổi hoặc có lượt dùng mới. Hãy tải lại trước khi sửa."));
+
     private static PromotionResult<PromotionDto> NotFound() =>
         PromotionResult<PromotionDto>.Fail(new PromotionError(
             PromotionErrorKind.NotFound, "PROMOTION_NOT_FOUND", "Không tìm thấy chương trình khuyến mãi."));
@@ -347,7 +355,7 @@ public sealed class PromotionService : IPromotionService
         r.Id, r.Code, r.Name, r.Description, r.DiscountType, r.DiscountValue, r.MaxDiscountAmount,
         r.Products, r.StartAt, r.EndAt, r.MembersOnly, r.Status,
         GetDisplayStatus(r.Status, r.StartAt, r.EndAt, now),
-        r.UsageCount, r.ImageUrl);
+        r.UsageCount, r.ImageUrl, r.Version);
 
     // TN luôn chỉ thấy chương trình đang chạy, bất kể bộ lọc gửi lên.
     private static bool MatchesStatus(PromotionDto p, PromotionDisplayStatus? filter, bool isAdmin) =>
@@ -366,4 +374,3 @@ public sealed class PromotionService : IPromotionService
     private static DateTimeOffset StartOfDay(DateOnly d) =>
         new(d.ToDateTime(TimeOnly.MinValue), VietnamOffset);
 }
-

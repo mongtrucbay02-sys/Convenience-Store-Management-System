@@ -10,9 +10,11 @@ Toàn bộ tài liệu dự án nằm trong [`docs/`](docs/README.md), tổ ch�
 Quy trình thay đổi yêu cầu và danh sách người dự phòng: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Chạy thử
-Cấu hình MySQL cho Báo cáo và Khuyến mãi: [`docs/05-implementation/setup/mysql-reports-setup.md`](docs/05-implementation/setup/mysql-reports-setup.md).
+Runtime: .NET 10 MVC/Razor, EF Core/Npgsql, PostgreSQL 17. See [configuration and migrations](docs/db/POSTGRESQL-MIGRATIONS.md). Cấu hình kết nối: tạo `src/ConvenienceStore.Web/.env` theo `.env.example` ([`CONTRIBUTING.md`](CONTRIBUTING.md) mục 4.2).
 
 ```bash
+dotnet build
 dotnet run --project src/ConvenienceStore.Web
-dotnet test
 ```
+
+Test tự động chạy trên CI: mỗi PR, GitHub Actions dựng PostgreSQL 17 tạm, chạy toàn bộ test rồi xóa. Không cần chạy `dotnet test` trên máy và không bao giờ trỏ test vào Supabase dùng chung.

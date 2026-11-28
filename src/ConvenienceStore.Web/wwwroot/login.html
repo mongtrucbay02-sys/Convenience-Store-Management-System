@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đăng nhập | Smart Mart</title>
+    <meta name="theme-color" content="#fd550a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&amp;family=DM+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/smartmart-theme.css?v=3">
+</head>
+<body class="smartmart-login">
+    <main class="login-layout">
+        <section class="login-visual" aria-label="Smart Mart">
+            <a class="login-brand" href="/" aria-label="Smart Mart, về trang chủ">
+                <span aria-hidden="true">S</span> SMART MART
+            </a>
+            <div class="login-art" aria-hidden="true">
+                <div class="login-orbit"></div>
+                <img src="/images/smartmart-hero.png" alt="" fetchpriority="high">
+            </div>
+        </section>
+        <section class="login-pane" aria-labelledby="login-title">
+            <div class="login-box">
+                <p class="login-kicker">Khu vực nhân viên</p>
+                <h1 id="login-title">Đăng nhập</h1>
+                <p class="login-lede">Dùng tài khoản cửa hàng để vào trang vận hành.</p>
+                <form id="loginForm" method="post">
+                    <label for="username">Tên đăng nhập</label>
+                    <input id="username" required autocomplete="username" autocapitalize="none" spellcheck="false">
+                    <label for="password">Mật khẩu</label>
+                    <div class="login-password">
+                        <input id="password" type="password" required autocomplete="current-password">
+                        <button type="button" id="passwordToggle" aria-controls="password" hidden>Hiện</button>
+                    </div>
+                    <button class="login-submit" type="submit">Đăng nhập <span aria-hidden="true">↗</span></button>
+                    <div id="message" class="message" role="alert"></div>
+                </form>
+                <a class="login-home" href="/">← Về trang chủ</a>
+            </div>
+        </section>
+    </main>
+    <script src="/js/login.js?v=3"></script>
+</body>
+</html>

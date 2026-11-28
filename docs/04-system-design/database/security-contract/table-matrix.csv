@@ -1,0 +1,32 @@
+﻿table,as_is,b02_observed_need,to_be_proposed,decision
+bo_dem_chung_tu,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+chinh_sach_doi_tra,SIU,SU,SU,B02-12: bỏ I nếu scope DT-08 được xác nhận; U giữ vì FOR SHARE
+chuong_trinh_khuyen_mai,SIUD,SIUD,SIUD,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+ct_gio_hang,SIUD,SIUD,SIUD,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+ct_hoa_don,SI,SI,SI,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+ct_kiem_ke,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+ct_phieu_doi_tra,SI,SI,SI,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+ct_phieu_nhap,SIU,SIUD,SIUD,WR-06: DELETE riêng dòng NHAP; guard I/U/D theo cha
+ct_xuat_huy,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+danh_muc,SIUD,SIUD,SIUD,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+giao_dich_tien_mat,SI,SI,SI,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+gio_hang,SIUD,SIUD,SIUD,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+hoa_don,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+hoan_tien_hoa_don,SI,SI,SI,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+khach_hang,SIU,SIUD,SIUD,WR-05: DELETE khách không tham chiếu; policy hạn chế + FK
+khuyen_mai_san_pham,SIUD,SIUD,SIUD,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+lich_su_diem,SI,SI,SI,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+lich_su_gia,SIU,SIUD,SIUD,WR-01: D ứng viên chỉ dọn giá của SP đủ điều kiện; guard lịch sử chờ duyệt
+nha_cung_cap,SIU,SIUD,SIUD,WR-04: D ứng viên khi không có phiếu nhập
+phien_dang_nhap,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+phieu_doi_tra,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+phieu_kiem_ke,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+phieu_nhap,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+phieu_xuat_huy,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+quy_tac_tich_diem,SIU,S,SIU,D5: KH-07 pending; giữ I/U tới khi Trung chốt và review quyền
+quy_tien_mat,SIU,SU,SIU,D5: giữ I tới khi seed/repair được xác minh
+san_pham,SIU,SIUD,SIUD,WR-03: D ứng viên theo SP-06; FK/race guard
+tai_khoan,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+the_kho,SI,SI,SI,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
+ton_kho,SIU,SIUD,SIUD,WR-02: D ứng viên tồn 0 và SP đủ điều kiện; giữ thẻ kho
+vai_tro,S,SU,S,WR-07–10: sửa khóa; không mở UPDATE

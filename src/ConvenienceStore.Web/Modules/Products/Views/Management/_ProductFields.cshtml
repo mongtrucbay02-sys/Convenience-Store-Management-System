@@ -1,0 +1,13 @@
+@model ConvenienceStore.Web.Modules.Products.Models.ProductCreateModel
+@using ConvenienceStore.Web.Modules.Products.DTOs
+<label>Mã (để trống để tự sinh)<input name="Ma" value="@Model.Ma" maxlength="20" /></label>@Html.ValidationMessage("ma")
+<label>Tên sản phẩm<input name="TenSanPham" value="@Model.TenSanPham" maxlength="200" required /></label>@Html.ValidationMessage("tenSanPham")
+<label>Danh mục hoạt động<input name="DanhMucId" type="number" min="1" list="active-categories" value="@(Model.DanhMucId == 0 ? null : Model.DanhMucId)" required /></label>@Html.ValidationMessage("danhMucId")
+<datalist id="active-categories">@foreach(var c in ViewData["Categories"] as IReadOnlyList<CategoryListItemDto> ?? []){<option value="@c.Id">@c.Ten</option>}</datalist>
+<p>Chỉ chọn danh mục hoạt động. <a href="/Categories">Tra danh mục khác để nhập ID</a>. Nếu chưa có, hãy nhờ AD thêm danh mục.</p>
+<label>Đơn vị tính<input name="DonViTinh" value="@Model.DonViTinh" maxlength="20" required /></label>@Html.ValidationMessage("donViTinh")
+<label>Giá bán ban đầu (VND, đã gồm GTGT)<input name="GiaBan" type="number" min="100" step="100" value="@Model.GiaBan" required /></label>@Html.ValidationMessage("giaBan")
+<label>Ngưỡng tối thiểu<input name="NguongToiThieu" type="number" min="0" value="@Model.NguongToiThieu" /></label>@Html.ValidationMessage("nguongToiThieu")
+@if(!Model.Compact){<label>Mô tả<textarea name="MoTa" maxlength="1000">@Model.MoTa</textarea></label>@Html.ValidationMessage("moTa")
+<label>Ảnh JPG/PNG tối đa 2 MB<input name="Anh" type="file" accept="image/png,image/jpeg" /></label>@Html.ValidationMessage("image")}
+<p>Tồn kho ban đầu = 0. Tồn kho chỉ đổi qua nghiệp vụ kho.</p>

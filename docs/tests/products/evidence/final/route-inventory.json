@@ -1,0 +1,416 @@
+[
+  {
+    "route": "/api/v1/categories",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "Categories",
+    "action": "GetCategories",
+    "api": true
+  },
+  {
+    "route": "/Categories/Create",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "CategoryEditor",
+    "action": "Create",
+    "api": false
+  },
+  {
+    "route": "/Categories/{id}/Edit",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "CategoryEditor",
+    "action": "Edit",
+    "api": false
+  },
+  {
+    "route": "/Categories/Create",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "CategoryEditor",
+    "action": "Create",
+    "api": false
+  },
+  {
+    "route": "/Categories/{id}/Edit",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "CategoryEditor",
+    "action": "Edit",
+    "api": false
+  },
+  {
+    "route": "/api/v1/categories/{id}",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "CategoryMutations",
+    "action": "Get",
+    "api": true
+  },
+  {
+    "route": "/api/v1/categories",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "CategoryMutations",
+    "action": "Create",
+    "api": true
+  },
+  {
+    "route": "/api/v1/categories/{id}",
+    "verbs": [
+      "PUT"
+    ],
+    "controller": "CategoryMutations",
+    "action": "Update",
+    "api": true
+  },
+  {
+    "route": "/Categories",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "CategoryPages",
+    "action": "Index",
+    "api": false
+  },
+  {
+    "route": "/api/v1/categories/{id}/removal",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "CategoryRemoval",
+    "action": "Preview",
+    "api": true
+  },
+  {
+    "route": "/api/v1/categories/{id}",
+    "verbs": [
+      "DELETE"
+    ],
+    "controller": "CategoryRemoval",
+    "action": "Delete",
+    "api": true
+  },
+  {
+    "route": "/api/v1/categories/{id}/hide",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "CategoryRemoval",
+    "action": "Hide",
+    "api": true
+  },
+  {
+    "route": "/Categories/{id}/Delete",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "CategoryRemovalPage",
+    "action": "Delete",
+    "api": false
+  },
+  {
+    "route": "/Categories/{id}/Hide",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "CategoryRemovalPage",
+    "action": "Hide",
+    "api": false
+  },
+  {
+    "route": "/Categories/{id}/Delete",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "CategoryRemovalPage",
+    "action": "Delete",
+    "api": false
+  },
+  {
+    "route": "/Categories/{id}/Hide",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "CategoryRemovalPage",
+    "action": "Hide",
+    "api": false
+  },
+  {
+    "route": "/api/v1/products",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "ProductCreation",
+    "action": "Create",
+    "api": true
+  },
+  {
+    "route": "/Products/Create",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductCreationPage",
+    "action": "Create",
+    "api": false
+  },
+  {
+    "route": "/Products/Create",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "ProductCreationPage",
+    "action": "Create",
+    "api": false
+  },
+  {
+    "route": "/api/v1/products/{id}",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductDetails",
+    "action": "Get",
+    "api": true
+  },
+  {
+    "route": "/api/v1/products/{id}/prices",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductDetails",
+    "action": "Prices",
+    "api": true
+  },
+  {
+    "route": "/Products/{id}",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductDetailsPage",
+    "action": "Details",
+    "api": false
+  },
+  {
+    "route": "/api/v1/products/{id}",
+    "verbs": [
+      "PUT"
+    ],
+    "controller": "ProductEditing",
+    "action": "Update",
+    "api": true
+  },
+  {
+    "route": "/Products/{id}/Edit",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductEditingPage",
+    "action": "Edit",
+    "api": false
+  },
+  {
+    "route": "/Products/{id}/Edit",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "ProductEditingPage",
+    "action": "Edit",
+    "api": false
+  },
+  {
+    "route": "/api/v1/products/{id}/image",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "ProductImages",
+    "action": "Upload",
+    "api": true
+  },
+  {
+    "route": "/api/v1/products/{id}/lifecycle",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductLifecycle",
+    "action": "Preview",
+    "api": true
+  },
+  {
+    "route": "/api/v1/products/{id}/discontinue",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "ProductLifecycle",
+    "action": "Discontinue",
+    "api": true
+  },
+  {
+    "route": "/api/v1/products/{id}/reactivate",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "ProductLifecycle",
+    "action": "Reactivate",
+    "api": true
+  },
+  {
+    "route": "/api/v1/products/{id}",
+    "verbs": [
+      "DELETE"
+    ],
+    "controller": "ProductLifecycle",
+    "action": "Delete",
+    "api": true
+  },
+  {
+    "route": "/Products/{id}/Discontinue",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductLifecyclePage",
+    "action": "Discontinue",
+    "api": false
+  },
+  {
+    "route": "/Products/{id}/Reactivate",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductLifecyclePage",
+    "action": "Reactivate",
+    "api": false
+  },
+  {
+    "route": "/Products/{id}/Delete",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductLifecyclePage",
+    "action": "Delete",
+    "api": false
+  },
+  {
+    "route": "/Products/{id}/Discontinue",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "ProductLifecyclePage",
+    "action": "Discontinue",
+    "api": false
+  },
+  {
+    "route": "/Products/{id}/Reactivate",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "ProductLifecyclePage",
+    "action": "Reactivate",
+    "api": false
+  },
+  {
+    "route": "/Products/{id}/Delete",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "ProductLifecyclePage",
+    "action": "Delete",
+    "api": false
+  },
+  {
+    "route": "/api/v1/products",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductList",
+    "action": "List",
+    "api": true
+  },
+  {
+    "route": "/Products",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductPages",
+    "action": "Index",
+    "api": false
+  },
+  {
+    "route": "/Products/{id}/Prices",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductPricePages",
+    "action": "Index",
+    "api": false
+  },
+  {
+    "route": "/api/v1/products/{id}/prices/{priceId}",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductPricing",
+    "action": "Get",
+    "api": true
+  },
+  {
+    "route": "/api/v1/products/{id}/prices",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "ProductPricing",
+    "action": "Create",
+    "api": true
+  },
+  {
+    "route": "/api/v1/products/{id}/prices/{priceId}/cancel",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "ProductPricing",
+    "action": "Cancel",
+    "api": true
+  },
+  {
+    "route": "/Products/{id}/Price",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductPricingPage",
+    "action": "Edit",
+    "api": false
+  },
+  {
+    "route": "/Products/{id}/Price",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "ProductPricingPage",
+    "action": "Edit",
+    "api": false
+  },
+  {
+    "route": "/Products/{id}/Prices/{priceId}/Cancel",
+    "verbs": [
+      "GET"
+    ],
+    "controller": "ProductPricingPage",
+    "action": "Cancel",
+    "api": false
+  },
+  {
+    "route": "/Products/{id}/Prices/{priceId}/Cancel",
+    "verbs": [
+      "POST"
+    ],
+    "controller": "ProductPricingPage",
+    "action": "Cancel",
+    "api": false
+  }
+]

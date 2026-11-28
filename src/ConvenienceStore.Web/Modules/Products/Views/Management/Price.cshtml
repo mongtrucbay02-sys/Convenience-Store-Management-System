@@ -1,0 +1,25 @@
+@model ConvenienceStore.Web.Modules.Products.Models.ProductPriceModel
+@using ConvenienceStore.Web.Modules.Products.DTOs
+@{Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Đổi giá bán"; var product = (ProductDetailsDto)ViewData["Product"]!;}
+<h1>Đổi giá bán: @product.TenSanPham</h1>
+<p>Giá hiện tại: @product.GiaBan đ. Giá vốn: @product.GiaVon đ.</p>
+@Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
+@if(product.TrangThai == "DANG_KINH_DOANH")
+{
+<form method="post" action="/Products/@Model.Id/Price">@Html.AntiForgeryToken()
+<input type="hidden" name="PhienBan" value="@Model.PhienBan" />
+<label>Giá mới (VND, đã gồm GTGT)<input name="GiaBan" type="number" min="100" step="100" value="@Model.GiaBan" required /></label>@Html.ValidationMessage("giaBan")
+<label>Hiệu lực từ (giờ Việt Nam +07:00; trống = ngay bây giờ)<input name="HieuLucTu" type="datetime-local" step="1" value="@Model.HieuLucTu?.ToString("yyyy-MM-ddTHH:mm:ss")" /></label>@Html.ValidationMessage("hieuLucTu")
+<label><input name="XacNhanDuoiGiaVon" type="checkbox" value="true" checked="@Model.XacNhanDuoiGiaVon" />Tôi xác nhận áp dụng giá thấp hơn giá vốn hiện tại</label>
+<button type="submit">Lưu mức giá mới</button><a href="/Products/@Model.Id/Price">Tải lại dữ liệu</a>
+</form>
+}
+else{<p role="alert">Chỉ đổi giá sản phẩm đang kinh doanh.</p>}
+<h2>Giá đã lên lịch</h2>
+@if(product.GiaDaLenLich.Total == 0){<p>Chưa có giá đã lên lịch</p>}
+else{<ul>@foreach(var p in product.GiaDaLenLich.Items){<li>@p.GiaBan đ · @p.HieuLucTu <a href="/Products/@Model.Id/Prices/@p.Id/Cancel">Hủy giá đã lên lịch</a></li>}</ul>}
+<a href="/Products/@Model.Id/Prices">Xem tất cả giá đã lên lịch</a>
+<h2>Lịch sử giá</h2>
+<a href="/Products/@Model.Id/Prices?daLenLich=false">Xem toàn bộ lịch sử giá</a>
+@if(product.LichSuGia is {} history){<table class="table"><thead><tr><th>Giá</th><th>Hiệu lực từ</th><th>Hủy lúc</th></tr></thead><tbody>@foreach(var p in history.Items){<tr><td>@p.GiaBan</td><td>@p.HieuLucTu</td><td>@p.HuyLuc</td></tr>}</tbody></table>}
+<a href="/Products/@Model.Id">Chi tiết sản phẩm</a>

@@ -1,0 +1,23 @@
+{
+  "checkedAtUtc": "2026-11-16 00:44:09 UTC",
+  "comments": [
+    {
+      "issue": 62,
+      "comments": [
+        {
+          "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/62#issuecomment-6228857522",
+          "body": "**SP-07 – Implementation progress & pending decisions**\n\nĐã hoàn thành bước chuẩn bị trên nhánh `feature/sp-07-category-list`:\n\n- Tạo `CategoryListItemDto`, `PagedResultDto`, `CategoryListQuery` và `ICategoryService`.\n- Đối chiếu response SP-07 với API Contract tại PR #81 và ERD tại PR #73.\n- Chuẩn bị tài liệu test case `docs/tests/sp-07-test-cases.md`.\n- Xác nhận `dotnet build` thành công.\n\n**Các điểm cần Lead xác nhận:**\n\n1. **`phienBan`:** API Contract có trường này nhưng ERD `categories` chưa có cột tương ứng. Có cần bổ sung cơ chế version/concurrency không?\n2. **`soSanPham`:** Đếm toàn bộ sản phẩm thuộc danh mục hay chỉ sản phẩm đang kinh doanh?\n3. **Trạng thái danh mục:** AD, TN, NK có được xem danh mục bị ẩn/ngừng hoạt động không?\n4. **Pagination:** Quy tắc xử lý `page <= 0`, `size <= 0` là trả HTTP 400 hay áp dụng giá trị mặc định?\n5. **Backend Foundation:** Xác nhận kiến trúc, database provider/schema và thời điểm tích hợp PR #74.\n\n**Phạm vi hiện tại:** Chưa tạo Entity, migration, Controller hoặc Service implementation; chưa thay đổi `Program.cs`, database hay cấu hình xác thực.\n\n**Dependencies:** #4, #76, PR #73, PR #74, PR #81.\n\nĐề nghị Lead xác nhận các quyết định trên trước khi triển khai truy vấn dữ liệu thật cho SP-07."
+        }
+      ]
+    },
+    {
+      "issue": 64,
+      "comments": [
+        {
+          "url": "https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/64#issuecomment-6568887285",
+          "body": "**[CẦN QUYẾT ĐỊNH — SP-09 / #64]** @zlatanofficial111-netizen\n\nDraft PR #202 đã có xóa danh mục rỗng, từ chối khi còn sản phẩm và đổi trạng thái sang `DA_AN`, không cascade. Issue #64 cho phép ẩn khi còn sản phẩm, còn PR #169 SP-07 hiện trả cả danh mục chưa lọc trạng thái. Nếu SP-07 lọc `DA_AN` ở mọi trường hợp, sản phẩm lịch sử vẫn tham chiếu danh mục nhưng người dùng có thể không tra cứu được tên; nếu không lọc, danh mục ẩn vẫn xuất hiện trong lựa chọn tạo/sửa.\n\n**Tác động:** hợp đồng GET, màn hình chọn danh mục, dữ liệu lịch sử và test HTTP khác nhau. Phương án A: chỉ loại `DA_AN` khỏi danh sách chọn mới, vẫn trả tên trong chi tiết/lịch sử (bảo toàn tra cứu); cần tách truy vấn/flag. Phương án B: trả mọi danh mục với trạng thái và để client lọc, ít truy vấn hơn nhưng cần bảo đảm mọi client tuân thủ. Đề xuất A sau khi hợp đồng API được nhóm thống nhất.\n\nXin xác nhận hành vi hiển thị/chọn danh mục ẩn, có cho phép mở lại hay không, và endpoint/role theo AUTH `develop` trước khi mở HTTP. Luồng chuyển sản phẩm sang danh mục khác trong A1 cũng cần xác nhận phạm vi. Phần service/repository và unit test tiếp tục được review; chưa xem comment này là phê duyệt."
+        }
+      ]
+    }
+  ]
+}

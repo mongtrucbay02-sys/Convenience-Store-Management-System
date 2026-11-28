@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
+using ConvenienceStore.Web.Shared.Data;
 
 namespace ConvenienceStore.Web.Tests.PostgreSql;
 

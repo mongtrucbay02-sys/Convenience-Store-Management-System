@@ -1,6 +1,6 @@
 # SRS bản cuối – tổng hợp thay đổi so với SRS v1.0.3 (T9-02, issue #257)
 
-Soạn 23/11/2026, cập nhật 27/11/2026 · #1 Phạm Gia Thăng. Gộp mọi thay đổi đã ghi trong repo để sửa **một lần** tệp Word SRS v1.0.3 (thư mục tài liệu chung của nhóm, tuần 3) thành SRS bản cuối.
+Soạn 23/11/2026, cập nhật 28/11/2026 · #1 Phạm Gia Thăng. Gộp mọi thay đổi đã ghi trong repo để sửa **một lần** tệp Word SRS v1.0.3 (thư mục tài liệu chung của nhóm, tuần 3) thành SRS bản cuối.
 
 Nguồn:
 - `docs/srs/SRS_v1.1_danh-sach-thay-doi.md` (PR #231) và `docs/srs/SRS_v1.2_danh-sach-thay-doi.md`.
@@ -56,11 +56,11 @@ Use case cắt được SRS ghi "Không thuộc bản nộp" kèm lý do (thiế
 | BC-09, BC-10, BC-11 | #248 → #250 | Could | Có (#275, #289) | **Giữ** (#5 rút khỏi danh sách cắt, 23/11) |
 | KM-05, KM-06 | #247, #246 | Could | Có (#275, #289) | **Giữ** (#5, 23/11) |
 | DT-07 Danh sách phiếu đổi trả | #237 | Should | Có (#287) | **Giữ** (X8) |
-| NH-09 Lịch sử nhập theo NCC | #146 | Could | Có (#294, 26/11) | Đề xuất **giữ** (X7 ngày 23/11 ghi cắt, nhưng code đã gộp sau đó) – **chờ #5 xác nhận** |
-| DT-03 Đổi hàng | #238 | Could | Chưa; PR #291 bị yêu cầu sửa | **Chờ quyết định** (#3, #5): giữ nếu #291 gộp kịp mốc nhóm chọn, không thì cắt |
-| DT-06 Duyệt đổi trả ngoại lệ | #239 | Could | Chưa; PR #291 | **Chờ quyết định**, như DT-03 |
+| NH-09 Lịch sử nhập theo NCC | #146 | Could | Có (#294, 26/11; 31 test `SupplierPurchaseHistoryTests`) | **Giữ** (đã có code và test; X7 ngày 23/11 ghi cắt khi chưa có code) – #5 xác nhận lần cuối |
+| DT-03 Đổi hàng | #238 | Could | Chưa; PR #291 bị yêu cầu sửa | **Giữ có điều kiện**: lịch nhóm ngày 27/11 giao #3 làm #238; giữ nếu #291 gộp vào `develop` (CI xanh, có review) **trước khi #5 gắn tag ngày 29/11**, không kịp thì ghi "Không thuộc bản nộp" |
+| DT-06 Duyệt đổi trả ngoại lệ | #239 | Could | Chưa; PR #291 | **Giữ có điều kiện**, như DT-03 |
 | DT-08 Cấu hình chính sách đổi trả | #253 | Could | Không (đổi trả vẫn dùng bảng `chinh_sach_doi_tra`, chỉ thiếu màn hình chỉnh) | **Cắt** (X7; #253 đóng "not planned" 26/11) |
-| KH-07 Cấu hình quy tắc tích điểm | #189 | Could | Không | **Cắt** (X7) |
+| KH-07 Cấu hình quy tắc tích điểm | #189 | Could | Không | **Cắt** (X7, không bị phản đối). Lịch ngày 28/11 có #189 cho #6: đã hỏi #5; nếu #5 quyết làm lại thì sửa dòng này |
 | AI-01 Gợi ý số lượng nhập | – | – | Không | **Cắt**, giữ thiết kế ở ADR-001 mục 3.11 (X9) |
 
 Tham khảo: [báo cáo module tuần 8](../05-implementation/week8-bc-kh-km-report.md), [NH-09](../05-implementation/NH09.md), [ma trận nghiệm thu cuối](../06-testing/test-reports/final-acceptance-matrix.md).
@@ -84,5 +84,6 @@ Tham khảo: [báo cáo module tuần 8](../05-implementation/week8-bc-kh-km-rep
 ## 6. Việc còn lại để ra SRS bản cuối
 
 1. ~~Đọc phản hồi X1 → X10 sau 20:00 25/11~~: không có phản đối; kết quả đã đăng ở #257 ngày 27/11.
-2. Chờ #3, #5 trả lời về NH-09, DT-03, DT-06 (#257). Có câu trả lời thì sửa mục 3 và tệp Word.
+2. Ngày 28/11 ghi phạm vi theo lịch nhóm ngày 27/11: NH-09 giữ; DT-03, DT-06 giữ nếu #291 gộp trước tag ngày 29/11; KH-07 cắt. Sau khi #5 gắn tag, chốt lại hai dòng DT-03, DT-06 theo code tại tag.
+2a. Ma trận 27 use case Must, issue, test và ngưỡng NFR chính thức: `docs/03-requirements/ma-tran-truy-vet-27-must_SRS-chinh-thuc.md`.
 3. #1 sửa tệp Word theo mục 1–5, ghi phiên bản "bản cuối", thêm dòng lịch sử phiên bản; xuất PDF, đưa vào `docs/srs/` qua PR.

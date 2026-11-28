@@ -227,6 +227,15 @@ public sealed class SmokeRolePostgreSqlFixture : IAsyncLifetime
             var name = "smartmart." + Identifier(sequence.GetProperty("name").GetString()!);
             await Sql($"GRANT {Permissions(sequence, new(["USAGE","SELECT"]))} ON SEQUENCE {name} TO smartmart_backend");
         }
+        // Baseline functions have PostgreSQL's default PUBLIC EXECUTE. Reproduce the
+        // observed owner-only function ACL in this disposable database, never in production.
+        foreach (var function in root.GetProperty("functions").EnumerateArray())
+        {
+            if (function.GetProperty("backend_execute").GetBoolean())
+                throw new InvalidOperationException("Unexpected executable function in observed snapshot.");
+            var name = "smartmart." + Identifier(function.GetProperty("name").GetString()!) + "()";
+            await Sql($"REVOKE EXECUTE ON FUNCTION {name} FROM PUBLIC, smartmart_backend");
+        }
         await transaction.CommitAsync();
     }
 

@@ -323,12 +323,12 @@ public sealed partial class PostgreSqlRuntimeTests : IAsyncLifetime
         Assert.Equal("090****567",Assert.Single(await customers.SearchAsync("0901234567",false,default)).Phone);
         await Assert.ThrowsAsync<LoiNghiepVu>(()=>customers.SaveAsync(null,new(){Name="Trùng",Phone="0901234567"},1,default));
         var input=await customers.GetInputAsync(id,default);input.Name="Đã sửa";await customers.SaveAsync(id,input,1,default);
-        await customers.AdjustAsync(id,new(){Points=5,Reason="Bù điểm"},1,default);
-        await Assert.ThrowsAsync<LoiNghiepVu>(()=>customers.AdjustAsync(id,new(){Points=-6,Reason="Không âm"},1,default));
-        Assert.Equal(5, (await customers.HistoryAsync(id,true,default)).Customer.Points);
+        var frozen=await Assert.ThrowsAsync<LoiNghiepVu>(()=>customers.AdjustAsync(id,new(){Points=5,Reason="Bù điểm"},1,default));
+        Assert.Equal(403,frozen.MaHttp);
+        Assert.Equal(0, (await customers.HistoryAsync(id,true,default)).Customer.Points);
+        Assert.Empty(await db.LichSuDiems.Where(l=>l.KhachHangId==id).ToListAsync());
         await customers.DeleteAsync(id,default);
-        Assert.Equal("DA_AN",(await db.KhachHangs.AsNoTracking().SingleAsync(k=>k.Id==id)).TrangThai);
-        Assert.Single(await db.LichSuDiems.Where(l=>l.KhachHangId==id).ToListAsync());
+        Assert.False(await db.KhachHangs.AsNoTracking().AnyAsync(k=>k.Id==id));
     }
 
     [Fact]

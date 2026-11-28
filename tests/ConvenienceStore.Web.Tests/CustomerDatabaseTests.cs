@@ -31,13 +31,23 @@ public sealed class CustomerDatabaseTests(CsdlKhoFixture fixture)
     }
 
     [Fact]
-    public async Task Adjust_RollbackNegative_AndAnonymizeWithoutDeletingLedger()
+    public async Task AdjustFrozen_PreservesHistoricalBalanceAndAnonymizesWithoutDeletingLedger()
     {
         await using var db = fixture.TaoDbContext();
         var service = new CustomerService(db);
         var id = await service.SaveAsync(null, Input(), fixture.TaiKhoanAdminId, default);
-        await service.AdjustAsync(id, new() { Points = 5, Reason = "Bù điểm" }, fixture.TaiKhoanAdminId, default);
-        await Assert.ThrowsAsync<LoiNghiepVu>(() => service.AdjustAsync(id, new() { Points = -6, Reason = "Sai" }, fixture.TaiKhoanAdminId, default));
+        // Historical snapshot predates the freeze; setup only, never an enabled adjustment route.
+        await fixture.ChayAsync("""
+            UPDATE khach_hang SET diem_hien_co=5 WHERE id=@id;
+            INSERT INTO lich_su_diem(khach_hang_id,loai,so_diem,diem_sau,ly_do,nguoi_thuc_hien_id)
+            VALUES(@id,'DIEU_CHINH',5,5,'Lịch sử trước khóa',@actor)
+            """, ("@id", id), ("@actor", fixture.TaiKhoanAdminId));
+        foreach (var points in new[] { 5, -6 })
+        {
+            var error = await Assert.ThrowsAsync<LoiNghiepVu>(() => service.AdjustAsync(id,
+                new() { Points = points, Reason = "Không được thay đổi" }, fixture.TaiKhoanAdminId, default));
+            Assert.Equal(403, error.MaHttp);
+        }
         var history = await service.HistoryAsync(id, true, default);
         Assert.Equal(5u, history.Customer.Points);
         Assert.Single(history.Points);

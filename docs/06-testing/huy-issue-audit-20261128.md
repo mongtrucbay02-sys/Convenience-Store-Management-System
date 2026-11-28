@@ -13,7 +13,7 @@
 | [#17](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/17) | #293 | Migration/adoption/rollback cần owner duyệt; không chạy tự động trên shared Supabase |
 | [#39](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/39) | #257 | Không tạo GitHub Projects hồi tố; tracking qua Issues/PR |
 | [#40](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/40) | #264 | CI/fixture cũ có evidence; seed demo cuối theo #103 chưa nghiệm thu |
-| [#41](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/41) | #264 | Mẫu bug, severity cao/trung bình/thấp, SLA cao 2 ngày; cần đối chiếu template |
+| [#41](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/41) | #264 | Đã thêm .github/ISSUE_TEMPLATE/bug_report.md trên PR304; cần Trung review severity/nhãn/SLA; chưa xác nhận labels hiện hữu |
 | [#42](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/42) | #264 | AUTH/SP/NH nhà cung cấp/POS: trace đúng official UC, role và CI |
 | [#43](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/43) | #264 | API AUTH/SP cần gắn test ID và kết quả CI tại SHA |
 | [#44](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/44) | #242 | Secret guard không thay scan lịch sử Git, runtime TLS, bootstrap Admin |
@@ -54,3 +54,7 @@
 ## Gate
 
 Test plan thống nhất trong docs/06-testing/test-plan.md và report duy nhất trong docs/06-testing/test-reports/2026-11-27-qa-regression.md. Release HOLD tới khi CI/TRL đúng SHA, test theo official Must, browser, security TO-BE, NFR, full-schema backup/restore, và reviewer signoff. Chỉ sửa trên PR304 hướng develop, không chạm main hoặc Supabase chung.
+
+## Sửa trực tiếp từ audit — Issue #41
+- PR304 bổ sung `.github/ISSUE_TEMPLATE/bug_report.md`: reproducible steps, official UC/test ID, expected/actual, SHA/CI/TRX, severity, negative permission, redaction và retest.
+- Đây là bản **đề xuất**, chưa qua reviewer Trung; nhãn `bug` và mức severity thực tế cần owner xác nhận. Không đóng #41 dựa vào file nháp.

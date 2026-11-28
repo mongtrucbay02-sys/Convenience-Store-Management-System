@@ -2,6 +2,12 @@
 Version 1.1 security-contract review | 28/11/2026 | Source of truth #264 / PR #304 | Owner Tester/DevOps | Review pending
 ## Scope and basis
 One store; AUTH, SP, NH, KHO, POS, KH, KM, DT, BC. Use current PostgreSQL runtime, candidate FR/AC in ../03-requirements/acceptance-criteria.md and actual approved SRS when supplied. Original 27 Must list is outside repository; do not infer equivalence. Bank integration, real customer data and production destructive tests excluded.
+## Loyalty DISABLE & FREEZE — #257
+Scope source: [#257 decision](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/257#issuecomment-7241048563), [lead agreement](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/issues/257#issuecomment-7241091898). Scope agreed; implementation and acceptance pending.
+- KEEP KH-01–05, NH-09, BC-09–11, KM-05/06; CUT DT-03/06 and KH-07; DISABLED KH-06; LOCKED KH-08 (server-side, including direct requests). Other scope unchanged.
+- New checkout after approved cutoff: diem_cong=0, so_tien_mot_diem=NULL, no TICH_DIEM ledger entry or customer points increase. No missing-rule fallback or future active rule may silently reactivate accrual. Retain existing rules, all 31 tables and historic balances/records.
+- New no-points invoices: cancellation/return in retained scope must not create loyalty movements. Historical invoices: legitimate reversals only, no duplicate reversal or negative balance; stock/cash/refund atomic. BC-10 remains historical/customer reporting; promotions unaffected. Do not claim CUT/DISABLED use cases passed as active features.
+- LF-01–08 in candidate matrix are additional targeted scenarios, NOT RUN under final scope. Historical tests remain evidence of prior behavior, not final-scope acceptance. D5 privilege narrowing and live rollout require separate approved migration and backup/restore.
 ## Strategy
 | Level | Method | Evidence |
 |---|---|---|
@@ -44,7 +50,7 @@ This is the **one** canonical test plan for #264. The final factual test report 
 | SC-ACL-03 | #293 B08 | Apply *approved* migration on both isolated fresh and live-like databases; exact catalog diff/Up/Down/re-Up | Same TO-BE and reversion; policy/trigger/ACL, fail closed | BLOCKED: migration/approvals |
 | WR-06 / NH02–04 | #300 D3 | NHAP draft add/update/remove line, concurrent confirm, terminal insert/update/delete, reopen header | Accurate totals/version, stock unaffected until confirm, no terminal edits, safe rollback/race | NOT RUN; WR-06 V2 pending |
 | WR-07 / AU01–04 | #300 D4 | Bootstrap Admin under backend role; two concurrent initializations; role table SELECT only; negative ADMIN/TN/NK+CSRF | Exactly one admin; no role UPDATE; denied cases no mutations | NOT RUN under AS-IS ACL |
-| WR-08 / PO01–02 | #300 D4 | AD cancels paid invoice, unauthorized role, concurrent cancel/return | Exact lock target, stock/cash/points atomic, no duplicate refund | NOT RUN under AS-IS ACL |
+| WR-08 / PO01–02 | #300 D4 | AD cancels paid invoice, unauthorized role, concurrent cancel/return | Exact lock target, stock/cash atomic; historical points reversal only when applicable; no duplicate refund | NOT RUN under AS-IS ACL |
 | WR-09 / QU01–02 | #300 D4 | AD settles cash once, concurrent settle, stale/insufficient balance | Only valid settlement; negative rolls back; no role UPDATE | NOT RUN under AS-IS ACL |
 | WR-10 / PO03–04 | #300 D4 | Cashier holds and recalls own order, other actor/expired order, concurrency | Ownership/max five, locks only authorized table, no role UPDATE | NOT RUN under AS-IS ACL |
 | RG01–03 | #300 B02-10 | Invalid login/superuser/bypassRLS/TLS/row_security; EF/raw/bootstrap paths | Fail closed, no data leak; loopback and true VerifyFull separately | Role-read guard existing; runtime write guard pending |

@@ -1,16 +1,24 @@
-# NFR verification protocol — #183
-Status: protocol ready, measurements NOT RUN. Source ../03-requirements/non-functional-requirements.md is candidate; original NFR-HN/BM/TC thresholds unavailable.
-| Candidate NFR | Test procedure | Target | Result |
-|---|---|---|---|
-| NFR-02 | On isolated staging with fixed synthetic dataset, warm up 5 times then record 30 samples each for product search, checkout, stock and report; record p50/p95/max and errors | TBD approved SRS | NOT RUN |
-| NFR-03 | Cashier calls admin endpoint, expired session, missing CSRF token, inspect password hashing implementation, benign quote input in search; verify deny/no mutation/no disclosure | approved policy | NOT RUN |
-| NFR-04 | retry checkout/return, concurrent last item, injected failure; reconcile invoice, stock, points, cash | no duplicate or partial commit | historical regression evidence; per-case rerun unverified |
-| NFR-05 | inspect actor/action/object/time/result after authorized change | retention TBD | NOT RUN |
-| NFR-07 | review ignored config and scan Git history with redacted output | no real secrets | .env guard passed; full scan NOT RUN |
-| NFR-06 | restore approved backup into isolated PG17 and run smoke | RPO/RTO TBD | NOT RUN |
-Record timestamp, SHA, environment, dataset size, concurrent users, raw milliseconds, HTTP status, expected/actual, evidence and defect issue. Do not treat suite duration as latency. Do not test attacks on shared production. Obtain approved NFR mapping and thresholds before PASS.
+# NFR verification — Issue #264 (canonical SRS codes)
 
-## Gate distinction — PR #304 vs system release
-- **Merge gate (QA contribution):** reviewed QA/test/workflow diff; verified final PR-head CI (expected 885 tests, zero fail/skip), traceable TRX, isolated-only execution, consistent scope/evidence and independent reviewer approval. Unresolved in-scope defects must be fixed or explicitly accepted by reviewers; do not silently waive fixture isolation evidence. Status: PENDING final CI and review.
-- **Release gate (system):** approved SRS/Must mapping, WR-06–10 and TO-BE ACL/RLS, live read-only catalog/runtime verification, #257 freeze implementation and LF tests, browser E2E, NFR/UAT, full-schema restore, schema adoption, HTTPS/staging, release SHA and required sign-offs. Status: HOLD. These outstanding system gates are tracked separately; they do not automatically block merging a correctly scoped QA contribution, nor does QA merge authorize release, migration or issue closure.
-- Evidence: [rolling QA report](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/blob/docs/qa-devops-deliverables-20261127/docs/06-testing/test-reports/2026-11-27-qa-regression.md); last verified case-level evidence at `baa30035`: 885/885, 16 named security cases PASS in isolated PG17. Re-run on final head; do not relabel prior evidence as current-head PASS.
+**Status: NOT VERIFIED for performance thresholds.** Updated after reviews [QA-04 by Yến](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/304#pullrequestreview-6092820134) and [QA-02/04 by Thăng](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/304#pullrequestreview-6094976252). Source: [official SRS v1.0.3 traceability draft on PR #301 at ff68536](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/blob/ff68536fd6e8fcae4fed20975c3fcd2487b66101/docs/03-requirements/ma-tran-truy-vet-27-must_SRS-chinh-thuc.md). PR #301 is OPEN; final SRS/release review is pending.
+
+**Do not use** simulated candidate `NFR-02…07` from `docs/03-requirements/non-functional-requirements.md` as official acceptance thresholds. Do not infer response latency from total CI duration. All performance tests use **isolated PG17**, not shared Supabase.
+
+| Official ID | Request / action | SRS threshold | Measurement method | Actual |
+|---|---|---|---|---|
+| NFR-HN-01 | POS-01 product suggestions while typing | ≤ 1 second | Browser/API measured from input to results rendered; 30 warmed requests, p50/p95/max, errors | NOT RUN |
+| NFR-HN-02 | POS-07 complete payment, persist invoice/stock/points as applicable | ≤ 2 seconds | Browser transaction start to confirmed receipt, reconcile DB, measure failures | NOT RUN |
+| NFR-HN-03 | BC-01…03 dashboard and one-month reports | ≤ 3 seconds | 30 requests after warm-up with one-month filter; record p50/p95/max and status | NOT RUN |
+| NFR-HN-04 | paginated AUTH-05/SP-01/NH-07/POS-10 lists | ≤ 2 seconds per page | Initial and subsequent pages, 30 requests each, page size recorded | NOT RUN |
+| NFR-HN-05 | 5 simultaneous users (3 TN, 1 NK, 1 AD) | ≥ 5 concurrently while HN-01…04 hold | Five isolated sessions with separate synthetic accounts; common workload and per-user latency/error rates | NOT RUN |
+
+### Required dataset and repeatable procedure
+- 1,000 synthetic products and 10,000 synthetic invoices covering **six months** (approved SRS scale). No production PII or real shared credentials.
+- Seed only disposable PG17 using owner/admin profile; run business and list/report traffic under real `smartmart_backend` login with app AD/TN/NK authentication/authorization. Verify object counts, indexes, migrations/ACL, data distribution and six-month period.
+- Document exact commit SHA, SRS revision, PostgreSQL version, CPU/memory, runner, browser, backend configuration, date/time UTC+07, dataset seed revision and hash, cache warm-up, concurrency model, sampling intervals, network path, raw request timings (ms), HTTP/SQLSTATE and errors.
+- Capture per-request CSV/JSON without secrets, report p50/p95/max and PASS/FAIL against the approved threshold only for the metric defined; do not label PASS just because a sample average passes. If percentile acceptance convention has not been approved, report statistics and **BLOCKED pending interpretation**.
+- Separate security `NFR-BM-01…09` (roles, sessions, CSRF, bcrypt/password hashing design review, denied write, TLS), integrity `NFR-TV-01…08`, calculations `NFR-TT-01…04`, usability `NFR-SD`, compatibility `NFR-TC`, maintenance `NFR-BT`, limits `NFR-GH`, legal `NFR-PL`. Map only exact source criteria before claiming PASS; some prior xUnit code covers sub-behaviors, not whole NFR.
+- HTTPS of deployed website (NFR-BM-09) is **different** from PostgreSQL TLS VerifyFull. Deployment decision/URL #242/#257 remains unverified; never mark HTTPS PASS solely because database TLS works.
+
+### Scope and gates
+PR #304 may be merged only after its own tested diff, required review and accurate evidence; system release remains HOLD until official SRS acceptance, TO-BE role writes/WR-06–10, browser #244, NFR samples, full-schema backup/restore and deployment gates. Store final measurements in the **single rolling QA report** under `docs/06-testing/test-reports/2026-11-27-qa-regression.md`; no parallel final report.

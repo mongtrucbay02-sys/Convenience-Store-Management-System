@@ -30,7 +30,7 @@ public sealed partial class PostgreSqlRuntimeTests
         using (var response = await client.GetAsync("/Kho?status=low"))
         {
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var html = await response.Content.ReadAsStringAsync();
+            var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
             Assert.Contains("Sữa tươi", html);
             Assert.Contains("Sắp hết", html);
             Assert.Contains("Ngưỡng tối thiểu", html);

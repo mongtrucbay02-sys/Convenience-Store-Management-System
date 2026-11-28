@@ -1,5 +1,5 @@
 # Test Plan — Smart Mart
-Version 1.0 candidate | 27/11/2026 | #15 | Owner Tester/DevOps | Review pending
+Version 1.1 security-contract review | 28/11/2026 | Source of truth #264 / PR #304 | Owner Tester/DevOps | Review pending
 ## Scope and basis
 One store; AUTH, SP, NH, KHO, POS, KH, KM, DT, BC. Use current PostgreSQL runtime, candidate FR/AC in ../03-requirements/acceptance-criteria.md and actual approved SRS when supplied. Original 27 Must list is outside repository; do not infer equivalence. Bank integration, real customer data and production destructive tests excluded.
 ## Strategy
@@ -24,3 +24,41 @@ Entry: reviewed scope, reproducible build, synthetic seed, isolated DB, accounts
 Issue title [BUG][module] symptom; include SHA, environment, case ID, steps, expected/actual, redacted evidence, severity and owner. High target fix within two days per #41; retest before closure. Daily triage near release.
 ## Roles and schedule
 Tester executes and reports; module owners fix; Yến/Thăng review final report per #264; deployment owner approves database operations. 27–29/11: regression, manual/NFR, restore rehearsal, review/freeze. Blocked items remain open.
+
+
+## Security Contract #300 / #293 — acceptance extension (28/11)
+This is the **one** canonical test plan for #264. The final factual test report is \`test-reports/2026-11-27-qa-regression.md\`; other testing documents are source evidence, historical reports or case inventories, not competing final reports. PR #300 has merged **design documents only**; D1–D7, ACL migration and backend WR fixes are proposed, not deployed. The B02 observed contract at \`docs/04-system-design/database/security-contract/evidence/observed-contract.json\` is AS-IS **not TO-BE**.
+
+### Environment and role separation
+- Service A: existing CI PostgreSQL 17 loopback fixture (ordinary regression; may use \`postgres\` exclusively for database setup and administration). It does **not** prove runtime effective grants.
+- Service B: separate disposable PostgreSQL 17 instance (CI \`postgres-role\`), random test database. Admin creates schema, disposable LOGIN \`smartmart_backend\`, seed and grants. Business probes connect **with real username/password** as \`smartmart_backend\`, verify \`current_user = session_user = smartmart_backend\`, \`row_security=on\`, LOGIN without SUPERUSER/BYPASSRLS/CREATEDB/CREATEROLE. \`SET ROLE\` alone is not valid proof.
+- The fixture replays the checked-in B02 **observed** table/view/sequence ACL from the JSON contract; explicitly removes baseline broad table/sequence grants and replaces permissive baseline policy. It is not a substitute for applying the future approved migration with restrictive policies and trigger guards. Fail on drift/unknown objects, never broaden grants to make a test green.
+- No Supabase shared write, reset, migration, or large-scale seed. No passwords, connection strings, business PII, TRX secret fields or backup dumps in commits/artifacts. Production TLS VerifyFull is separate from ephemeral loopback testing.
+- On backend/migration branch changes, produce both fresh-baseline and live-like AS-IS → TO-BE fixtures, apply reviewed Up/Down/re-Up, assert effective privileges and policy/trigger behavior under the same login, then execute business operations. Build/CI source SHA must match the release candidate.
+
+### Prioritized security test IDs
+| ID | Issue | Setup and action under exact runtime login | Expected / evidence gate | State |
+|---|---|---|---|---|
+| SC-ACL-01 | #300 B02-11 | Recreate observed grants for 31 tables, 3 views, 20 sequences; inspect current/session user, RLS, has_table_privilege | Exact AS-IS grants; no TRUNCATE; role guard | Test added to #304, CI pending |
+| SC-ACL-02 | #300 B02-11 | Real backend insert category, transaction rollback; DELETE vai_tro and UPDATE ct_hoa_don | Allowed insert visible in tx then rolled back; 42501 denied; invariant unchanged | Test added to #304, CI pending |
+| SC-ACL-03 | #293 B08 | Apply *approved* migration on both isolated fresh and live-like databases; exact catalog diff/Up/Down/re-Up | Same TO-BE and reversion; policy/trigger/ACL, fail closed | BLOCKED: migration/approvals |
+| WR-06 / NH02–04 | #300 D3 | NHAP draft add/update/remove line, concurrent confirm, terminal insert/update/delete, reopen header | Accurate totals/version, stock unaffected until confirm, no terminal edits, safe rollback/race | NOT RUN; WR-06 V2 pending |
+| WR-07 / AU01–04 | #300 D4 | Bootstrap Admin under backend role; two concurrent initializations; role table SELECT only; negative ADMIN/TN/NK+CSRF | Exactly one admin; no role UPDATE; denied cases no mutations | NOT RUN under AS-IS ACL |
+| WR-08 / PO01–02 | #300 D4 | AD cancels paid invoice, unauthorized role, concurrent cancel/return | Exact lock target, stock/cash/points atomic, no duplicate refund | NOT RUN under AS-IS ACL |
+| WR-09 / QU01–02 | #300 D4 | AD settles cash once, concurrent settle, stale/insufficient balance | Only valid settlement; negative rolls back; no role UPDATE | NOT RUN under AS-IS ACL |
+| WR-10 / PO03–04 | #300 D4 | Cashier holds and recalls own order, other actor/expired order, concurrency | Ownership/max five, locks only authorized table, no role UPDATE | NOT RUN under AS-IS ACL |
+| RG01–03 | #300 B02-10 | Invalid login/superuser/bypassRLS/TLS/row_security; EF/raw/bootstrap paths | Fail closed, no data leak; loopback and true VerifyFull separately | Role-read guard existing; runtime write guard pending |
+| CN01–02 | #264 | Last-unit concurrent checkout, injected failures into receipt, return, cash and stock | No oversell, no partial commit except permissible sequence gaps | Existing service regression; new exact-role proof pending |
+| E2E-244 | #244 | Playwright browser login→cart→cash→invoice on disposable server | Trace, screenshot, browser result with CI gate | NOT RUN; HTTP flow test ≠ browser |
+| BACKUP-264 | #264 | pg_dump/checksum/pg_restore on isolated full schema and demo sample | Catalog + business rows reconciled; no sensitive artifact | Synthetic table-only rehearsal PASS; real schema NOT VERIFIED |
+
+**Defect rubric:** record test ID, SHA, environment, HTTP/SQLSTATE, repro, expected/actual, redacted log, severity P0/P1/P2, owner and retest. A denied DML \`42501\` is expected in negative cases; an unexpected \`42501\` during a legitimate workflow is FAIL, never SKIP/PASS. Distinguish deadlock \`40P01\` (retry policy review) from stale version \`409/40001\`, constraint \`23514\`, and credential/TLS failures. Prohibit fake PASS on tests not executed.
+
+### Official 27 Must traceability gate
+The 27 rows in \`test-cases/candidate-regression.md\` are **candidate test scenarios**, not the authoritative 27 MoSCoW Must. Request the approved SRS/MoSCoW use-case list from #257/Thăng; for **each official Must** record UC ID, wording and revision, scope decision (IN/CUT/HOLD), test case IDs (including WR/SC IDs above when applicable), owner, test command, artifact, run SHA, result and reviewer. If any Must is unmapped or source unapproved, final exit criterion remains BLOCKED. No inferred 1:1 mapping by count.
+
+### Test gates and parallel ownership
+1. Huy: fixture and baseline RED/GREEN coverage under B02 observed login; update #304 with TRX and acceptance report. Yến: WR-06–10 implementation and ACL/guard migration in separate code PR; do not change the test expected result to accommodate a regression.
+2. Trung/Thăng/Hoài: approve D1–D7, WR-06 V2 and 27 Must source; contract MUST precede TO-BE migration acceptance.
+3. Repeat exact-role test under reviewed migration and module code; require security negative, transaction, rollback and concurrency. After green CI, execute browser #244, realistic demo #103 validation, NFR and full backup/restore on isolated PG17.
+4. Freeze final HEAD, publish TRX/test totals/open defects, obtain two independent reviews of #264, then update deploy #242/#44 and manual demo evidence. No merge/closure solely on historical 877/878.

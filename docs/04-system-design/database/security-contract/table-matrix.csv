@@ -23,7 +23,7 @@ phieu_doi_tra,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằn
 phieu_kiem_ke,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
 phieu_nhap,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
 phieu_xuat_huy,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật
-quy_tac_tich_diem,SIU,S,S,B02-12: bỏ I/U nếu KH-07 xác nhận cắt
+quy_tac_tich_diem,SIU,S,SIU,D5: KH-07 pending; giữ I/U tới khi Trung chốt và review quyền
 quy_tien_mat,SIU,SU,SIU,D5: giữ I tới khi seed/repair được xác minh
 san_pham,SIU,SIUD,SIUD,WR-03: D ứng viên theo SP-06; FK/race guard
 tai_khoan,SIU,SIU,SIU,Giữ quyền đã quan sát; kiểm thử lại bằng role thật

@@ -28,7 +28,7 @@ S=SELECT, I=INSERT, U=UPDATE (bao gồm row lock), D=DELETE. AS-IS là snapshot 
 | phieu_kiem_ke | SIU | SIU | SIU | Giữ quyền đã quan sát; kiểm thử lại bằng role thật |
 | phieu_nhap | SIU | SIU | SIU | Giữ quyền đã quan sát; kiểm thử lại bằng role thật |
 | phieu_xuat_huy | SIU | SIU | SIU | Giữ quyền đã quan sát; kiểm thử lại bằng role thật |
-| quy_tac_tich_diem | SIU | S | S | B02-12: bỏ I/U nếu KH-07 xác nhận cắt |
+| quy_tac_tich_diem | SIU | S | SIU | D5: KH-07 pending (#189 mở lại); giữ I/U tới khi Trung chốt và review quyền |
 | quy_tien_mat | SIU | SU | SIU | D5: giữ I tới khi seed/repair được xác minh |
 | san_pham | SIU | SIUD | SIUD | WR-03: D ứng viên theo SP-06; FK/race guard |
 | tai_khoan | SIU | SIU | SIU | Giữ quyền đã quan sát; kiểm thử lại bằng role thật |
@@ -46,7 +46,7 @@ S=SELECT, I=INSERT, U=UPDATE (bao gồm row lock), D=DELETE. AS-IS là snapshot 
 - 6 bảng lịch sử SI-only: ct_hoa_don, ct_phieu_doi_tra, giao_dich_tien_mat, hoan_tien_hoa_don, lich_su_diem, the_kho. Giữ 6 append-only triggers; giữ guard hoa_don chỉ hủy hợp lệ. Không xóa bản ghi audit khi rollback.
 
 ## Delta đề xuất
-23 bảng giữ ACL, 6 bảng thêm DELETE ứng viên, 2 bảng thu hẹp tổng 3 quyền. S/I/U/D: 31/30/24/5 → 31/28/23/11 nếu duyệt đầy đủ. Không mở UPDATE vai_tro. D1 giữ SP-06/NH-03; các D ứng viên chưa được cấp. ACL UPDATE lịch sử giá chưa chứng minh DB chặn sửa giá đã hiệu lực; Huy test trực tiếp, Yến bổ sung guard/column privilege chỉ sau review nếu cần. Header phiếu nhập phải không quay lại NHAP sau xác nhận/hủy; nếu guard chưa có, cần quyết định riêng, cập nhật số policy/trigger/function dự kiến; không tuyên bố bất biến DB khi chưa test.
+24 bảng giữ ACL, 6 bảng thêm DELETE ứng viên, 1 bảng thu hẹp 1 quyền có điều kiện (I của chinh_sach_doi_tra). S/I/U/D: 31/30/24/5 → 31/29/24/11 nếu duyệt đầy đủ. Nếu chưa duyệt thu hẹp I chính sách, ứng viên giữ I đó là 31/30/24/11; chưa cấp sáu quyền D. B02 observed need là evidence lịch sử, không sửa để khớp target. Không mở UPDATE vai_tro. D1 giữ SP-06/NH-03; các D ứng viên chưa được cấp. ACL UPDATE lịch sử giá chưa chứng minh DB chặn sửa giá đã hiệu lực; Huy test trực tiếp, Yến bổ sung guard/column privilege chỉ sau review nếu cần. Header phiếu nhập phải không quay lại NHAP sau xác nhận/hủy; nếu guard chưa có, cần quyết định riêng, cập nhật số policy/trigger/function dự kiến; không tuyên bố bất biến DB khi chưa test.
 
 ## Migration, adoption và rollback
 
@@ -62,7 +62,7 @@ S=SELECT, I=INSERT, U=UPDATE (bao gồm row lock), D=DELETE. AS-IS là snapshot 
 - Chuẩn hóa policy ALL tên `smartmart_backend_trusted_server`; đối với baseline bỏ `backend_access`, với live replace theo kiểm tra định nghĩa, không để duplicate permissive policies. Bật RLS cho 31 bảng. Thêm restrictive DELETE cho KH/CT phiếu nhập và guard D1 đã duyệt; không cấp D nếu guard chưa hoàn thành. Điều kiện KH NOT EXISTS mọi FK thực tế (4 bảng), kiểm lại FK catalog trước chốt. CT phiếu nhập EXISTS parent NHAP; trigger invoker check parent lock cho I/U/D, reject key mutation, reject non-NHAP; SQLSTATE nghiệp vụ ổn định (23514 hoặc mã đã chọn), test EF mapping.
 - Cài function guard trong smartmart, revoke EXECUTE khỏi PUBLIC/anon/authenticated/backend cùng transaction; create trigger bằng owner, không SECURITY DEFINER. Giữ 17 trigger hiện có và 3 function hiện có; số tăng chưa chốt, validate exact names/definitions ở B08.
 - Chuẩn hóa ACL bằng explicit object allowlist: thu hồi quyền backend trên từng object đã biết rồi cấp đúng matrix; kiểm tra không còn inherited/PUBLIC/column ACL, quyền grant option. Grant schema USAGE only, views SELECT only, sequences USAGE SELECT only; revoke function EXECUTE khỏi các role không được phép, chỉ trong smartmart. Không đổi role flags/membership production bằng migration khi khác expected: stop và yêu cầu riêng.
-- Chỉ revoke ba candidate excess sau D5; giữ I quỹ; nếu chưa duyệt, giữ AS-IS và cập nhật contract tương ứng (không gọi final target PASS). Không thay quyền TEMP, public event trigger, global platform ACL. Không dùng GRANT ON ALL TABLES như target.
+- Chỉ revoke I của chinh_sach_doi_tra sau D5 xác nhận scope, seed/repair và regression; giữ I/U quy_tac_tich_diem và I quỹ. Nếu chưa duyệt, giữ AS-IS đối với quyền thu hẹp và cập nhật contract tương ứng (không gọi final target PASS). Không thay quyền TEMP, public event trigger, global platform ACL. Không dùng GRANT ON ALL TABLES như target.
 - Verify catalog inside transaction, check 31/3/20, expected policies, guards, effective grants, owner, roles, function ACL; rollback nếu mismatch; COMMIT nếu tất cả pass. Đăng ký EF migration history đúng quy trình adoption, không tự insert giả record. Bản code mới và contract cùng bản phát hành tương thích; deploy sau commit, restart pool, smoke read-only then canary app theo quy định. Không chạy write tests trên Supabase dùng chung.
 
 ### Down / rollback
@@ -78,3 +78,25 @@ B08 blocked tới khi D1–D7 review và B04–B07 code-ready; B09/B10/B11 phả
 - Không cho phép DELETE giá độc lập chỉ vì SP chưa có giao dịch: cần thiết kế phân biệt cleanup SP và lịch sử giá/giá đã hiệu lực; xem xét command giới hạn quyền thay vì D trực tiếp nếu cần. D trên matrix là ứng viên tối đa, không phải quyết định cuối.
 - NCC: lock parent, không phiếu nhập ở mọi trạng thái, FK restrict, race với tạo phiếu; chỉ AD qua app.
 - D4: WR-08–10 dùng FOR UPDATE OF t; WR-07 advisory xact lock trước COUNT. Audit writer AUTH-06/08/10 và bootstrap, thống nhất protocol hoặc chứng minh invariant; tránh deadlock; không chỉ dựa vào lock bootstrap.
+
+## WR-06 V2 — thiết kế đang hoàn thiện (NOT APPROVED / NOT RUN)
+
+Giữ NH-05: sửa chi tiết phiếu NHAP, không sửa phiếu terminal. V1 không phải acceptance. V2 phải chọn delta update theo khóa chi tiết (không RemoveRange toàn bộ), đọc graph mới sau khóa cha, kiểm version/CAS hoặc EF concurrency token và tăng version có kiểm tra tràn; không dùng graph tracked cũ. Chỉ cấp DELETE chi tiết khi restrictive policy và invoker trigger I/U/D đã được review; guard header tối thiểu chống reopen/terminal mutation cần chốt transition, không mặc định mọi đường ghi đã an toàn. Giữ FK/khóa bất biến, kiểm tra generated ThanhTien và row count, rollback toàn bộ khi lỗi. Không cấp DELETE cha.
+
+Audit lock order xuyên module: phieu_nhap/ct_phieu_nhap, san_pham, ton_kho, the_kho, hoa_don, phieu_doi_tra, nha_cung_cap, tai_khoan, quy_tien_mat. Cần xử lý nguy cơ product→stock so với stock→product và direct child-first so với app parent-first; không tuyên bố deadlock-free. Retry có giới hạn toàn transaction mới cho 40P01/40001 nếu phù hợp, không retry 42501/23514/stale hoặc unknown commit. Test exact login, quyền/CSRF, RED/GREEN, terminal I/U/D, header reopen, stale edit, edit-confirm, rollback, migration Up/Down/re-Up. Chưa chốt V2, chưa có migration executable, chưa chạy test mới.
+
+## REC-D01–D07 — baseline kỹ thuật đề xuất, 28/11
+
+Nguồn: [REC audit](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/300#issuecomment-7233338250), [baseline 16h](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/300#issuecomment-7236995868), [Thăng phản hồi](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/300#issuecomment-7238059808). Không sửa evidence snapshot B01/B02; REC là đối soát sau snapshot, không thay thế runtime acceptance.
+
+| ID | Phương án | Trạng thái |
+|---|---|---|
+| REC-D01 | Dashboard trừ giá trị hàng trả/đổi hoàn tất theo giá thực trả; tách cash refund và credit. 25/11: 97.000 - 47.000 = 50.000 thay vì 62.000; không loại trừ 12.000 credit nếu giá trị hàng mới đã ghi đủ. | Thăng đồng ý hướng; làm rõ BR-BC-02, Trung duyệt; chưa chạy API |
+| REC-D02 | Không sửa hóa đơn lịch sử; không trừ credit hai lần. | Baseline đề xuất |
+| REC-D03 | Không khóa POS vì chưa chốt quỹ; Admin chốt qua nghiệp vụ sau WR-09, bằng thực đếm hoặc số mô phỏng đã thống nhất. 1.086.000 là số sổ sách, không tự đặt cờ TRUE. | Thăng xác nhận CP-03/R3; chờ thực thi/duyệt |
+| REC-D04 | KHO-04 E2 fail-closed nếu dữ liệu đếm cũ; kiểm watermark/version dưới khóa tồn, phát hiện ABA; yêu cầu đếm lại, không duyệt DEMO2311KK06 trên shared. | Bổ sung yêu cầu, chờ Trung duyệt #257; chưa chạy |
+| REC-D05 | Backup được duyệt, checksum, restore PG17 isolated và đối soát catalog/dữ liệu. | BLOCKED, chưa có evidence restore |
+| REC-D06 | Giữ dataset ứng viên có điều kiện, không reset; xác minh provenance, scope, tài khoản demo và PII. | Chờ Trung phê duyệt #103/#264 |
+| REC-D07 | Exact smartmart_backend login, ACL/RLS live-like, không fallback owner. | NOT VERIFIED business write |
+
+Dữ liệu đối soát: 25 hóa đơn, 15 phiếu nhập, 75 thẻ kho, 32 giao dịch quỹ, 27 lịch sử điểm, 8 phiếu đổi trả. Các SQL fingerprint nghiệp vụ được thống kê dưới postgres; SQL Editor có DO seed-like lỗi 23505; một UPDATE probe dưới smartmart_backend không chứng minh commit nghiệp vụ. Không quy kết cá nhân tạo dữ liệu, không suy diễn toàn bộ dataset được tạo bằng ứng dụng. Các SELECT riêng không phải snapshot freeze duy nhất. Dataset CONDITIONAL / NOT READY FOR RELEASE.

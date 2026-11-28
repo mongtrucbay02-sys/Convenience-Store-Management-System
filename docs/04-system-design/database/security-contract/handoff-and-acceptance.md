@@ -33,7 +33,7 @@ Mỗi ID là scenario cần triển khai, không phải số test hiện có. D�
 | KH01 | WR-05 unreferenced customer delete | Exactly 1 row removed; no PII left |
 | KH02 | Customer referenced by invoice/points/cart/return, open cart | Hide/anonymize for retained reference; open cart rejected; direct DELETE denied/0 rows; FK race safe |
 | KH03 | Concurrent attach customer vs delete/anonymize | Safe serialization/constraint, no dangling FK or partial PII mutation |
-| KH04 | Customer create/edit/points adjust, KH-06 default/disabled rule | No invalid negative points; rule table reads only after D5 |
+| KH04 | Customer create/edit/points adjust, KH-06 default/disabled rule | No invalid negative points; POS reads effective rule; retain I/U pending KH-07/D5; if retained test append-only effective rule and authorization |
 | KM01 | Promotion create/update/delete only unreferenced, link replace | I/U/D permissions, FOR SHARE retained; checkout race consistent |
 | KO01 | Inventory count/disposal, threshold, history update/delete denied | Consistent stock, append-only ledger, negative stock blocked |
 | BC01 | Reports and 3 views using real backend | Read-only, no hidden DML; no write grants to views |
@@ -57,3 +57,11 @@ Thăng phụ trách cung cấp SRS gốc đã duyệt, cập nhật SRS/use case
 
 ## Re-review gate trước 04/12 (đề xuất)
 WR-06–10 cần test live-like ACL/real-login ngay cùng PR sửa; không hoãn các test bắt buộc. WR-06 cần guard và quyền tối thiểu đã duyệt. Các mục D1/D2/B08 toàn diện chưa xong phải ghi rõ luồng chưa nghiệm thu; không đóng #293. Bổ sung SP race xóa vs phát sinh giao dịch, fault sau xóa giá/tồn; NCC race xóa vs lập phiếu. Không chạy DML shared Supabase.
+
+## Bổ sung acceptance REC và WR-06 V2 (NOT RUN)
+
+- REC08: trả thuần/đổi thu thêm/đổi ngang/đổi hoàn tiền, nhiều dòng, pending/hủy, UTC+7, Dashboard/BC cùng định nghĩa; fixture 25/11 cho 50.000 theo công thức đề xuất; tách dòng tiền, không trừ credit hai lần.
+- REC09: QU01/QU02 bổ sung chốt khi chưa chốt, thiếu quỹ, stale balance, role/CSRF; không tự sửa cờ; Admin chốt trước demo sau WR-09 và phê duyệt.
+- REC10: KHO-04 E2 chờ duyệt; thay đổi tồn sau đếm, ABA, concurrent sale/approve, rollback nhiều dòng, duyệt lặp, concurrent disposal. Không duyệt phiếu cũ trên shared.
+- WR06 V2: NH02–05 bổ sung fresh graph/version, generated amount RETURNING, direct terminal I/U/D và header transition, error mapping, lock-order race, exact-role RED/GREEN và migration rollback. Thiết kế chưa chốt; không xem scenario là test đã chạy.
+- REC11/12: #264/#103/#242 backup/restore evidence và dataset approval trước rollout; ghi checksum, scope, SHA, role, RPO/RTO và reviewer; không lưu dump nhạy cảm trong Git. #301 vẫn dự thảo; #300 merge tài liệu không thay approval D1–D7 hoặc REC.

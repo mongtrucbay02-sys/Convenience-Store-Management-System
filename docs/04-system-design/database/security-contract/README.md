@@ -32,7 +32,7 @@ Baseline develop `cc20336566ff3ac12933e3c1c65c36a6553b2000`; audit source `0117d
 | WR-10 | P0 | Services/Pos/PosHeldOrderService.cs:107–118 | FOR UPDATE OF t; giữ kiểm tra TN, ownership và transaction POS-08. |
 | B02-10 | P1 | Data/KetNoiCsdl.cs:20–39; Shared/Data/SqlDialect.cs:13–18 | Guard EF/raw/bootstrapping: TLS VerifyFull, đúng current/session role và role flags, row_security; fail closed trước SQL nghiệp vụ, kiểm trên connection/transaction thực dùng (pooler), tách admin profile, không áp read-only smoke cho ghi. |
 | B02-11 | P1 | CI, CsdlPostgreSqlTam.cs:28–35 | Huy: fixture đăng nhập thật bằng backend, không admin fallback; Yến hỗ trợ contract. |
-| B02-12 | P2 | ACL ba bảng (xem contract) | Yến: chỉ REVOKE ba quyền ứng viên; giữ I quỹ sau duyệt scope và seed/repair. |
+| B02-12 | P2 | ACL ba bảng (xem contract) | Chỉ còn I của chinh_sach_doi_tra là ứng viên REVOKE có điều kiện; giữ I/U quy_tac_tich_diem và I quy_tien_mat. Chưa REVOKE quyền nào. |
 
 ## Cổng phê duyệt (chưa duyệt)
 
@@ -42,7 +42,7 @@ Baseline develop `cc20336566ff3ac12933e3c1c65c36a6553b2000`; audit source `0117d
 | D2 WR-05 | KH-04: mọi FK, ẩn PII, phản hồi API và race. | Trung |
 | D3 WR-06 | NHAP guard, khóa cha, header không quay lại NHAP; chốt DB guard header nếu cần. | Trung, Thăng |
 | D4 WR-07–10 | Advisory lock mọi writer Admin; khóa t, vai trò không đổi ngoài quy trình owner. | Thăng, Hoài |
-| D5 B02-12 | SRS dự thảo ghi DT-08/KH-07 cắt; xác nhận seed/repair và phạm vi cuối. Giữ I quỹ đến khi chốt. | Trung, Hoài, Thăng |
+| D5 B02-12 | DT-08 cắt; KH-07 chờ quyết định (#189 mở lại). Giữ I/U quy_tac_tich_diem và I quỹ; xác nhận seed/repair trước mọi thu hẹp. | Trung, Hoài, Thăng |
 | D6 B02-10/11 | Guard mọi đường kết nối, test real-login, pooler. | Huy, Trung |
 | D7 B08 | ACL/RLS/trigger, adoption, rollback, backup restore. | Trung, Thăng; Yến xác nhận kỹ thuật |
 
@@ -62,4 +62,8 @@ B03 review → B04 SP/NH/KHO, B05 AUTH, B06 POS/DT/quỹ, B07 KH (Yến; ưu ti�
 ## Re-review 28/11/2026
 - CI 877/877 không chứng minh quyền ghi Supabase: baseline grant CRUD rộng, fixture admin; cần B02-11 real-login với ACL live-like.
 - Đề xuất trước 04/12: WR-06–10 và test real-login/negative/rollback/race tương ứng. WR-06 cần cả DELETE có guard và migration tối thiểu đã duyệt, không thể sửa code đơn thuần. Các mục khác chỉ hoãn khi Trung/Thăng xác nhận phạm vi, vô hiệu hóa hoặc ghi rõ luồng chưa đạt; không tuyên bố nghiệm thu #293.
-- D1–D7 vẫn chờ duyệt, review lại HEAD mới; không tự merge.
+- D1–D7 vẫn là thiết kế đề xuất; ý kiến đồng ý của reviewer không thay thế phê duyệt cuối của Trung. Review lại HEAD mới; không tự merge.
+- [SRS tổng hợp #301 tại ff68536](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/blob/ff68536fd6e8fcae4fed20975c3fcd2487b66101/docs/srs/SRS_ban-cuoi_tong-hop-thay-doi.md): KH-07 pending, DT-08 CUT; bản Word/PDF mới chưa được reviewer kiểm chứng toàn văn. D5 giữ I/U quy_tac_tich_diem và I quy_tien_mat.
+- [Re-review của Thăng](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/300#pullrequestreview-6094976022) đồng ý D1/D3/D4 về hướng nghiệp vụ; guard, lock protocol và test vẫn cần xác minh. [REC baseline](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/300#issuecomment-7236995868) chốt kỹ thuật đề xuất lúc 16h, không phải approval. [Phản hồi SRS REC-08–10](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/pull/300#issuecomment-7238059808) sau mốc: BR-BC-02 làm rõ, CP-03/R3 phù hợp, KHO-04 E2 bổ sung yêu cầu cần #5 duyệt.
+- WR-06 V2 đang thiết kế, xem security-contract.md; không coi V1 hoặc V2 là migration đã nghiệm thu. Phân công triển khai chi tiết cần phối hợp owner #260/#262/#266; không tự đổi assignee.
+- Merge tài liệu đề xuất chỉ kết thúc vòng tổng hợp B03; không đóng #293, không cấp quyền thực tế, không phê duyệt release.

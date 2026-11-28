@@ -1,6 +1,29 @@
 # QA regression report — baseline 27/11, rolling acceptance 28/11/2026
 #264 #293 #300 #243 #244 | **Single final-report candidate**, review pending; actual release acceptance NOT VERIFIED
-## Verified CI
+## Latest verified CI — PR #304, 28/11/2026
+
+Source head: `34c2dae83831b254ae433a6dcb03bd9b3f151e95` (PR source SHA associated with the verified runs; not a deployed release or the subsequent report-only commit).
+
+| Metric | Result |
+|---|---:|
+| Total | 879 |
+| Passed | 879 |
+| Failed | 0 |
+| Skipped | 0 |
+| Pass rate | 100% |
+| Test duration | 71 seconds |
+
+| Workflow | Result | Evidence |
+|---|---|---|
+| SmartMart CI | PASS | [Run 46156886228](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46156886228), [job 141015395460](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46156886228/job/141015395460) |
+| DB schema and secret guard | PASS | [Run 46156886217](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46156886217) |
+| QA isolated backup rehearsal | PASS (synthetic only) | [Run 46156886211](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46156886211) |
+
+CI log: `Verified: 879/879 tests passed; no failures or skipped tests.` Build, publish, PostgreSQL-only dependency verification, isolated PG17 tests and artifact upload succeeded. TRX artifact: `test-results-46156886228-1`, ID `15267743766`, 222001 bytes ([artifact](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46156886228/artifacts/15267743766)). Aggregate execution verified from job logs; individual TRX cases have not been independently parsed.
+
+The suite PASS applies only to the tested PR checkout. Any subsequent report-only or code commit needs its own CI evidence; release remains HOLD. Synthetic restore is not full-schema recovery, and AS-IS ACL probes are not TO-BE or WR-06–10 acceptance.
+
+## Historical verified CI — baseline 27/11
 Head cc20336566ff3ac12933e3c1c65c36a6553b2000; checkout merge affe1c4 into ef3a2557fb7ad825c46086292eb2c42a5fadb97a (per log). [Rerun job](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/45874035651/job/140604355863).
 | Metric | Result |
 |---|---:|
@@ -31,8 +54,8 @@ Automated suite PASS for tested checkout only. Final acceptance pending Yến/Th
 ### Acceptance matrix — no inference from a green suite
 | Gate | Status | Decision / evidence |
 |---|---|---|
-| Unit/integration baseline (HTTP/service) | PASS at \`f2ccf6d\` only | 878/878, link above; new head must rerun |
-| B02 AS-IS backend login / observed table ACL / negative privileges | PASS for implemented probes at `b4b28ec` | New test `ObservedAclPostgreSqlTests` executed in 879/879 run; this is partial AS-IS catalog replay, not full TO-BE acceptance |
+| Unit/integration baseline (HTTP/service) | PASS at `34c2dae8` | 879/879; latest verified CI above; rerun for any subsequent head |
+| B02 AS-IS backend login / observed table ACL / negative privileges | PASS for implemented probes at `34c2dae8` | Suite rerun 879/879; historical named probe evidence at `b4b28ec`; this is partial AS-IS catalog replay, not full TO-BE acceptance |
 | WR-06–10 corrected backend + approved TO-BE ACL/RLS migration | BLOCKED | PR #300 design merged; backend/migration PR and D1–D7 approval outstanding |
 | 27 official MoSCoW Must UC→TC map | BLOCKED | Candidate 27 != official list. Need approved SRS and #257 scope |
 | Browser POS E2E #244 | NOT RUN | Existing new check is HTTP, not browser |
@@ -41,4 +64,4 @@ Automated suite PASS for tested checkout only. Final acceptance pending Yến/Th
 | Online HTTPS deployment, exact role/profile, production secrets | NOT VERIFIED | #242/#44; shared Supabase stays read-only |
 | Final regression and independent Yến/Thăng sign-off | PENDING | Freeze release SHA after changes, rerun full suite and inspect TRX |
 
-**Release decision: HOLD despite 879/879.** Do not close #264/#293 or approve a live migration based on 877/878 historical green checks. Login role \`postgres\` is allowed **only** for disposable fixture administration, never for the business SQL counted as security acceptance. In shared Supabase: no seed, mutation, migration, reset or destructive test.
+**Release decision: HOLD despite 879/879.** Do not close #264/#293 or approve a live migration based solely on historical or latest green checks. Login role \`postgres\` is allowed **only** for disposable fixture administration, never for the business SQL counted as security acceptance. In shared Supabase: no seed, mutation, migration, reset or destructive test.

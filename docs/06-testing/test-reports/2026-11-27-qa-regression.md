@@ -1,6 +1,54 @@
 # QA regression report — baseline 27/11, rolling acceptance 28/11/2026
 #264 #293 #300 #243 #244 | **Single final-report candidate**, review pending; actual release acceptance NOT VERIFIED
-## Latest verified CI — PR #304, 28/11/2026
+## Latest verified CI and ACL/RLS-A/B technical acceptance — 28/11/2026
+
+**Decision: PASS for implemented local AS-IS security probes; release HOLD.** Independent reviewer approval, live catalog verification and TO-BE acceptance remain outstanding.
+
+Tested PR source SHA: `baa30035fca25b643ea83b45c5e8552a72d80cfd`. This is not a deployed release or the subsequent report-only commit.
+
+| Metric | Result |
+|---|---:|
+| Total / executed / passed | 885 / 885 / 885 |
+| Failed / skipped / error / timeout | 0 / 0 / 0 / 0 |
+| Test duration | 116 seconds |
+| SmartMart CI | [PASS 46160034408](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46160034408), [job 141025102485](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46160034408/job/141025102485) |
+| DB schema and secret guard | [PASS 46160034434](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46160034434) |
+| QA isolated backup rehearsal | [PASS 46160034432](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46160034432) — synthetic only |
+
+### Evidence chain
+
+| Stage | Tested source | Tests passed | CI run | TRX artifact ID |
+|---|---|---:|---|---:|
+| Fixture isolation | `6d648ba47b804742718548020c818127eedc3ffd` | 879 | [46159089567](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46159089567) | 15269316017 |
+| ACL/RLS-A | `b58d484e4800d91ab51531b49959a054f0d042d7` | 880 | [46159646549](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46159646549) | 15268963622 |
+| ACL/RLS-B | `baa30035fca25b643ea83b45c5e8552a72d80cfd` | 885 | [46160034408](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46160034408) | 15268614279 |
+
+Latest artifact [test-results-46160034408-1](https://github.com/mongtrucbay02-sys/Convenience-Store-Management-System/actions/runs/46160034408/artifacts/15268614279), ZIP 224048 bytes. Downloaded and independently hashed; SHA-256 matches GitHub digest: `4e6d882f6207bc11eee42d36b84d46e30fd186dd8c60d20f418a3bee577aa83f`. Extracted tests.trx and parsed ResultSummary counters (885 total/executed/passed; zero failed, error, timeout, aborted, inconclusive, notRunnable and notExecuted). Named UnitTestResult records inspected at latest SHA, not merely inferred from aggregate count.
+
+### Named security case evidence (latest TRX)
+
+| Class / case | Outcome | Duration (ms, rounded) |
+|---|---|---:|
+| ObservedAclPostgreSqlTests.RealBackendLogin_ObservedAclAndRls_DenyForbiddenWritesAndRollbackAllowedWrite | Passed | 484 |
+| ObservedAclPostgreSqlTests.RealBackendLogin_ObservedCatalog_MatchesExactLocalSecurityContract | Passed | 688 |
+| ObservedSecurityBehaviorPostgreSqlTests.RealBackend_ObservedRls_VisibilityAndWithCheck_AreDistinctFromAcl | Passed | 487 |
+| ObservedSecurityBehaviorPostgreSqlTests.RealBackend_SequenceAndFunctionPermissions_AndUpdatedAtTrigger | Passed | 487 |
+| ObservedSecurityBehaviorPostgreSqlTests.RealBackend_ExactTriggerInventory_MatchesBaselineAttachments | Passed | 719 |
+| ObservedSecurityBehaviorPostgreSqlTests.RealBackend_HistoryAclAndAppendOnlyTriggers_RejectMutationIndependently | Passed | 593 |
+| ObservedSecurityBehaviorPostgreSqlTests.RealBackend_InvoiceGuard_ProtectsFinancialSnapshotAndRollback | Passed | 471 |
+
+The same TRX contains nine passing SupabaseRuntimeRoleIntegrationTests: actual backend login, admin rejection, five unsafe role variants, SET ROLE/session-user mismatch and read-write guard rejection. Total named security cases: 16 passed, zero failed.
+
+### Acceptance and limitations
+
+- ACL/RLS-A: PASS for implemented local inventory and privilege assertions (31 tables, 3 views, 20 sequences, 3 functions; 31 RLS policies; direct ACL, effective privileges, grant options, ownership, RLS flags and active status). Local default ACL and outgoing membership checks are not evidence of live platform defaults or incoming memberships.
+- ACL/RLS-B: PASS for implemented representative RLS, sequence/function, 17 baseline trigger attachments, six history tables, invoice cancellation and rollback probes. The restrictive policy and temporary extra grants are fault-injection controls only in the disposable database, not approved TO-BE ACL or production changes. Historical loyalty records are synthetic preservation probes, not reactivation of loyalty flows (#257).
+- F304-01: local AS-IS remediation verified; broader live contract coverage remains open (Supabase-managed roles, incoming platform membership, live defaults, exact live trigger attachments/function bodies).
+- F304-02: fixture remediation and baseline ACL/RLS fingerprint assertions PASS in full suite; independent class execution, explicit reversed order and cleanup failure injection are still NOT RUN. Do not mark final isolation acceptance complete.
+- F304-03 / WR-06–10 / ACL/RLS-C: OPEN/BLOCKED; approved TO-BE migration and real-login business flow tests are not supplied by these probes. No release or live migration approval.
+- Merge gate: local QA evidence PASS for this tested source, pending remaining PR findings, independent review and CI at final head. Release gate remains HOLD (official Must mapping, browser E2E, NFR, UAT, full-schema restore, HTTPS, live runtime and WR remediation outstanding).
+
+## Historical verified CI — initial PR #304 (879 tests)
 
 Source head: `34c2dae83831b254ae433a6dcb03bd9b3f151e95` (PR source SHA associated with the verified runs; not a deployed release or the subsequent report-only commit).
 
@@ -54,8 +102,8 @@ Automated suite PASS for tested checkout only. Final acceptance pending Yến/Th
 ### Acceptance matrix — no inference from a green suite
 | Gate | Status | Decision / evidence |
 |---|---|---|
-| Unit/integration baseline (HTTP/service) | PASS at `34c2dae8` | 879/879; latest verified CI above; rerun for any subsequent head |
-| B02 AS-IS backend login / observed table ACL / negative privileges | PASS for implemented probes at `34c2dae8` | Suite rerun 879/879; historical named probe evidence at `b4b28ec`; this is partial AS-IS catalog replay, not full TO-BE acceptance |
+| Unit/integration baseline (HTTP/service) | PASS at `baa30035` | 885/885; latest verified CI above; rerun for any subsequent head |
+| B02 AS-IS backend login / observed table ACL / negative privileges | PASS for implemented local probes at `baa30035` | 16 named security cases PASS; exact local catalog and behavioral probes, not full live or TO-BE acceptance |
 | WR-06–10 corrected backend + approved TO-BE ACL/RLS migration | BLOCKED | PR #300 design merged; backend/migration PR and D1–D7 approval outstanding |
 | 27 official MoSCoW Must UC→TC map | BLOCKED | Candidate 27 != official list. Need approved SRS and #257 scope |
 | Browser POS E2E #244 | NOT RUN | Existing new check is HTTP, not browser |
@@ -64,4 +112,4 @@ Automated suite PASS for tested checkout only. Final acceptance pending Yến/Th
 | Online HTTPS deployment, exact role/profile, production secrets | NOT VERIFIED | #242/#44; shared Supabase stays read-only |
 | Final regression and independent Yến/Thăng sign-off | PENDING | Freeze release SHA after changes, rerun full suite and inspect TRX |
 
-**Release decision: HOLD despite 879/879.** Do not close #264/#293 or approve a live migration based solely on historical or latest green checks. Login role \`postgres\` is allowed **only** for disposable fixture administration, never for the business SQL counted as security acceptance. In shared Supabase: no seed, mutation, migration, reset or destructive test.
+**Release decision: HOLD despite 885/885.** Do not close #264/#293 or approve a live migration based solely on historical or latest green checks. Login role \`postgres\` is allowed **only** for disposable fixture administration, never for the business SQL counted as security acceptance. In shared Supabase: no seed, mutation, migration, reset or destructive test.

@@ -59,6 +59,7 @@ Use case cắt được SRS ghi "Không thuộc bản nộp" kèm lý do (thiế
 | NH-09 Lịch sử nhập theo NCC | #146 | Could | Có (#294, 26/11; 31 test `SupplierPurchaseHistoryTests`) | **Giữ** (đã có code và test; X7 ngày 23/11 ghi cắt khi chưa có code) – #5 xác nhận lần cuối |
 | DT-03 Đổi hàng | #238 | Could | Chưa; PR #291 bị yêu cầu sửa | **Giữ có điều kiện**: lịch nhóm ngày 27/11 giao #3 làm #238; giữ nếu #291 gộp vào `develop` (CI xanh, có review) **trước khi #5 gắn tag ngày 29/11**, không kịp thì ghi "Không thuộc bản nộp" |
 | DT-06 Duyệt đổi trả ngoại lệ | #239 | Could | Chưa; PR #291 | **Giữ có điều kiện**, như DT-03 |
+| AUTH-04 Xem/cập nhật hồ sơ cá nhân | #110 | Could | **Không** (issue đóng 04/11 chỉ kèm tệp giao diện; `GET/PUT /api/v1/me` không có trong code) | Đề xuất ghi **không thuộc bản nộp** (mức Could) – chờ #5 xác nhận. Phát hiện khi đối chiếu API ngày 28/11 |
 | DT-08 Cấu hình chính sách đổi trả | #253 | Could | Không (đổi trả vẫn dùng bảng `chinh_sach_doi_tra`, chỉ thiếu màn hình chỉnh) | **Cắt** (X7; #253 đóng "not planned" 26/11) |
 | KH-07 Cấu hình quy tắc tích điểm | #189 | Could | Không | **Cắt** (X7, không bị phản đối). Lịch ngày 28/11 có #189 cho #6: đã hỏi #5; nếu #5 quyết làm lại thì sửa dòng này |
 | AI-01 Gợi ý số lượng nhập | – | – | Không | **Cắt**, giữ thiết kế ở ADR-001 mục 3.11 (X9) |

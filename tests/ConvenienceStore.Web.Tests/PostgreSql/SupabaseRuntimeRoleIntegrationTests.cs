@@ -161,8 +161,6 @@ public sealed class SmokeRolePostgreSqlFixture : IAsyncLifetime
 
     // Replays the B02 read-only ACL catalog in a disposable PG17 role-test database.
     // This is AS-IS, not the proposed D1-D7 target or an approved migration.
-    internal Task ApplyObservedAclAsync() => ApplyObservedAclAsync(AdminConnection);
-
     private async Task ApplyObservedAclAsync(string adminConnection)
     {
         if (!_databaseCreated || !_roleCreated || _server is null)

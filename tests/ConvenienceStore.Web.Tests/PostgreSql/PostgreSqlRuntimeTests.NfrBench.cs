@@ -115,7 +115,7 @@ public sealed partial class PostgreSqlRuntimeTests
         // HN-02 checkout server HTTP proxy; no extra load is sent to shared Supabase.
         async Task<string> Token(string html)
         {
-            var match = Regex.Match(html, "name=\\"__RequestVerificationToken\\"[^>]*value=\\"([^\\"]+)\\"");
+            var match = Regex.Match(html, @"name=""__RequestVerificationToken""[^>]*value=""([^""]+)""");
             Assert.True(match.Success, "Expected CSRF token in POS form.");
             return WebUtility.HtmlDecode(match.Groups[1].Value);
         }
